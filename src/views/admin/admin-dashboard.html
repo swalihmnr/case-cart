@@ -1,0 +1,2096 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Admin Dashboard - CaseCart</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"
+    />
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  </head>
+  <body class="bg-gray-50">
+    <!-- Admin Header -->
+    <header class="bg-white shadow-sm sticky top-0 z-50">
+      <div class="px-4 py-3">
+        <div class="flex items-center justify-between">
+          <div class="flex items-center space-x-3">
+            <button id="sidebarToggle" class="lg:hidden text-gray-600 p-1">
+              <i class="fas fa-bars text-xl"></i>
+            </button>
+            <div class="flex items-center space-x-2">
+              <div
+                class="w-8 h-8 bg-gradient-to-br from-purple-600 to-pink-600 rounded-lg flex items-center justify-center"
+              >
+                <i class="fas fa-mobile-alt text-white text-sm"></i>
+              </div>
+              <div>
+                <span
+                  class="text-lg font-bold bg-gradient-to-r from-purple-600 to-pink-600 bg-clip-text text-transparent"
+                  >CaseCart</span
+                >
+                <span class="block text-xs text-gray-500">Admin Panel</span>
+              </div>
+            </div>
+          </div>
+          <div class="flex items-center space-x-3">
+            <button
+              class="relative text-gray-600 hover:text-purple-600 transition p-1"
+            >
+              <i class="fas fa-bell text-lg"></i>
+              <span
+                class="absolute -top-1 -right-1 bg-red-500 text-white text-xs rounded-full w-4 h-4 flex items-center justify-center"
+                >5</span
+              >
+            </button>
+            <div class="flex items-center space-x-2">
+              <div
+                class="w-8 h-8 bg-purple-600 rounded-full flex items-center justify-center text-white font-semibold text-sm"
+              >
+                AD
+              </div>
+              <div class="hidden sm:block">
+                <p class="font-semibold text-gray-900 text-sm">Admin User</p>
+                <p class="text-xs text-gray-500">admin@casecart.com</p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </header>
+
+    <div class="flex">
+      <!-- Sidebar -->
+      <aside
+        id="sidebar"
+        class="fixed lg:sticky top-0 left-0 h-screen w-64 bg-white shadow-lg transform -translate-x-full lg:translate-x-0 transition-transform duration-300 z-40 overflow-y-auto"
+      >
+        <nav class="p-4 mt-14 lg:mt-0">
+          <ul class="space-y-1">
+            <li>
+              <a
+                href="#"
+                class="nav-link flex items-center space-x-3 px-3 py-2 text-gray-600 hover:bg-gray-50 rounded-lg transition"
+                data-page="dashboard"
+              >
+                <i class="fas fa-chart-line w-5"></i>
+                <span class="text-sm">Dashboard</span>
+              </a>
+            </li>
+            <li>
+              <a
+                href="#"
+                class="nav-link flex items-center space-x-3 px-3 py-2 text-gray-600 hover:bg-gray-50 rounded-lg transition"
+                data-page="products"
+              >
+                <i class="fas fa-box w-5"></i>
+                <span class="text-sm">Products</span>
+              </a>
+            </li>
+            <li>
+              <a
+                href="#"
+                class="nav-link flex items-center space-x-3 px-3 py-2 text-gray-600 hover:bg-gray-50 rounded-lg transition"
+                data-page="orders"
+              >
+                <i class="fas fa-shopping-cart w-5"></i>
+                <span class="text-sm">Orders</span>
+              </a>
+            </li>
+            <li>
+              <a
+                href="#"
+                class="nav-link flex items-center space-x-3 px-3 py-2 text-gray-600 hover:bg-gray-50 rounded-lg transition"
+                data-page="customers"
+              >
+                <i class="fas fa-users w-5"></i>
+                <span class="text-sm">Customers</span>
+              </a>
+            </li>
+            <li>
+              <a
+                href="#"
+                class="nav-link flex items-center space-x-3 px-3 py-2 text-gray-600 hover:bg-gray-50 rounded-lg transition"
+                data-page="categories"
+              >
+                <i class="fas fa-tags w-5"></i>
+                <span class="text-sm">Categories</span>
+              </a>
+            </li>
+            <li>
+              <a
+                href="#"
+                class="nav-link flex items-center space-x-3 px-3 py-2 text-gray-600 hover:bg-gray-50 rounded-lg transition"
+                data-page="reports"
+              >
+                <i class="fas fa-chart-bar w-5"></i>
+                <span class="text-sm">Reports</span>
+              </a>
+            </li>
+            <li>
+              <a
+                href="#"
+                class="nav-link flex items-center space-x-3 px-3 py-2 text-gray-600 hover:bg-gray-50 rounded-lg transition"
+                data-page="settings"
+              >
+                <i class="fas fa-cog w-5"></i>
+                <span class="text-sm">Settings</span>
+              </a>
+            </li>
+            <li class="pt-3 mt-3 border-t border-gray-200">
+              <a
+                href="#"
+                class="flex items-center space-x-3 px-3 py-2 text-red-600 hover:bg-red-50 rounded-lg transition"
+              >
+                <i class="fas fa-sign-out-alt w-5"></i>
+                <span class="text-sm">Logout</span>
+              </a>
+            </li>
+          </ul>
+        </nav>
+      </aside>
+
+      <!-- Main Content -->
+      <main class="flex-1 p-3 lg:p-6 lg:ml-0 min-h-screen">
+        <!-- Dashboard Page (Default) -->
+
+        <!-- Products Page -->
+        <div id="products-page" class="page-content hidden">
+          <div class="mb-6">
+            <h1 class="text-2xl lg:text-3xl font-bold text-gray-900 mb-2">
+              Product Management
+            </h1>
+            <p class="text-gray-600 text-sm lg:text-base">
+              Manage your product catalog and inventory.
+            </p>
+          </div>
+
+          <div class="bg-white rounded-lg shadow-sm p-4 mb-4">
+            <div class="flex flex-col space-y-3 mb-4">
+              <h3 class="text-base lg:text-lg font-bold text-gray-900">
+                All Products
+              </h3>
+              <div
+                class="flex flex-col sm:flex-row space-y-2 sm:space-y-0 sm:space-x-3"
+              >
+                <input
+                  type="text"
+                  placeholder="Search products..."
+                  class="px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-purple-500 flex-1"
+                />
+                <button
+                  class="add-product-btn bg-purple-600 text-white px-3 py-2 rounded-lg hover:bg-purple-700 transition text-sm"
+                >
+                  <i class="fas fa-plus mr-1"></i> Add Product
+                </button>
+              </div>
+            </div>
+
+            <div class="overflow-x-auto">
+              <table class="w-full min-w-[600px]">
+                <thead>
+                  <tr class="border-b border-gray-200">
+                    <th class="text-left py-2 px-2 text-xs">Product</th>
+                    <th class="text-left py-2 px-2 text-xs">Category</th>
+                    <th class="text-left py-2 px-2 text-xs">Price</th>
+                    <th class="text-left py-2 px-2 text-xs">Stock</th>
+                    <th class="text-left py-2 px-2 text-xs">Status</th>
+                    <th class="text-left py-2 px-2 text-xs">Actions</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr class="border-b border-gray-100 hover:bg-gray-50">
+                    <td class="py-2 px-2">
+                      <div class="flex items-center space-x-2">
+                        <div
+                          class="w-8 h-8 bg-purple-100 rounded flex items-center justify-center"
+                        >
+                          <i class="fas fa-star text-purple-600 text-xs"></i>
+                        </div>
+                        <div>
+                          <p class="font-semibold text-sm">Cosmic Gradient</p>
+                          <p class="text-xs text-gray-500">iPhone 14 Pro</p>
+                        </div>
+                      </div>
+                    </td>
+                    <td class="py-2 px-2 text-sm">Gradient</td>
+                    <td class="py-2 px-2 text-sm">$24.99</td>
+                    <td class="py-2 px-2 text-sm">8</td>
+                    <td class="py-2 px-2">
+                      <span
+                        class="text-xs bg-yellow-100 text-yellow-700 px-2 py-1 rounded-full"
+                        >Low Stock</span
+                      >
+                    </td>
+                    <td class="py-2 px-2">
+                      <div class="flex space-x-1">
+                        <button
+                          class="edit-product-btn text-blue-600 hover:text-blue-800 text-sm"
+                          data-product-id="1"
+                        >
+                          <i class="fas fa-edit"></i>
+                        </button>
+                        <button class="text-red-600 hover:text-red-800 text-sm">
+                          <i class="fas fa-trash"></i>
+                        </button>
+                      </div>
+                    </td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+
+        <!-- Add Product Page -->
+        <div id="add-product-page" class="page-content hidden">
+          <div class="mb-6">
+            <div class="flex items-center space-x-3 mb-4">
+              <button
+                class="back-to-products text-purple-600 hover:text-purple-700 p-2"
+              >
+                <i class="fas fa-arrow-left"></i>
+              </button>
+              <div>
+                <h1 class="text-2xl lg:text-3xl font-bold text-gray-900">
+                  Add New Product
+                </h1>
+                <p class="text-gray-600 text-sm lg:text-base">
+                  Create a new product for your store.
+                </p>
+              </div>
+            </div>
+          </div>
+
+          <div class="bg-white rounded-lg shadow-sm p-4">
+            <form class="space-y-6">
+              <div class="grid md:grid-cols-2 gap-6">
+                <!-- Product Information -->
+                <div class="space-y-4">
+                  <h3 class="text-lg font-semibold text-gray-900 border-b pb-2">
+                    Product Information
+                  </h3>
+
+                  <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-1"
+                      >Product Name *</label
+                    >
+                    <input
+                      type="text"
+                      class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500"
+                      placeholder="Enter product name"
+                      required
+                    />
+                  </div>
+
+                  <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-1"
+                      >Description *</label
+                    >
+                    <textarea
+                      class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500 h-24"
+                      placeholder="Enter product description"
+                      required
+                    ></textarea>
+                  </div>
+
+                  <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-1"
+                      >Category *</label
+                    >
+                    <select
+                      class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500"
+                      required
+                    >
+                      <option value="">Select Category</option>
+                      <option>Gradient Cases</option>
+                      <option>Protective Cases</option>
+                      <option>Eco-Friendly</option>
+                      <option>Designer Cases</option>
+                    </select>
+                  </div>
+
+                  <div class="grid grid-cols-2 gap-4">
+                    <div>
+                      <label
+                        class="block text-sm font-medium text-gray-700 mb-1"
+                        >Price *</label
+                      >
+                      <input
+                        type="number"
+                        class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500"
+                        placeholder="0.00"
+                        step="0.01"
+                        required
+                      />
+                    </div>
+                    <div>
+                      <label
+                        class="block text-sm font-medium text-gray-700 mb-1"
+                        >Stock *</label
+                      >
+                      <input
+                        type="number"
+                        class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500"
+                        placeholder="0"
+                        required
+                      />
+                    </div>
+                  </div>
+                </div>
+
+                <!-- Product Details -->
+                <div class="space-y-4">
+                  <h3 class="text-lg font-semibold text-gray-900 border-b pb-2">
+                    Product Details
+                  </h3>
+
+                  <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-1"
+                      >Compatible Devices *</label
+                    >
+                    <select
+                      class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500"
+                      required
+                    >
+                      <option value="">Select Device</option>
+                      <option>iPhone 14 Pro</option>
+                      <option>iPhone 14</option>
+                      <option>iPhone 13 Pro</option>
+                      <option>Samsung S23</option>
+                    </select>
+                  </div>
+
+                  <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-1"
+                      >Material *</label
+                    >
+                    <input
+                      type="text"
+                      class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500"
+                      placeholder="e.g., Premium TPU"
+                      required
+                    />
+                  </div>
+
+                  <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-1"
+                      >Colors Available</label
+                    >
+                    <div class="flex flex-wrap gap-2 mt-2">
+                      <button
+                        type="button"
+                        class="color-chip bg-purple-100 text-purple-800 px-2 py-1 rounded-full text-xs hover:bg-purple-200"
+                      >
+                        Purple
+                      </button>
+                      <button
+                        type="button"
+                        class="color-chip bg-blue-100 text-blue-800 px-2 py-1 rounded-full text-xs hover:bg-blue-200"
+                      >
+                        Blue
+                      </button>
+                      <button
+                        type="button"
+                        class="color-chip bg-pink-100 text-pink-800 px-2 py-1 rounded-full text-xs hover:bg-pink-200"
+                      >
+                        Pink
+                      </button>
+                      <button
+                        type="button"
+                        class="color-chip bg-green-100 text-green-800 px-2 py-1 rounded-full text-xs hover:bg-green-200"
+                      >
+                        Green
+                      </button>
+                    </div>
+                  </div>
+
+                  <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-1"
+                      >Product Status</label
+                    >
+                    <select
+                      class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500"
+                    >
+                      <option>Active</option>
+                      <option>Inactive</option>
+                      <option>Draft</option>
+                    </select>
+                  </div>
+
+                  <div class="flex items-center">
+                    <input
+                      type="checkbox"
+                      id="featured-new"
+                      class="w-4 h-4 text-purple-600 border-gray-300 rounded focus:ring-purple-500"
+                    />
+                    <label for="featured-new" class="ml-2 text-sm text-gray-700"
+                      >Featured Product</label
+                    >
+                  </div>
+                </div>
+              </div>
+
+              <!-- Product Images -->
+              <div class="border-t pt-6">
+                <h3 class="text-lg font-semibold text-gray-900 mb-4">
+                  Product Images
+                </h3>
+                <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
+                  <div
+                    class="border-2 border-dashed border-gray-300 rounded-lg p-4 text-center cursor-pointer hover:border-purple-400 transition"
+                  >
+                    <i class="fas fa-plus text-gray-400 text-xl mb-2"></i>
+                    <p class="text-sm text-gray-500">Add Main Image</p>
+                  </div>
+                  <div
+                    class="border-2 border-dashed border-gray-300 rounded-lg p-4 text-center cursor-pointer hover:border-purple-400 transition"
+                  >
+                    <i class="fas fa-plus text-gray-400 text-xl mb-2"></i>
+                    <p class="text-sm text-gray-500">Add Gallery Image</p>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Action Buttons -->
+              <div
+                class="flex flex-col sm:flex-row justify-end space-y-2 sm:space-y-0 sm:space-x-3 pt-6 border-t"
+              >
+                <button
+                  type="button"
+                  class="back-to-products px-4 py-2 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50 transition"
+                >
+                  Cancel
+                </button>
+                <button
+                  type="submit"
+                  class="bg-purple-600 text-white px-4 py-2 rounded-lg hover:bg-purple-700 transition"
+                >
+                  Create Product
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+
+        <!-- Product Edit Page -->
+        <div id="product-edit-page" class="page-content hidden">
+          <div class="mb-6">
+            <div class="flex items-center space-x-3 mb-4">
+              <button
+                class="back-to-products text-purple-600 hover:text-purple-700 p-2"
+              >
+                <i class="fas fa-arrow-left"></i>
+              </button>
+              <div>
+                <h1 class="text-2xl lg:text-3xl font-bold text-gray-900">
+                  Edit Product
+                </h1>
+                <p class="text-gray-600 text-sm lg:text-base">
+                  Update product information and details.
+                </p>
+              </div>
+            </div>
+          </div>
+
+          <div class="bg-white rounded-lg shadow-sm p-4">
+            <form class="space-y-6">
+              <div class="grid md:grid-cols-2 gap-6">
+                <!-- Product Information -->
+                <div class="space-y-4">
+                  <h3 class="text-lg font-semibold text-gray-900 border-b pb-2">
+                    Product Information
+                  </h3>
+
+                  <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-1"
+                      >Product Name</label
+                    >
+                    <input
+                      type="text"
+                      class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500"
+                      value="Cosmic Gradient Case"
+                    />
+                  </div>
+
+                  <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-1"
+                      >Description</label
+                    >
+                    <textarea
+                      class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500 h-24"
+                    >
+Beautiful gradient pattern phone case with premium protection.</textarea
+                    >
+                  </div>
+
+                  <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-1"
+                      >Category</label
+                    >
+                    <select
+                      class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500"
+                    >
+                      <option>Gradient Cases</option>
+                      <option>Protective Cases</option>
+                      <option>Eco-Friendly</option>
+                      <option>Designer Cases</option>
+                    </select>
+                  </div>
+
+                  <div class="grid grid-cols-2 gap-4">
+                    <div>
+                      <label
+                        class="block text-sm font-medium text-gray-700 mb-1"
+                        >Price</label
+                      >
+                      <input
+                        type="number"
+                        class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500"
+                        value="24.99"
+                        step="0.01"
+                      />
+                    </div>
+                    <div>
+                      <label
+                        class="block text-sm font-medium text-gray-700 mb-1"
+                        >Stock</label
+                      >
+                      <input
+                        type="number"
+                        class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500"
+                        value="8"
+                      />
+                    </div>
+                  </div>
+                </div>
+
+                <!-- Product Details -->
+                <div class="space-y-4">
+                  <h3 class="text-lg font-semibold text-gray-900 border-b pb-2">
+                    Product Details
+                  </h3>
+
+                  <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-1"
+                      >Compatible Devices</label
+                    >
+                    <select
+                      class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500"
+                    >
+                      <option>iPhone 14 Pro</option>
+                      <option>iPhone 14</option>
+                      <option>iPhone 13 Pro</option>
+                      <option>Samsung S23</option>
+                    </select>
+                  </div>
+
+                  <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-1"
+                      >Material</label
+                    >
+                    <input
+                      type="text"
+                      class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500"
+                      value="Premium TPU"
+                    />
+                  </div>
+
+                  <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-1"
+                      >Colors Available</label
+                    >
+                    <div class="flex flex-wrap gap-2 mt-2">
+                      <span
+                        class="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-purple-100 text-purple-800"
+                        >Purple</span
+                      >
+                      <span
+                        class="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-blue-100 text-blue-800"
+                        >Blue</span
+                      >
+                      <span
+                        class="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-pink-100 text-pink-800"
+                        >Pink</span
+                      >
+                    </div>
+                  </div>
+
+                  <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-1"
+                      >Product Status</label
+                    >
+                    <select
+                      class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500"
+                    >
+                      <option>Active</option>
+                      <option>Inactive</option>
+                      <option>Draft</option>
+                    </select>
+                  </div>
+
+                  <div class="flex items-center">
+                    <input
+                      type="checkbox"
+                      id="featured"
+                      class="w-4 h-4 text-purple-600 border-gray-300 rounded focus:ring-purple-500"
+                      checked
+                    />
+                    <label for="featured" class="ml-2 text-sm text-gray-700"
+                      >Featured Product</label
+                    >
+                  </div>
+                </div>
+              </div>
+
+              <!-- Action Buttons -->
+              <div
+                class="flex flex-col sm:flex-row justify-end space-y-2 sm:space-y-0 sm:space-x-3 pt-6 border-t"
+              >
+                <button
+                  type="button"
+                  class="back-to-products px-4 py-2 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50 transition"
+                >
+                  Cancel
+                </button>
+                <button
+                  type="submit"
+                  class="bg-purple-600 text-white px-4 py-2 rounded-lg hover:bg-purple-700 transition"
+                >
+                  Update Product
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+
+        <!-- Orders Page -->
+        <div id="orders-page" class="page-content hidden">
+          <div class="mb-6">
+            <h1 class="text-2xl lg:text-3xl font-bold text-gray-900 mb-2">
+              Order Management
+            </h1>
+            <p class="text-gray-600 text-sm lg:text-base">
+              View and manage customer orders.
+            </p>
+          </div>
+
+          <div class="bg-white rounded-lg shadow-sm p-4">
+            <div class="flex flex-col space-y-3 mb-4">
+              <h3 class="text-base lg:text-lg font-bold text-gray-900">
+                All Orders
+              </h3>
+              <div
+                class="flex flex-col sm:flex-row space-y-2 sm:space-y-0 sm:space-x-3"
+              >
+                <input
+                  type="text"
+                  placeholder="Search orders..."
+                  class="px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-purple-500 flex-1"
+                />
+                <select
+                  class="px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-purple-500"
+                >
+                  <option>All Status</option>
+                  <option>Pending</option>
+                  <option>Processing</option>
+                  <option>Shipped</option>
+                  <option>Delivered</option>
+                </select>
+              </div>
+            </div>
+
+            <div class="overflow-x-auto">
+              <table class="w-full min-w-[600px]">
+                <thead>
+                  <tr class="border-b border-gray-200">
+                    <th class="text-left py-2 px-2 text-xs">Order ID</th>
+                    <th class="text-left py-2 px-2 text-xs">Customer</th>
+                    <th class="text-left py-2 px-2 text-xs">Date</th>
+                    <th class="text-left py-2 px-2 text-xs">Amount</th>
+                    <th class="text-left py-2 px-2 text-xs">Status</th>
+                    <th class="text-left py-2 px-2 text-xs">Actions</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr class="border-b border-gray-100 hover:bg-gray-50">
+                    <td class="py-2 px-2 text-sm font-semibold">#ORD-10487</td>
+                    <td class="py-2 px-2 text-sm">John Doe</td>
+                    <td class="py-2 px-2 text-sm">Jan 15, 2024</td>
+                    <td class="py-2 px-2 text-sm">$79.99</td>
+                    <td class="py-2 px-2">
+                      <span
+                        class="text-xs bg-green-100 text-green-700 px-2 py-1 rounded-full"
+                        >Delivered</span
+                      >
+                    </td>
+                    <td class="py-2 px-2">
+                      <div class="flex space-x-1">
+                        <button
+                          class="text-blue-600 hover:text-blue-800 text-sm"
+                        >
+                          <i class="fas fa-eye"></i>
+                        </button>
+                        <button
+                          class="text-purple-600 hover:text-purple-800 text-sm"
+                        >
+                          <i class="fas fa-edit"></i>
+                        </button>
+                      </div>
+                    </td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+
+        <!-- Customers Page -->
+        <div id="customers-page" class="page-content hidden">
+          <div class="mb-6">
+            <h1 class="text-2xl lg:text-3xl font-bold text-gray-900 mb-2">
+              Customer Management
+            </h1>
+            <p class="text-gray-600 text-sm lg:text-base">
+              View and manage your customer database.
+            </p>
+          </div>
+
+          <div class="grid md:grid-cols-4 gap-4 mb-6">
+            <div class="bg-white rounded-lg shadow-sm p-4">
+              <div class="flex items-center justify-between mb-3">
+                <h3 class="text-gray-500 text-xs font-medium">
+                  Total Customers
+                </h3>
+                <div
+                  class="w-10 h-10 bg-green-100 rounded-lg flex items-center justify-center"
+                >
+                  <i class="fas fa-users text-green-600"></i>
+                </div>
+              </div>
+              <p class="text-xl lg:text-2xl font-bold text-gray-900">892</p>
+            </div>
+
+            <div class="bg-white rounded-lg shadow-sm p-4">
+              <div class="flex items-center justify-between mb-3">
+                <h3 class="text-gray-500 text-xs font-medium">
+                  New This Month
+                </h3>
+                <div
+                  class="w-10 h-10 bg-blue-100 rounded-lg flex items-center justify-center"
+                >
+                  <i class="fas fa-user-plus text-blue-600"></i>
+                </div>
+              </div>
+              <p class="text-xl lg:text-2xl font-bold text-gray-900">47</p>
+            </div>
+
+            <div class="bg-white rounded-lg shadow-sm p-4">
+              <div class="flex items-center justify-between mb-3">
+                <h3 class="text-gray-500 text-xs font-medium">
+                  Active Customers
+                </h3>
+                <div
+                  class="w-10 h-10 bg-purple-100 rounded-lg flex items-center justify-center"
+                >
+                  <i class="fas fa-user-check text-purple-600"></i>
+                </div>
+              </div>
+              <p class="text-xl lg:text-2xl font-bold text-gray-900">723</p>
+            </div>
+
+            <div class="bg-white rounded-lg shadow-sm p-4">
+              <div class="flex items-center justify-between mb-3">
+                <h3 class="text-gray-500 text-xs font-medium">
+                  Blocked Customers
+                </h3>
+                <div
+                  class="w-10 h-10 bg-red-100 rounded-lg flex items-center justify-center"
+                >
+                  <i class="fas fa-user-slash text-red-600"></i>
+                </div>
+              </div>
+              <p class="text-xl lg:text-2xl font-bold text-gray-900">12</p>
+            </div>
+          </div>
+
+          <div class="bg-white rounded-lg shadow-sm p-4">
+            <div class="flex flex-col space-y-3 mb-4">
+              <h3 class="text-base lg:text-lg font-bold text-gray-900">
+                Customer List
+              </h3>
+              <div
+                class="flex flex-col sm:flex-row space-y-2 sm:space-y-0 sm:space-x-3"
+              >
+                <input
+                  type="text"
+                  placeholder="Search customers..."
+                  class="px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-purple-500 flex-1"
+                />
+                <select
+                  class="px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-purple-500"
+                >
+                  <option value="all">All Status</option>
+                  <option value="active">Active</option>
+                  <option value="blocked">Blocked</option>
+                  <option value="new">New This Month</option>
+                </select>
+                <button
+                  class="bg-purple-600 text-white px-3 py-2 rounded-lg hover:bg-purple-700 transition text-sm"
+                >
+                  <i class="fas fa-download mr-1"></i> Export
+                </button>
+              </div>
+            </div>
+
+            <div class="overflow-x-auto">
+              <table class="w-full min-w-[600px]">
+                <thead>
+                  <tr class="border-b border-gray-200">
+                    <th class="text-left py-2 px-2 text-xs">Customer</th>
+                    <th class="text-left py-2 px-2 text-xs">Email</th>
+                    <th class="text-left py-2 px-2 text-xs">Phone</th>
+                    <th class="text-left py-2 px-2 text-xs">Orders</th>
+                    <th class="text-left py-2 px-2 text-xs">Total Spent</th>
+                    <th class="text-left py-2 px-2 text-xs">Status</th>
+                    <th class="text-left py-2 px-2 text-xs">Actions</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <!-- Active Customer -->
+                  <tr class="border-b border-gray-100 hover:bg-gray-50">
+                    <td class="py-2 px-2">
+                      <div class="flex items-center space-x-2">
+                        <div
+                          class="w-8 h-8 bg-purple-100 rounded-full flex items-center justify-center"
+                        >
+                          <span class="text-purple-600 text-xs font-semibold"
+                            >JD</span
+                          >
+                        </div>
+                        <div>
+                          <p class="font-semibold text-sm">John Doe</p>
+                          <p class="text-xs text-gray-500">Joined: Jan 2023</p>
+                        </div>
+                      </div>
+                    </td>
+                    <td class="py-2 px-2 text-sm">john.doe@example.com</td>
+                    <td class="py-2 px-2 text-sm">+1 (555) 123-4567</td>
+                    <td class="py-2 px-2 text-sm">12</td>
+                    <td class="py-2 px-2 text-sm">$847.50</td>
+                    <td class="py-2 px-2">
+                      <span
+                        class="text-xs bg-green-100 text-green-700 px-2 py-1 rounded-full"
+                        >Active</span
+                      >
+                    </td>
+                    <td class="py-2 px-2">
+                      <div class="flex space-x-1">
+                        <button
+                          class="view-customer-btn text-blue-600 hover:text-blue-800 text-sm"
+                          data-customer-id="1"
+                        >
+                          <i class="fas fa-eye"></i>
+                        </button>
+                        <button
+                          class="edit-customer-btn text-purple-600 hover:text-purple-800 text-sm"
+                          data-customer-id="1"
+                        >
+                          <i class="fas fa-edit"></i>
+                        </button>
+                        <button
+                          class="block-customer-btn text-red-600 hover:text-red-800 text-sm"
+                          data-customer-id="1"
+                          data-status="active"
+                        >
+                          <i class="fas fa-ban"></i>
+                        </button>
+                      </div>
+                    </td>
+                  </tr>
+
+                  <!-- Blocked Customer -->
+                  <tr
+                    class="border-b border-gray-100 hover:bg-gray-50 bg-red-50"
+                  >
+                    <td class="py-2 px-2">
+                      <div class="flex items-center space-x-2">
+                        <div
+                          class="w-8 h-8 bg-red-100 rounded-full flex items-center justify-center"
+                        >
+                          <span class="text-red-600 text-xs font-semibold"
+                            >RS</span
+                          >
+                        </div>
+                        <div>
+                          <p class="font-semibold text-sm">Robert Smith</p>
+                          <p class="text-xs text-gray-500">Joined: Mar 2023</p>
+                        </div>
+                      </div>
+                    </td>
+                    <td class="py-2 px-2 text-sm">robert.smith@example.com</td>
+                    <td class="py-2 px-2 text-sm">+1 (555) 987-6543</td>
+                    <td class="py-2 px-2 text-sm">3</td>
+                    <td class="py-2 px-2 text-sm">$124.99</td>
+                    <td class="py-2 px-2">
+                      <span
+                        class="text-xs bg-red-100 text-red-700 px-2 py-1 rounded-full"
+                        >Blocked</span
+                      >
+                    </td>
+                    <td class="py-2 px-2">
+                      <div class="flex space-x-1">
+                        <button
+                          class="view-customer-btn text-blue-600 hover:text-blue-800 text-sm"
+                          data-customer-id="2"
+                        >
+                          <i class="fas fa-eye"></i>
+                        </button>
+                        <button
+                          class="edit-customer-btn text-purple-600 hover:text-purple-800 text-sm"
+                          data-customer-id="2"
+                        >
+                          <i class="fas fa-edit"></i>
+                        </button>
+                        <button
+                          class="unblock-customer-btn text-green-600 hover:text-green-800 text-sm"
+                          data-customer-id="2"
+                          data-status="blocked"
+                        >
+                          <i class="fas fa-check"></i>
+                        </button>
+                      </div>
+                    </td>
+                  </tr>
+
+                  <!-- New Customer -->
+                  <tr class="border-b border-gray-100 hover:bg-gray-50">
+                    <td class="py-2 px-2">
+                      <div class="flex items-center space-x-2">
+                        <div
+                          class="w-8 h-8 bg-blue-100 rounded-full flex items-center justify-center"
+                        >
+                          <span class="text-blue-600 text-xs font-semibold"
+                            >EJ</span
+                          >
+                        </div>
+                        <div>
+                          <p class="font-semibold text-sm">Emma Johnson</p>
+                          <p class="text-xs text-gray-500">Joined: Feb 2024</p>
+                        </div>
+                      </div>
+                    </td>
+                    <td class="py-2 px-2 text-sm">emma.johnson@example.com</td>
+                    <td class="py-2 px-2 text-sm">+1 (555) 456-7890</td>
+                    <td class="py-2 px-2 text-sm">1</td>
+                    <td class="py-2 px-2 text-sm">$49.99</td>
+                    <td class="py-2 px-2">
+                      <span
+                        class="text-xs bg-blue-100 text-blue-700 px-2 py-1 rounded-full"
+                        >New</span
+                      >
+                    </td>
+                    <td class="py-2 px-2">
+                      <div class="flex space-x-1">
+                        <button
+                          class="view-customer-btn text-blue-600 hover:text-blue-800 text-sm"
+                          data-customer-id="3"
+                        >
+                          <i class="fas fa-eye"></i>
+                        </button>
+                        <button
+                          class="edit-customer-btn text-purple-600 hover:text-purple-800 text-sm"
+                          data-customer-id="3"
+                        >
+                          <i class="fas fa-edit"></i>
+                        </button>
+                        <button
+                          class="block-customer-btn text-red-600 hover:text-red-800 text-sm"
+                          data-customer-id="3"
+                          data-status="active"
+                        >
+                          <i class="fas fa-ban"></i>
+                        </button>
+                      </div>
+                    </td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+
+            <!-- Customer Details Modal -->
+            <div
+              id="customer-details-modal"
+              class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 hidden"
+            >
+              <div
+                class="bg-white rounded-lg shadow-lg w-full max-w-2xl mx-4 max-h-[90vh] overflow-y-auto"
+              >
+                <div class="p-6">
+                  <div class="flex justify-between items-center mb-4">
+                    <h3 class="text-xl font-bold text-gray-900">
+                      Customer Details
+                    </h3>
+                    <button
+                      class="close-modal text-gray-500 hover:text-gray-700"
+                    >
+                      <i class="fas fa-times"></i>
+                    </button>
+                  </div>
+                  <div id="customer-details-content">
+                    <!-- Customer details will be loaded here -->
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Block Customer Confirmation Modal -->
+            <div
+              id="block-customer-modal"
+              class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 hidden"
+            >
+              <div class="bg-white rounded-lg shadow-lg w-full max-w-md mx-4">
+                <div class="p-6">
+                  <div
+                    class="flex items-center justify-center w-12 h-12 mx-auto bg-red-100 rounded-full mb-4"
+                  >
+                    <i
+                      class="fas fa-exclamation-triangle text-red-600 text-xl"
+                    ></i>
+                  </div>
+                  <h3 class="text-lg font-bold text-gray-900 text-center mb-2">
+                    Block Customer
+                  </h3>
+                  <p class="text-gray-600 text-sm text-center mb-6">
+                    Are you sure you want to block this customer? They will not
+                    be able to place orders or access their account.
+                  </p>
+                  <div class="flex space-x-3">
+                    <button
+                      class="cancel-block-btn flex-1 px-4 py-2 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50 transition"
+                    >
+                      Cancel
+                    </button>
+                    <button
+                      class="confirm-block-btn flex-1 px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition"
+                    >
+                      Block Customer
+                    </button>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Unblock Customer Confirmation Modal -->
+            <div
+              id="unblock-customer-modal"
+              class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 hidden"
+            >
+              <div class="bg-white rounded-lg shadow-lg w-full max-w-md mx-4">
+                <div class="p-6">
+                  <div
+                    class="flex items-center justify-center w-12 h-12 mx-auto bg-green-100 rounded-full mb-4"
+                  >
+                    <i class="fas fa-check text-green-600 text-xl"></i>
+                  </div>
+                  <h3 class="text-lg font-bold text-gray-900 text-center mb-2">
+                    Unblock Customer
+                  </h3>
+                  <p class="text-gray-600 text-sm text-center mb-6">
+                    Are you sure you want to unblock this customer? They will be
+                    able to place orders and access their account again.
+                  </p>
+                  <div class="flex space-x-3">
+                    <button
+                      class="cancel-unblock-btn flex-1 px-4 py-2 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50 transition"
+                    >
+                      Cancel
+                    </button>
+                    <button
+                      class="confirm-unblock-btn flex-1 px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition"
+                    >
+                      Unblock Customer
+                    </button>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <script>
+          // Customer Management JavaScript
+          document.addEventListener("DOMContentLoaded", function () {
+            // Customer view buttons
+            document.querySelectorAll(".view-customer-btn").forEach((btn) => {
+              btn.addEventListener("click", function () {
+                const customerId = this.getAttribute("data-customer-id");
+                showCustomerDetails(customerId);
+              });
+            });
+
+            // Customer block buttons
+            document.querySelectorAll(".block-customer-btn").forEach((btn) => {
+              btn.addEventListener("click", function () {
+                const customerId = this.getAttribute("data-customer-id");
+                const customerName =
+                  this.closest("tr").querySelector(
+                    ".font-semibold"
+                  ).textContent;
+                showBlockConfirmation(customerId, customerName);
+              });
+            });
+
+            // Customer unblock buttons
+            document
+              .querySelectorAll(".unblock-customer-btn")
+              .forEach((btn) => {
+                btn.addEventListener("click", function () {
+                  const customerId = this.getAttribute("data-customer-id");
+                  const customerName =
+                    this.closest("tr").querySelector(
+                      ".font-semibold"
+                    ).textContent;
+                  showUnblockConfirmation(customerId, customerName);
+                });
+              });
+
+            // Close modal buttons
+            document
+              .querySelectorAll(
+                ".close-modal, .cancel-block-btn, .cancel-unblock-btn"
+              )
+              .forEach((btn) => {
+                btn.addEventListener("click", function () {
+                  document
+                    .getElementById("customer-details-modal")
+                    .classList.add("hidden");
+                  document
+                    .getElementById("block-customer-modal")
+                    .classList.add("hidden");
+                  document
+                    .getElementById("unblock-customer-modal")
+                    .classList.add("hidden");
+                });
+              });
+
+            // Confirm block button
+            document
+              .querySelector(".confirm-block-btn")
+              .addEventListener("click", function () {
+                const customerId = this.getAttribute("data-customer-id");
+                blockCustomer(customerId);
+              });
+
+            // Confirm unblock button
+            document
+              .querySelector(".confirm-unblock-btn")
+              .addEventListener("click", function () {
+                const customerId = this.getAttribute("data-customer-id");
+                unblockCustomer(customerId);
+              });
+
+            // Status filter
+            document
+              .querySelector("select")
+              .addEventListener("change", function () {
+                filterCustomers(this.value);
+              });
+          });
+
+          function showCustomerDetails(customerId) {
+            // In a real application, you would fetch customer details from an API
+            // For this example, we'll use mock data
+            const customerData = {
+              1: {
+                name: "John Doe",
+                email: "john.doe@example.com",
+                phone: "+1 (555) 123-4567",
+                joinDate: "January 15, 2023",
+                orders: 12,
+                totalSpent: "$847.50",
+                status: "Active",
+                lastOrder: "February 10, 2024",
+                address: "123 Main St, Anytown, USA 12345",
+              },
+              2: {
+                name: "Robert Smith",
+                email: "robert.smith@example.com",
+                phone: "+1 (555) 987-6543",
+                joinDate: "March 22, 2023",
+                orders: 3,
+                totalSpent: "$124.99",
+                status: "Blocked",
+                lastOrder: "December 5, 2023",
+                address: "456 Oak Ave, Somewhere, USA 67890",
+                blockReason: "Multiple return requests without valid reason",
+              },
+              3: {
+                name: "Emma Johnson",
+                email: "emma.johnson@example.com",
+                phone: "+1 (555) 456-7890",
+                joinDate: "February 5, 2024",
+                orders: 1,
+                totalSpent: "$49.99",
+                status: "Active",
+                lastOrder: "February 5, 2024",
+                address: "789 Pine Rd, Nowhere, USA 54321",
+              },
+            };
+
+            const customer = customerData[customerId];
+            if (!customer) return;
+
+            const content = document.getElementById("customer-details-content");
+            content.innerHTML = `
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div class="space-y-4">
+                    <div>
+                        <h4 class="text-sm font-medium text-gray-500">Personal Information</h4>
+                        <div class="mt-2 space-y-2">
+                            <p><span class="font-medium">Name:</span> ${
+                              customer.name
+                            }</p>
+                            <p><span class="font-medium">Email:</span> ${
+                              customer.email
+                            }</p>
+                            <p><span class="font-medium">Phone:</span> ${
+                              customer.phone
+                            }</p>
+                            <p><span class="font-medium">Joined:</span> ${
+                              customer.joinDate
+                            }</p>
+                            <p><span class="font-medium">Status:</span> 
+                                <span class="px-2 py-1 text-xs rounded-full ${
+                                  customer.status === "Active"
+                                    ? "bg-green-100 text-green-700"
+                                    : "bg-red-100 text-red-700"
+                                }">
+                                    ${customer.status}
+                                </span>
+                            </p>
+                        </div>
+                    </div>
+                    <div>
+                        <h4 class="text-sm font-medium text-gray-500">Address</h4>
+                        <p class="mt-2">${customer.address}</p>
+                    </div>
+                </div>
+                <div class="space-y-4">
+                    <div>
+                        <h4 class="text-sm font-medium text-gray-500">Order Information</h4>
+                        <div class="mt-2 space-y-2">
+                            <p><span class="font-medium">Total Orders:</span> ${
+                              customer.orders
+                            }</p>
+                            <p><span class="font-medium">Total Spent:</span> ${
+                              customer.totalSpent
+                            }</p>
+                            <p><span class="font-medium">Last Order:</span> ${
+                              customer.lastOrder
+                            }</p>
+                        </div>
+                    </div>
+                    ${
+                      customer.blockReason
+                        ? `
+                    <div>
+                        <h4 class="text-sm font-medium text-gray-500">Block Reason</h4>
+                        <p class="mt-2 text-red-600">${customer.blockReason}</p>
+                    </div>
+                    `
+                        : ""
+                    }
+                </div>
+            </div>
+            <div class="mt-6 pt-6 border-t border-gray-200 flex justify-end space-x-3">
+                <button class="px-4 py-2 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50 transition">
+                    Edit Customer
+                </button>
+                ${
+                  customer.status === "Active"
+                    ? `
+                <button class="block-customer-details-btn px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition" data-customer-id="${customerId}">
+                    Block Customer
+                </button>
+                `
+                    : `
+                <button class="unblock-customer-details-btn px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition" data-customer-id="${customerId}">
+                    Unblock Customer
+                </button>
+                `
+                }
+            </div>
+        `;
+
+            // Add event listeners to buttons in the modal
+            const blockBtn = content.querySelector(
+              ".block-customer-details-btn"
+            );
+            if (blockBtn) {
+              blockBtn.addEventListener("click", function () {
+                const customerId = this.getAttribute("data-customer-id");
+                document
+                  .getElementById("customer-details-modal")
+                  .classList.add("hidden");
+                showBlockConfirmation(customerId, customer.name);
+              });
+            }
+
+            const unblockBtn = content.querySelector(
+              ".unblock-customer-details-btn"
+            );
+            if (unblockBtn) {
+              unblockBtn.addEventListener("click", function () {
+                const customerId = this.getAttribute("data-customer-id");
+                document
+                  .getElementById("customer-details-modal")
+                  .classList.add("hidden");
+                showUnblockConfirmation(customerId, customer.name);
+              });
+            }
+
+            document
+              .getElementById("customer-details-modal")
+              .classList.remove("hidden");
+          }
+
+          function showBlockConfirmation(customerId, customerName) {
+            document
+              .querySelector("#block-customer-modal .confirm-block-btn")
+              .setAttribute("data-customer-id", customerId);
+            document.querySelector(
+              "#block-customer-modal p"
+            ).textContent = `Are you sure you want to block ${customerName}? They will not be able to place orders or access their account.`;
+            document
+              .getElementById("block-customer-modal")
+              .classList.remove("hidden");
+          }
+
+          function showUnblockConfirmation(customerId, customerName) {
+            document
+              .querySelector("#unblock-customer-modal .confirm-unblock-btn")
+              .setAttribute("data-customer-id", customerId);
+            document.querySelector(
+              "#unblock-customer-modal p"
+            ).textContent = `Are you sure you want to unblock ${customerName}? They will be able to place orders and access their account again.`;
+            document
+              .getElementById("unblock-customer-modal")
+              .classList.remove("hidden");
+          }
+
+          function blockCustomer(customerId) {
+            // In a real application, you would make an API call to block the customer
+            console.log(`Blocking customer with ID: ${customerId}`);
+
+            // Update UI to reflect blocked status
+            const row = document
+              .querySelector(
+                `.block-customer-btn[data-customer-id="${customerId}"]`
+              )
+              .closest("tr");
+            row.classList.add("bg-red-50");
+
+            // Update status badge
+            const statusCell = row.querySelector("td:nth-child(6)");
+            statusCell.innerHTML =
+              '<span class="text-xs bg-red-100 text-red-700 px-2 py-1 rounded-full">Blocked</span>';
+
+            // Update action buttons
+            const actionCell = row.querySelector("td:nth-child(7)");
+            actionCell.innerHTML = `
+            <div class="flex space-x-1">
+                <button class="view-customer-btn text-blue-600 hover:text-blue-800 text-sm" data-customer-id="${customerId}">
+                    <i class="fas fa-eye"></i>
+                </button>
+                <button class="edit-customer-btn text-purple-600 hover:text-purple-800 text-sm" data-customer-id="${customerId}">
+                    <i class="fas fa-edit"></i>
+                </button>
+                <button class="unblock-customer-btn text-green-600 hover:text-green-800 text-sm" data-customer-id="${customerId}" data-status="blocked">
+                    <i class="fas fa-check"></i>
+                </button>
+            </div>
+        `;
+
+            // Add event listeners to new buttons
+            actionCell
+              .querySelector(".view-customer-btn")
+              .addEventListener("click", function () {
+                showCustomerDetails(customerId);
+              });
+
+            actionCell
+              .querySelector(".unblock-customer-btn")
+              .addEventListener("click", function () {
+                const customerName =
+                  row.querySelector(".font-semibold").textContent;
+                showUnblockConfirmation(customerId, customerName);
+              });
+
+            // Update blocked customers count
+            const blockedCountElement = document.querySelector(
+              ".grid.md\\:grid-cols-4 > div:nth-child(4) p"
+            );
+            const currentCount = parseInt(blockedCountElement.textContent);
+            blockedCountElement.textContent = currentCount + 1;
+
+            // Update active customers count
+            const activeCountElement = document.querySelector(
+              ".grid.md\\:grid-cols-4 > div:nth-child(3) p"
+            );
+            const activeCount = parseInt(activeCountElement.textContent);
+            activeCountElement.textContent = activeCount - 1;
+
+            // Close modal
+            document
+              .getElementById("block-customer-modal")
+              .classList.add("hidden");
+
+            // Show success message
+            showNotification(
+              `Customer has been blocked successfully.`,
+              "success"
+            );
+          }
+
+          function unblockCustomer(customerId) {
+            // In a real application, you would make an API call to unblock the customer
+            console.log(`Unblocking customer with ID: ${customerId}`);
+
+            // Update UI to reflect active status
+            const row = document
+              .querySelector(
+                `.unblock-customer-btn[data-customer-id="${customerId}"]`
+              )
+              .closest("tr");
+            row.classList.remove("bg-red-50");
+
+            // Update status badge
+            const statusCell = row.querySelector("td:nth-child(6)");
+            statusCell.innerHTML =
+              '<span class="text-xs bg-green-100 text-green-700 px-2 py-1 rounded-full">Active</span>';
+
+            // Update action buttons
+            const actionCell = row.querySelector("td:nth-child(7)");
+            actionCell.innerHTML = `
+            <div class="flex space-x-1">
+                <button class="view-customer-btn text-blue-600 hover:text-blue-800 text-sm" data-customer-id="${customerId}">
+                    <i class="fas fa-eye"></i>
+                </button>
+                <button class="edit-customer-btn text-purple-600 hover:text-purple-800 text-sm" data-customer-id="${customerId}">
+                    <i class="fas fa-edit"></i>
+                </button>
+                <button class="block-customer-btn text-red-600 hover:text-red-800 text-sm" data-customer-id="${customerId}" data-status="active">
+                    <i class="fas fa-ban"></i>
+                </button>
+            </div>
+        `;
+
+            // Add event listeners to new buttons
+            actionCell
+              .querySelector(".view-customer-btn")
+              .addEventListener("click", function () {
+                showCustomerDetails(customerId);
+              });
+
+            actionCell
+              .querySelector(".block-customer-btn")
+              .addEventListener("click", function () {
+                const customerName =
+                  row.querySelector(".font-semibold").textContent;
+                showBlockConfirmation(customerId, customerName);
+              });
+
+            // Update blocked customers count
+            const blockedCountElement = document.querySelector(
+              ".grid.md\\:grid-cols-4 > div:nth-child(4) p"
+            );
+            const currentCount = parseInt(blockedCountElement.textContent);
+            blockedCountElement.textContent = currentCount - 1;
+
+            // Update active customers count
+            const activeCountElement = document.querySelector(
+              ".grid.md\\:grid-cols-4 > div:nth-child(3) p"
+            );
+            const activeCount = parseInt(activeCountElement.textContent);
+            activeCountElement.textContent = activeCount + 1;
+
+            // Close modal
+            document
+              .getElementById("unblock-customer-modal")
+              .classList.add("hidden");
+
+            // Show success message
+            showNotification(
+              `Customer has been unblocked successfully.`,
+              "success"
+            );
+          }
+
+          function filterCustomers(status) {
+            const rows = document.querySelectorAll("#customers-page tbody tr");
+
+            rows.forEach((row) => {
+              if (status === "all") {
+                row.style.display = "";
+              } else if (status === "active") {
+                const statusText = row.querySelector(
+                  "td:nth-child(6) span"
+                ).textContent;
+                row.style.display = statusText === "Active" ? "" : "none";
+              } else if (status === "blocked") {
+                const statusText = row.querySelector(
+                  "td:nth-child(6) span"
+                ).textContent;
+                row.style.display = statusText === "Blocked" ? "" : "none";
+              } else if (status === "new") {
+                const joinDate = row.querySelector(
+                  "td .text-xs.text-gray-500"
+                ).textContent;
+                row.style.display = joinDate.includes("2024") ? "" : "none";
+              }
+            });
+          }
+
+          function showNotification(message, type) {
+            // Create notification element
+            const notification = document.createElement("div");
+            notification.className = `fixed top-4 right-4 p-4 rounded-lg shadow-lg z-50 ${
+              type === "success"
+                ? "bg-green-500 text-white"
+                : "bg-red-500 text-white"
+            }`;
+            notification.innerHTML = `
+            <div class="flex items-center">
+                <i class="fas ${
+                  type === "success"
+                    ? "fa-check-circle"
+                    : "fa-exclamation-circle"
+                } mr-2"></i>
+                <span>${message}</span>
+            </div>
+        `;
+
+            // Add to page
+            document.body.appendChild(notification);
+
+            // Remove after 3 seconds
+            setTimeout(() => {
+              notification.remove();
+            }, 3000);
+          }
+        </script>
+
+        <!-- Categories Page -->
+        <div id="categories-page" class="page-content hidden">
+          <div class="mb-6">
+            <h1 class="text-2xl lg:text-3xl font-bold text-gray-900 mb-2">
+              Category Management
+            </h1>
+            <p class="text-gray-600 text-sm lg:text-base">
+              Organize your products into categories.
+            </p>
+          </div>
+
+          <div class="bg-white rounded-lg shadow-sm p-4">
+            <div class="flex flex-col space-y-3 mb-4">
+              <h3 class="text-base lg:text-lg font-bold text-gray-900">
+                Product Categories
+              </h3>
+              <div
+                class="flex flex-col sm:flex-row space-y-2 sm:space-y-0 sm:space-x-3"
+              >
+                <input
+                  type="text"
+                  placeholder="Search categories..."
+                  class="px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-purple-500 flex-1"
+                />
+                <button
+                  class="bg-purple-600 text-white px-3 py-2 rounded-lg hover:bg-purple-700 transition text-sm"
+                >
+                  <i class="fas fa-plus mr-1"></i> Add Category
+                </button>
+              </div>
+            </div>
+
+            <div class="grid md:grid-cols-2 lg:grid-cols-3 gap-4">
+              <div class="border border-gray-200 rounded-lg p-4">
+                <div class="flex items-center justify-between mb-3">
+                  <h4 class="font-semibold text-sm">Gradient Cases</h4>
+                  <span
+                    class="bg-purple-100 text-purple-600 text-xs px-2 py-1 rounded"
+                    >24 Products</span
+                  >
+                </div>
+                <p class="text-xs text-gray-600 mb-4">
+                  Colorful gradient pattern phone cases
+                </p>
+                <div class="flex space-x-2">
+                  <button class="text-blue-600 hover:text-blue-800 text-xs">
+                    <i class="fas fa-edit mr-1"></i> Edit
+                  </button>
+                  <button class="text-red-600 hover:text-red-800 text-xs">
+                    <i class="fas fa-trash mr-1"></i> Delete
+                  </button>
+                </div>
+              </div>
+
+              <div class="border border-gray-200 rounded-lg p-4">
+                <div class="flex items-center justify-between mb-3">
+                  <h4 class="font-semibold text-sm">Protective Cases</h4>
+                  <span
+                    class="bg-blue-100 text-blue-600 text-xs px-2 py-1 rounded"
+                    >18 Products</span
+                  >
+                </div>
+                <p class="text-xs text-gray-600 mb-4">
+                  Military grade protection cases
+                </p>
+                <div class="flex space-x-2">
+                  <button class="text-blue-600 hover:text-blue-800 text-xs">
+                    <i class="fas fa-edit mr-1"></i> Edit
+                  </button>
+                  <button class="text-red-600 hover:text-red-800 text-xs">
+                    <i class="fas fa-trash mr-1"></i> Delete
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Reports Page -->
+        <div id="reports-page" class="page-content hidden">
+          <div class="mb-6">
+            <h1 class="text-2xl lg:text-3xl font-bold text-gray-900 mb-2">
+              Reports & Analytics
+            </h1>
+            <p class="text-gray-600 text-sm lg:text-base">
+              Detailed analytics and business reports.
+            </p>
+          </div>
+
+          <div class="grid lg:grid-cols-2 gap-4 mb-6">
+            <div class="bg-white rounded-lg shadow-sm p-4">
+              <h3 class="text-base lg:text-lg font-bold text-gray-900 mb-4">
+                Sales Report
+              </h3>
+              <div class="h-48 lg:h-64">
+                <canvas id="salesChart"></canvas>
+              </div>
+            </div>
+
+            <div class="bg-white rounded-lg shadow-sm p-4">
+              <h3 class="text-base lg:text-lg font-bold text-gray-900 mb-4">
+                Customer Analytics
+              </h3>
+              <div class="h-48 lg:h-64">
+                <canvas id="customerChart"></canvas>
+              </div>
+            </div>
+          </div>
+
+          <div class="bg-white rounded-lg shadow-sm p-4">
+            <h3 class="text-base lg:text-lg font-bold text-gray-900 mb-4">
+              Export Reports
+            </h3>
+            <div
+              class="flex flex-col sm:flex-row space-y-2 sm:space-y-0 sm:space-x-3"
+            >
+              <button
+                class="bg-green-600 text-white px-4 py-2 rounded-lg hover:bg-green-700 transition text-sm"
+              >
+                <i class="fas fa-file-excel mr-2"></i> Export to Excel
+              </button>
+              <button
+                class="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition text-sm"
+              >
+                <i class="fas fa-file-pdf mr-2"></i> Export to PDF
+              </button>
+              <button
+                class="bg-purple-600 text-white px-4 py-2 rounded-lg hover:bg-purple-700 transition text-sm"
+              >
+                <i class="fas fa-chart-bar mr-2"></i> Generate Custom Report
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Settings Page -->
+        <div id="settings-page" class="page-content hidden">
+          <div class="mb-6">
+            <h1 class="text-2xl lg:text-3xl font-bold text-gray-900 mb-2">
+              Settings
+            </h1>
+            <p class="text-gray-600 text-sm lg:text-base">
+              Configure your store settings and preferences.
+            </p>
+          </div>
+
+          <div class="grid lg:grid-cols-3 gap-6">
+            <div class="lg:col-span-2 space-y-6">
+              <!-- General Settings -->
+              <div class="bg-white rounded-lg shadow-sm p-4">
+                <h3 class="text-lg font-semibold text-gray-900 mb-4">
+                  General Settings
+                </h3>
+                <div class="space-y-4">
+                  <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-1"
+                      >Store Name</label
+                    >
+                    <input
+                      type="text"
+                      class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500"
+                      value="CaseCart"
+                    />
+                  </div>
+                  <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-1"
+                      >Store Email</label
+                    >
+                    <input
+                      type="email"
+                      class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500"
+                      value="support@casecart.com"
+                    />
+                  </div>
+                  <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-1"
+                      >Currency</label
+                    >
+                    <select
+                      class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500"
+                    >
+                      <option>USD ($)</option>
+                      <option>EUR (€)</option>
+                      <option>GBP (£)</option>
+                    </select>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Notification Settings -->
+              <div class="bg-white rounded-lg shadow-sm p-4">
+                <h3 class="text-lg font-semibold text-gray-900 mb-4">
+                  Notification Settings
+                </h3>
+                <div class="space-y-3">
+                  <div class="flex items-center justify-between">
+                    <div>
+                      <p class="text-sm font-medium text-gray-700">
+                        Email Notifications
+                      </p>
+                      <p class="text-xs text-gray-500">
+                        Receive email alerts for new orders
+                      </p>
+                    </div>
+                    <input
+                      type="checkbox"
+                      class="w-4 h-4 text-purple-600 border-gray-300 rounded focus:ring-purple-500"
+                      checked
+                    />
+                  </div>
+                  <div class="flex items-center justify-between">
+                    <div>
+                      <p class="text-sm font-medium text-gray-700">
+                        Low Stock Alerts
+                      </p>
+                      <p class="text-xs text-gray-500">
+                        Get notified when stock is low
+                      </p>
+                    </div>
+                    <input
+                      type="checkbox"
+                      class="w-4 h-4 text-purple-600 border-gray-300 rounded focus:ring-purple-500"
+                      checked
+                    />
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Save Settings -->
+            <div class="bg-white rounded-lg shadow-sm p-4 h-fit">
+              <h3 class="text-lg font-semibold text-gray-900 mb-4">
+                Save Changes
+              </h3>
+              <p class="text-sm text-gray-600 mb-4">
+                Save your configuration changes to apply them to your store.
+              </p>
+              <button
+                class="w-full bg-purple-600 text-white px-4 py-2 rounded-lg hover:bg-purple-700 transition"
+              >
+                Save Settings
+              </button>
+            </div>
+          </div>
+        </div>
+      </main>
+    </div>
+
+    <script>
+      // Sidebar Toggle for Mobile
+      const sidebarToggle = document.getElementById("sidebarToggle");
+      const sidebar = document.getElementById("sidebar");
+
+      sidebarToggle.addEventListener("click", () => {
+        sidebar.classList.toggle("-translate-x-full");
+      });
+
+      // Close sidebar when clicking outside on mobile
+      document.addEventListener("click", (event) => {
+        const isClickInsideSidebar = sidebar.contains(event.target);
+        const isClickInsideToggle = sidebarToggle.contains(event.target);
+
+        if (
+          !isClickInsideSidebar &&
+          !isClickInsideToggle &&
+          !sidebar.classList.contains("-translate-x-full")
+        ) {
+          sidebar.classList.add("-translate-x-full");
+        }
+      });
+
+      // Page Navigation System
+      document.addEventListener("DOMContentLoaded", function () {
+        const navLinks = document.querySelectorAll(".nav-link");
+        const pageContents = document.querySelectorAll(".page-content");
+        const backToProductsBtns =
+          document.querySelectorAll(".back-to-products");
+        const editProductBtns = document.querySelectorAll(".edit-product-btn");
+        const addProductBtn = document.querySelector(".add-product-btn");
+
+        // Set dashboard as active by default
+        setActivePage("dashboard");
+
+        // Add click event to all navigation links
+        navLinks.forEach((link) => {
+          link.addEventListener("click", function (e) {
+            e.preventDefault();
+            const page = this.getAttribute("data-page");
+            setActivePage(page);
+
+            // Close sidebar on mobile after navigation
+            if (window.innerWidth < 1024) {
+              sidebar.classList.add("-translate-x-full");
+            }
+          });
+        });
+
+        // Back to products buttons
+        backToProductsBtns.forEach((btn) => {
+          btn.addEventListener("click", function () {
+            setActivePage("products");
+          });
+        });
+
+        // Edit product buttons
+        editProductBtns.forEach((btn) => {
+          btn.addEventListener("click", function () {
+            const productId = this.getAttribute("data-product-id");
+            setActivePage("product-edit");
+            // Here you would typically load product data based on productId
+          });
+        });
+
+        // Add product button
+        addProductBtn.addEventListener("click", function () {
+          setActivePage("add-product");
+        });
+
+        // Form submissions
+        document.querySelectorAll("form").forEach((form) => {
+          form.addEventListener("submit", function (e) {
+            e.preventDefault();
+            const formType = this.closest(".page-content").id;
+            if (formType === "add-product-page") {
+              alert("Product created successfully!");
+              setActivePage("products");
+            } else if (formType === "product-edit-page") {
+              alert("Product updated successfully!");
+              setActivePage("products");
+            } else if (formType === "settings-page") {
+              alert("Settings saved successfully!");
+            }
+          });
+        });
+
+        function setActivePage(page) {
+          // Hide all page contents
+          pageContents.forEach((content) => {
+            content.classList.add("hidden");
+          });
+
+          // Show the selected page
+          const activePage = document.getElementById(`${page}-page`);
+          if (activePage) {
+            activePage.classList.remove("hidden");
+          }
+
+          // Update active state in navigation
+          navLinks.forEach((link) => {
+            link.classList.remove(
+              "bg-purple-50",
+              "text-purple-600",
+              "font-semibold"
+            );
+            if (link.getAttribute("data-page") === page) {
+              link.classList.add(
+                "bg-purple-50",
+                "text-purple-600",
+                "font-semibold"
+              );
+            }
+          });
+        }
+
+        // Initialize charts
+        initializeCharts();
+      });
+
+      function initializeCharts() {
+        // Revenue Chart
+        const revenueCtx = document.getElementById("revenueChart");
+        if (revenueCtx) {
+          new Chart(revenueCtx.getContext("2d"), {
+            type: "line",
+            data: {
+              labels: ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"],
+              datasets: [
+                {
+                  label: "Revenue",
+                  data: [4200, 5800, 4900, 6400, 7200, 8100, 6900],
+                  borderColor: "rgb(147, 51, 234)",
+                  backgroundColor: "rgba(147, 51, 234, 0.1)",
+                  tension: 0.4,
+                  fill: true,
+                  borderWidth: 2,
+                },
+              ],
+            },
+            options: {
+              responsive: true,
+              maintainAspectRatio: false,
+              plugins: {
+                legend: {
+                  display: false,
+                },
+              },
+              scales: {
+                y: {
+                  beginAtZero: true,
+                  ticks: {
+                    callback: function (value) {
+                      return "$" + value;
+                    },
+                  },
+                },
+              },
+            },
+          });
+        }
+
+        // Orders Chart
+        const ordersCtx = document.getElementById("ordersChart");
+        if (ordersCtx) {
+          new Chart(ordersCtx.getContext("2d"), {
+            type: "doughnut",
+            data: {
+              labels: ["Delivered", "In Transit", "Processing", "Cancelled"],
+              datasets: [
+                {
+                  data: [847, 325, 218, 57],
+                  backgroundColor: [
+                    "rgb(34, 197, 94)",
+                    "rgb(59, 130, 246)",
+                    "rgb(251, 191, 36)",
+                    "rgb(239, 68, 68)",
+                  ],
+                  borderWidth: 0,
+                },
+              ],
+            },
+            options: {
+              responsive: true,
+              maintainAspectRatio: false,
+              plugins: {
+                legend: {
+                  position: "bottom",
+                  labels: {
+                    padding: 15,
+                    usePointStyle: true,
+                    font: {
+                      size: window.innerWidth < 640 ? 10 : 12,
+                    },
+                  },
+                },
+              },
+            },
+          });
+        }
+
+        // Sales Chart for Reports
+        const salesCtx = document.getElementById("salesChart");
+        if (salesCtx) {
+          new Chart(salesCtx.getContext("2d"), {
+            type: "bar",
+            data: {
+              labels: ["Jan", "Feb", "Mar", "Apr", "May", "Jun"],
+              datasets: [
+                {
+                  label: "Sales",
+                  data: [12000, 19000, 15000, 25000, 22000, 30000],
+                  backgroundColor: "rgb(147, 51, 234)",
+                  borderWidth: 0,
+                },
+              ],
+            },
+            options: {
+              responsive: true,
+              maintainAspectRatio: false,
+              plugins: {
+                legend: {
+                  display: false,
+                },
+              },
+            },
+          });
+        }
+
+        // Customer Chart for Reports
+        const customerCtx = document.getElementById("customerChart");
+        if (customerCtx) {
+          new Chart(customerCtx.getContext("2d"), {
+            type: "line",
+            data: {
+              labels: ["Jan", "Feb", "Mar", "Apr", "May", "Jun"],
+              datasets: [
+                {
+                  label: "New Customers",
+                  data: [45, 52, 38, 65, 72, 58],
+                  borderColor: "rgb(34, 197, 94)",
+                  backgroundColor: "rgba(34, 197, 94, 0.1)",
+                  tension: 0.4,
+                  fill: true,
+                  borderWidth: 2,
+                },
+              ],
+            },
+            options: {
+              responsive: true,
+              maintainAspectRatio: false,
+              plugins: {
+                legend: {
+                  display: false,
+                },
+              },
+            },
+          });
+        }
+      }
+    </script>
+  </body>
+</html>

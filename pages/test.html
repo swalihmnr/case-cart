@@ -1,0 +1,353 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CaseCart - Refund Details</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        .modal-enter {
+            animation: modalEnter 0.3s ease-out;
+        }
+        
+        @keyframes modalEnter {
+            from {
+                opacity: 0;
+                transform: scale(0.9) translateY(-10px);
+            }
+            to {
+                opacity: 1;
+                transform: scale(1) translateY(0);
+            }
+        }
+        
+        .status-badge {
+            animation: pulse 2s infinite;
+        }
+        
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.8; }
+        }
+        
+        .progress-bar {
+            transition: width 0.5s ease-in-out;
+        }
+        
+        .refund-item:hover {
+            background-color: #f8fafc;
+            transform: translateY(-1px);
+            transition: all 0.2s ease;
+        }
+    </style>
+</head>
+<body class="bg-gray-50">
+    <!-- Example page with eye icon -->
+    <div class="max-w-4xl mx-auto py-8 px-4">
+        <div class="bg-white rounded-lg shadow-sm p-6">
+            <h1 class="text-2xl font-bold text-gray-900 mb-6">Order Details</h1>
+            
+            <!-- Example order item with eye icon -->
+            <div class="flex items-center justify-between p-4 border border-gray-200 rounded-lg">
+                <div class="flex items-center space-x-4">
+                    <img src="https://images.unsplash.com/photo-1601784551446-20c9e07cdbdb?w=100" alt="Product" class="w-16 h-16 rounded-lg">
+                    <div>
+                        <h3 class="font-semibold text-gray-900">Gradient Dream Case</h3>
+                        <p class="text-sm text-gray-500">Order #ORD-7842 • ₹124.99</p>
+                    </div>
+                </div>
+                <div class="flex items-center space-x-4">
+                    <span class="px-3 py-1 bg-yellow-100 text-yellow-800 rounded-full text-sm font-medium">Refund Requested</span>
+                    <button onclick="openRefundModal()" class="text-blue-600 hover:text-blue-700 transition-colors p-2" title="View Refund Details">
+                        <i class="fas fa-eye"></i>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Refund Details Modal -->
+    <div id="refundModal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 hidden">
+        <div class="bg-white rounded-xl shadow-2xl w-full max-w-2xl mx-4 max-h-[90vh] overflow-hidden modal-enter">
+            <!-- Header -->
+            <div class="bg-gradient-to-r from-blue-600 to-purple-600 p-6 text-white">
+                <div class="flex items-center justify-between">
+                    <div class="flex items-center space-x-3">
+                        <div class="w-10 h-10 bg-white bg-opacity-20 rounded-lg flex items-center justify-center">
+                            <i class="fas fa-receipt text-xl"></i>
+                        </div>
+                        <div>
+                            <h2 class="text-2xl font-bold">Refund Details</h2>
+                            <p class="text-blue-100 text-sm">Order #ORD-7842</p>
+                        </div>
+                    </div>
+                    <button onclick="closeRefundModal()" class="text-white hover:text-blue-200 transition-colors p-2">
+                        <i class="fas fa-times text-xl"></i>
+                    </button>
+                </div>
+            </div>
+
+            <!-- Content -->
+            <div class="p-6 overflow-y-auto max-h-[60vh]">
+                <!-- Refund Status -->
+                <div class="mb-6">
+                    <div class="flex items-center justify-between mb-4">
+                        <h3 class="font-semibold text-gray-900 text-lg">Refund Status</h3>
+                        <span class="px-3 py-1 bg-yellow-100 text-yellow-800 rounded-full text-sm font-medium status-badge">
+                            Processing
+                        </span>
+                    </div>
+                    
+                    <!-- Progress Bar -->
+                    <div class="bg-gray-200 rounded-full h-2 mb-2">
+                        <div class="bg-green-600 h-2 rounded-full progress-bar" style="width: 60%"></div>
+                    </div>
+                    <div class="flex justify-between text-xs text-gray-600">
+                        <span>Requested</span>
+                        <span>Approved</span>
+                        <span>Processed</span>
+                        <span>Completed</span>
+                    </div>
+                </div>
+
+                <!-- Refund Timeline -->
+                <div class="mb-6">
+                    <h3 class="font-semibold text-gray-900 text-lg mb-4">Refund Timeline</h3>
+                    <div class="space-y-4">
+                        <div class="flex items-start space-x-3">
+                            <div class="w-8 h-8 bg-green-100 rounded-full flex items-center justify-center flex-shrink-0">
+                                <i class="fas fa-check text-green-600 text-sm"></i>
+                            </div>
+                            <div class="flex-1">
+                                <p class="font-medium text-gray-900">Refund Request Submitted</p>
+                                <p class="text-sm text-gray-600">March 15, 2024 • 2:30 PM</p>
+                                <p class="text-sm text-gray-500 mt-1">You requested a refund for "Gradient Dream Case"</p>
+                            </div>
+                        </div>
+                        
+                        <div class="flex items-start space-x-3">
+                            <div class="w-8 h-8 bg-green-100 rounded-full flex items-center justify-center flex-shrink-0">
+                                <i class="fas fa-check text-green-600 text-sm"></i>
+                            </div>
+                            <div class="flex-1">
+                                <p class="font-medium text-gray-900">Return Received</p>
+                                <p class="text-sm text-gray-600">March 18, 2024 • 10:15 AM</p>
+                                <p class="text-sm text-gray-500 mt-1">We received your returned item at our warehouse</p>
+                            </div>
+                        </div>
+                        
+                        <div class="flex items-start space-x-3">
+                            <div class="w-8 h-8 bg-blue-100 rounded-full flex items-center justify-center flex-shrink-0">
+                                <i class="fas fa-sync-alt text-blue-600 text-sm"></i>
+                            </div>
+                            <div class="flex-1">
+                                <p class="font-medium text-gray-900">Quality Inspection</p>
+                                <p class="text-sm text-gray-600">In Progress</p>
+                                <p class="text-sm text-gray-500 mt-1">Item is being inspected for quality and condition</p>
+                                <div class="mt-2 text-xs text-blue-600">
+                                    <i class="fas fa-clock mr-1"></i> Expected completion: Today, 5:00 PM
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="flex items-start space-x-3 opacity-50">
+                            <div class="w-8 h-8 bg-gray-100 rounded-full flex items-center justify-center flex-shrink-0">
+                                <i class="fas fa-money-bill-wave text-gray-400 text-sm"></i>
+                            </div>
+                            <div class="flex-1">
+                                <p class="font-medium text-gray-900">Refund Processing</p>
+                                <p class="text-sm text-gray-600">Pending</p>
+                                <p class="text-sm text-gray-500 mt-1">Refund will be processed to your original payment method</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Refund Summary -->
+                <div class="border border-gray-200 rounded-lg p-4 mb-6">
+                    <h3 class="font-semibold text-gray-900 text-lg mb-4">Refund Summary</h3>
+                    
+                    <div class="space-y-3">
+                        <div class="flex justify-between items-center refund-item p-3 rounded-lg border border-gray-100">
+                            <div class="flex items-center space-x-3">
+                                <img src="https://images.unsplash.com/photo-1601784551446-20c9e07cdbdb?w=60" alt="Product" class="w-12 h-12 rounded-lg">
+                                <div>
+                                    <p class="font-medium text-gray-900">Gradient Dream Case</p>
+                                    <p class="text-sm text-gray-500">Quantity: 1</p>
+                                </div>
+                            </div>
+                            <div class="text-right">
+                                <p class="font-medium text-gray-900">₹124.99</p>
+                                <p class="text-sm text-green-600">Full refund</p>
+                            </div>
+                        </div>
+                        
+                        <div class="border-t pt-3 space-y-2">
+                            <div class="flex justify-between text-sm">
+                                <span class="text-gray-600">Subtotal</span>
+                                <span class="text-gray-900">₹124.99</span>
+                            </div>
+                            <div class="flex justify-between text-sm">
+                                <span class="text-gray-600">Shipping</span>
+                                <span class="text-green-600">Refunded</span>
+                            </div>
+                            <div class="flex justify-between text-sm">
+                                <span class="text-gray-600">Tax</span>
+                                <span class="text-gray-900">₹15.00</span>
+                            </div>
+                            <div class="flex justify-between text-sm font-medium">
+                                <span class="text-gray-900">Total Refund Amount</span>
+                                <span class="text-green-600">₹139.99</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Refund Method -->
+                <div class="border border-gray-200 rounded-lg p-4 mb-6">
+                    <h3 class="font-semibold text-gray-900 text-lg mb-3">Refund Method</h3>
+                    <div class="flex items-center justify-between p-3 bg-blue-50 rounded-lg">
+                        <div class="flex items-center space-x-3">
+                            <i class="fas fa-credit-card text-blue-600 text-xl"></i>
+                            <div>
+                                <p class="font-medium text-gray-900">Original Payment Method</p>
+                                <p class="text-sm text-gray-600">Visa ending in 4567</p>
+                            </div>
+                        </div>
+                        <div class="text-right">
+                            <p class="text-sm text-gray-600">Expected</p>
+                            <p class="font-medium text-gray-900">March 22, 2024</p>
+                        </div>
+                    </div>
+                    <p class="text-sm text-gray-500 mt-2">
+                        <i class="fas fa-info-circle text-blue-500 mr-1"></i>
+                        Refunds typically take 5-7 business days to appear in your account after processing
+                    </p>
+                </div>
+
+                <!-- Reason for Return -->
+                <div class="border border-gray-200 rounded-lg p-4">
+                    <h3 class="font-semibold text-gray-900 text-lg mb-3">Reason for Return</h3>
+                    <div class="bg-gray-50 rounded-lg p-3">
+                        <p class="text-gray-700">
+                            <strong>Reason:</strong> Product didn't match description<br>
+                            <strong>Details:</strong> The color was different from what was shown in the product images. The gradient pattern appeared much darker in person.
+                        </p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Footer Actions -->
+            <div class="border-t bg-gray-50 p-6">
+                <div class="flex flex-col sm:flex-row justify-between items-center space-y-3 sm:space-y-0">
+                    <div class="flex items-center space-x-2 text-sm text-gray-600">
+                        <i class="fas fa-headset text-blue-600"></i>
+                        <span>Questions? <a href="#" class="text-blue-600 hover:text-blue-700 font-medium">Contact Support</a></span>
+                    </div>
+                    <div class="flex space-x-3">
+                        <button onclick="closeRefundModal()" class="px-6 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors font-medium">
+                            Close
+                        </button>
+                        <button onclick="contactSupport()" class="px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors font-medium">
+                            Contact Support
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Sample refund data
+        const refundData = {
+            orderId: "ORD-7842",
+            status: "processing",
+            progress: 60,
+            timeline: [
+                {
+                    event: "Refund Request Submitted",
+                    date: "March 15, 2024 • 2:30 PM",
+                    description: "You requested a refund for 'Gradient Dream Case'",
+                    completed: true
+                },
+                {
+                    event: "Return Received",
+                    date: "March 18, 2024 • 10:15 AM",
+                    description: "We received your returned item at our warehouse",
+                    completed: true
+                },
+                {
+                    event: "Quality Inspection",
+                    date: "In Progress",
+                    description: "Item is being inspected for quality and condition",
+                    completed: false,
+                    expected: "Today, 5:00 PM"
+                },
+                {
+                    event: "Refund Processing",
+                    date: "Pending",
+                    description: "Refund will be processed to your original payment method",
+                    completed: false
+                }
+            ],
+            items: [
+                {
+                    name: "Gradient Dream Case",
+                    image: "https://images.unsplash.com/photo-1601784551446-20c9e07cdbdb?w=60",
+                    quantity: 1,
+                    price: 124.99,
+                    refund: "full"
+                }
+            ],
+            summary: {
+                subtotal: 124.99,
+                shipping: 0,
+                tax: 15.00,
+                total: 139.99
+            },
+            method: {
+                type: "Original Payment Method",
+                details: "Visa ending in 4567",
+                expected: "March 22, 2024"
+            },
+            reason: {
+                type: "Product didn't match description",
+                details: "The color was different from what was shown in the product images. The gradient pattern appeared much darker in person."
+            }
+        };
+
+        function openRefundModal() {
+            document.getElementById('refundModal').classList.remove('hidden');
+            document.body.style.overflow = 'hidden';
+            
+            // In a real app, you would fetch refund data and populate the modal
+            // For this example, we're using the sample data above
+        }
+
+        function closeRefundModal() {
+            document.getElementById('refundModal').classList.add('hidden');
+            document.body.style.overflow = 'auto';
+        }
+
+        function contactSupport() {
+            alert('Opening support chat...');
+            // In real implementation, open support chat or redirect to support page
+        }
+
+        // Close modal when clicking outside
+        document.getElementById('refundModal').addEventListener('click', function(e) {
+            if (e.target === this) {
+                closeRefundModal();
+            }
+        });
+
+        // Close modal with Escape key
+        document.addEventListener('keydown', function(e) {
+            if (e.key === 'Escape') {
+                closeRefundModal();
+            }
+        });
+    </script>
+</body>
+</html>

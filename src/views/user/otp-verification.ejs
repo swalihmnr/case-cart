@@ -1,0 +1,145 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>OTP Verification - CaseCart</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        
+        .fade-in {
+            animation: fadeIn 0.6s ease-out;
+        }
+        
+        .gradient-bg {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        }
+        
+        .input-focus:focus {
+            border-color: #667eea;
+            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+        }
+        
+        .btn-hover:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 20px rgba(102, 126, 234, 0.3);
+        }
+        
+        .otp-input {
+            width: 50px;
+            height: 50px;
+            text-align: center;
+            font-size: 24px;
+            font-weight: 600;
+            color: #1f2937;
+        }
+        
+        .otp-input:focus {
+            border-color: #667eea;
+            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+        }
+        
+        /* Notification styles */
+        .notification {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            padding: 16px 24px;
+            border-radius: 8px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            z-index: 1000;
+            animation: slideIn 0.3s ease-out;
+        }
+        
+        @keyframes slideIn {
+            from {
+                transform: translateX(400px);
+                opacity: 0;
+            }
+            to {
+                transform: translateX(0);
+                opacity: 1;
+            }
+        }
+        
+        .notification.success {
+            background-color: #10b981;
+            color: white;
+        }
+        
+        .notification.error {
+            background-color: #ef4444;
+            color: white;
+        }
+        
+        .notification.info {
+            background-color: #3b82f6;
+            color: white;
+        }
+        
+        .btn-disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+    </style>
+</head>
+<body class="bg-gray-50">
+    <div id="otp-verification" class="page">
+        <div class="min-h-screen flex items-center justify-center py-12 px-4 sm:px-6 lg:px-8">
+            <div class="max-w-md w-full fade-in">
+                <div class="bg-white rounded-2xl shadow-xl p-8">
+                    <div class="text-center mb-8">
+                        <div class="w-16 h-16 gradient-bg rounded-full flex items-center justify-center mx-auto mb-4">
+                            <i class="fas fa-shield-alt text-white text-2xl"></i>
+                        </div>
+                        <h2 class="text-3xl font-bold text-gray-800">Enter OTP</h2>
+                        <p class="text-gray-600 mt-2">We've sent a 6-digit code to your email</p>
+                        <p class="text-sm text-gray-500 mt-1" id="user-email">user@example.com</p>
+                    </div>
+
+                    <form onsubmit="verifyOTP(event)" class="space-y-6">
+                        <div class="flex justify-center gap-3">
+                            <input type="text" maxlength="1" class="otp-input input-focus border-2 border-gray-300 rounded-lg focus:outline-none transition" oninput="moveToNext(this, 1)" onkeydown="handleBackspace(event, 1)" id="otp-1" pattern="[0-9]" inputmode="numeric">
+                            <input type="text" maxlength="1" class="otp-input input-focus border-2 border-gray-300 rounded-lg focus:outline-none transition" oninput="moveToNext(this, 2)" onkeydown="handleBackspace(event, 2)" id="otp-2" pattern="[0-9]" inputmode="numeric">
+                            <input type="text" maxlength="1" class="otp-input input-focus border-2 border-gray-300 rounded-lg focus:outline-none transition" oninput="moveToNext(this, 3)" onkeydown="handleBackspace(event, 3)" id="otp-3" pattern="[0-9]" inputmode="numeric">
+                            <input type="text" maxlength="1" class="otp-input input-focus border-2 border-gray-300 rounded-lg focus:outline-none transition" oninput="moveToNext(this, 4)" onkeydown="handleBackspace(event, 4)" id="otp-4" pattern="[0-9]" inputmode="numeric">
+                            <input type="text" maxlength="1" class="otp-input input-focus border-2 border-gray-300 rounded-lg focus:outline-none transition" oninput="moveToNext(this, 5)" onkeydown="handleBackspace(event, 5)" id="otp-5" pattern="[0-9]" inputmode="numeric">
+                            <input type="text" maxlength="1" class="otp-input input-focus border-2 border-gray-300 rounded-lg focus:outline-none transition" oninput="moveToNext(this, 6)" onkeydown="handleBackspace(event, 6)" id="otp-6" pattern="[0-9]" inputmode="numeric">
+                        </div>
+
+                        <div class="text-center">
+                            <p class="text-sm text-gray-600">
+                                Code expires in <span id="timer" class="font-semibold text-purple-600">02:00</span>
+                            </p>
+                        </div>
+                        <button type="submit" id="verify-btn" 
+                                class="btn-hover w-full gradient-bg text-white py-3 rounded-lg font-semibold transition duration-300"
+                                onclick="verifyOTP(event)">
+                            Verify OTP
+                        </button>
+
+                        <p class="text-center text-sm text-gray-600">
+                            Didn't receive code? 
+                            <button type="button" onclick="resendOTP()" id="resend-btn" class="text-purple-600 hover:text-purple-700 font-semibold">
+                                Resend OTP
+                            </button>
+                        </p>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <script  type="module" src="/js/api.js"></script>
+    <script type="module" src="/js/user/otpValidator.js"> </script>
+</body>
+</html>

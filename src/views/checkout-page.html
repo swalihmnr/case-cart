@@ -1,0 +1,579 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Checkout - CaseCart</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        .gradient-bg {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        }
+        .step {
+            transition: all 0.3s ease;
+        }
+        .step.active {
+            background: #667eea;
+            color: white;
+        }
+        .step.completed {
+            background: #10B981;
+            color: white;
+        }
+    </style>
+</head>
+<body class="bg-gray-50">
+    <!-- Navigation -->
+    <nav class="bg-white shadow-md">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex justify-between items-center h-16">
+                <a href="index.html" class="flex items-center space-x-2">
+                    <div class="w-10 h-10 gradient-bg rounded-lg flex items-center justify-center">
+                        <span class="text-white font-bold text-xl">CC</span>
+                    </div>
+                    <span class="text-2xl font-bold text-gray-800">CaseCart</span>
+                </a>
+                <div class="flex items-center space-x-4">
+                    <span class="text-sm text-gray-600">Secure Checkout</span>
+                    <svg class="w-6 h-6 text-green-600" fill="currentColor" viewBox="0 0 20 20">
+                        <path fill-rule="evenodd" d="M5 9V7a5 5 0 0110 0v2a2 2 0 012 2v5a2 2 0 01-2 2H5a2 2 0 01-2-2v-5a2 2 0 012-2zm8-2v2H7V7a3 3 0 016 0z" clip-rule="evenodd"/>
+                    </svg>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Progress Steps -->
+    <div class="bg-white border-b">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
+            <div class="flex items-center justify-between max-w-3xl mx-auto">
+                <div class="flex flex-col items-center flex-1">
+                    <div class="step completed w-10 h-10 rounded-full flex items-center justify-center font-semibold mb-2">
+                        <svg class="w-6 h-6" fill="currentColor" viewBox="0 0 20 20">
+                            <path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"/>
+                        </svg>
+                    </div>
+                    <span class="text-xs text-gray-600 font-medium">Cart</span>
+                </div>
+                <div class="flex-1 h-1 bg-green-500"></div>
+                <div class="flex flex-col items-center flex-1">
+                    <div class="step active w-10 h-10 rounded-full flex items-center justify-center font-semibold mb-2">2</div>
+                    <span class="text-xs text-gray-600 font-medium">Shipping</span>
+                </div>
+                <div class="flex-1 h-1 bg-gray-300"></div>
+                <div class="flex flex-col items-center flex-1">
+                    <div class="step w-10 h-10 bg-gray-300 rounded-full flex items-center justify-center font-semibold mb-2">3</div>
+                    <span class="text-xs text-gray-600 font-medium">Payment</span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Checkout Content -->
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        <div class="grid lg:grid-cols-3 gap-8">
+            <!-- Checkout Form -->
+            <div class="lg:col-span-2 space-y-6">
+                <!-- Shipping Information -->
+                <div class="bg-white rounded-lg shadow-md p-6">
+                    <div class="flex items-center justify-between mb-6">
+                        <h2 class="text-2xl font-bold text-gray-800">Shipping Information</h2>
+                        <span class="text-sm text-purple-600 font-medium cursor-pointer hover:text-purple-700">Use saved address</span>
+                    </div>
+
+                    <form class="space-y-4">
+                        <div class="grid grid-cols-2 gap-4">
+                            <div>
+                                <label class="block text-sm font-semibold text-gray-700 mb-2">First Name *</label>
+                                <input type="text" placeholder="John" class="w-full px-4 py-3 border-2 border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500">
+                            </div>
+                            <div>
+                                <label class="block text-sm font-semibold text-gray-700 mb-2">Last Name *</label>
+                                <input type="text" placeholder="Doe" class="w-full px-4 py-3 border-2 border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500">
+                            </div>
+                        </div>
+
+                        <div>
+                            <label class="block text-sm font-semibold text-gray-700 mb-2">Email Address *</label>
+                            <input type="email" placeholder="john@example.com" class="w-full px-4 py-3 border-2 border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500">
+                        </div>
+
+                        <div>
+                            <label class="block text-sm font-semibold text-gray-700 mb-2">Phone Number *</label>
+                            <input type="tel" placeholder="+1 (555) 000-0000" class="w-full px-4 py-3 border-2 border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500">
+                        </div>
+
+                        <div>
+                            <label class="block text-sm font-semibold text-gray-700 mb-2">Street Address *</label>
+                            <input type="text" placeholder="123 Main Street" class="w-full px-4 py-3 border-2 border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500">
+                        </div>
+
+                        <div>
+                            <label class="block text-sm font-semibold text-gray-700 mb-2">Apartment, suite, etc. (optional)</label>
+                            <input type="text" placeholder="Apt 4B" class="w-full px-4 py-3 border-2 border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500">
+                        </div>
+
+                        <div class="grid grid-cols-3 gap-4">
+                            <div>
+                                <label class="block text-sm font-semibold text-gray-700 mb-2">City *</label>
+                                <input type="text" placeholder="New York" class="w-full px-4 py-3 border-2 border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500">
+                            </div>
+                            <div>
+                                <label class="block text-sm font-semibold text-gray-700 mb-2">State *</label>
+                                <select class="w-full px-4 py-3 border-2 border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500">
+                                    <option>NY</option>
+                                    <option>CA</option>
+                                    <option>TX</option>
+                                    <option>FL</option>
+                                </select>
+                            </div>
+                            <div>
+                                <label class="block text-sm font-semibold text-gray-700 mb-2">ZIP Code *</label>
+                                <input type="text" placeholder="10001" class="w-full px-4 py-3 border-2 border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500">
+                            </div>
+                        </div>
+
+                        <div>
+                            <label class="flex items-center">
+                                <input type="checkbox" class="w-4 h-4 text-purple-600 border-gray-300 rounded focus:ring-purple-500">
+                                <span class="ml-2 text-sm text-gray-700">Save this address for future orders</span>
+                            </label>
+                        </div>
+                    </form>
+                </div>
+
+                <!-- Shipping Method -->
+                <div class="bg-white rounded-lg shadow-md p-6">
+                    <h2 class="text-2xl font-bold text-gray-800 mb-6">Shipping Method</h2>
+
+                    <div class="space-y-3">
+                        <label class="flex items-center justify-between p-4 border-2 border-purple-600 rounded-lg cursor-pointer bg-purple-50">
+                            <div class="flex items-center">
+                                <input type="radio" name="shipping" checked class="w-4 h-4 text-purple-600">
+                                <div class="ml-4">
+                                    <p class="font-semibold text-gray-800">Free Standard Shipping</p>
+                                    <p class="text-sm text-gray-500">5-7 Business Days</p>
+                                </div>
+                            </div>
+                            <span class="font-bold text-purple-600">FREE</span>
+                        </label>
+
+                        <label class="flex items-center justify-between p-4 border-2 border-gray-300 rounded-lg cursor-pointer hover:border-purple-400">
+                            <div class="flex items-center">
+                                <input type="radio" name="shipping" class="w-4 h-4 text-purple-600">
+                                <div class="ml-4">
+                                    <p class="font-semibold text-gray-800">Express Shipping</p>
+                                    <p class="text-sm text-gray-500">2-3 Business Days</p>
+                                </div>
+                            </div>
+                            <span class="font-bold text-gray-800">$9.99</span>
+                        </label>
+
+                        <label class="flex items-center justify-between p-4 border-2 border-gray-300 rounded-lg cursor-pointer hover:border-purple-400">
+                            <div class="flex items-center">
+                                <input type="radio" name="shipping" class="w-4 h-4 text-purple-600">
+                                <div class="ml-4">
+                                    <p class="font-semibold text-gray-800">Next Day Delivery</p>
+                                    <p class="text-sm text-gray-500">1 Business Day</p>
+                                </div>
+                            </div>
+                            <span class="font-bold text-gray-800">$19.99</span>
+                        </label>
+                    </div>
+                </div>
+
+                <!-- Payment Method -->
+                <div class="bg-white rounded-lg shadow-md p-6">
+                    <h2 class="text-2xl font-bold text-gray-800 mb-6">Payment Method</h2>
+
+                    <div class="space-y-4">
+                        <!-- Credit Card -->
+                        <div class="border-2 border-purple-600 rounded-lg p-4 bg-purple-50">
+                            <label class="flex items-center cursor-pointer">
+                                <input type="radio" name="payment" checked class="w-4 h-4 text-purple-600">
+                                <span class="ml-3 font-semibold text-gray-800">Credit / Debit Card</span>
+                            </label>
+                            <div class="mt-4 space-y-3">
+                                <div>
+                                    <label class="block text-sm font-semibold text-gray-700 mb-2">Card Number</label>
+                                    <input type="text" placeholder="1234 5678 9012 3456" maxlength="19" class="w-full px-4 py-3 border-2 border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500">
+                                </div>
+                                <div class="grid grid-cols-2 gap-4">
+                                    <div>
+                                        <label class="block text-sm font-semibold text-gray-700 mb-2">Expiry Date</label>
+                                        <input type="text" placeholder="MM / YY" class="w-full px-4 py-3 border-2 border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500">
+                                    </div>
+                                    <div>
+                                        <label class="block text-sm font-semibold text-gray-700 mb-2">CVV</label>
+                                        <input type="text" placeholder="123" maxlength="3" class="w-full px-4 py-3 border-2 border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500">
+                                    </div>
+                                </div>
+                                <div class="flex items-center space-x-3 pt-2">
+                                    <img src="https://upload.wikimedia.org/wikipedia/commons/0/04/Visa.svg" alt="Visa" class="h-8">
+                                    <img src="https://upload.wikimedia.org/wikipedia/commons/2/2a/Mastercard-logo.svg" alt="Mastercard" class="h-8">
+                                    <img src="https://upload.wikimedia.org/wikipedia/commons/f/fa/American_Express_logo_%282018%29.svg" alt="Amex" class="h-8">
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Razorpay -->
+                        <div class="border-2 border-gray-300 rounded-lg p-4 hover:border-purple-400 cursor-pointer">
+                            <label class="flex items-center justify-between cursor-pointer">
+                                <div class="flex items-center">
+                                    <input type="radio" name="payment" class="w-4 h-4 text-purple-600">
+                                    <span class="ml-3 font-semibold text-gray-800">Razorpay</span>
+                                </div>
+                                <svg viewBox="0 0 200 50" class="h-6">
+                                    <text x="0" y="35" font-family="Arial, sans-serif" font-size="30" font-weight="bold" fill="#072654">Razorpay</text>
+                                </svg>
+                            </label>
+                            <p class="text-sm text-gray-500 mt-2 ml-7">UPI, Cards, Wallets, NetBanking and more</p>
+                        </div>
+
+                        <!-- PayPal -->
+                        <div class="border-2 border-gray-300 rounded-lg p-4 hover:border-purple-400 cursor-pointer">
+                            <label class="flex items-center justify-between cursor-pointer">
+                                <div class="flex items-center">
+                                    <input type="radio" name="payment" class="w-4 h-4 text-purple-600">
+                                    <span class="ml-3 font-semibold text-gray-800">PayPal</span>
+                                </div>
+                                <svg viewBox="0 0 100 32" class="h-6">
+                                    <path fill="#003087" d="M12 4.917h6.667c3.682 0 5.898 1.965 5.898 5.236 0 3.682-2.608 6.289-6.289 6.289H16.85l-1.176 4.705H12zm3.271 8.652h1.567c1.764 0 2.941-.98 2.941-2.745 0-1.176-.785-1.862-2.157-1.862h-1.372z"/>
+                                    <path fill="#0070BA" d="M26.154 4.917h6.667c3.682 0 5.898 1.965 5.898 5.236 0 3.682-2.608 6.289-6.289 6.289H31.01l-1.176 4.705h-3.679zm3.271 8.652h1.567c1.764 0 2.941-.98 2.941-2.745 0-1.176-.785-1.862-2.157-1.862h-1.372z"/>
+                                </svg>
+                            </label>
+                            <p class="text-sm text-gray-500 mt-2 ml-7">Pay securely with your PayPal account</p>
+                        </div>
+
+                        <!-- Cash on Delivery -->
+                        <div class="border-2 border-gray-300 rounded-lg p-4 hover:border-purple-400 cursor-pointer">
+                            <label class="flex items-center cursor-pointer">
+                                <input type="radio" name="payment" class="w-4 h-4 text-purple-600">
+                                <span class="ml-3 font-semibold text-gray-800">Cash on Delivery</span>
+                            </label>
+                            <p class="text-sm text-gray-500 mt-2 ml-7">Pay when you receive your order</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Order Summary -->
+            <div class="lg:col-span-1">
+                <div class="bg-white rounded-lg shadow-md p-6 sticky top-4">
+                    <h2 class="text-xl font-bold text-gray-800 mb-6">Order Summary</h2>
+
+                    <!-- Order Items -->
+                    <div class="space-y-4 mb-6 pb-6 border-b">
+                        <div class="flex items-center space-x-3">
+                            <div class="bg-gradient-to-br from-purple-400 to-pink-400 rounded-lg p-2 w-16 h-16 flex items-center justify-center flex-shrink-0">
+                                <svg class="w-10 h-12" viewBox="0 0 100 150" fill="none">
+                                    <rect x="10" y="10" width="80" height="130" rx="15" fill="white" opacity="0.9"/>
+                                    <rect x="15" y="20" width="70" height="110" rx="10" fill="#667eea"/>
+                                </svg>
+                            </div>
+                            <div class="flex-1">
+                                <h4 class="font-semibold text-gray-800 text-sm">Gradient Dream</h4>
+                                <p class="text-xs text-gray-500">Qty: 1</p>
+                            </div>
+                            <span class="font-semibold text-gray-800">$24.99</span>
+                        </div>
+
+                        <div class="flex items-center space-x-3">
+                            <div class="bg-gradient-to-br from-green-400 to-emerald-400 rounded-lg p-2 w-16 h-16 flex items-center justify-center flex-shrink-0">
+                                <svg class="w-10 h-12" viewBox="0 0 100 150" fill="none">
+                                    <rect x="10" y="10" width="80" height="130" rx="15" fill="white" opacity="0.9"/>
+                                    <rect x="15" y="20" width="70" height="110" rx="10" fill="#10B981"/>
+                                </svg>
+                            </div>
+                            <div class="flex-1">
+                                <h4 class="font-semibold text-gray-800 text-sm">Tropical Leaf</h4>
+                                <p class="text-xs text-gray-500">Qty: 1</p>
+                            </div>
+                            <span class="font-semibold text-gray-800">$22.99</span>
+                        </div>
+                    </div>
+
+                    <!-- Promo Code -->
+                    <div class="max-w-md mx-auto bg-white rounded-lg shadow-sm p-6">
+        <!-- Coupon Section Header -->
+        <div class="mb-4">
+            <button id="toggleCoupon" class="flex items-center justify-between w-full text-left">
+                <div class="flex items-center gap-2">
+                    <svg class="w-5 h-5 text-indigo-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 5v2m0 4v2m0 4v2M5 5a2 2 0 00-2 2v3a2 2 0 110 4v3a2 2 0 002 2h14a2 2 0 002-2v-3a2 2 0 110-4V7a2 2 0 00-2-2H5z"></path>
+                    </svg>
+                    <span class="text-sm font-medium text-gray-700">Have a coupon code?</span>
+                </div>
+                <svg id="chevron" class="w-5 h-5 text-gray-400 transition-transform duration-200" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
+                </svg>
+            </button>
+        </div>
+
+        <!-- Coupon Input (Initially Hidden) -->
+        <div id="couponForm" class="hidden mb-4">
+            <div class="slide-down">
+                <div class="flex gap-2 mb-3">
+                    <input 
+                        type="text" 
+                        id="couponInput"
+                        placeholder="Enter coupon code"
+                        class="flex-1 px-4 py-2.5 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-indigo-500 focus:border-transparent outline-none transition-all"
+                    >
+                    <button 
+                        id="applyBtn"
+                        class="px-6 py-2.5 bg-indigo-600 text-white text-sm font-medium rounded-lg hover:bg-indigo-700 transition-colors duration-200"
+                    >
+                        Apply
+                    </button>
+                </div>
+                
+                <!-- Available Coupons List -->
+                <div class="space-y-2">
+                    <p class="text-xs font-medium text-gray-500 uppercase tracking-wide mb-2">Available Coupons</p>
+                    
+                    <div class="border border-dashed border-indigo-200 rounded-lg p-3 hover:border-indigo-400 hover:bg-indigo-50 transition-all cursor-pointer group" onclick="applyCoupon('SAVE10', '10% off')">
+                        <div class="flex items-center justify-between">
+                            <div class="flex-1">
+                                <div class="flex items-center gap-2 mb-1">
+                                    <span class="text-sm font-bold text-indigo-600 font-mono">SAVE10</span>
+                                    <span class="text-xs bg-green-100 text-green-700 px-2 py-0.5 rounded-full">Active</span>
+                                </div>
+                                <p class="text-xs text-gray-600">Get 10% off on your order</p>
+                            </div>
+                            <button class="text-xs text-indigo-600 font-medium group-hover:underline">Apply</button>
+                        </div>
+                    </div>
+
+                    <div class="border border-dashed border-indigo-200 rounded-lg p-3 hover:border-indigo-400 hover:bg-indigo-50 transition-all cursor-pointer group" onclick="applyCoupon('FREESHIP', 'Free shipping')">
+                        <div class="flex items-center justify-between">
+                            <div class="flex-1">
+                                <div class="flex items-center gap-2 mb-1">
+                                    <span class="text-sm font-bold text-indigo-600 font-mono">FREESHIP</span>
+                                    <span class="text-xs bg-green-100 text-green-700 px-2 py-0.5 rounded-full">Active</span>
+                                </div>
+                                <p class="text-xs text-gray-600">Free standard shipping on orders</p>
+                            </div>
+                            <button class="text-xs text-indigo-600 font-medium group-hover:underline">Apply</button>
+                        </div>
+                    </div>
+
+                    <div class="border border-dashed border-indigo-200 rounded-lg p-3 hover:border-indigo-400 hover:bg-indigo-50 transition-all cursor-pointer group" onclick="applyCoupon('WELCOME20', '20% off')">
+                        <div class="flex items-center justify-between">
+                            <div class="flex-1">
+                                <div class="flex items-center gap-2 mb-1">
+                                    <span class="text-sm font-bold text-indigo-600 font-mono">WELCOME20</span>
+                                    <span class="text-xs bg-green-100 text-green-700 px-2 py-0.5 rounded-full">Active</span>
+                                </div>
+                                <p class="text-xs text-gray-600">20% off for new customers</p>
+                            </div>
+                            <button class="text-xs text-indigo-600 font-medium group-hover:underline">Apply</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Applied Coupon Display -->
+        <div id="appliedCoupon" class="hidden mb-4">
+            <div class="bg-green-50 border border-green-200 rounded-lg p-3 flex items-center justify-between slide-down">
+                <div class="flex items-center gap-2">
+                    <svg class="w-5 h-5 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                    </svg>
+                    <div>
+                        <p class="text-sm font-medium text-green-800" id="appliedCode"></p>
+                        <p class="text-xs text-green-600" id="appliedDescription"></p>
+                    </div>
+                </div>
+                <button onclick="removeCoupon()" class="text-red-600 hover:text-red-700 transition-colors">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                    </svg>
+                </button>
+            </div>
+        </div>
+
+        <!-- Error Message -->
+        <div id="errorMessage" class="hidden mb-4">
+            <div class="bg-red-50 border border-red-200 rounded-lg p-3 flex items-start gap-2 slide-down">
+                <svg class="w-5 h-5 text-red-600 flex-shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                </svg>
+                <p class="text-sm text-red-800" id="errorText"></p>
+            </div>
+        </div>
+    </div>
+
+                    <!-- Price Breakdown -->
+                    <div class="space-y-3 mb-6">
+                        <div class="flex justify-between text-gray-600">
+                            <span>Subtotal</span>
+                            <span>$47.98</span>
+                        </div>
+                        <div class="flex justify-between text-gray-600">
+                            <span>Shipping</span>
+                            <span class="text-green-600 font-semibold">Free</span>
+                        </div>
+                        <div class="flex justify-between text-gray-600">
+                            <span>Tax</span>
+                            <span>$3.84</span>
+                        </div>
+                        <div class="border-t pt-3">
+                            <div class="flex justify-between items-center">
+                                <span class="text-lg font-bold text-gray-800">Total</span>
+                                <span class="text-2xl font-bold text-purple-600">$51.82</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Place Order Button -->
+                    <button onclick="placeOrder()" class="w-full gradient-bg text-white py-4 rounded-lg font-semibold hover:opacity-90 transition mb-4">
+                        Place Order
+                    </button>
+
+                    <div class="text-center text-xs text-gray-500">
+                        <p>By placing your order, you agree to our</p>
+                        <p><a href="#" class="text-purple-600 hover:underline">Terms & Conditions</a> and <a href="#" class="text-purple-600 hover:underline">Privacy Policy</a></p>
+                    </div>
+
+                    <!-- Security Badges -->
+                    <div class="mt-6 pt-6 border-t">
+                        <div class="flex items-center justify-center space-x-4 text-sm text-gray-600">
+                            <div class="flex items-center space-x-1">
+                                <svg class="w-5 h-5 text-green-600" fill="currentColor" viewBox="0 0 20 20">
+                                    <path fill-rule="evenodd" d="M5 9V7a5 5 0 0110 0v2a2 2 0 012 2v5a2 2 0 01-2 2H5a2 2 0 01-2-2v-5a2 2 0 012-2zm8-2v2H7V7a3 3 0 016 0z" clip-rule="evenodd"/>
+                                </svg>
+                                <span class="text-xs">Secure</span>
+                            </div>
+                            <div class="flex items-center space-x-1">
+                                <svg class="w-5 h-5 text-green-600" fill="currentColor" viewBox="0 0 20 20">
+                                    <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"/>
+                                </svg>
+                                <span class="text-xs">SSL Encrypted</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        function placeOrder() {
+            // Get selected payment method
+            const paymentMethod = document.querySelector('input[name="payment"]:checked');
+            
+            if (!paymentMethod) {
+                alert('Please select a payment method');
+                return;
+            }
+
+            // Mock payment processing
+            const paymentType = paymentMethod.parentElement.textContent.trim();
+            
+            if (paymentType.includes('Razorpay')) {
+                alert('Redirecting to Razorpay payment gateway...');
+                // In real implementation: window.location.href = 'razorpay-integration-url';
+            } else if (paymentType.includes('PayPal')) {
+                alert('Redirecting to PayPal...');
+                // In real implementation: window.location.href = 'paypal-integration-url';
+            } else if (paymentType.includes('Cash on Delivery')) {
+                alert('Order placed successfully! You will pay on delivery.');
+                window.location.href = 'order-confirmation.html';
+            } else {
+                // Credit card processing
+                alert('Processing payment...');
+                setTimeout(() => {
+                    window.location.href = 'order-confirmation.html';
+                }, 1500);
+            }
+        }
+
+        // coupen listing 
+        const toggleBtn = document.getElementById('toggleCoupon');
+        const couponForm = document.getElementById('couponForm');
+        const chevron = document.getElementById('chevron');
+        const applyBtn = document.getElementById('applyBtn');
+        const couponInput = document.getElementById('couponInput');
+        const appliedCoupon = document.getElementById('appliedCoupon');
+        const errorMessage = document.getElementById('errorMessage');
+
+        let isExpanded = false;
+        let activeCoupon = null;
+
+        toggleBtn.addEventListener('click', () => {
+            isExpanded = !isExpanded;
+            if (isExpanded) {
+                couponForm.classList.remove('hidden');
+                chevron.style.transform = 'rotate(180deg)';
+            } else {
+                couponForm.classList.add('hidden');
+                chevron.style.transform = 'rotate(0deg)';
+            }
+        });
+
+        applyBtn.addEventListener('click', () => {
+            const code = couponInput.value.trim().toUpperCase();
+            if (code) {
+                validateAndApplyCoupon(code);
+            }
+        });
+
+        couponInput.addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') {
+                const code = couponInput.value.trim().toUpperCase();
+                if (code) {
+                    validateAndApplyCoupon(code);
+                }
+            }
+        });
+
+        function validateAndApplyCoupon(code) {
+            const validCoupons = {
+                'SAVE10': '10% off on your order',
+                'FREESHIP': 'Free standard shipping',
+                'WELCOME20': '20% off for new customers'
+            };
+
+            if (validCoupons[code]) {
+                applyCoupon(code, validCoupons[code]);
+            } else {
+                showError('Invalid coupon code. Please try again.');
+            }
+        }
+
+        function applyCoupon(code, description) {
+            activeCoupon = { code, description };
+            document.getElementById('appliedCode').textContent = code + ' applied';
+            document.getElementById('appliedDescription').textContent = description;
+            appliedCoupon.classList.remove('hidden');
+            couponForm.classList.add('hidden');
+            errorMessage.classList.add('hidden');
+            couponInput.value = '';
+            chevron.style.transform = 'rotate(0deg)';
+            isExpanded = false;
+        }
+
+        function removeCoupon() {
+            activeCoupon = null;
+            appliedCoupon.classList.add('hidden');
+            errorMessage.classList.add('hidden');
+        }
+
+        function showError(message) {
+            document.getElementById('errorText').textContent = message;
+            errorMessage.classList.remove('hidden');
+            appliedCoupon.classList.add('hidden');
+            setTimeout(() => {
+                errorMessage.classList.add('hidden');
+            }, 4000);
+        }
+    </script>
+</body>
+</html>
+
+    
+    
+
+  

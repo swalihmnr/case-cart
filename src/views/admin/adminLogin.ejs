@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CaseCart - Authentication System</title>
+    <script src="https://accounts.google.com/gsi/client" async defer></script>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        .page {
+            display: none;
+        }
+        .page.active {
+            display: block;
+        }
+        .fade-in {
+            animation: fadeIn 0.5s ease-in-out;
+        }
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+    </style>
+</head>
+<body class="bg-gray-50 min-h-screen">
+    <!-- Admin Login Page -->
+    <div id="admin-login" class="page active">
+        <div class="min-h-screen flex items-center justify-center py-12 px-4 sm:px-6 lg:px-8 bg-gray-900">
+            <div class="max-w-md w-full fade-in">
+                <div class="bg-gray-800 rounded-2xl shadow-2xl p-8 border border-gray-700">
+                    <div class="text-center mb-8">
+                        <div class="w-16 h-16 bg-gradient-to-br from-red-500 to-orange-500 rounded-full flex items-center justify-center mx-auto mb-4">
+                            <i class="fas fa-user-shield text-white text-2xl"></i>
+                        </div>
+                        <h2 class="text-3xl font-bold text-white">Admin Portal</h2>
+                        <p class="text-gray-400 mt-2">Secure access for administrators</p>
+                   </div>
+
+                    <form  class="space-y-6" novalidate>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-300 mb-2">Admin Email</label>
+                            <div class="relative">
+                                <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                                    <i class="fas fa-envelope text-gray-500"></i>
+                                </div>
+                                <input type="email" id="admin-email" required class="block w-full pl-10 pr-3 py-3 bg-gray-700 border border-gray-600 rounded-lg focus:outline-none focus:border-orange-500 transition text-white placeholder-gray-400" placeholder="admin@casecart.com">
+                            </div>
+                             <p id="emailErr" class="text-red-500"></p>
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-300 mb-2">Password</label>
+                            <div class="relative">
+                                <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                                    <i class="fas fa-lock text-gray-500"></i>
+                                </div>
+                                <input type="password" id="admin-password" required class="block w-full pl-10 pr-10 py-3 bg-gray-700 border border-gray-600 rounded-lg focus:outline-none focus:border-orange-500 transition text-white placeholder-gray-400" placeholder="••••••••">
+                                <button type="button" onclick="togglePassword('admin-password')" class="absolute inset-y-0 right-0 pr-3 flex items-center">
+                                    <i id="admin-password-icon" class="fas fa-eye text-gray-500 hover:text-gray-300"></i>
+                                </button>
+                            </div>
+                             <p id="passErr" class="text-red-500"></p>
+                        </div>
+                        <button type="submit" class="w-full bg-gradient-to-r from-red-500 to-orange-500 text-white py-3 rounded-lg font-semibold hover:from-red-600 hover:to-orange-600 transition duration-300 transform hover:scale-105">
+                            Sign In as Admin
+                        </button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Admin Forgot Password Page -->
+    
+    
+    <!-- User Login Page -->
+    
+
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <script type="module" src="/js/admin/login.js"></script>
+ 
+
+</body>
+</html>

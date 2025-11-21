@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Add Category - CaseCart Admin</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body class="bg-gray-50">
+    <!-- Admin Header -->
+    <header class="bg-white shadow-sm sticky top-0 z-50">
+        <div class="px-4 py-3">
+            <div class="flex items-center justify-between">
+                <div class="flex items-center space-x-3">
+                    <button id="sidebarToggle" class="lg:hidden text-gray-600 p-1">
+                        <i class="fas fa-bars text-xl"></i>
+                    </button>
+                    <div class="flex items-center space-x-2">
+                        <div class="w-8 h-8 bg-gradient-to-br from-purple-600 to-pink-600 rounded-lg flex items-center justify-center">
+                            <i class="fas fa-mobile-alt text-white text-sm"></i>
+                        </div>
+                        <div>
+                            <span class="text-lg font-bold bg-gradient-to-r from-purple-600 to-pink-600 bg-clip-text text-transparent">CaseCart</span>
+                            <span class="block text-xs text-gray-500">Admin Panel</span>
+                        </div>
+                    </div>
+                </div>
+                <div class="flex items-center space-x-3">
+                    <button class="relative text-gray-600 hover:text-purple-600 transition p-1">
+                        <i class="fas fa-bell text-lg"></i>
+                        <span class="absolute -top-1 -right-1 bg-red-500 text-white text-xs rounded-full w-4 h-4 flex items-center justify-center">5</span>
+                    </button>
+                    <div class="flex items-center space-x-2">
+                        <div class="w-8 h-8 bg-purple-600 rounded-full flex items-center justify-center text-white font-semibold text-sm">
+                            AD
+                        </div>
+                        <div class="hidden sm:block">
+                            <p class="font-semibold text-gray-900 text-sm">Admin User</p>
+                            <p class="text-xs text-gray-500">admin@casecart.com</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </header>

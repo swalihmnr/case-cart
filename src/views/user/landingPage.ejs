@@ -1,0 +1,398 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CaseCart - Premium Phone Cases for All Brands</title>
+    <meta name="description" content="Shop premium phone cases for iPhone, Samsung, OnePlus, Xiaomi and more. Free shipping on orders over $50. 30-day returns guaranteed.">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+        .fade-in-up {
+            animation: fadeInUp 0.8s ease-out forwards;
+        }
+        .gradient-bg {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        }
+        .product-card {
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+        .product-card:hover {
+            transform: translateY(-8px);
+            box-shadow: 0 20px 40px rgba(0,0,0,0.15);
+        }
+        .category-card {
+            transition: all 0.3s ease;
+        }
+        .category-card:hover {
+            transform: scale(1.05);
+        }
+        .nav-link {
+            position: relative;
+            transition: color 0.3s ease;
+        }
+        .nav-link::after {
+            content: '';
+            position: absolute;
+            width: 0;
+            height: 2px;
+            bottom: -4px;
+            left: 0;
+            background-color: #667eea;
+            transition: width 0.3s ease;
+        }
+        .nav-link:hover::after {
+            width: 100%;
+        }
+        .product-image {
+            height: 250px;
+            object-fit: cover;
+            background-color: #f8fafc;
+        }
+        .brand-logo {
+            height: 60px;
+            width: 60px;
+            object-fit: contain;
+            margin: 0 auto 16px;
+        }
+    </style>
+</head>
+<body class="bg-gray-50">
+    <!-- Navigation -->
+    <nav class="bg-white shadow-md sticky top-0 z-50">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex justify-between items-center h-16">
+                <!-- Logo -->
+                <div class="flex items-center">
+                    <a href="#" class="flex items-center space-x-2">
+                        <div class="w-10 h-10 gradient-bg rounded-lg flex items-center justify-center">
+                            <span class="text-white font-bold text-xl">CC</span>
+                        </div>
+                        <span class="text-2xl font-bold text-gray-800">CaseCart</span>
+                    </a>
+                </div>
+
+                <!-- Desktop Navigation -->
+                <div class="hidden md:flex items-center space-x-8">
+                    <a href="#" class="nav-link text-gray-700 hover:text-purple-600 font-medium">Home</a>
+                    <a href="#products" class="nav-link text-gray-700 hover:text-purple-600 font-medium">Products</a>
+                    <a href="#categories" class="nav-link text-gray-700 hover:text-purple-600 font-medium">Categories</a>
+                    <a href="#brands" class="nav-link text-gray-700 hover:text-purple-600 font-medium">Brands</a>
+                </div>
+
+                <!-- Right Side Icons -->
+                <div class="flex items-center space-x-4">
+                    <!-- <button class="text-gray-700 hover:text-purple-600 transition">
+                        <i class="fas fa-search"></i>
+                    </button> -->
+                    <!--  -->
+                    <a href="/login" class="hidden md:block bg-purple-600 text-white px-6 py-2 rounded-lg hover:bg-purple-700 transition font-medium">Login</a>
+                    
+                    <!-- Mobile Menu Button -->
+                    <button class="md:hidden text-gray-700" onclick="toggleMobileMenu()">
+                        <i class="fas fa-bars"></i>
+                    </button>
+                </div>
+            </div>
+
+            <!-- Mobile Menu -->
+            <div id="mobileMenu" class="hidden md:hidden pb-4">
+                <a href="#" class="block py-2 text-gray-700 hover:text-purple-600">Home</a>
+                <a href="#products" class="block py-2 text-gray-700 hover:text-purple-600">Products</a>
+                <a href="#categories" class="block py-2 text-gray-700 hover:text-purple-600">Categories</a>
+                <a href="#brands" class="block py-2 text-gray-700 hover:text-purple-600">Brands</a>
+                <a href="#" class="block py-2 text-purple-600 font-medium">Login</a>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Hero Section -->
+    <!-- Hero Section -->
+    <section class="relative overflow-hidden bg-[linear-gradient(90deg,#7B36C0_0%,#18020E_100%)] text-white py-24 md:py-32">
+        <!-- Animated Background Elements -->
+        <div class="absolute inset-0 opacity-20">
+            <div class="absolute top-20 left-10 w-64 h-64 bg-white rounded-full blur-3xl animate-pulse"></div>
+            <div class="absolute bottom-20 right-10 w-96 h-96 bg-pink-300 rounded-full blur-3xl animate-pulse" style="animation-delay: 1s;"></div>
+        </div>
+        
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
+            <div class="grid md:grid-cols-2 gap-12 items-center">
+                <div class="fade-in-up space-y-6">
+                    <!-- Badge -->
+                    <div class="inline-flex items-center gap-2 bg-white bg-opacity-20 backdrop-blur-md px-4 py-2 rounded-full border border-white border-opacity-30">
+                        <span class="w-2 h-2 bg-green-400 rounded-full animate-pulse"></span>
+                        <span class="text-sm font-medium">New Collection 2025</span>
+                    </div>
+                    
+                    <h1 class="text-5xl md:text-7xl font-extrabold mb-6 leading-tight">
+                        Protect Your<br/>
+                        <span class="bg-clip-text text-transparent bg-gradient-to-r from-yellow-300 via-pink-300 to-white">
+                            Phone With Style
+                        </span>
+                    </h1>
+                    
+                    <p class="text-lg md:text-xl text-purple-100 leading-relaxed max-w-lg">
+                        Discover premium phone cases that combine military-grade protection with stunning designs. Express your personality, protect your investment.
+                    </p>
+                    
+                    <!-- Stats -->
+                    <div class="flex flex-wrap gap-8 py-4">
+                        <div>
+                            <div class="text-3xl md:text-4xl font-bold">650+</div>
+                            <div class="text-sm text-purple-200">Unique Designs</div>
+                        </div>
+                        <div>
+                            <div class="text-3xl md:text-4xl font-bold">50k+</div>
+                            <div class="text-sm text-purple-200">Happy Customers</div>
+                        </div>
+                        <div>
+                            <div class="text-3xl md:text-4xl font-bold">4.9★</div>
+                            <div class="text-sm text-purple-200">Average Rating</div>
+                        </div>
+                    </div>
+                    
+                    <div class="flex flex-wrap gap-4 pt-4">
+                        <a href="#products" class="group bg-white text-purple-600 px-8 py-4 rounded-xl font-bold hover:bg-yellow-300 hover:text-purple-900 transition-all shadow-xl hover:shadow-2xl hover:scale-105 inline-flex items-center gap-2">
+                            Shop Now
+                            <i class="fas fa-arrow-right group-hover:translate-x-1 transition-transform"></i>
+                        </a>
+                        <a href="#categories" class="border-2 border-white text-white px-8 py-4 rounded-xl font-bold hover:bg-white hover:text-purple-600 transition-all inline-flex items-center gap-2 backdrop-blur-sm">
+                            <i class="fas fa-th-large"></i>
+                            Explore Categories
+                        </a>
+                    </div>
+                </div>
+                
+                <div class="relative fade-in-up" style="animation-delay: 0.2s;">
+                    <!-- Floating Cards -->
+                    <div class="relative" >
+                         <img src="/img/Pasted image.png" 
+                                 alt="Premium Phone Cases" 
+                                 class="w-full h-auto rounded-2xl shadow-lg">
+                        <!-- Main Card -->
+                        
+                        
+                        <!-- Floating Badge 1 -->
+                        <div class="absolute -top-4 -left-4 bg-white rounded-2xl p-4 shadow-xl animate-bounce hidden md:block">
+                            <div class="flex items-center gap-3">
+                                <div class="w-12 h-12 bg-green-500 rounded-full flex items-center justify-center">
+                                    <i class="fas fa-shield-alt text-white text-xl"></i>
+                                </div>
+                                <div>
+                                    <div class="text-sm font-bold text-gray-800">Drop Tested</div>
+                                    <div class="text-xs text-gray-500">Military Grade</div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Features -->
+    <section class="py-16 bg-white">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="grid md:grid-cols-3 gap-8">
+                <div class="text-center p-6">
+                    <div class="w-16 h-16 gradient-bg rounded-full flex items-center justify-center mx-auto mb-4">
+                        <i class="fas fa-shield-alt text-white text-2xl"></i>
+                    </div>
+                    <h3 class="text-xl font-bold mb-2">Premium Protection</h3>
+                    <p class="text-gray-600">Military-grade materials that protect against drops and scratches</p>
+                </div>
+                <div class="text-center p-6">
+                    <div class="w-16 h-16 gradient-bg rounded-full flex items-center justify-center mx-auto mb-4">
+                        <i class="fas fa-palette text-white text-2xl"></i>
+                    </div>
+                    <h3 class="text-xl font-bold mb-2">Unique Designs</h3>
+                    <p class="text-gray-600">Exclusive patterns and styles you won't find anywhere else</p>
+                </div>
+                <div class="text-center p-6">
+                    <div class="w-16 h-16 gradient-bg rounded-full flex items-center justify-center mx-auto mb-4">
+                        <i class="fas fa-shipping-fast text-white text-2xl"></i>
+                    </div>
+                    <h3 class="text-xl font-bold mb-2">Fast Shipping</h3>
+                    <p class="text-gray-600">Free express delivery on orders over $50</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Categories -->
+    <section id="categories" class="py-16 bg-gray-50">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="text-center mb-12">
+                <h2 class="text-4xl font-bold text-gray-800 mb-4">Shop by Category</h2>
+                <p class="text-xl text-gray-600">Find the perfect case for your style</p>
+            </div>
+            <div class="grid grid-cols-2 md:grid-cols-4 gap-6">
+                <div class="category-card bg-gradient-to-br from-purple-500 to-pink-500 rounded-2xl p-6 text-white cursor-pointer shadow-lg">
+                    <i class="fas fa-circle text-4xl mb-4"></i>
+                    <h3 class="text-xl font-bold">Minimalist</h3>
+                    <p class="text-sm text-purple-100 mt-2">Clean & Simple</p>
+                </div>
+                <div class="category-card bg-gradient-to-br from-blue-500 to-cyan-500 rounded-2xl p-6 text-white cursor-pointer shadow-lg">
+                    <i class="fas fa-paint-brush text-4xl mb-4"></i>
+                    <h3 class="text-xl font-bold">Artistic</h3>
+                    <p class="text-sm text-blue-100 mt-2">Creative Designs</p>
+                </div>
+                <div class="category-card bg-gradient-to-br from-green-500 to-emerald-500 rounded-2xl p-6 text-white cursor-pointer shadow-lg">
+                    <i class="fas fa-leaf text-4xl mb-4"></i>
+                    <h3 class="text-xl font-bold">Nature</h3>
+                    <p class="text-sm text-green-100 mt-2">Organic Patterns</p>
+                </div>
+                <div class="category-card bg-gradient-to-br from-orange-500 to-red-500 rounded-2xl p-6 text-white cursor-pointer shadow-lg">
+                    <i class="fas fa-shapes text-4xl mb-4"></i>
+                    <h3 class="text-xl font-bold">Geometric</h3>
+                    <p class="text-sm text-orange-100 mt-2">Modern Shapes</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Brands -->
+    <section id="brands" class="py-16 bg-white">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="text-center mb-12">
+                <h2 class="text-4xl font-bold text-gray-800 mb-4">Shop by Brand</h2>
+                <p class="text-xl text-gray-600">Find cases for your specific device</p>
+            </div>
+            <div class="grid grid-cols-2 md:grid-cols-4 gap-6">
+                <div class="bg-white rounded-2xl shadow-md p-6 text-center hover-lift cursor-pointer group">
+                    <div class="w-16 h-16 md:w-20 md:h-20 mx-auto mb-4 bg-gradient-to-br from-gray-100 to-gray-200 rounded-2xl flex items-center justify-center text-3xl md:text-4xl group-hover:scale-110 transition-transform">
+                        <i class="fab fa-apple"></i>
+                    </div>
+                    <h3 class="font-bold text-lg mb-1">iPhone</h3>
+                    <p class="text-sm text-gray-500 mb-3">200+ cases</p>
+                    <span class="inline-block text-purple-600 font-medium text-sm group-hover:underline">Shop Now →</span>
+                </div>
+                
+                <div class="bg-white rounded-2xl shadow-md p-6 text-center hover-lift cursor-pointer group">
+                    <div class="w-16 h-16 md:w-20 md:h-20 mx-auto mb-4 bg-gradient-to-br from-blue-100 to-blue-200 rounded-2xl flex items-center justify-center text-3xl md:text-4xl group-hover:scale-110 transition-transform">
+                        <i class="fas fa-mobile-alt"></i>
+                    </div>
+                    <h3 class="font-bold text-lg mb-1">Samsung</h3>
+                    <p class="text-sm text-gray-500 mb-3">180+ cases</p>
+                    <span class="inline-block text-purple-600 font-medium text-sm group-hover:underline">Shop Now →</span>
+                </div>
+                
+                <div class="bg-white rounded-2xl shadow-md p-6 text-center hover-lift cursor-pointer group">
+                    <div class="w-16 h-16 md:w-20 md:h-20 mx-auto mb-4 bg-gradient-to-br from-red-100 to-red-200 rounded-2xl flex items-center justify-center text-3xl md:text-4xl group-hover:scale-110 transition-transform">
+                        <i class="fas fa-plus-circle"></i>
+                    </div>
+                    <h3 class="font-bold text-lg mb-1">OnePlus</h3>
+                    <p class="text-sm text-gray-500 mb-3">120+ cases</p>
+                    <span class="inline-block text-purple-600 font-medium text-sm group-hover:underline">Shop Now →</span>
+                </div>
+                
+                <div class="bg-white rounded-2xl shadow-md p-6 text-center hover-lift cursor-pointer group">
+                    <div class="w-16 h-16 md:w-20 md:h-20 mx-auto mb-4 bg-gradient-to-br from-orange-100 to-orange-200 rounded-2xl flex items-center justify-center text-3xl md:text-4xl group-hover:scale-110 transition-transform">
+                        <i class="fas fa-bolt"></i>
+                    </div>
+                    <h3 class="font-bold text-lg mb-1">Xiaomi</h3>
+                    <p class="text-sm text-gray-500 mb-3">150+ cases</p>
+                    <span class="inline-block text-purple-600 font-medium text-sm group-hover:underline">Shop Now →</span>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Featured Products -->
+    
+
+    <!-- Newsletter -->
+   
+
+    <!-- Footer -->
+    <footer class="bg-gray-900 text-white py-12">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="grid grid-cols-1 md:grid-cols-4 gap-8 mb-8">
+                <div>
+                    <div class="flex items-center space-x-2 mb-4">
+                        <div class="w-10 h-10 gradient-bg rounded-lg flex items-center justify-center">
+                            <span class="text-white font-bold text-xl">CC</span>
+                        </div>
+                        <span class="text-2xl font-bold">CaseCart</span>
+                    </div>
+                    <p class="text-gray-400">Premium phone cases for every style and device.</p>
+                </div>
+                <div>
+                    <h4 class="font-bold text-lg mb-4">Quick Links</h4>
+                    <ul class="space-y-2">
+                        <li><a href="#" class="text-gray-400 hover:text-white transition">About Us</a></li>
+                        <li><a href="#products" class="text-gray-400 hover:text-white transition">Shop</a></li>
+                        <li><a href="#" class="text-gray-400 hover:text-white transition">Blog</a></li>
+                        <li><a href="#" class="text-gray-400 hover:text-white transition">Contact</a></li>
+                    </ul>
+                </div>
+                <div>
+                    <h4 class="font-bold text-lg mb-4">Customer Service</h4>
+                    <ul class="space-y-2">
+                        <li><a href="#" class="text-gray-400 hover:text-white transition">Shipping Info</a></li>
+                        <li><a href="#" class="text-gray-400 hover:text-white transition">Returns</a></li>
+                        <li><a href="#" class="text-gray-400 hover:text-white transition">FAQ</a></li>
+                        <li><a href="#" class="text-gray-400 hover:text-white transition">Track Order</a></li>
+                    </ul>
+                </div>
+                <div>
+                    <h4 class="font-bold text-lg mb-4">Follow Us</h4>
+                    <div class="flex space-x-4">
+                        <a href="#" class="w-10 h-10 bg-gray-800 rounded-full flex items-center justify-center hover:bg-purple-600 transition">
+                            <i class="fab fa-facebook-f"></i>
+                        </a>
+                        <a href="#" class="w-10 h-10 bg-gray-800 rounded-full flex items-center justify-center hover:bg-purple-600 transition">
+                            <i class="fab fa-twitter"></i>
+                        </a>
+                        <a href="#" class="w-10 h-10 bg-gray-800 rounded-full flex items-center justify-center hover:bg-purple-600 transition">
+                            <i class="fab fa-instagram"></i>
+                        </a>
+                    </div>
+                </div>
+            </div>
+            <div class="border-t border-gray-800 pt-8 text-center text-gray-400">
+                <p>&copy; 2025 CaseCart. All rights reserved.</p>
+            </div>
+        </div>
+    </footer>
+
+    <script>
+        function toggleMobileMenu() {
+            const menu = document.getElementById('mobileMenu');
+            menu.classList.toggle('hidden');
+        }
+        
+        // Add to cart functionality
+        document.querySelectorAll('.product-card button').forEach(button => {
+            button.addEventListener('click', function(e) {
+                e.stopPropagation();
+                const productCard = this.closest('.product-card');
+                const productName = productCard.querySelector('h3').textContent;
+                alert(`${productName} added to cart!`);
+            });
+        });
+        
+        // Add to wishlist functionality
+        document.querySelectorAll('.fa-heart').forEach(heart => {
+            heart.addEventListener('click', function(e) {
+                e.stopPropagation();
+                const productCard = this.closest('.product-card');
+                const productName = productCard.querySelector('h3').textContent;
+                alert(`${productName} added to wishlist!`);
+            });
+        });
+    </script>
+</body>
+</html>

@@ -1,0 +1,420 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Order History - CaseCart</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body class="bg-gray-50">
+    <!-- Header -->
+    <header class="bg-white shadow-sm sticky top-0 z-50">
+        <div class="container mx-auto px-4 py-4">
+            <div class="flex items-center justify-between">
+                <div class="flex items-center space-x-2">
+                    <div class="w-10 h-10 bg-gradient-to-br from-purple-600 to-pink-600 rounded-lg flex items-center justify-center">
+                        <i class="fas fa-mobile-alt text-white text-xl"></i>
+                    </div>
+                    <span class="text-2xl font-bold bg-gradient-to-r from-purple-600 to-pink-600 bg-clip-text text-transparent">CaseCart</span>
+                </div>
+                <nav class="hidden md:flex items-center space-x-6">
+                    <a href="#" class="text-gray-600 hover:text-purple-600 transition">Home</a>
+                    <a href="#" class="text-gray-600 hover:text-purple-600 transition">Shop</a>
+                    <a href="#" class="text-purple-600 font-semibold">Orders</a>
+                    <a href="#" class="text-gray-600 hover:text-purple-600 transition">Wishlist</a>
+                    <div class="flex items-center space-x-4 ml-4">
+                        <button class="relative">
+                            <i class="fas fa-shopping-cart text-gray-600 text-xl"></i>
+                            <span class="absolute -top-2 -right-2 bg-purple-600 text-white text-xs rounded-full w-5 h-5 flex items-center justify-center">2</span>
+                        </button>
+                        <div class="flex items-center space-x-2">
+                            <div class="w-8 h-8 bg-purple-600 rounded-full flex items-center justify-center text-white font-semibold text-sm">
+                                JD
+                            </div>
+                        </div>
+                    </div>
+                </nav>
+                <button class="md:hidden text-gray-600">
+                    <i class="fas fa-bars text-2xl"></i>
+                </button>
+            </div>
+        </div>
+    </header>
+
+    <!-- Main Content -->
+    <main class="container mx-auto px-4 py-8">
+        <div class="max-w-6xl mx-auto">
+            <!-- Page Header -->
+            <div class="mb-8">
+                <h1 class="text-3xl md:text-4xl font-bold text-gray-900 mb-2">Order History</h1>
+                <p class="text-gray-600">View and manage all your orders</p>
+            </div>
+
+            <!-- Filters & Search -->
+            <div class="bg-white rounded-xl shadow-sm p-4 mb-6">
+                <div class="flex flex-col md:flex-row gap-4">
+                    <div class="flex-1 relative">
+                        <i class="fas fa-search absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400"></i>
+                        <input type="text" placeholder="Search orders by product name or order number..." 
+                               class="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500">
+                    </div>
+                    <select class="px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500">
+                        <option>All Orders</option>
+                        <option>Delivered</option>
+                        <option>In Transit</option>
+                        <option>Processing</option>
+                        <option>Cancelled</option>
+                    </select>
+                    <select class="px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500">
+                        <option>Last 6 Months</option>
+                        <option>Last 30 Days</option>
+                        <option>Last 3 Months</option>
+                        <option>This Year</option>
+                        <option>All Time</option>
+                    </select>
+                </div>
+            </div>
+
+            <!-- Orders List -->
+            <div class="space-y-4">
+                <!-- Order 1 - Delivered -->
+                <div class="bg-white rounded-xl shadow-sm overflow-hidden hover:shadow-md transition">
+                    <div class="p-4 md:p-6">
+                        <div class="flex flex-col md:flex-row md:items-center justify-between mb-4 pb-4 border-b border-gray-100">
+                            <div class="mb-3 md:mb-0">
+                                <div class="flex items-center space-x-3 mb-2">
+                                    <h3 class="font-bold text-gray-900">#ORD-2025-10487</h3>
+                                    <span class="bg-green-100 text-green-700 px-3 py-1 rounded-full text-xs font-semibold">Delivered</span>
+                                </div>
+                                <p class="text-sm text-gray-500">Placed on October 14, 2025 • Delivered on October 18, 2025</p>
+                            </div>
+                            <div class="text-right">
+                                <p class="text-2xl font-bold text-gray-900">$79.99</p>
+                                <p class="text-sm text-gray-500">3 items</p>
+                            </div>
+                        </div>
+
+                        <!-- Order Items -->
+                        <div class="space-y-3 mb-4">
+                            <div class="flex items-center space-x-4">
+                                <div class="w-16 h-16 bg-gradient-to-br from-purple-100 to-pink-100 rounded-lg flex items-center justify-center flex-shrink-0">
+                                    <div class="relative">
+                                        <div class="w-10 h-14 bg-white rounded border-2 border-gray-300"></div>
+                                        <div class="absolute inset-0 flex items-center justify-center">
+                                            <i class="fas fa-star text-purple-600 text-sm"></i>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="flex-1 min-w-0">
+                                    <h4 class="font-semibold text-gray-900 truncate">Cosmic Gradient Case</h4>
+                                    <p class="text-sm text-gray-500">iPhone 14 Pro • Purple • Qty: 2</p>
+                                </div>
+                                <div class="text-right">
+                                    <p class="font-semibold text-gray-900">$39.98</p>
+                                </div>
+                            </div>
+                            <div class="flex items-center space-x-4">
+                                <div class="w-16 h-16 bg-gradient-to-br from-blue-100 to-cyan-100 rounded-lg flex items-center justify-center flex-shrink-0">
+                                    <div class="relative">
+                                        <div class="w-10 h-14 bg-white rounded border-2 border-gray-300"></div>
+                                        <div class="absolute inset-0 flex items-center justify-center">
+                                            <i class="fas fa-shield-alt text-blue-600 text-sm"></i>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="flex-1 min-w-0">
+                                    <h4 class="font-semibold text-gray-900 truncate">Military Grade Defender</h4>
+                                    <p class="text-sm text-gray-500">iPhone 14 Pro • Black • Qty: 1</p>
+                                </div>
+                                <div class="text-right">
+                                    <p class="font-semibold text-gray-900">$34.99</p>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Action Buttons -->
+                        <div class="flex flex-wrap gap-3">
+                            <button class="flex-1 sm:flex-initial bg-purple-600 text-white px-6 py-2 rounded-lg font-semibold hover:bg-purple-700 transition flex items-center justify-center space-x-2">
+                                <i class="fas fa-download"></i>
+                                <span>Invoice</span>
+                            </button>
+                            <button class="flex-1 sm:flex-initial bg-white border-2 border-purple-600 text-purple-600 px-6 py-2 rounded-lg font-semibold hover:bg-purple-50 transition flex items-center justify-center space-x-2">
+                                <i class="fas fa-eye"></i>
+                                <span>Details</span>
+                            </button>
+                            <button class="flex-1 sm:flex-initial bg-white border border-gray-300 text-gray-700 px-6 py-2 rounded-lg font-semibold hover:bg-gray-50 transition flex items-center justify-center space-x-2">
+                                <i class="fas fa-redo"></i>
+                                <span>Buy Again</span>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Order 2 - In Transit -->
+                <div class="bg-white rounded-xl shadow-sm overflow-hidden hover:shadow-md transition">
+                    <div class="p-4 md:p-6">
+                        <div class="flex flex-col md:flex-row md:items-center justify-between mb-4 pb-4 border-b border-gray-100">
+                            <div class="mb-3 md:mb-0">
+                                <div class="flex items-center space-x-3 mb-2">
+                                    <h3 class="font-bold text-gray-900">#ORD-2025-10372</h3>
+                                    <span class="bg-blue-100 text-blue-700 px-3 py-1 rounded-full text-xs font-semibold">In Transit</span>
+                                </div>
+                                <p class="text-sm text-gray-500">Placed on October 10, 2025 • Expected delivery: October 15, 2025</p>
+                            </div>
+                            <div class="text-right">
+                                <p class="text-2xl font-bold text-gray-900">$54.99</p>
+                                <p class="text-sm text-gray-500">2 items</p>
+                            </div>
+                        </div>
+
+                        <!-- Tracking Progress -->
+                        <div class="bg-blue-50 rounded-lg p-4 mb-4">
+                            <div class="flex items-center justify-between mb-2">
+                                <span class="text-sm font-semibold text-blue-900">Order Status</span>
+                                <span class="text-sm text-blue-700">75% Complete</span>
+                            </div>
+                            <div class="w-full bg-blue-200 rounded-full h-2 mb-2">
+                                <div class="bg-blue-600 h-2 rounded-full" style="width: 75%"></div>
+                            </div>
+                            <p class="text-sm text-blue-700">Your order is out for delivery</p>
+                        </div>
+
+                        <!-- Order Items -->
+                        <div class="space-y-3 mb-4">
+                            <div class="flex items-center space-x-4">
+                                <div class="w-16 h-16 bg-gradient-to-br from-green-100 to-emerald-100 rounded-lg flex items-center justify-center flex-shrink-0">
+                                    <div class="relative">
+                                        <div class="w-10 h-14 bg-white rounded border-2 border-gray-300"></div>
+                                        <div class="absolute inset-0 flex items-center justify-center">
+                                            <i class="fas fa-leaf text-green-600 text-sm"></i>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="flex-1 min-w-0">
+                                    <h4 class="font-semibold text-gray-900 truncate">Eco-Friendly Bamboo Case</h4>
+                                    <p class="text-sm text-gray-500">iPhone 14 • Natural • Qty: 1</p>
+                                </div>
+                                <div class="text-right">
+                                    <p class="font-semibold text-gray-900">$29.99</p>
+                                </div>
+                            </div>
+                            <div class="flex items-center space-x-4">
+                                <div class="w-16 h-16 bg-gradient-to-br from-red-100 to-pink-100 rounded-lg flex items-center justify-center flex-shrink-0">
+                                    <div class="relative">
+                                        <div class="w-10 h-14 bg-white rounded border-2 border-gray-300"></div>
+                                        <div class="absolute inset-0 flex items-center justify-center">
+                                            <i class="fas fa-heart text-red-600 text-sm"></i>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="flex-1 min-w-0">
+                                    <h4 class="font-semibold text-gray-900 truncate">Love & Hearts Pattern</h4>
+                                    <p class="text-sm text-gray-500">iPhone 14 • Pink • Qty: 1</p>
+                                </div>
+                                <div class="text-right">
+                                    <p class="font-semibold text-gray-900">$24.99</p>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Action Buttons -->
+                        <div class="flex flex-wrap gap-3">
+                            <button class="flex-1 sm:flex-initial bg-purple-600 text-white px-6 py-2 rounded-lg font-semibold hover:bg-purple-700 transition flex items-center justify-center space-x-2">
+                                <i class="fas fa-truck"></i>
+                                <span>Track Order</span>
+                            </button>
+                            <button class="flex-1 sm:flex-initial bg-white border-2 border-purple-600 text-purple-600 px-6 py-2 rounded-lg font-semibold hover:bg-purple-50 transition flex items-center justify-center space-x-2">
+                                <i class="fas fa-eye"></i>
+                                <span>Details</span>
+                            </button>
+                            <button class="flex-1 sm:flex-initial bg-white border border-gray-300 text-gray-700 px-6 py-2 rounded-lg font-semibold hover:bg-gray-50 transition flex items-center justify-center space-x-2">
+                                <i class="fas fa-headset"></i>
+                                <span>Support</span>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Order 3 - Processing -->
+                <div class="bg-white rounded-xl shadow-sm overflow-hidden hover:shadow-md transition">
+                    <div class="p-4 md:p-6">
+                        <div class="flex flex-col md:flex-row md:items-center justify-between mb-4 pb-4 border-b border-gray-100">
+                            <div class="mb-3 md:mb-0">
+                                <div class="flex items-center space-x-3 mb-2">
+                                    <h3 class="font-bold text-gray-900">#ORD-2025-10125</h3>
+                                    <span class="bg-yellow-100 text-yellow-700 px-3 py-1 rounded-full text-xs font-semibold">Processing</span>
+                                </div>
+                                <p class="text-sm text-gray-500">Placed on October 13, 2025 • Expected delivery: October 17-19, 2025</p>
+                            </div>
+                            <div class="text-right">
+                                <p class="text-2xl font-bold text-gray-900">$44.98</p>
+                                <p class="text-sm text-gray-500">2 items</p>
+                            </div>
+                        </div>
+
+                        <!-- Order Items -->
+                        <div class="space-y-3 mb-4">
+                            <div class="flex items-center space-x-4">
+                                <div class="w-16 h-16 bg-gradient-to-br from-orange-100 to-amber-100 rounded-lg flex items-center justify-center flex-shrink-0">
+                                    <div class="relative">
+                                        <div class="w-10 h-14 bg-white rounded border-2 border-gray-300"></div>
+                                        <div class="absolute inset-0 flex items-center justify-center">
+                                            <i class="fas fa-fire text-orange-600 text-sm"></i>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="flex-1 min-w-0">
+                                    <h4 class="font-semibold text-gray-900 truncate">Sunset Vibes Case</h4>
+                                    <p class="text-sm text-gray-500">Samsung S23 • Orange • Qty: 2</p>
+                                </div>
+                                <div class="text-right">
+                                    <p class="font-semibold text-gray-900">$44.98</p>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Action Buttons -->
+                        <div class="flex flex-wrap gap-3">
+                            <button class="flex-1 sm:flex-initial bg-white border-2 border-purple-600 text-purple-600 px-6 py-2 rounded-lg font-semibold hover:bg-purple-50 transition flex items-center justify-center space-x-2">
+                                <i class="fas fa-eye"></i>
+                                <span>Details</span>
+                            </button>
+                            <button class="flex-1 sm:flex-initial bg-white border border-red-300 text-red-600 px-6 py-2 rounded-lg font-semibold hover:bg-red-50 transition flex items-center justify-center space-x-2">
+                                <i class="fas fa-times"></i>
+                                <span>Cancel Order</span>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Order 4 - Cancelled -->
+                <div class="bg-white rounded-xl shadow-sm overflow-hidden hover:shadow-md transition opacity-75">
+                    <div class="p-4 md:p-6">
+                        <div class="flex flex-col md:flex-row md:items-center justify-between mb-4 pb-4 border-b border-gray-100">
+                            <div class="mb-3 md:mb-0">
+                                <div class="flex items-center space-x-3 mb-2">
+                                    <h3 class="font-bold text-gray-900">#ORD-2025-09983</h3>
+                                    <span class="bg-red-100 text-red-700 px-3 py-1 rounded-full text-xs font-semibold">Cancelled</span>
+                                </div>
+                                <p class="text-sm text-gray-500">Placed on October 5, 2025 • Cancelled on October 6, 2025</p>
+                            </div>
+                            <div class="text-right">
+                                <p class="text-2xl font-bold text-gray-900 line-through">$29.99</p>
+                                <p class="text-sm text-green-600 font-semibold">Refunded</p>
+                            </div>
+                        </div>
+
+                        <!-- Order Items -->
+                        <div class="space-y-3 mb-4">
+                            <div class="flex items-center space-x-4">
+                                <div class="w-16 h-16 bg-gradient-to-br from-gray-100 to-gray-200 rounded-lg flex items-center justify-center flex-shrink-0">
+                                    <div class="relative">
+                                        <div class="w-10 h-14 bg-white rounded border-2 border-gray-300"></div>
+                                        <div class="absolute inset-0 flex items-center justify-center">
+                                            <i class="fas fa-moon text-gray-600 text-sm"></i>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="flex-1 min-w-0">
+                                    <h4 class="font-semibold text-gray-900 truncate">Midnight Black Leather</h4>
+                                    <p class="text-sm text-gray-500">iPhone 13 • Black • Qty: 1</p>
+                                </div>
+                                <div class="text-right">
+                                    <p class="font-semibold text-gray-900">$29.99</p>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="bg-red-50 border border-red-200 rounded-lg p-3 mb-4">
+                            <p class="text-sm text-red-700"><i class="fas fa-info-circle mr-2"></i>Refund processed to original payment method. Please allow 5-7 business days.</p>
+                        </div>
+
+                        <!-- Action Buttons -->
+                        <div class="flex flex-wrap gap-3">
+                            <button class="flex-1 sm:flex-initial bg-white border border-gray-300 text-gray-700 px-6 py-2 rounded-lg font-semibold hover:bg-gray-50 transition flex items-center justify-center space-x-2">
+                                <i class="fas fa-redo"></i>
+                                <span>Buy Again</span>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Pagination -->
+            <div class="mt-8 flex flex-col sm:flex-row items-center justify-between gap-4">
+                <p class="text-sm text-gray-600">Showing 1-4 of 12 orders</p>
+                <div class="flex items-center space-x-2">
+                    <button class="px-4 py-2 border border-gray-300 rounded-lg text-gray-600 hover:bg-gray-50 transition disabled:opacity-50" disabled>
+                        <i class="fas fa-chevron-left"></i>
+                    </button>
+                    <button class="px-4 py-2 bg-purple-600 text-white rounded-lg font-semibold">1</button>
+                    <button class="px-4 py-2 border border-gray-300 rounded-lg text-gray-600 hover:bg-gray-50 transition">2</button>
+                    <button class="px-4 py-2 border border-gray-300 rounded-lg text-gray-600 hover:bg-gray-50 transition">3</button>
+                    <button class="px-4 py-2 border border-gray-300 rounded-lg text-gray-600 hover:bg-gray-50 transition">
+                        <i class="fas fa-chevron-right"></i>
+                    </button>
+                </div>
+            </div>
+
+            <!-- Empty State (Hidden by default, shown when no orders) -->
+            <div class="hidden bg-white rounded-xl shadow-sm p-12 text-center">
+                <div class="w-24 h-24 bg-purple-100 rounded-full flex items-center justify-center mx-auto mb-6">
+                    <i class="fas fa-shopping-bag text-purple-600 text-4xl"></i>
+                </div>
+                <h3 class="text-2xl font-bold text-gray-900 mb-2">No Orders Yet</h3>
+                <p class="text-gray-600 mb-6">Start shopping to see your orders here</p>
+                <button class="bg-purple-600 text-white px-8 py-3 rounded-lg font-semibold hover:bg-purple-700 transition">
+                    Start Shopping
+                </button>
+            </div>
+        </div>
+    </main>
+
+    <!-- Footer -->
+    <footer class="bg-gray-900 text-gray-400 mt-16">
+        <div class="container mx-auto px-4 py-8">
+            <div class="grid md:grid-cols-4 gap-8 mb-8">
+                <div>
+                    <div class="flex items-center space-x-2 mb-4">
+                        <div class="w-8 h-8 bg-gradient-to-br from-purple-600 to-pink-600 rounded-lg flex items-center justify-center">
+                            <i class="fas fa-mobile-alt text-white"></i>
+                        </div>
+                        <span class="text-xl font-bold text-white">CaseCart</span>
+                    </div>
+                    <p class="text-sm">Premium phone cases for every style and device.</p>
+                </div>
+                <div>
+                    <h4 class="text-white font-semibold mb-3">Shop</h4>
+                    <ul class="space-y-2 text-sm">
+                        <li><a href="#" class="hover:text-white transition">All Cases</a></li>
+                        <li><a href="#" class="hover:text-white transition">iPhone Cases</a></li>
+                        <li><a href="#" class="hover:text-white transition">Samsung Cases</a></li>
+                        <li><a href="#" class="hover:text-white transition">New Arrivals</a></li>
+                    </ul>
+                </div>
+                <div>
+                    <h4 class="text-white font-semibold mb-3">Support</h4>
+                    <ul class="space-y-2 text-sm">
+                        <li><a href="#" class="hover:text-white transition">Contact Us</a></li>
+                        <li><a href="#" class="hover:text-white transition">Shipping Info</a></li>
+                        <li><a href="#" class="hover:text-white transition">Returns</a></li>
+                        <li><a href="#" class="hover:text-white transition">FAQ</a></li>
+                    </ul>
+                </div>
+                <div>
+                    <h4 class="text-white font-semibold mb-3">Legal</h4>
+                    <ul class="space-y-2 text-sm">
+                        <li><a href="#" class="hover:text-white transition">Privacy Policy</a></li>
+                        <li><a href="#" class="hover:text-white transition">Terms of Service</a></li>
+                        <li><a href="#" class="hover:text-white transition">Warranty</a></li>
+                    </ul>
+                </div>
+            </div>
+            <div class="border-t border-gray-800 pt-6 text-center text-sm">
+                <p>&copy; 2025 CaseCart. All rights reserved.</p>
+            </div>
+        </div>
+    </footer>
+</body>
+</html>

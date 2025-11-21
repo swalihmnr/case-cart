@@ -1,0 +1,722 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Reports & Analytics - CaseCart</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+<body class="bg-gray-50">
+    <div class="flex h-screen overflow-hidden">
+        <!-- Sidebar -->
+        <aside class="w-64 bg-white border-r border-gray-200 flex flex-col flex-shrink-0">
+            <div class="p-4 border-b border-gray-200">
+                <div class="flex items-center gap-3">
+                    <div class="w-10 h-10 bg-purple-600 rounded-lg flex items-center justify-center flex-shrink-0">
+                        <i class="fas fa-shopping-cart text-white text-lg"></i>
+                    </div>
+                    <div>
+                        <h1 class="font-semibold text-gray-900">CaseCart</h1>
+                        <p class="text-xs text-gray-500">Admin Panel</p>
+                    </div>
+                </div>
+            </div>
+            
+            <nav class="flex-1 p-4 overflow-y-auto">
+                <a href="#" class="flex items-center gap-3 px-3 py-2.5 text-gray-600 hover:bg-gray-50 rounded-lg mb-1 transition-colors">
+                    <i class="fas fa-chart-line w-5 text-center"></i>
+                    <span class="text-sm">Dashboard</span>
+                </a>
+                <a href="#" class="flex items-center gap-3 px-3 py-2.5 text-gray-600 hover:bg-gray-50 rounded-lg mb-1 transition-colors">
+                    <i class="fas fa-box w-5 text-center"></i>
+                    <span class="text-sm">Products</span>
+                </a>
+                <a href="#" class="flex items-center gap-3 px-3 py-2.5 text-gray-600 hover:bg-gray-50 rounded-lg mb-1 transition-colors">
+                    <i class="fas fa-shopping-bag w-5 text-center"></i>
+                    <span class="text-sm">Orders</span>
+                </a>
+                <a href="#" class="flex items-center gap-3 px-3 py-2.5 text-gray-600 hover:bg-gray-50 rounded-lg mb-1 transition-colors">
+                    <i class="fas fa-users w-5 text-center"></i>
+                    <span class="text-sm">Customers</span>
+                </a>
+                <a href="#" class="flex items-center gap-3 px-3 py-2.5 text-gray-600 hover:bg-gray-50 rounded-lg mb-1 transition-colors">
+                    <i class="fas fa-tags w-5 text-center"></i>
+                    <span class="text-sm">Categories</span>
+                </a>
+                <a href="#" class="flex items-center gap-3 px-3 py-2.5 text-gray-600 hover:bg-gray-50 rounded-lg mb-1 transition-colors">
+                    <i class="fas fa-ticket-alt w-5 text-center"></i>
+                    <span class="text-sm">Coupons</span>
+                </a>
+                <a href="#" class="flex items-center gap-3 px-3 py-2.5 text-gray-600 hover:bg-gray-50 rounded-lg mb-1 transition-colors">
+                    <i class="fas fa-percent w-5 text-center"></i>
+                    <span class="text-sm">Offers</span>
+                </a>
+                <a href="#" class="flex items-center gap-3 px-3 py-2.5 bg-purple-50 text-purple-600 rounded-lg mb-1">
+                    <i class="fas fa-chart-bar w-5 text-center"></i>
+                    <span class="text-sm font-medium">Reports</span>
+                </a>
+                <a href="#" class="flex items-center gap-3 px-3 py-2.5 text-gray-600 hover:bg-gray-50 rounded-lg mb-1 transition-colors">
+                    <i class="fas fa-cog w-5 text-center"></i>
+                    <span class="text-sm">Settings</span>
+                </a>
+            </nav>
+            
+            <div class="p-4 border-t border-gray-200">
+                <a href="#" class="flex items-center gap-3 px-3 py-2.5 text-red-600 hover:bg-red-50 rounded-lg transition-colors">
+                    <i class="fas fa-sign-out-alt w-5 text-center"></i>
+                    <span class="text-sm">Logout</span>
+                </a>
+            </div>
+        </aside>
+
+        <!-- Main Content -->
+        <main class="flex-1 overflow-auto">
+            <!-- Header -->
+            <header class="bg-white border-b border-gray-200 px-8 py-4 sticky top-0 z-10">
+                <div class="flex items-center justify-between">
+                    <div>
+                        <h2 class="text-2xl font-semibold text-gray-900">Reports & Analytics</h2>
+                        <p class="text-sm text-gray-500 mt-1">Detailed analytics and business reports</p>
+                    </div>
+                    <div class="flex items-center gap-4">
+                        <button class="relative p-2 hover:bg-gray-100 rounded-lg transition-colors">
+                            <i class="fas fa-bell text-gray-400 text-lg"></i>
+                            <span class="absolute top-1 right-1 w-2 h-2 bg-red-500 rounded-full"></span>
+                        </button>
+                        <div class="flex items-center gap-3">
+                            <div class="text-right hidden sm:block">
+                                <p class="text-sm font-medium text-gray-900">Admin User</p>
+                                <p class="text-xs text-gray-500">admin@casecart.com</p>
+                            </div>
+                            <div class="w-10 h-10 bg-purple-600 rounded-full flex items-center justify-center text-white font-semibold">
+                                AU
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </header>
+
+            <!-- Content -->
+            <div class="p-6 lg:p-8">
+                <!-- Charts Row -->
+                <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
+                    <!-- Sales Report Chart -->
+                    <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
+                        <div class="flex justify-between items-center mb-6">
+                            <h3 class="text-lg font-semibold text-gray-900">Sales Report</h3>
+                            <select class="text-sm border border-gray-300 rounded-lg px-3 py-1 focus:ring-2 focus:ring-purple-500 focus:border-transparent outline-none">
+                                <option>Last 6 Months</option>
+                                <option>Last 3 Months</option>
+                                <option>Last Year</option>
+                            </select>
+                        </div>
+                        <div class="h-64">
+                            <canvas id="salesChart"></canvas>
+                        </div>
+                    </div>
+
+                    <!-- Customer Analytics Chart -->
+                    <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
+                        <div class="flex justify-between items-center mb-6">
+                            <h3 class="text-lg font-semibold text-gray-900">Customer Analytics</h3>
+                            <select class="text-sm border border-gray-300 rounded-lg px-3 py-1 focus:ring-2 focus:ring-purple-500 focus:border-transparent outline-none">
+                                <option>Last 6 Months</option>
+                                <option>Last 3 Months</option>
+                                <option>Last Year</option>
+                            </select>
+                        </div>
+                        <div class="h-64">
+                            <canvas id="customerChart"></canvas>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Sales Report Table with Filters -->
+                <div class="bg-white rounded-xl shadow-sm border border-gray-200">
+                    <!-- Header and Export Buttons -->
+                    <div class="border-b border-gray-200 p-6">
+                        <div class="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+                            <h3 class="text-lg font-semibold text-gray-900">Detailed Sales Report</h3>
+                            <div class="flex gap-2">
+                                <button class="px-4 py-2 bg-blue-600 text-white text-sm rounded-lg hover:bg-blue-700 transition-colors flex items-center gap-2">
+                                    <i class="fas fa-file-pdf"></i>
+                                    <span>Export to PDF</span>
+                                </button>
+                                <button class="px-4 py-2 bg-green-600 text-white text-sm rounded-lg hover:bg-green-700 transition-colors flex items-center gap-2">
+                                    <i class="fas fa-file-excel"></i>
+                                    <span>Excel</span>
+                                </button>
+                            </div>
+                        </div>
+
+                        <!-- Filters Grid -->
+                        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4 mt-6">
+                            <!-- Date Range -->
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-2">Date Range</label>
+                                <select class="w-full px-3 py-2 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent outline-none">
+                                    <option>Last 7 days</option>
+                                    <option>Last 30 days</option>
+                                    <option>This month</option>
+                                    <option>Last month</option>
+                                    <option>This year</option>
+                                    <option>Custom range</option>
+                                </select>
+                            </div>
+
+                            <!-- Status -->
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-2">Status</label>
+                                <select class="w-full px-3 py-2 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent outline-none">
+                                    <option>All Status</option>
+                                    <option>Completed</option>
+                                    <option>Pending</option>
+                                    <option>Cancelled</option>
+                                    <option>Refunded</option>
+                                </select>
+                            </div>
+
+                            <!-- Category -->
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-2">Category</label>
+                                <select class="w-full px-3 py-2 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent outline-none">
+                                    <option>All Categories</option>
+                                    <option>Electronics</option>
+                                    <option>Clothing</option>
+                                    <option>Home & Garden</option>
+                                    <option>Sports</option>
+                                </select>
+                            </div>
+
+                            <!-- Payment Method -->
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-2">Payment</label>
+                                <select class="w-full px-3 py-2 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent outline-none">
+                                    <option>All Methods</option>
+                                    <option>Credit Card</option>
+                                    <option>PayPal</option>
+                                    <option>Bank Transfer</option>
+                                    <option>Cash on Delivery</option>
+                                </select>
+                            </div>
+
+                            <!-- Search -->
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-2">Search</label>
+                                <div class="relative">
+                                    <input type="text" placeholder="Order ID, Customer..." 
+                                           class="w-full pl-10 pr-3 py-2 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent outline-none">
+                                    <i class="fas fa-search absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 text-sm"></i>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Quick Filter Buttons -->
+                        <div class="flex flex-wrap items-center gap-2 mt-4">
+                            <span class="text-sm text-gray-600">Quick filters:</span>
+                            <button class="px-3 py-1.5 text-xs font-medium bg-purple-100 text-purple-700 rounded-full hover:bg-purple-200 transition-colors">
+                                Today
+                            </button>
+                            <button class="px-3 py-1.5 text-xs font-medium bg-gray-100 text-gray-700 rounded-full hover:bg-gray-200 transition-colors">
+                                This Week
+                            </button>
+                            <button class="px-3 py-1.5 text-xs font-medium bg-gray-100 text-gray-700 rounded-full hover:bg-gray-200 transition-colors">
+                                High Value (&gt;$500)
+                            </button>
+                            <button class="px-3 py-1.5 text-xs font-medium bg-gray-100 text-gray-700 rounded-full hover:bg-gray-200 transition-colors">
+                                Completed Only
+                            </button>
+                            <button class="px-3 py-1.5 text-xs font-medium text-purple-600 hover:text-purple-700 ml-auto">
+                                <i class="fas fa-redo-alt mr-1"></i> Reset Filters
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Summary Cards -->
+                    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 p-6 border-b border-gray-200 bg-gray-50">
+                        <div class="bg-white p-4 rounded-lg border border-gray-200 shadow-sm">
+                            <p class="text-xs font-medium text-gray-600 mb-1">Total Sales</p>
+                            <p class="text-2xl font-bold text-gray-900">$87,450</p>
+                            <p class="text-xs text-green-600 mt-2 flex items-center gap-1">
+                                <i class="fas fa-arrow-up"></i> 
+                                <span>12.5% vs last period</span>
+                            </p>
+                        </div>
+                        <div class="bg-white p-4 rounded-lg border border-gray-200 shadow-sm">
+                            <p class="text-xs font-medium text-gray-600 mb-1">Orders</p>
+                            <p class="text-2xl font-bold text-gray-900">342</p>
+                            <p class="text-xs text-green-600 mt-2 flex items-center gap-1">
+                                <i class="fas fa-arrow-up"></i>
+                                <span>8.3% vs last period</span>
+                            </p>
+                        </div>
+                        <div class="bg-white p-4 rounded-lg border border-gray-200 shadow-sm">
+                            <p class="text-xs font-medium text-gray-600 mb-1">Avg Order Value</p>
+                            <p class="text-2xl font-bold text-gray-900">$255.70</p>
+                            <p class="text-xs text-green-600 mt-2 flex items-center gap-1">
+                                <i class="fas fa-arrow-up"></i>
+                                <span>4.2% vs last period</span>
+                            </p>
+                        </div>
+                        <div class="bg-white p-4 rounded-lg border border-gray-200 shadow-sm">
+                            <p class="text-xs font-medium text-gray-600 mb-1">Conversion Rate</p>
+                            <p class="text-2xl font-bold text-gray-900">3.8%</p>
+                            <p class="text-xs text-red-600 mt-2 flex items-center gap-1">
+                                <i class="fas fa-arrow-down"></i>
+                                <span>1.2% vs last period</span>
+                            </p>
+                        </div>
+                    </div>
+
+                    <!-- Table -->
+                    <div class="overflow-x-auto">
+                        <table class="w-full">
+                            <thead>
+                                <tr class="bg-gray-50 border-b border-gray-200">
+                                    <th class="px-6 py-3 text-left w-12">
+                                        <input type="checkbox" class="rounded border-gray-300 text-purple-600 focus:ring-purple-500">
+                                    </th>
+                                    <th class="px-6 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider whitespace-nowrap">
+                                        <div class="flex items-center gap-1">
+                                            Order ID
+                                            <i class="fas fa-sort text-gray-400 cursor-pointer hover:text-gray-600"></i>
+                                        </div>
+                                    </th>
+                                    <th class="px-6 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider whitespace-nowrap">
+                                        <div class="flex items-center gap-1">
+                                            Date
+                                            <i class="fas fa-sort text-gray-400 cursor-pointer hover:text-gray-600"></i>
+                                        </div>
+                                    </th>
+                                    <th class="px-6 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider whitespace-nowrap">
+                                        <div class="flex items-center gap-1">
+                                            Customer
+                                            <i class="fas fa-sort text-gray-400 cursor-pointer hover:text-gray-600"></i>
+                                        </div>
+                                    </th>
+                                    <th class="px-6 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider whitespace-nowrap">
+                                        <div class="flex items-center gap-1">
+                                            Products
+                                            <i class="fas fa-sort text-gray-400 cursor-pointer hover:text-gray-600"></i>
+                                        </div>
+                                    </th>
+                                    <th class="px-6 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider whitespace-nowrap">
+                                        <div class="flex items-center gap-1">
+                                            Amount
+                                            <i class="fas fa-sort text-gray-400 cursor-pointer hover:text-gray-600"></i>
+                                        </div>
+                                    </th>
+                                    <th class="px-6 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider whitespace-nowrap">
+                                        Payment
+                                    </th>
+                                    <th class="px-6 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider whitespace-nowrap">
+                                        Status
+                                    </th>
+                                    <th class="px-6 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider whitespace-nowrap">
+                                        Actions
+                                    </th>
+                                </tr>
+                            </thead>
+                            <tbody class="divide-y divide-gray-200 bg-white">
+                                <tr class="hover:bg-gray-50 transition-colors">
+                                    <td class="px-6 py-4">
+                                        <input type="checkbox" class="rounded border-gray-300 text-purple-600 focus:ring-purple-500">
+                                    </td>
+                                    <td class="px-6 py-4 whitespace-nowrap">
+                                        <span class="font-medium text-gray-900 text-sm">#ORD-2543</span>
+                                    </td>
+                                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-600">Oct 22, 2025</td>
+                                    <td class="px-6 py-4 whitespace-nowrap">
+                                        <div class="flex items-center gap-3">
+                                            <div class="w-8 h-8 bg-blue-100 rounded-full flex items-center justify-center text-blue-600 text-xs font-semibold flex-shrink-0">
+                                                JD
+                                            </div>
+                                            <div class="min-w-0">
+                                                <p class="text-sm font-medium text-gray-900 truncate">John Doe</p>
+                                                <p class="text-xs text-gray-500 truncate">john@example.com</p>
+                                            </div>
+                                        </div>
+                                    </td>
+                                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-600">3 items</td>
+                                    <td class="px-6 py-4 whitespace-nowrap text-sm font-semibold text-gray-900">$458.50</td>
+                                    <td class="px-6 py-4 whitespace-nowrap">
+                                        <span class="inline-flex items-center gap-1.5 text-xs text-gray-600">
+                                            <i class="fas fa-credit-card text-gray-400"></i>
+                                            <span>Credit Card</span>
+                                        </span>
+                                    </td>
+                                    <td class="px-6 py-4 whitespace-nowrap">
+                                        <span class="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium bg-green-100 text-green-800">
+                                            <i class="fas fa-check-circle mr-1"></i> Completed
+                                        </span>
+                                    </td>
+                                    <td class="px-6 py-4 whitespace-nowrap">
+                                        <div class="flex items-center gap-2">
+                                            <button class="text-purple-600 hover:text-purple-700 p-1 hover:bg-purple-50 rounded transition-colors">
+                                                <i class="fas fa-eye"></i>
+                                            </button>
+                                            <button class="text-gray-600 hover:text-gray-700 p-1 hover:bg-gray-50 rounded transition-colors">
+                                                <i class="fas fa-ellipsis-v"></i>
+                                            </button>
+                                        </div>
+                                    </td>
+                                </tr>
+                                <tr class="hover:bg-gray-50 transition-colors">
+                                    <td class="px-6 py-4">
+                                        <input type="checkbox" class="rounded border-gray-300 text-purple-600 focus:ring-purple-500">
+                                    </td>
+                                    <td class="px-6 py-4 whitespace-nowrap">
+                                        <span class="font-medium text-gray-900 text-sm">#ORD-2542</span>
+                                    </td>
+                                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-600">Oct 22, 2025</td>
+                                    <td class="px-6 py-4 whitespace-nowrap">
+                                        <div class="flex items-center gap-3">
+                                            <div class="w-8 h-8 bg-purple-100 rounded-full flex items-center justify-center text-purple-600 text-xs font-semibold flex-shrink-0">
+                                                SM
+                                            </div>
+                                            <div class="min-w-0">
+                                                <p class="text-sm font-medium text-gray-900 truncate">Sarah Miller</p>
+                                                <p class="text-xs text-gray-500 truncate">sarah@example.com</p>
+                                            </div>
+                                        </div>
+                                    </td>
+                                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-600">1 item</td>
+                                    <td class="px-6 py-4 whitespace-nowrap text-sm font-semibold text-gray-900">$129.99</td>
+                                    <td class="px-6 py-4 whitespace-nowrap">
+                                        <span class="inline-flex items-center gap-1.5 text-xs text-gray-600">
+                                            <i class="fab fa-paypal text-gray-400"></i>
+                                            <span>PayPal</span>
+                                        </span>
+                                    </td>
+                                    <td class="px-6 py-4 whitespace-nowrap">
+                                        <span class="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium bg-yellow-100 text-yellow-800">
+                                            <i class="fas fa-clock mr-1"></i> Pending
+                                        </span>
+                                    </td>
+                                    <td class="px-6 py-4 whitespace-nowrap">
+                                        <div class="flex items-center gap-2">
+                                            <button class="text-purple-600 hover:text-purple-700 p-1 hover:bg-purple-50 rounded transition-colors">
+                                                <i class="fas fa-eye"></i>
+                                            </button>
+                                            <button class="text-gray-600 hover:text-gray-700 p-1 hover:bg-gray-50 rounded transition-colors">
+                                                <i class="fas fa-ellipsis-v"></i>
+                                            </button>
+                                        </div>
+                                    </td>
+                                </tr>
+                                <tr class="hover:bg-gray-50 transition-colors">
+                                    <td class="px-6 py-4">
+                                        <input type="checkbox" class="rounded border-gray-300 text-purple-600 focus:ring-purple-500">
+                                    </td>
+                                    <td class="px-6 py-4 whitespace-nowrap">
+                                        <span class="font-medium text-gray-900 text-sm">#ORD-2541</span>
+                                    </td>
+                                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-600">Oct 21, 2025</td>
+                                    <td class="px-6 py-4 whitespace-nowrap">
+                                        <div class="flex items-center gap-3">
+                                            <div class="w-8 h-8 bg-green-100 rounded-full flex items-center justify-center text-green-600 text-xs font-semibold flex-shrink-0">
+                                                RJ
+                                            </div>
+                                            <div class="min-w-0">
+                                                <p class="text-sm font-medium text-gray-900 truncate">Robert Johnson</p>
+                                                <p class="text-xs text-gray-500 truncate">robert@example.com</p>
+                                            </div>
+                                        </div>
+                                    </td>
+                                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-600">5 items</td>
+                                    <td class="px-6 py-4 whitespace-nowrap text-sm font-semibold text-gray-900">$742.25</td>
+                                    <td class="px-6 py-4 whitespace-nowrap">
+                                        <span class="inline-flex items-center gap-1.5 text-xs text-gray-600">
+                                            <i class="fas fa-credit-card text-gray-400"></i>
+                                            <span>Credit Card</span>
+                                        </span>
+                                    </td>
+                                    <td class="px-6 py-4 whitespace-nowrap">
+                                        <span class="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium bg-green-100 text-green-800">
+                                            <i class="fas fa-check-circle mr-1"></i> Completed
+                                        </span>
+                                    </td>
+                                    <td class="px-6 py-4 whitespace-nowrap">
+                                        <div class="flex items-center gap-2">
+                                            <button class="text-purple-600 hover:text-purple-700 p-1 hover:bg-purple-50 rounded transition-colors">
+                                                <i class="fas fa-eye"></i>
+                                            </button>
+                                            <button class="text-gray-600 hover:text-gray-700 p-1 hover:bg-gray-50 rounded transition-colors">
+                                                <i class="fas fa-ellipsis-v"></i>
+                                            </button>
+                                        </div>
+                                    </td>
+                                </tr>
+                                <tr class="hover:bg-gray-50 transition-colors">
+                                    <td class="px-6 py-4">
+                                        <input type="checkbox" class="rounded border-gray-300 text-purple-600 focus:ring-purple-500">
+                                    </td>
+                                    <td class="px-6 py-4 whitespace-nowrap">
+                                        <span class="font-medium text-gray-900 text-sm">#ORD-2540</span>
+                                    </td>
+                                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-600">Oct 20, 2025</td>
+                                    <td class="px-6 py-4 whitespace-nowrap">
+                                        <div class="flex items-center gap-3">
+                                            <div class="w-8 h-8 bg-red-100 rounded-full flex items-center justify-center text-red-600 text-xs font-semibold flex-shrink-0">
+                                                EW
+                                            </div>
+                                            <div class="min-w-0">
+                                                <p class="text-sm font-medium text-gray-900 truncate">Emma Wilson</p>
+                                                <p class="text-xs text-gray-500 truncate">emma@example.com</p>
+                                            </div>
+                                        </div>
+                                    </td>
+                                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-600">2 items</td>
+                                    <td class="px-6 py-4 whitespace-nowrap text-sm font-semibold text-gray-900">$315.80</td>
+                                    <td class="px-6 py-4 whitespace-nowrap">
+                                        <span class="inline-flex items-center gap-1.5 text-xs text-gray-600">
+                                            <i class="fas fa-university text-gray-400"></i>
+                                            <span>Bank Transfer</span>
+                                        </span>
+                                    </td>
+                                    <td class="px-6 py-4 whitespace-nowrap">
+                                        <span class="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium bg-red-100 text-red-800">
+                                            <i class="fas fa-times-circle mr-1"></i> Cancelled
+                                        </span>
+                                    </td>
+                                    <td class="px-6 py-4 whitespace-nowrap">
+                                        <div class="flex items-center gap-2">
+                                            <button class="text-purple-600 hover:text-purple-700 p-1 hover:bg-purple-50 rounded transition-colors">
+                                                <i class="fas fa-eye"></i>
+                                            </button>
+                                            <button class="text-gray-600 hover:text-gray-700 p-1 hover:bg-gray-50 rounded transition-colors">
+                                                <i class="fas fa-ellipsis-v"></i>
+                                            </button>
+                                        </div>
+                                    </td>
+                                </tr>
+                                <tr class="hover:bg-gray-50 transition-colors">
+                                    <td class="px-6 py-4">
+                                        <input type="checkbox" class="rounded border-gray-300 text-purple-600 focus:ring-purple-500">
+                                    </td>
+                                    <td class="px-6 py-4 whitespace-nowrap">
+                                        <span class="font-medium text-gray-900 text-sm">#ORD-2539</span>
+                                    </td>
+                                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-600">Oct 19, 2025</td>
+                                    <td class="px-6 py-4 whitespace-nowrap">
+                                        <div class="flex items-center gap-3">
+                                            <div class="w-8 h-8 bg-indigo-100 rounded-full flex items-center justify-center text-indigo-600 text-xs font-semibold flex-shrink-0">
+                                                MB
+                                            </div>
+                                            <div class="min-w-0">
+                                                <p class="text-sm font-medium text-gray-900 truncate">Michael Brown</p>
+                                                <p class="text-xs text-gray-500 truncate">michael@example.com</p>
+                                            </div>
+                                        </div>
+                                    </td>
+                                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-600">1 item</td>
+                                    <td class="px-6 py-4 whitespace-nowrap text-sm font-semibold text-gray-900">$89.99</td>
+                                    <td class="px-6 py-4 whitespace-nowrap">
+                                        <span class="inline-flex items-center gap-1.5 text-xs text-gray-600">
+                                            <i class="fab fa-paypal text-gray-400"></i>
+                                            <span>PayPal</span>
+                                        </span>
+                                    </td>
+                                    <td class="px-6 py-4 whitespace-nowrap">
+                                        <span class="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
+                                            <i class="fas fa-shipping-fast mr-1"></i> Shipped
+                                        </span>
+                                    </td>
+                                    <td class="px-6 py-4 whitespace-nowrap">
+                                        <div class="flex items-center gap-2">
+                                            <button class="text-purple-600 hover:text-purple-700 p-1 hover:bg-purple-50 rounded transition-colors">
+                                                <i class="fas fa-eye"></i>
+                                            </button>
+                                            <button class="text-gray-600 hover:text-gray-700 p-1 hover:bg-gray-50 rounded transition-colors">
+                                                <i class="fas fa-ellipsis-v"></i>
+                                            </button>
+                                        </div>
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+
+                    <!-- Pagination -->
+                    <div class="border-t border-gray-200 px-6 py-4">
+                        <div class="flex flex-col sm:flex-row items-center justify-between gap-4">
+                            <div class="text-sm text-gray-700">
+                                Showing <span class="font-medium">1</span> to <span class="font-medium">5</span> of <span class="font-medium">342</span> results
+                            </div>
+                            <div class="flex items-center gap-2">
+                                <button class="px-3 py-1.5 text-sm border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors flex items-center gap-1">
+                                    <i class="fas fa-chevron-left text-xs"></i>
+                                    <span>Previous</span>
+                                </button>
+                                <button class="px-3 py-1.5 text-sm bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition-colors">1</button>
+                                <button class="px-3 py-1.5 text-sm border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors">2</button>
+                                <button class="px-3 py-1.5 text-sm border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors">3</button>
+                                <span class="px-2 text-gray-500">...</span>
+                                <button class="px-3 py-1.5 text-sm border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors">10</button>
+                                <button class="px-3 py-1.5 text-sm border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors flex items-center gap-1">
+                                    <span>Next</span>
+                                    <i class="fas fa-chevron-right text-xs"></i>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <script>
+        // Initialize charts when the page loads
+        document.addEventListener('DOMContentLoaded', function() {
+            // Sales Chart
+            const salesCtx = document.getElementById('salesChart').getContext('2d');
+            const salesChart = new Chart(salesCtx, {
+                type: 'bar',
+                data: {
+                    labels: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun'],
+                    datasets: [{
+                        label: 'Sales ($)',
+                        data: [45000, 65000, 52000, 78000, 70000, 95000],
+                        backgroundColor: '#8B5CF6',
+                        borderColor: '#7C3AED',
+                        borderWidth: 1,
+                        borderRadius: 4,
+                        barPercentage: 0.6,
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            display: false
+                        },
+                        tooltip: {
+                            backgroundColor: '#1F2937',
+                            titleColor: '#F9FAFB',
+                            bodyColor: '#F9FAFB',
+                            borderColor: '#374151',
+                            borderWidth: 1,
+                            callbacks: {
+                                label: function(context) {
+                                    return `$${context.parsed.y.toLocaleString()}`;
+                                }
+                            }
+                        }
+                    },
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            grid: {
+                                color: '#E5E7EB'
+                            },
+                            ticks: {
+                                callback: function(value) {
+                                    return '$' + value/1000 + 'K';
+                                }
+                            }
+                        },
+                        x: {
+                            grid: {
+                                display: false
+                            }
+                        }
+                    }
+                }
+            });
+
+            // Customer Analytics Chart
+            const customerCtx = document.getElementById('customerChart').getContext('2d');
+            const customerChart = new Chart(customerCtx, {
+                type: 'line',
+                data: {
+                    labels: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun'],
+                    datasets: [{
+                        label: 'New Customers',
+                        data: [120, 180, 150, 220, 200, 280],
+                        backgroundColor: 'rgba(52, 211, 153, 0.1)',
+                        borderColor: '#34D399',
+                        borderWidth: 2,
+                        fill: true,
+                        tension: 0.4,
+                        pointBackgroundColor: '#34D399',
+                        pointBorderColor: '#FFFFFF',
+                        pointBorderWidth: 2,
+                        pointRadius: 4,
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            display: false
+                        },
+                        tooltip: {
+                            backgroundColor: '#1F2937',
+                            titleColor: '#F9FAFB',
+                            bodyColor: '#F9FAFB',
+                            borderColor: '#374151',
+                            borderWidth: 1
+                        }
+                    },
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            grid: {
+                                color: '#E5E7EB'
+                            }
+                        },
+                        x: {
+                            grid: {
+                                display: false
+                            }
+                        }
+                    }
+                }
+            });
+
+            // Add interactivity to table rows
+            const tableRows = document.querySelectorAll('tbody tr');
+            tableRows.forEach(row => {
+                row.addEventListener('click', function(e) {
+                    // Don't trigger if clicking on a button or checkbox
+                    if (e.target.tagName === 'BUTTON' || e.target.type === 'checkbox') {
+                        return;
+                    }
+                    
+                    // Toggle selected state
+                    this.classList.toggle('bg-purple-50');
+                    
+                    // Find the checkbox in this row and toggle it
+                    const checkbox = this.querySelector('input[type="checkbox"]');
+                    if (checkbox) {
+                        checkbox.checked = !checkbox.checked;
+                    }
+                });
+            });
+
+            // Add functionality to sort buttons
+            const sortButtons = document.querySelectorAll('.fa-sort');
+            sortButtons.forEach(button => {
+                button.addEventListener('click', function() {
+                    // This would typically sort the table data
+                    // For this example, we'll just toggle the icon
+                    if (this.classList.contains('fa-sort')) {
+                        this.classList.remove('fa-sort');
+                        this.classList.add('fa-sort-up', 'text-purple-600');
+                    } else if (this.classList.contains('fa-sort-up')) {
+                        this.classList.remove('fa-sort-up');
+                        this.classList.add('fa-sort-down', 'text-purple-600');
+                    } else {
+                        this.classList.remove('fa-sort-down', 'text-purple-600');
+                        this.classList.add('fa-sort');
+                    }
+                });
+            });
+        });
+    </script>
+</body>
+</html>

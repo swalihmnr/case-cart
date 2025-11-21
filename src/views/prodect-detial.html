@@ -1,0 +1,657 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gradient Dream - CaseCart</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        .gradient-bg {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        }
+        .thumbnail {
+            transition: all 0.3s ease;
+        }
+        .thumbnail:hover, .thumbnail.active {
+            border-color: #667eea;
+            transform: scale(1.05);
+        }
+        .color-option {
+            transition: all 0.3s ease;
+        }
+        .color-option.selected {
+            ring: 2px solid #667eea;
+        }
+        .tab-btn {
+            transition: all 0.3s ease;
+        }
+        .tab-btn.active {
+            border-bottom: 3px solid #667eea;
+            color: #667eea;
+        }
+    </style>
+</head>
+<body class="bg-gray-50">
+    <!-- Navigation -->
+    <nav class="bg-white shadow-md sticky top-0 z-50">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex justify-between items-center h-16">
+                <div class="flex items-center">
+                    <a href="index.html" class="flex items-center space-x-2">
+                        <div class="w-10 h-10 gradient-bg rounded-lg flex items-center justify-center">
+                            <span class="text-white font-bold text-xl">CC</span>
+                        </div>
+                        <span class="text-2xl font-bold text-gray-800">CaseCart</span>
+                    </a>
+                </div>
+
+                <div class="hidden md:flex items-center space-x-8">
+                    <a href="index.html" class="text-gray-700 hover:text-purple-600 font-medium">Home</a>
+                    <a href="products.html" class="text-gray-700 hover:text-purple-600 font-medium">Products</a>
+                    <a href="#" class="text-gray-700 hover:text-purple-600 font-medium">Categories</a>
+                    <a href="#" class="text-gray-700 hover:text-purple-600 font-medium">About</a>
+                </div>
+
+                <div class="flex items-center space-x-4">
+                    <button class="text-gray-700 hover:text-purple-600 transition">
+                        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/>
+                        </svg>
+                    </button>
+                    <a href="wishlist.html" class="text-gray-700 hover:text-purple-600 transition relative">
+                        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z"/>
+                        </svg>
+                        <span class="absolute -top-2 -right-2 bg-red-500 text-white text-xs rounded-full w-5 h-5 flex items-center justify-center">3</span>
+                    </a>
+                    <a href="cart.html" class="text-gray-700 hover:text-purple-600 transition relative">
+                        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z"/>
+                        </svg>
+                        <span class="absolute -top-2 -right-2 bg-purple-600 text-white text-xs rounded-full w-5 h-5 flex items-center justify-center">2</span>
+                    </a>
+                    <a href="login.html" class="hidden md:block bg-purple-600 text-white px-6 py-2 rounded-lg hover:bg-purple-700 transition font-medium">Login</a>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Breadcrumb -->
+    <div class="bg-white border-b">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
+            <div class="flex items-center space-x-2 text-sm">
+                <a href="index.html" class="text-gray-600 hover:text-purple-600">Home</a>
+                <span class="text-gray-400">/</span>
+                <a href="products.html" class="text-gray-600 hover:text-purple-600">Products</a>
+                <span class="text-gray-400">/</span>
+                <span class="text-gray-800 font-medium">Gradient Dream</span>
+            </div>
+        </div>
+    </div>
+
+    <!-- Product Detail -->
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        <div class="grid md:grid-cols-2 gap-12">
+            <!-- Image Gallery -->
+            <div>
+                <!-- Main Image -->
+                <div id="mainImage" class="bg-gradient-to-br from-purple-400 to-pink-400 rounded-2xl p-12 mb-4 flex items-center justify-center shadow-xl">
+                    <svg class="w-64 h-80" viewBox="0 0 100 150" fill="none">
+                        <rect x="10" y="10" width="80" height="130" rx="15" fill="white" opacity="0.9"/>
+                        <rect x="15" y="20" width="70" height="110" rx="10" fill="#667eea"/>
+                        <rect x="35" y="14" width="30" height="4" rx="2" fill="#9CA3AF"/>
+                    </svg>
+                </div>
+
+                <!-- Thumbnails -->
+                <div class="grid grid-cols-4 gap-4">
+                    <div class="thumbnail active bg-gradient-to-br from-purple-400 to-pink-400 rounded-lg p-6 flex items-center justify-center border-2 border-purple-600 cursor-pointer">
+                        <svg class="w-12 h-16" viewBox="0 0 100 150" fill="none">
+                            <rect x="10" y="10" width="80" height="130" rx="15" fill="white" opacity="0.9"/>
+                            <rect x="15" y="20" width="70" height="110" rx="10" fill="#667eea"/>
+                        </svg>
+                    </div>
+                    <div class="thumbnail bg-gradient-to-br from-purple-500 to-pink-500 rounded-lg p-6 flex items-center justify-center border-2 border-gray-200 cursor-pointer">
+                        <svg class="w-12 h-16" viewBox="0 0 100 150" fill="none">
+                            <rect x="10" y="10" width="80" height="130" rx="15" fill="white" opacity="0.9"/>
+                            <rect x="15" y="20" width="70" height="110" rx="10" fill="#667eea"/>
+                        </svg>
+                    </div>
+                    <div class="thumbnail bg-gradient-to-br from-purple-300 to-pink-300 rounded-lg p-6 flex items-center justify-center border-2 border-gray-200 cursor-pointer">
+                        <svg class="w-12 h-16" viewBox="0 0 100 150" fill="none">
+                            <rect x="10" y="10" width="80" height="130" rx="15" fill="white" opacity="0.9"/>
+                            <rect x="15" y="20" width="70" height="110" rx="10" fill="#667eea"/>
+                        </svg>
+                    </div>
+                    <div class="thumbnail bg-gray-200 rounded-lg p-6 flex items-center justify-center border-2 border-gray-200 cursor-pointer">
+                        <svg class="w-12 h-16" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 10l4.553-2.276A1 1 0 0121 8.618v6.764a1 1 0 01-1.447.894L15 14M5 18h8a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z"/>
+                        </svg>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Product Info -->
+            <div>
+                <div class="flex items-center justify-between mb-2">
+                    <span class="inline-block bg-purple-100 text-purple-600 px-3 py-1 rounded-full text-sm font-semibold">In Stock</span>
+                    <div class="flex items-center space-x-2">
+                        <button class="text-gray-400 hover:text-red-500 transition">
+                            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z"/>
+                            </svg>
+                        </button>
+                        <button class="text-gray-400 hover:text-purple-600 transition">
+                            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8.684 13.342C8.886 12.938 9 12.482 9 12c0-.482-.114-.938-.316-1.342m0 2.684a3 3 0 110-2.684m0 2.684l6.632 3.316m-6.632-6l6.632-3.316m0 0a3 3 0 105.367-2.684 3 3 0 00-5.367 2.684zm0 9.316a3 3 0 105.368 2.684 3 3 0 00-5.368-2.684z"/>
+                            </svg>
+                        </button>
+                    </div>
+                </div>
+
+                <h1 class="text-4xl font-bold text-gray-800 mb-4">Gradient Dream Case</h1>
+
+                <!-- Rating -->
+                <div class="flex items-center mb-6">
+                    <div class="flex text-yellow-400 text-xl">
+                        <span>★★★★★</span>
+                    </div>
+                    <span class="text-gray-600 ml-2">(48 Reviews)</span>
+                    <a href="#reviews" class="text-purple-600 ml-4 hover:underline">Write a Review</a>
+                </div>
+
+                <!-- Price -->
+                <div class="mb-6">
+                    <div class="flex items-baseline space-x-3">
+                        <span class="text-4xl font-bold text-purple-600">$24.99</span>
+                        <span class="text-xl text-gray-400 line-through">$34.99</span>
+                        <span class="bg-red-500 text-white px-3 py-1 rounded-full text-sm font-bold">-29%</span>
+                    </div>
+                    <p class="text-sm text-gray-500 mt-2">Free shipping on orders over $50</p>
+                </div>
+
+                <!-- Description -->
+                <p class="text-gray-600 mb-6 leading-relaxed">
+                    Protect your phone with our stunning Gradient Dream case. Features military-grade protection with a sleek, modern design. The vibrant gradient finish adds personality while keeping your device safe from drops and scratches.
+                </p>
+
+                <!-- Device Selection -->
+                <div class="mb-6">
+                        <label class="block text-sm font-semibold text-gray-900 mb-3">Select Device Model</label>
+                        <div class="grid grid-cols-2 sm:grid-cols-3 gap-3">
+                            <button class="device-btn px-4 py-3 border-2 border-purple-600 bg-purple-50 rounded-lg font-medium text-purple-600 hover:bg-purple-100 transition">
+                                iPhone 15 Pro
+                            </button>
+                            <button class="device-btn px-4 py-3 border-2 border-gray-200 rounded-lg font-medium text-gray-700 hover:border-purple-600 hover:text-purple-600 transition">
+                                iPhone 15
+                            </button>
+                            <button class="device-btn px-4 py-3 border-2 border-gray-200 rounded-lg font-medium text-gray-700 hover:border-purple-600 hover:text-purple-600 transition">
+                                iPhone 15 Plus
+                            </button>
+                            <button class="device-btn px-4 py-3 border-2 border-gray-200 rounded-lg font-medium text-gray-700 hover:border-purple-600 hover:text-purple-600 transition">
+                                iPhone 15 Pro Max
+                            </button>
+                            <button class="device-btn px-4 py-3 border-2 border-gray-200 rounded-lg font-medium text-gray-700 hover:border-purple-600 hover:text-purple-600 transition">
+                                iPhone 14 Pro
+                            </button>
+                            <button class="device-btn px-4 py-3 border-2 border-gray-200 rounded-lg font-medium text-gray-700 hover:border-purple-600 hover:text-purple-600 transition">
+                                iPhone 14
+                            </button>
+                        </div>
+                    </div>
+
+                <!-- Color Options -->
+                <div class="mb-6">
+                    <label class="block text-sm font-semibold text-gray-700 mb-3">Color: <span class="font-normal text-purple-600">Purple Gradient</span></label>
+                    <div class="flex space-x-3">
+                        <div class="color-option selected w-12 h-12 rounded-full cursor-pointer border-4 border-purple-600" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);"></div>
+                        <div class="color-option w-12 h-12 rounded-full cursor-pointer border-4 border-transparent hover:border-gray-300" style="background: linear-gradient(135deg, #3B82F6 0%, #06B6D4 100%);"></div>
+                        <div class="color-option w-12 h-12 rounded-full cursor-pointer border-4 border-transparent hover:border-gray-300" style="background: linear-gradient(135deg, #10B981 0%, #34D399 100%);"></div>
+                        <div class="color-option w-12 h-12 rounded-full cursor-pointer border-4 border-transparent hover:border-gray-300" style="background: linear-gradient(135deg, #F97316 0%, #EF4444 100%);"></div>
+                        <div class="color-option w-12 h-12 rounded-full cursor-pointer border-4 border-transparent hover:border-gray-300" style="background: linear-gradient(135deg, #EC4899 0%, #F43F5E 100%);"></div>
+                    </div>
+                </div>
+
+                <!-- Quantity -->
+                <div class="mb-6">
+                    <label class="block text-sm font-semibold text-gray-700 mb-3">Quantity</label>
+                    <div class="flex items-center space-x-4">
+                        <button onclick="decrementQty()" class="w-12 h-12 border-2 border-gray-300 rounded-lg hover:bg-gray-100 transition font-semibold">-</button>
+                        <input type="number" id="quantity" value="1" min="1" class="w-20 h-12 text-center border-2 border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500 font-semibold text-lg">
+                        <button onclick="incrementQty()" class="w-12 h-12 border-2 border-gray-300 rounded-lg hover:bg-gray-100 transition font-semibold">+</button>
+                    </div>
+                </div>
+
+                <!-- Action Buttons -->
+                <div class="flex flex-col sm:flex-row gap-4 mb-6">
+                    <button class="flex-1 bg-purple-600 text-white py-4 rounded-lg font-semibold hover:bg-purple-700 transition flex items-center justify-center space-x-2">
+                        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z"/>
+                        </svg>
+                        <span>Add to Cart</span>
+                    </button>
+                    <button class="flex-1 border-2 border-purple-600 text-purple-600 py-4 rounded-lg font-semibold hover:bg-purple-50 transition">
+                        Buy Now
+                    </button>
+                </div>
+
+                <!-- Features -->
+                <div class="bg-gray-100 rounded-lg p-6">
+                    <h3 class="font-semibold text-gray-800 mb-4">Key Features</h3>
+                    <ul class="space-y-2">
+                        <li class="flex items-center text-gray-600">
+                            <svg class="w-5 h-5 text-green-500 mr-2" fill="currentColor" viewBox="0 0 20 20">
+                                <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"/>
+                            </svg>
+                            Military-grade drop protection
+                        </li>
+                        <li class="flex items-center text-gray-600">
+                            <svg class="w-5 h-5 text-green-500 mr-2" fill="currentColor" viewBox="0 0 20 20">
+                                <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"/>
+                            </svg>
+                            Raised edges protect screen & camera
+                        </li>
+                        <li class="flex items-center text-gray-600">
+                            <svg class="w-5 h-5 text-green-500 mr-2" fill="currentColor" viewBox="0 0 20 20">
+                                <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"/>
+                            </svg>
+                            Wireless charging compatible
+                        </li>
+                        <li class="flex items-center text-gray-600">
+                            <svg class="w-5 h-5 text-green-500 mr-2" fill="currentColor" viewBox="0 0 20 20">
+                                <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"/>
+                            </svg>
+                            Premium TPU material
+                        </li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+
+        <!-- Tabs Section -->
+        <div class="mt-16">
+            <div class="border-b border-gray-200">
+                <div class="flex space-x-8">
+                    <button class="tab-btn active py-4 px-2 font-semibold" onclick="switchTab('description')">Description</button>
+                    <button class="tab-btn py-4 px-2 font-semibold text-gray-600 hover:text-gray-800" onclick="switchTab('specifications')">Specifications</button>
+                    <button class="tab-btn py-4 px-2 font-semibold text-gray-600 hover:text-gray-800" onclick="switchTab('reviews')">Reviews (48)</button>
+                    <button class="tab-btn py-4 px-2 font-semibold text-gray-600 hover:text-gray-800" onclick="switchTab('shipping')">Shipping</button>
+                </div>
+            </div>
+
+            <!-- Tab Content -->
+            <div id="tabContent" class="py-8">
+                <!-- Description Tab -->
+                <div id="description" class="tab-content">
+                    <h3 class="text-2xl font-bold text-gray-800 mb-4">Product Description</h3>
+                    <p class="text-gray-600 leading-relaxed mb-4">
+                        The Gradient Dream case combines style and protection in one sleek package. Crafted from premium TPU material, this case offers military-grade drop protection while maintaining a slim profile that won't add bulk to your device.
+                    </p>
+                    <p class="text-gray-600 leading-relaxed mb-4">
+                        The stunning gradient finish is achieved through an advanced printing process that ensures the colors remain vibrant and won't fade over time. Each case features raised bezels around the screen and camera to provide extra protection against scratches and cracks.
+                    </p>
+                    <p class="text-gray-600 leading-relaxed">
+                        With precise cutouts for all buttons, ports, and cameras, you'll have full access to all your device's features without removing the case. The responsive button covers provide excellent tactile feedback while keeping dust and debris out.
+                    </p>
+                </div>
+
+                <!-- Specifications Tab (Hidden) -->
+                <div id="specifications" class="tab-content hidden">
+                    <h3 class="text-2xl font-bold text-gray-800 mb-4">Technical Specifications</h3>
+                    <div class="grid md:grid-cols-2 gap-6">
+                        <div>
+                            <h4 class="font-semibold text-gray-700 mb-2">Material</h4>
+                            <p class="text-gray-600">Premium TPU (Thermoplastic Polyurethane)</p>
+                        </div>
+                        <div>
+                            <h4 class="font-semibold text-gray-700 mb-2">Protection Level</h4>
+                            <p class="text-gray-600">Military-grade (MIL-STD-810G)</p>
+                        </div>
+                        <div>
+                            <h4 class="font-semibold text-gray-700 mb-2">Weight</h4>
+                            <p class="text-gray-600">28 grams</p>
+                        </div>
+                        <div>
+                            <h4 class="font-semibold text-gray-700 mb-2">Thickness</h4>
+                            <p class="text-gray-600">1.2mm slim profile</p>
+                        </div>
+                        <div>
+                            <h4 class="font-semibold text-gray-700 mb-2">Compatibility</h4>
+                            <p class="text-gray-600">Wireless charging, MagSafe</p>
+                        </div>
+                        <div>
+                            <h4 class="font-semibold text-gray-700 mb-2">Finish</h4>
+                            <p class="text-gray-600">Matte gradient with anti-fingerprint coating</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Reviews Tab (Hidden) -->
+                <div id="reviews" class="tab-content hidden">
+                    <div class="flex items-start justify-between mb-8">
+                        <div>
+                            <h3 class="text-2xl font-bold text-gray-800 mb-2">Customer Reviews</h3>
+                            <div class="flex items-center">
+                                <span class="text-4xl font-bold text-gray-800 mr-2">4.8</span>
+                                <div>
+                                    <div class="flex text-yellow-400">
+                                        <span>★★★★★</span>
+                                    </div>
+                                    <p class="text-sm text-gray-600">Based on 48 reviews</p>
+                                </div>
+                            </div>
+                        </div>
+                        <button class="bg-purple-600 text-white px-6 py-3 rounded-lg font-semibold hover:bg-purple-700 transition">
+                            Write a Review
+                        </button>
+                    </div>
+
+                    <!-- Individual Reviews -->
+                    <div class="space-y-6">
+                        <div class="border-b border-gray-200 pb-6">
+                            <div class="flex items-center justify-between mb-2">
+                                <div class="flex items-center space-x-3">
+                                    <div class="w-10 h-10 bg-purple-600 rounded-full flex items-center justify-center text-white font-bold">
+                                        SJ
+                                    </div>
+                                    <div>
+                                        <p class="font-semibold text-gray-800">Sarah Johnson</p>
+                                        <p class="text-sm text-gray-500">Verified Purchase</p>
+                                    </div>
+                                </div>
+                                <span class="text-sm text-gray-500">2 days ago</span>
+                            </div>
+                            <div class="flex text-yellow-400 mb-2">
+                                <span>★★★★★</span>
+                            </div>
+                            <h4 class="font-semibold text-gray-800 mb-2">Beautiful and protective!</h4>
+                            <p class="text-gray-600">
+                                Absolutely love this case! The gradient design is even more stunning in person. It fits my iPhone perfectly and feels really sturdy. Dropped it once already and no damage at all. Highly recommend!
+                            </p>
+                        </div>
+
+                        <div class="border-b border-gray-200 pb-6">
+                            <div class="flex items-center justify-between mb-2">
+                                <div class="flex items-center space-x-3">
+                                    <div class="w-10 h-10 bg-blue-600 rounded-full flex items-center justify-center text-white font-bold">
+                                        MC
+                                    </div>
+                                    <div>
+                                        <p class="font-semibold text-gray-800">Michael Chen</p>
+                                        <p class="text-sm text-gray-500">Verified Purchase</p>
+                                    </div>
+                                </div>
+                                <span class="text-sm text-gray-500">1 week ago</span>
+                            </div>
+                            <div class="flex text-yellow-400 mb-2">
+                                <span>★★★★★</span>
+                            </div>
+                            <h4 class="font-semibold text-gray-800 mb-2">Great quality!</h4>
+                            <p class="text-gray-600">
+                                The case quality is excellent for the price. The buttons are very responsive and wireless charging works perfectly. The design hasn't faded at all after a month of use.
+                            </p>
+                        </div>
+
+                        <div class="border-b border-gray-200 pb-6">
+                            <div class="flex items-center justify-between mb-2">
+                                <div class="flex items-center space-x-3">
+                                    <div class="w-10 h-10 bg-green-600 rounded-full flex items-center justify-center text-white font-bold">
+                                        EP
+                                    </div>
+                                    <div>
+                                        <p class="font-semibold text-gray-800">Emma Parker</p>
+                                        <p class="text-sm text-gray-500">Verified Purchase</p>
+                                    </div>
+                                </div>
+                                <span class="text-sm text-gray-500">2 weeks ago</span>
+                            </div>
+                            <div class="flex text-yellow-400 mb-2">
+                                <span>★★★★☆</span>
+                            </div>
+                            <h4 class="font-semibold text-gray-800 mb-2">Pretty good</h4>
+                            <p class="text-gray-600">
+                                Nice case overall. The gradient looks amazing and it's very protective. Only wish it had a bit more grip on the sides, but that's minor. Would buy again!
+                            </p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Shipping Tab (Hidden) -->
+                <div id="shipping" class="tab-content hidden">
+                    <h3 class="text-2xl font-bold text-gray-800 mb-4">Shipping Information</h3>
+                    <div class="space-y-4">
+                        <div class="flex items-start space-x-3">
+                            <svg class="w-6 h-6 text-purple-600 flex-shrink-0 mt-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/>
+                            </svg>
+                            <div>
+                                <h4 class="font-semibold text-gray-800 mb-1">Free Standard Shipping</h4>
+                                <p class="text-gray-600">On orders over $50. Delivery in 5-7 business days.</p>
+                            </div>
+                        </div>
+                        <div class="flex items-start space-x-3">
+                            <svg class="w-6 h-6 text-purple-600 flex-shrink-0 mt-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"/>
+                            </svg>
+                            <div>
+                                <h4 class="font-semibold text-gray-800 mb-1">Express Shipping</h4>
+                                <p class="text-gray-600">$9.99 flat rate. Delivery in 2-3 business days.</p>
+                            </div>
+                        </div>
+                        <div class="flex items-start space-x-3">
+                            <svg class="w-6 h-6 text-purple-600 flex-shrink-0 mt-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z"/>
+                            </svg>
+                            <div>
+                                <h4 class="font-semibold text-gray-800 mb-1">Easy Returns</h4>
+                                <p class="text-gray-600">30-day return policy. Full refund if not satisfied.</p>
+                            </div>
+                        </div>
+                        <div class="flex items-start space-x-3">
+                            <svg class="w-6 h-6 text-purple-600 flex-shrink-0 mt-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"/>
+                            </svg>
+                            <div>
+                                <h4 class="font-semibold text-gray-800 mb-1">Secure Packaging</h4>
+                                <p class="text-gray-600">All orders are carefully packed to ensure safe delivery.</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Related Products -->
+        <div class="mt-16">
+            <h2 class="text-3xl font-bold text-gray-800 mb-8">You May Also Like</h2>
+            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+                <!-- Related Product 1 -->
+                <div class="bg-white rounded-xl shadow-md overflow-hidden hover:shadow-xl transition cursor-pointer">
+                    <div class="relative bg-gradient-to-br from-blue-400 to-cyan-400 h-48 flex items-center justify-center">
+                        <svg class="w-24 h-32" viewBox="0 0 100 150" fill="none">
+                            <rect x="10" y="10" width="80" height="130" rx="15" fill="white" opacity="0.9"/>
+                            <rect x="15" y="20" width="70" height="110" rx="10" fill="#3B82F6"/>
+                        </svg>
+                    </div>
+                    <div class="p-4">
+                        <h3 class="font-bold text-gray-800">Ocean Bubbles</h3>
+                        <div class="flex items-center justify-between mt-2">
+                            <span class="text-lg font-bold text-purple-600">$19.99</span>
+                            <div class="flex text-yellow-400 text-sm">
+                                <span>★★★★☆</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Related Product 2 -->
+                <div class="bg-white rounded-xl shadow-md overflow-hidden hover:shadow-xl transition cursor-pointer">
+                    <div class="relative bg-gradient-to-br from-green-400 to-emerald-400 h-48 flex items-center justify-center">
+                        <svg class="w-24 h-32" viewBox="0 0 100 150" fill="none">
+                            <rect x="10" y="10" width="80" height="130" rx="15" fill="white" opacity="0.9"/>
+                            <rect x="15" y="20" width="70" height="110" rx="10" fill="#10B981"/>
+                        </svg>
+                    </div>
+                    <div class="p-4">
+                        <h3 class="font-bold text-gray-800">Tropical Leaf</h3>
+                        <div class="flex items-center justify-between mt-2">
+                            <span class="text-lg font-bold text-purple-600">$22.99</span>
+                            <div class="flex text-yellow-400 text-sm">
+                                <span>★★★★★</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Related Product 3 -->
+                <div class="bg-white rounded-xl shadow-md overflow-hidden hover:shadow-xl transition cursor-pointer">
+                    <div class="relative bg-gradient-to-br from-orange-400 to-red-400 h-48 flex items-center justify-center">
+                        <svg class="w-24 h-32" viewBox="0 0 100 150" fill="none">
+                            <rect x="10" y="10" width="80" height="130" rx="15" fill="white" opacity="0.9"/>
+                            <rect x="15" y="20" width="70" height="110" rx="10" fill="#F97316"/>
+                        </svg>
+                    </div>
+                    <div class="p-4">
+                        <h3 class="font-bold text-gray-800">Geometric Sunset</h3>
+                        <div class="flex items-center justify-between mt-2">
+                            <span class="text-lg font-bold text-purple-600">$26.99</span>
+                            <div class="flex text-yellow-400 text-sm">
+                                <span>★★★★☆</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Related Product 4 -->
+                <div class="bg-white rounded-xl shadow-md overflow-hidden hover:shadow-xl transition cursor-pointer">
+                    <div class="relative bg-gradient-to-br from-pink-400 to-rose-400 h-48 flex items-center justify-center">
+                        <svg class="w-24 h-32" viewBox="0 0 100 150" fill="none">
+                            <rect x="10" y="10" width="80" height="130" rx="15" fill="white" opacity="0.9"/>
+                            <rect x="15" y="20" width="70" height="110" rx="10" fill="#EC4899"/>
+                        </svg>
+                    </div>
+                    <div class="p-4">
+                        <h3 class="font-bold text-gray-800">Pink Blossom</h3>
+                        <div class="flex items-center justify-between mt-2">
+                            <span class="text-lg font-bold text-purple-600">$27.99</span>
+                            <div class="flex text-yellow-400 text-sm">
+                                <span>★★★★★</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Footer -->
+    <footer class="bg-gray-900 text-white py-12 mt-16">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="grid grid-cols-1 md:grid-cols-4 gap-8 mb-8">
+                <div>
+                    <div class="flex items-center space-x-2 mb-4">
+                        <div class="w-10 h-10 gradient-bg rounded-lg flex items-center justify-center">
+                            <span class="text-white font-bold text-xl">CC</span>
+                        </div>
+                        <span class="text-2xl font-bold">CaseCart</span>
+                    </div>
+                    <p class="text-gray-400">Premium phone cases for every style and device.</p>
+                </div>
+                <div>
+                    <h4 class="font-bold text-lg mb-4">Quick Links</h4>
+                    <ul class="space-y-2">
+                        <li><a href="#" class="text-gray-400 hover:text-white transition">About Us</a></li>
+                        <li><a href="products.html" class="text-gray-400 hover:text-white transition">Shop</a></li>
+                        <li><a href="#" class="text-gray-400 hover:text-white transition">Blog</a></li>
+                        <li><a href="#" class="text-gray-400 hover:text-white transition">Contact</a></li>
+                    </ul>
+                </div>
+                <div>
+                    <h4 class="font-bold text-lg mb-4">Customer Service</h4>
+                    <ul class="space-y-2">
+                        <li><a href="#" class="text-gray-400 hover:text-white transition">Shipping Info</a></li>
+                        <li><a href="#" class="text-gray-400 hover:text-white transition">Returns</a></li>
+                        <li><a href="#" class="text-gray-400 hover:text-white transition">FAQ</a></li>
+                        <li><a href="#" class="text-gray-400 hover:text-white transition">Track Order</a></li>
+                    </ul>
+                </div>
+                <div>
+                    <h4 class="font-bold text-lg mb-4">Follow Us</h4>
+                    <div class="flex space-x-4">
+                        <a href="#" class="w-10 h-10 bg-gray-800 rounded-full flex items-center justify-center hover:bg-purple-600 transition">
+                            <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 24 24"><path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z"/></svg>
+                        </a>
+                        <a href="#" class="w-10 h-10 bg-gray-800 rounded-full flex items-center justify-center hover:bg-purple-600 transition">
+                            <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 24 24"><path d="M23.953 4.57a10 10 0 01-2.825.775 4.958 4.958 0 002.163-2.723c-.951.555-2.005.959-3.127 1.184a4.92 4.92 0 00-8.384 4.482C7.69 8.095 4.067 6.13 1.64 3.162a4.822 4.822 0 00-.666 2.475c0 1.71.87 3.213 2.188 4.096a4.904 4.904 0 01-2.228-.616v.06a4.923 4.923 0 003.946 4.827 4.996 4.996 0 01-2.212.085 4.936 4.936 0 004.604 3.417 9.867 9.867 0 01-6.102 2.105c-.39 0-.779-.023-1.17-.067a13.995 13.995 0 007.557 2.209c9.053 0 13.998-7.496 13.998-13.985 0-.21 0-.42-.015-.63A9.935 9.935 0 0024 4.59z"/></svg>
+                        </a>
+                        <a href="#" class="w-10 h-10 bg-gray-800 rounded-full flex items-center justify-center hover:bg-purple-600 transition">
+                            <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 24 24"><path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zm0-2.163c-3.259 0-3.667.014-4.947.072-4.358.2-6.78 2.618-6.98 6.98-.059 1.281-.073 1.689-.073 4.948 0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98 1.281.058 1.689.072 4.948.072 3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98-1.281-.059-1.69-.073-4.949-.073zm0 5.838c-3.403 0-6.162 2.759-6.162 6.162s2.759 6.163 6.162 6.163 6.162-2.759 6.162-6.163c0-3.403-2.759-6.162-6.162-6.162zm0 10.162c-2.209 0-4-1.79-4-4 0-2.209 1.791-4 4-4s4 1.791 4 4c0 2.21-1.791 4-4 4zm6.406-11.845c-.796 0-1.441.645-1.441 1.44s.645 1.44 1.441 1.44c.795 0 1.439-.645 1.439-1.44s-.644-1.44-1.439-1.44z"/></svg>
+                        </a>
+                    </div>
+                </div>
+            </div>
+            <div class="border-t border-gray-800 pt-8 text-center text-gray-400">
+                <p>&copy; 2025 CaseCart. All rights reserved.</p>
+            </div>
+        </div>
+    </footer>
+
+    <script>
+        function incrementQty() {
+            const input = document.getElementById('quantity');
+            input.value = parseInt(input.value) + 1;
+        }
+
+        function decrementQty() {
+            const input = document.getElementById('quantity');
+            if (parseInt(input.value) > 1) {
+                input.value = parseInt(input.value) - 1;
+            }
+        }
+
+        function switchTab(tabName) {
+            // Hide all tab contents
+            document.querySelectorAll('.tab-content').forEach(content => {
+                content.classList.add('hidden');
+            });
+            
+            // Remove active class from all tabs
+            document.querySelectorAll('.tab-btn').forEach(btn => {
+                btn.classList.remove('active', 'text-purple-600');
+                btn.classList.add('text-gray-600');
+            });
+            
+            // Show selected tab content
+            document.getElementById(tabName).classList.remove('hidden');
+            
+            // Add active class to clicked tab
+            event.target.classList.add('active', 'text-purple-600');
+            event.target.classList.remove('text-gray-600');
+        }
+
+        // Color selection
+        document.querySelectorAll('.color-option').forEach(option => {
+            option.addEventListener('click', function() {
+                document.querySelectorAll('.color-option').forEach(opt => {
+                    opt.classList.remove('selected', 'border-purple-600');
+                    opt.classList.add('border-transparent');
+                });
+                this.classList.add('selected', 'border-purple-600');
+                this.classList.remove('border-transparent');
+            });
+        });
+
+        // Thumbnail selection
+        document.querySelectorAll('.thumbnail').forEach(thumb => {
+            thumb.addEventListener('click', function() {
+                document.querySelectorAll('.thumbnail').forEach(t => {
+                    t.classList.remove('active', 'border-purple-600');
+                    t.classList.add('border-gray-200');
+                });
+                this.classList.add('active', 'border-purple-600');
+                this.classList.remove('border-gray-200');
+            });
+        });
+    </script>
+</body>
+</html>
