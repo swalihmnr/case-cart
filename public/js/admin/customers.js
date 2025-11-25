@@ -1,3 +1,5 @@
+import adminApi from "../adminApi.js";
+
 // ------------- TOGGLE STATS SECTION -------------
 const toggleStatsBtn = document.getElementById("toggle-stats-btn");
 const statsContainer = document.getElementById("stats-container");
@@ -40,12 +42,86 @@ closeModalButtons.forEach(btn => {
 // ----------------- VIEW CUSTOMER (POPUP) -----------------
 document.querySelectorAll(".view-customer-btn").forEach(btn => {
     btn.addEventListener("click", () => {
-        const id = btn.dataset.customerId;
+    const id = btn.dataset.customerId;
+    const name = btn.dataset.name;
+    const email = btn.dataset.email;
+    const number = btn.dataset.number;
+    const createdAt = btn.dataset.createdat; 
+    const status = btn.dataset.status; 
+    console.log(status)       
 
-        // Later you will fetch details using API
         document.getElementById("customer-details-content").innerHTML = `
-            <p class="text-sm text-gray-700">Customer ID: ${id}</p>
-            <p class="mt-2 text-gray-600">Dynamic customer details will come from backend...</p>
+            <div class="p-8">
+                <h1 class="text-3xl font-semibold text-gray-900 mb-8">Customer Details</h1>
+                
+                <!-- Two Column Layout -->
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+                    <!-- Personal Information -->
+                    <div>
+                        <h2 class="text-gray-500 text-sm font-medium mb-4">Personal Information</h2>
+                        
+                        <div class="space-y-3">
+                            <div>
+                                <span class="text-gray-900 font-medium">CustomerID :</span>
+                                <span class="text-gray-900" id="customer-name">${id}</span>
+                            </div>
+                            <div>
+                                <span class="text-gray-900 font-medium">Name : </span>
+                                <span class="text-gray-900" id="customer-name">${name}</span>
+                            </div>
+                            
+                            <div>
+                                <span class="text-gray-900 font-medium">Email : </span>
+                                <span class="text-gray-900" id="customer-email">${email}</span>
+                            </div>
+                            
+                            <div>
+                                <span class="text-gray-900 font-medium">Phone: </span>
+                                <span class="text-gray-900" id="customer-phone">${number}</span>
+                            </div>
+                            
+                            <div>
+                                <span class="text-gray-900 font-medium">Joined: </span>
+                                <span class="text-gray-900" id="customer-joined">${createdAt}</span>
+                            </div>
+                            
+                            <div>
+                                <span class="text-gray-900 font-medium">Status : </span>
+                                <span id="customer-status" class="inline-block px-3 py-1 text-xs rounded bg-green-100 text-green-700">
+                                    ${status==="true"?"Block":"Active"}
+                                </span>
+                            </div>
+                        </div>
+                        
+                        <div class="mt-6">
+                            <h3 class="text-gray-500 text-sm font-medium mb-2">Address</h3>
+                            <p class="text-gray-900" id="customer-address">456 Oak Ave, Somewhere, india 67890</p>
+                        </div>
+                    </div>
+                    
+                    <!-- Order Information -->
+                    <div>
+                        <h2 class="text-gray-500 text-sm font-medium mb-4">Order Information</h2>
+                        
+                        <div class="space-y-3">
+                            <div>
+                                <span class="text-gray-900 font-medium">Total Orders: </span>
+                                <span class="text-gray-900" id="total-orders">12</span>
+                            </div>
+                            
+                            <div>
+                                <span class="text-gray-900 font-medium">Total Spent: </span>
+                                <span class="text-gray-900" id="total-spent">847.50</span>
+                            </div>
+                            
+                            <div>
+                                <span class="text-gray-900 font-medium">Phone: </span>
+                                <span class="text-gray-900" id="order-phone">+91 453 987-6543</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
         `;
 
         customerDetailsModal.classList.remove("hidden");
@@ -55,125 +131,73 @@ document.querySelectorAll(".view-customer-btn").forEach(btn => {
 
 
 // ----------------- BLOCK CUSTOMER -----------------
-let selectedCustomerId = null;
-let selectedRow = null;
+// let selectedCustomerId = null ;
+// let selectedRow = null;
 
 document.querySelectorAll(".block-customer-btn").forEach(btn => {
-    btn.addEventListener("click", () => {
-        selectedCustomerId = btn.dataset.customerId;
-        selectedRow = btn.closest("tr");
+    btn.addEventListener("click", async () => {
+        try {
+            let selectedCustomerId = btn.dataset.customerId;
+            let statusmode = btn.dataset.statusmode;
+            if(statusmode==="block"){
 
-        blockCustomerModal.classList.remove("hidden");
+                Swal.fire({
+                 title: "Are you sure?",
+                 text: `Are you sure you want to block this customer? They will not
+                                be able to place orders or access their account.`,
+                 icon: "warning",
+                 showCancelButton: true,
+                 confirmButtonColor: "#d33",
+                 cancelButtonColor: "#3085d6",
+                 confirmButtonText: "Yes, Continue",
+                  }).then(async(result)=>{
+                    if(result.isConfirmed){
+                        let res=await adminApi.blockCustomerAxios(selectedCustomerId)
+                        if(res.data.success){
+                            location.reload()
+                        }
+                    }
+    
+                  })
+            }else{
+                Swal.fire({
+                 title: "Are you sure?",
+                 text: `Are you sure you want to unblock this customer? They will 
+                                be able to place orders or access their account.`,
+                 icon: "warning",
+                 showCancelButton: true,
+                 confirmButtonColor: "#d33",
+                 cancelButtonColor: "#3085d6",
+                 confirmButtonText: "Yes, Continue",
+                  }).then(async(result)=>{
+                    if(result.isConfirmed){
+                        let res=await adminApi.blockCustomerAxios(selectedCustomerId)
+                        if(res.data.success){
+                            location.reload()
+                        }
+                    }
+    
+                  }) 
+            }
+
+        } catch (error) {
+            
+        }
+
+       
     });
 });
 
-document.querySelector(".cancel-block-btn").addEventListener("click", () => {
-    blockCustomerModal.classList.add("hidden");
-});
 
-document.querySelector(".confirm-block-btn").addEventListener("click", () => {
-    blockCustomerModal.classList.add("hidden");
-
-    // ---------------- UI UPDATE ON BLOCK ----------------
-    updateToBlocked(selectedRow);
-
-    console.log("Customer blocked:", selectedCustomerId);
-});
 
 
 
 // ----------------- UNBLOCK CUSTOMER -----------------
-document.querySelectorAll(".unblock-customer-btn").forEach(btn => {
-    btn.addEventListener("click", () => {
-        selectedCustomerId = btn.dataset.customerId;
-        selectedRow = btn.closest("tr");
-
-        unblockCustomerModal.classList.remove("hidden");
-    });
-});
-
-document.querySelector(".cancel-unblock-btn").addEventListener("click", () => {
-    unblockCustomerModal.classList.add("hidden");
-});
-
-document.querySelector(".confirm-unblock-btn").addEventListener("click", () => {
-    unblockCustomerModal.classList.add("hidden");
-
-    // ---------------- UI UPDATE ON UNBLOCK ----------------
-    updateToActive(selectedRow);
-
-    console.log("Customer unblocked:", selectedCustomerId);
-});
 
 
 
 // ---------------------- DOM UPDATE FUNCTIONS ----------------------
 
-function updateToBlocked(row) {
-    // Background color update
-    row.classList.add("bg-red-50");
-
-    // Change status badge
-    row.querySelector("td:nth-child(6)").innerHTML = `
-        <span class="text-xs bg-red-100 text-red-700 px-2 py-1 rounded-full">
-            Blocked
-        </span>
-    `;
-
-    // Replace action icons
-    const actionsCell = row.querySelector("td:nth-child(7) .flex");
-
-    actionsCell.innerHTML = `
-        <button class="view-customer-btn text-blue-600 hover:text-blue-800 text-sm">
-            <i class="fas fa-eye"></i>
-        </button>
-        <button class="edit-customer-btn text-purple-600 hover:text-purple-800 text-sm">
-            <i class="fas fa-edit"></i>
-        </button>
-        <button class="unblock-customer-btn text-green-600 hover:text-green-800 text-sm">
-            <i class="fas fa-check"></i>
-        </button>
-    `;
-
-    // Re-bind event listeners (important)
-    actionsCell.querySelector(".unblock-customer-btn").addEventListener("click", () => {
-        selectedRow = row;
-        unblockCustomerModal.classList.remove("hidden");
-    });
-}
 
 
-
-function updateToActive(row) {
-    // Remove red background
-    row.classList.remove("bg-red-50");
-
-    // Change status badge
-    row.querySelector("td:nth-child(6)").innerHTML = `
-        <span class="text-xs bg-green-100 text-green-700 px-2 py-1 rounded-full">
-            Active
-        </span>
-    `;
-
-    // Replace icons
-    const actionsCell = row.querySelector("td:nth-child(7) .flex");
-
-    actionsCell.innerHTML = `
-        <button class="view-customer-btn text-blue-600 hover:text-blue-800 text-sm">
-            <i class="fas fa-eye"></i>
-        </button>
-        <button class="edit-customer-btn text-purple-600 hover:text-purple-800 text-sm">
-            <i class="fas fa-edit"></i>
-        </button>
-        <button class="block-customer-btn text-red-600 hover:text-red-800 text-sm">
-            <i class="fas fa-ban"></i>
-        </button>
-    `;
-
-    // Re-bind block listener
-    actionsCell.querySelector(".block-customer-btn").addEventListener("click", () => {
-        selectedRow = row;
-        blockCustomerModal.classList.remove("hidden");
-    });
-}
 

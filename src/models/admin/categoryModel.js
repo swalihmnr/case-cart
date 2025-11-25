@@ -1,10 +1,10 @@
 import mongoose from 'mongoose'
-const categorySchema=mongoose.Schema({
-    title:{
+const categorySchema=new mongoose.Schema({
+    name:{
         type:String,
         required:true
     },
-    descripton:{
+    description:{
         type:String,
         required:true
     },
@@ -16,6 +16,7 @@ const categorySchema=mongoose.Schema({
         timestamps:true
     }
 )
+categorySchema.index({name:'text',description:'text'})
 
-const categoryModel=mongoose.model('Category',categorySchema)
-export default categoryModel
+const Category=mongoose.model('Category',categorySchema)
+export default Category
