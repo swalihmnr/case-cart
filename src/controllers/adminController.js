@@ -48,6 +48,9 @@ const postAddCategory=async(req,res)=>{
     const {title,description}=req.body
 
 }
+const getAddproduct=async(req,res)=>{
+    res.render('./admin/add-product-&-variant')
+}
 export default {
     getLogin,
     postLogin,
@@ -56,5 +59,6 @@ export default {
     getAddCategory,
     postAddCategory,
     getCategory,
-    postCategory
+    postCategory,
+    getAddproduct
 }

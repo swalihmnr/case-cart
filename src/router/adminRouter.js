@@ -9,5 +9,6 @@ router.get('/add-category',adminController.getAddCategory)
 router.post('/add-category',adminController.postAddCategory)
 router.get('/category',adminController.getCategory)
 router.post('/category',adminController.postAddCategory)
+router.get('/addProduct',adminController.getAddproduct)
 
 export default router
