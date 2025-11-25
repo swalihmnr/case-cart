@@ -13,6 +13,7 @@ import authRouter from '../src/router/authRouter.js'
 import connectDB from './config/db.js';
 import passport from 'passport';
 import './config/passport.js'
+import morgan from 'morgan';
 app.use(session({
     secret:process.env.SECRET_KEY,
     resave:false,
@@ -26,6 +27,7 @@ app.set('views',path.join(__dirname,'views'));
 app.use(express.json())
 app.use(express.urlencoded({extended:true}));
 app.use(nocache())
+app.use(morgan('dev'))
 app.use(passport.initialize())
 app.use(passport.session())
 app.use('/auth',authRouter)

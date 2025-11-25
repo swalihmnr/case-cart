@@ -11,7 +11,7 @@ const userSchema= new mongoose.Schema({
         
     },
     number:{
-        type:Number,
+        type:String,
         required:false,
     },
     email:{
@@ -44,6 +44,12 @@ const userSchema= new mongoose.Schema({
         default:Date.now
     }
 
+})
+userSchema.index({
+    firstName:"text",
+    lastName:"text",
+    email:"text",
+    number:"text"
 })
 const user=mongoose.model('user',userSchema);
 export default user

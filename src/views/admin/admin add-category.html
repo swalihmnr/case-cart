@@ -3,529 +3,222 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Add Category - CaseCart Admin</title>
+    <title>Cart Error - Something Went Wrong</title>
     <script src="https://cdn.tailwindcss.com"></script>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        @keyframes float {
+            0%, 100% { transform: translateY(0px); }
+            50% { transform: translateY(-20px); }
+        }
+        
+        @keyframes shake {
+            0%, 100% { transform: rotate(0deg); }
+            25% { transform: rotate(-10deg); }
+            75% { transform: rotate(10deg); }
+        }
+        
+        @keyframes pulse-ring {
+            0% { transform: scale(0.8); opacity: 1; }
+            100% { transform: scale(1.4); opacity: 0; }
+        }
+        
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+        
+        .animate-float {
+            animation: float 3s ease-in-out infinite;
+        }
+        
+        .animate-shake {
+            animation: shake 0.5s ease-in-out;
+        }
+        
+        .animate-pulse-ring {
+            animation: pulse-ring 2s ease-out infinite;
+        }
+        
+        .animate-fadeInUp {
+            animation: fadeInUp 0.8s ease-out forwards;
+        }
+        
+        .delay-100 { animation-delay: 0.1s; }
+        .delay-200 { animation-delay: 0.2s; }
+        .delay-300 { animation-delay: 0.3s; }
+        
+        .btn-hover {
+            transition: all 0.3s ease;
+        }
+        
+        .btn-hover:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.15);
+        }
+        
+        .btn-hover:active {
+            transform: translateY(0);
+        }
+        
+        .spin-slow {
+            animation: spin 2s linear infinite;
+        }
+        
+        @keyframes spin {
+            from { transform: rotate(0deg); }
+            to { transform: rotate(360deg); }
+        }
+    </style>
 </head>
-<body class="bg-gray-50">
-    <!-- Admin Header -->
-    <header class="bg-white shadow-sm sticky top-0 z-50">
-        <div class="px-4 py-3">
-            <div class="flex items-center justify-between">
-                <div class="flex items-center space-x-3">
-                    <button id="sidebarToggle" class="lg:hidden text-gray-600 p-1">
-                        <i class="fas fa-bars text-xl"></i>
-                    </button>
-                    <div class="flex items-center space-x-2">
-                        <div class="w-8 h-8 bg-gradient-to-br from-purple-600 to-pink-600 rounded-lg flex items-center justify-center">
-                            <i class="fas fa-mobile-alt text-white text-sm"></i>
-                        </div>
-                        <div>
-                            <span class="text-lg font-bold bg-gradient-to-r from-purple-600 to-pink-600 bg-clip-text text-transparent">CaseCart</span>
-                            <span class="block text-xs text-gray-500">Admin Panel</span>
+<body class="min-h-screen bg-gradient-to-br from-blue-50 via-white to-purple-50">
+    
+    <div class="min-h-screen flex items-center justify-center p-4">
+        <div class="max-w-2xl w-full opacity-0 animate-fadeInUp">
+            
+            <!-- Error Card -->
+            <div class="bg-white rounded-3xl shadow-2xl p-8 md:p-12 relative overflow-hidden">
+                
+                <!-- Decorative Background Elements -->
+                <div class="absolute top-0 right-0 w-64 h-64 bg-gradient-to-br from-red-100 to-orange-100 rounded-full blur-3xl opacity-30 pointer-events-none"></div>
+                <div class="absolute bottom-0 left-0 w-64 h-64 bg-gradient-to-tr from-blue-100 to-purple-100 rounded-full blur-3xl opacity-30 pointer-events-none"></div>
+                
+                <!-- Content -->
+                <div class="relative z-10">
+                    
+                    <!-- Icon Container -->
+                    <div class="flex justify-center mb-8">
+                        <div class="relative">
+                            <!-- Pulsing Ring -->
+                            <div class="absolute inset-0 bg-red-200 rounded-full animate-pulse-ring"></div>
+                            <div class="absolute inset-0 bg-red-200 rounded-full animate-pulse-ring delay-100"></div>
+                            
+                            <!-- Main Icon -->
+                            <div class="relative bg-gradient-to-br from-red-500 to-orange-500 rounded-full p-6 animate-float">
+                                <svg class="w-16 h-16 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z"></path>
+                                </svg>
+                                <div class="absolute -top-1 -right-1 bg-yellow-400 rounded-full p-1">
+                                    <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"></path>
+                                    </svg>
+                                </div>
+                            </div>
                         </div>
                     </div>
-                </div>
-                <div class="flex items-center space-x-3">
-                    <button class="relative text-gray-600 hover:text-purple-600 transition p-1">
-                        <i class="fas fa-bell text-lg"></i>
-                        <span class="absolute -top-1 -right-1 bg-red-500 text-white text-xs rounded-full w-4 h-4 flex items-center justify-center">5</span>
-                    </button>
-                    <div class="flex items-center space-x-2">
-                        <div class="w-8 h-8 bg-purple-600 rounded-full flex items-center justify-center text-white font-semibold text-sm">
-                            AD
-                        </div>
-                        <div class="hidden sm:block">
-                            <p class="font-semibold text-gray-900 text-sm">Admin User</p>
-                            <p class="text-xs text-gray-500">admin@casecart.com</p>
+                    
+                    <!-- Error Message -->
+                    <div class="text-center mb-8 opacity-0 animate-fadeInUp delay-200">
+                        <h1 class="text-4xl md:text-5xl font-bold text-gray-900 mb-4">
+                            Oops! Cart Error
+                        </h1>
+                        <p class="text-lg text-gray-600 mb-2">
+                            We couldn't load your shopping cart
+                        </p>
+                        <p class="text-sm text-gray-500">
+                            Don't worry, your items are safe! This might be a temporary issue.
+                        </p>
+                    </div>
+                    
+                    <!-- Error Details -->
+                    <div class="bg-gradient-to-r from-red-50 to-orange-50 border-l-4 border-red-500 rounded-lg p-4 mb-8 opacity-0 animate-fadeInUp delay-300">
+                        <div class="flex items-start">
+                            <svg class="w-5 h-5 text-red-500 mt-0.5 mr-3 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
+                                <path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clip-rule="evenodd"></path>
+                            </svg>
+                            <div>
+                                <h3 class="text-sm font-semibold text-gray-900 mb-1">Common causes:</h3>
+                                <ul class="text-sm text-gray-700 space-y-1">
+                                    <li>• Network connection issues</li>
+                                    <li>• Server temporarily unavailable</li>
+                                    <li>• Session expired</li>
+                                </ul>
+                            </div>
                         </div>
                     </div>
-                </div>
-            </div>
-        </div>
-    </header>
-
-    <div class="flex">
-        <!-- Sidebar -->
-        <aside id="sidebar" class="fixed lg:sticky top-0 left-0 h-screen w-64 bg-white shadow-lg transform -translate-x-full lg:translate-x-0 transition-transform duration-300 z-40 overflow-y-auto">
-            <nav class="p-4 mt-14 lg:mt-0">
-                <ul class="space-y-1">
-                    <li>
-                        <a href="admin-dashboard.html" class="nav-link flex items-center space-x-3 px-3 py-2 text-gray-600 hover:bg-gray-50 rounded-lg transition">
-                            <i class="fas fa-chart-line w-5"></i>
-                            <span class="text-sm">Dashboard</span>
-                        </a>
-                    </li>
-                    <li>
-                        <a href="admin-products.html" class="nav-link flex items-center space-x-3 px-3 py-2 text-gray-600 hover:bg-gray-50 rounded-lg transition">
-                            <i class="fas fa-box w-5"></i>
-                            <span class="text-sm">Products</span>
-                        </a>
-                    </li>
-                    <li>
-                        <a href="admin-orders.html" class="nav-link flex items-center space-x-3 px-3 py-2 text-gray-600 hover:bg-gray-50 rounded-lg transition">
-                            <i class="fas fa-shopping-cart w-5"></i>
-                            <span class="text-sm">Orders</span>
-                        </a>
-                    </li>
-                    <li>
-                        <a href="admin-customers.html" class="nav-link flex items-center space-x-3 px-3 py-2 text-gray-600 hover:bg-gray-50 rounded-lg transition">
-                            <i class="fas fa-users w-5"></i>
-                            <span class="text-sm">Customers</span>
-                        </a>
-                    </li>
-                    <li>
-                        <a href="admin-categories.html" class="nav-link flex items-center space-x-3 px-3 py-2 bg-purple-50 text-purple-600 rounded-lg font-semibold">
-                            <i class="fas fa-tags w-5"></i>
-                            <span class="text-sm">Categories</span>
-                        </a>
-                    </li>
-                    <li>
-                        <a href="admin-reports.html" class="nav-link flex items-center space-x-3 px-3 py-2 text-gray-600 hover:bg-gray-50 rounded-lg transition">
-                            <i class="fas fa-chart-bar w-5"></i>
-                            <span class="text-sm">Reports</span>
-                        </a>
-                    </li>
-                    <li>
-                        <a href="admin-settings.html" class="nav-link flex items-center space-x-3 px-3 py-2 text-gray-600 hover:bg-gray-50 rounded-lg transition">
-                            <i class="fas fa-cog w-5"></i>
-                            <span class="text-sm">Settings</span>
-                        </a>
-                    </li>
-                    <li class="pt-3 mt-3 border-t border-gray-200">
-                        <a href="login.html" class="flex items-center space-x-3 px-3 py-2 text-red-600 hover:bg-red-50 rounded-lg transition">
-                            <i class="fas fa-sign-out-alt w-5"></i>
-                            <span class="text-sm">Logout</span>
-                        </a>
-                    </li>
-                </ul>
-            </nav>
-        </aside>
-
-        <!-- Main Content -->
-        <main class="flex-1 p-3 lg:p-6 lg:ml-0 min-h-screen">
-            <!-- Page Header -->
-            <div class="mb-6">
-                <div class="flex items-center justify-between">
-                    <div>
-                        <div class="flex items-center space-x-3 mb-2">
-                            <a href="admin-categories.html" class="text-purple-600 hover:text-purple-700 p-2">
-                                <i class="fas fa-arrow-left"></i>
-                            </a>
-                            <h1 class="text-2xl lg:text-3xl font-bold text-gray-900">Add New Category</h1>
-                        </div>
-                        <p class="text-gray-600 text-sm lg:text-base">Create a new product category for your store.</p>
-                    </div>
-                    <div class="flex space-x-3">
-                        <a href="admin-categories.html" class="px-4 py-2 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50 transition">
-                            Cancel
-                        </a>
-                        <button onclick="saveCategory()" class="bg-purple-600 text-white px-4 py-2 rounded-lg hover:bg-purple-700 transition">
-                            Save Category
+                    
+                    <!-- Action Buttons -->
+                    <div class="flex flex-col sm:flex-row gap-4 opacity-0 animate-fadeInUp delay-300">
+                        <button onclick="refreshPage()" class="flex-1 bg-gradient-to-r from-blue-600 to-purple-600 text-white font-semibold py-4 px-6 rounded-xl btn-hover flex items-center justify-center gap-2 group">
+                            <svg id="refreshIcon" class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path>
+                            </svg>
+                            <span id="refreshText">Try Again</span>
+                        </button>
+                        
+                        <button onclick="goHome()" class="flex-1 bg-white text-gray-700 font-semibold py-4 px-6 rounded-xl border-2 border-gray-300 btn-hover flex items-center justify-center gap-2 hover:border-gray-400">
+                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"></path>
+                            </svg>
+                            Go to Homepage
                         </button>
                     </div>
+                    
+                    <!-- Additional Help -->
+                    <div class="mt-8 pt-8 border-t border-gray-200 text-center opacity-0 animate-fadeInUp delay-300">
+                        <p class="text-sm text-gray-600 mb-4">
+                            Still having trouble?
+                        </p>
+                        <a href="#" class="text-blue-600 hover:text-blue-700 font-medium text-sm inline-flex items-center gap-2 hover:gap-3 transition-all">
+                            Contact Support
+                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 8l4 4m0 0l-4 4m4-4H3"></path>
+                            </svg>
+                        </a>
+                    </div>
+                    
                 </div>
             </div>
-
-            <div class="grid lg:grid-cols-3 gap-6">
-                <!-- Main Form -->
-                <div class="lg:col-span-2 space-y-6">
-                    <!-- Basic Information -->
-                    <div class="bg-white rounded-lg shadow-sm p-6">
-                        <h3 class="text-lg font-semibold text-gray-900 mb-4">Basic Information</h3>
-                        <div class="space-y-4">
-                            <div>
-                                <label class="block text-sm font-medium text-gray-700 mb-2">
-                                    Category Name <span class="text-red-500">*</span>
-                                </label>
-                                <input type="text" id="categoryName" class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent" placeholder="Enter category name" required>
-                            </div>
-
-                            <div>
-                                <label class="block text-sm font-medium text-gray-700 mb-2">
-                                    Description <span class="text-red-500">*</span>
-                                </label>
-                                <textarea id="categoryDescription" class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent h-32" placeholder="Enter category description" required></textarea>
-                            </div>
-
-                            <div>
-                                <label class="block text-sm font-medium text-gray-700 mb-2">Parent Category</label>
-                                <select id="parentCategory" class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent">
-                                    <option value="">No Parent Category</option>
-                                    <option value="phone-cases">Phone Cases</option>
-                                    <option value="accessories">Accessories</option>
-                                    <option value="gadgets">Gadgets</option>
-                                    <option value="tablet-cases">Tablet Cases</option>
-                                </select>
-                            </div>
-                        </div>
-                    </div>
-
-                    <!-- Category Image -->
-                    <div class="bg-white rounded-lg shadow-sm p-6">
-                        <h3 class="text-lg font-semibold text-gray-900 mb-4">Category Image</h3>
-                        <div class="space-y-4">
-                            <div class="border-2 border-dashed border-gray-300 rounded-lg p-8 text-center cursor-pointer hover:border-purple-400 transition" onclick="document.getElementById('imageUpload').click()">
-                                <i class="fas fa-cloud-upload-alt text-gray-400 text-3xl mb-3"></i>
-                                <p class="text-sm text-gray-500">Click to upload category image</p>
-                                <p class="text-xs text-gray-400 mt-1">Recommended: 400x400px PNG, JPG</p>
-                                <input type="file" id="imageUpload" class="hidden" accept="image/*" onchange="previewImage(event)">
-                            </div>
-                            
-                            <!-- Image Preview -->
-                            <div id="imagePreview" class="hidden">
-                                <div class="flex items-center justify-between p-4 border border-gray-200 rounded-lg">
-                                    <div class="flex items-center space-x-3">
-                                        <img id="previewImg" class="w-16 h-16 object-cover rounded" src="" alt="Preview">
-                                        <div>
-                                            <p id="fileName" class="font-medium text-gray-900"></p>
-                                            <p id="fileSize" class="text-sm text-gray-500"></p>
-                                        </div>
-                                    </div>
-                                    <button type="button" onclick="removeImage()" class="text-red-600 hover:text-red-800">
-                                        <i class="fas fa-trash"></i>
-                                    </button>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-
-                    <!-- SEO Settings -->
-                    <div class="bg-white rounded-lg shadow-sm p-6">
-                        <h3 class="text-lg font-semibold text-gray-900 mb-4">SEO Settings</h3>
-                        <div class="space-y-4">
-                            <div>
-                                <label class="block text-sm font-medium text-gray-700 mb-2">SEO Title</label>
-                                <input type="text" id="seoTitle" class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent" placeholder="Enter SEO title">
-                                <p class="text-xs text-gray-500 mt-1">Recommended: 50-60 characters</p>
-                            </div>
-
-                            <div>
-                                <label class="block text-sm font-medium text-gray-700 mb-2">Meta Description</label>
-                                <textarea id="metaDescription" class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent h-24" placeholder="Enter meta description"></textarea>
-                                <p class="text-xs text-gray-500 mt-1">Recommended: 150-160 characters</p>
-                            </div>
-
-                            <div>
-                                <label class="block text-sm font-medium text-gray-700 mb-2">URL Slug</label>
-                                <input type="text" id="urlSlug" class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent" placeholder="category-slug">
-                                <p class="text-xs text-gray-500 mt-1">Use hyphens between words</p>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Sidebar Settings -->
-                <div class="space-y-6">
-                    <!-- Category Settings -->
-                    <div class="bg-white rounded-lg shadow-sm p-6">
-                        <h3 class="text-lg font-semibold text-gray-900 mb-4">Category Settings</h3>
-                        <div class="space-y-4">
-                            <div>
-                                <label class="block text-sm font-medium text-gray-700 mb-2">Display Order</label>
-                                <input type="number" id="displayOrder" class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent" value="1" min="1">
-                            </div>
-
-                            <div>
-                                <label class="block text-sm font-medium text-gray-700 mb-2">Status</label>
-                                <select id="categoryStatus" class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent">
-                                    <option value="active">Active</option>
-                                    <option value="inactive">Inactive</option>
-                                    <option value="draft">Draft</option>
-                                </select>
-                            </div>
-
-                            <div class="space-y-3">
-                                <div class="flex items-center">
-                                    <input type="checkbox" id="featuredCategory" class="w-4 h-4 text-purple-600 border-gray-300 rounded focus:ring-purple-500">
-                                    <label for="featuredCategory" class="ml-2 text-sm text-gray-700">Featured Category</label>
-                                </div>
-
-                                <div class="flex items-center">
-                                    <input type="checkbox" id="showInMenu" class="w-4 h-4 text-purple-600 border-gray-300 rounded focus:ring-purple-500" checked>
-                                    <label for="showInMenu" class="ml-2 text-sm text-gray-700">Show in Navigation Menu</label>
-                                </div>
-
-                                <div class="flex items-center">
-                                    <input type="checkbox" id="showInHomepage" class="w-4 h-4 text-purple-600 border-gray-300 rounded focus:ring-purple-500" checked>
-                                    <label for="showInHomepage" class="ml-2 text-sm text-gray-700">Show on Homepage</label>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-
-                    <!-- Category Color -->
-                    <div class="bg-white rounded-lg shadow-sm p-6">
-                        <h3 class="text-lg font-semibold text-gray-900 mb-4">Category Color</h3>
-                        <div class="space-y-3">
-                            <label class="block text-sm font-medium text-gray-700 mb-2">Select Color Theme</label>
-                            <div class="grid grid-cols-4 gap-2">
-                                <div class="color-option w-8 h-8 rounded-full cursor-pointer border-2 border-purple-600" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);" onclick="selectColor('purple')"></div>
-                                <div class="color-option w-8 h-8 rounded-full cursor-pointer border-2 border-transparent hover:border-gray-300" style="background: linear-gradient(135deg, #3B82F6 0%, #06B6D4 100%);" onclick="selectColor('blue')"></div>
-                                <div class="color-option w-8 h-8 rounded-full cursor-pointer border-2 border-transparent hover:border-gray-300" style="background: linear-gradient(135deg, #10B981 0%, #34D399 100%);" onclick="selectColor('green')"></div>
-                                <div class="color-option w-8 h-8 rounded-full cursor-pointer border-2 border-transparent hover:border-gray-300" style="background: linear-gradient(135deg, #F97316 0%, #EF4444 100%);" onclick="selectColor('orange')"></div>
-                                <div class="color-option w-8 h-8 rounded-full cursor-pointer border-2 border-transparent hover:border-gray-300" style="background: linear-gradient(135deg, #EC4899 0%, #F43F5E 100%);" onclick="selectColor('pink')"></div>
-                                <div class="color-option w-8 h-8 rounded-full cursor-pointer border-2 border-transparent hover:border-gray-300" style="background: linear-gradient(135deg, #8B5CF6 0%, #A855F7 100%);" onclick="selectColor('violet')"></div>
-                                <div class="color-option w-8 h-8 rounded-full cursor-pointer border-2 border-transparent hover:border-gray-300" style="background: linear-gradient(135deg, #F59E0B 0%, #D97706 100%);" onclick="selectColor('yellow')"></div>
-                                <div class="color-option w-8 h-8 rounded-full cursor-pointer border-2 border-transparent hover:border-gray-300" style="background: linear-gradient(135deg, #6B7280 0%, #374151 100%);" onclick="selectColor('gray')"></div>
-                            </div>
-                            <input type="hidden" id="selectedColor" value="purple">
-                        </div>
-                    </div>
-
-                    <!-- Quick Actions -->
-                    <div class="bg-white rounded-lg shadow-sm p-6">
-                        <h3 class="text-lg font-semibold text-gray-900 mb-4">Quick Actions</h3>
-                        <div class="space-y-3">
-                            <button onclick="saveCategory()" class="w-full bg-purple-600 text-white py-3 rounded-lg font-semibold hover:bg-purple-700 transition flex items-center justify-center space-x-2">
-                                <i class="fas fa-save"></i>
-                                <span>Save Category</span>
-                            </button>
-                            <button onclick="saveAndAddAnother()" class="w-full border-2 border-purple-600 text-purple-600 py-3 rounded-lg font-semibold hover:bg-purple-50 transition flex items-center justify-center space-x-2">
-                                <i class="fas fa-plus"></i>
-                                <span>Save & Add Another</span>
-                            </button>
-                            <a href="admin-categories.html" class="w-full border-2 border-gray-300 text-gray-700 py-3 rounded-lg font-semibold hover:bg-gray-50 transition flex items-center justify-center space-x-2">
-                                <i class="fas fa-times"></i>
-                                <span>Cancel</span>
-                            </a>
-                        </div>
-                    </div>
-                </div>
+            
+            <!-- Footer Note -->
+            <div class="mt-6 text-center opacity-0 animate-fadeInUp delay-300">
+                <p class="text-sm text-gray-500">
+                    Error Code: CART_500 • <span id="timestamp"></span>
+                </p>
             </div>
-
-            <!-- Preview Section -->
-            <div class="mt-8 bg-white rounded-lg shadow-sm p-6">
-                <h3 class="text-lg font-semibold text-gray-900 mb-4">Category Preview</h3>
-                <div class="grid md:grid-cols-3 gap-6">
-                    <div class="border border-gray-200 rounded-lg p-4">
-                        <div class="bg-gradient-to-br from-purple-400 to-pink-400 rounded-lg p-8 mb-4 flex items-center justify-center">
-                            <i class="fas fa-tags text-white text-3xl"></i>
-                        </div>
-                        <h4 id="previewName" class="font-semibold text-gray-900 text-center mb-2">Category Name</h4>
-                        <p id="previewDesc" class="text-sm text-gray-600 text-center">Category description will appear here</p>
-                    </div>
-                    <div class="md:col-span-2">
-                        <div class="bg-gray-50 rounded-lg p-4">
-                            <h4 class="font-semibold text-gray-900 mb-3">Live Preview Updates</h4>
-                            <ul class="space-y-2 text-sm text-gray-600">
-                                <li class="flex items-center">
-                                    <i class="fas fa-check text-green-500 mr-2"></i>
-                                    <span>Category name updates in real-time</span>
-                                </li>
-                                <li class="flex items-center">
-                                    <i class="fas fa-check text-green-500 mr-2"></i>
-                                    <span>Description preview available</span>
-                                </li>
-                                <li class="flex items-center">
-                                    <i class="fas fa-check text-green-500 mr-2"></i>
-                                    <span>Color theme changes reflected</span>
-                                </li>
-                                <li class="flex items-center">
-                                    <i class="fas fa-check text-green-500 mr-2"></i>
-                                    <span>Image upload preview</span>
-                                </li>
-                            </ul>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </main>
+            
+        </div>
     </div>
-
+    
     <script>
-        // Sidebar Toggle for Mobile
-        const sidebarToggle = document.getElementById('sidebarToggle');
-        const sidebar = document.getElementById('sidebar');
+        // Display current timestamp
+        document.getElementById('timestamp').textContent = new Date().toLocaleTimeString();
         
-        sidebarToggle.addEventListener('click', () => {
-            sidebar.classList.toggle('-translate-x-full');
-        });
-
-        // Close sidebar when clicking outside on mobile
-        document.addEventListener('click', (event) => {
-            const isClickInsideSidebar = sidebar.contains(event.target);
-            const isClickInsideToggle = sidebarToggle.contains(event.target);
+        // Refresh functionality with animation
+        function refreshPage() {
+            const refreshIcon = document.getElementById('refreshIcon');
+            const refreshText = document.getElementById('refreshText');
             
-            if (!isClickInsideSidebar && !isClickInsideToggle && !sidebar.classList.contains('-translate-x-full')) {
-                sidebar.classList.add('-translate-x-full');
-            }
-        });
-
-        // Image Upload and Preview
-        function previewImage(event) {
-            const file = event.target.files[0];
-            if (file) {
-                const reader = new FileReader();
-                reader.onload = function(e) {
-                    document.getElementById('previewImg').src = e.target.result;
-                    document.getElementById('fileName').textContent = file.name;
-                    document.getElementById('fileSize').textContent = formatFileSize(file.size);
-                    document.getElementById('imagePreview').classList.remove('hidden');
-                }
-                reader.readAsDataURL(file);
-            }
-        }
-
-        function removeImage() {
-            document.getElementById('imageUpload').value = '';
-            document.getElementById('imagePreview').classList.add('hidden');
-        }
-
-        function formatFileSize(bytes) {
-            if (bytes === 0) return '0 Bytes';
-            const k = 1024;
-            const sizes = ['Bytes', 'KB', 'MB', 'GB'];
-            const i = Math.floor(Math.log(bytes) / Math.log(k));
-            return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
-        }
-
-        // Color Selection
-        function selectColor(color) {
-            document.querySelectorAll('.color-option').forEach(option => {
-                option.classList.remove('border-purple-600');
-                option.classList.add('border-transparent');
-            });
-            event.target.classList.add('border-purple-600');
-            event.target.classList.remove('border-transparent');
-            document.getElementById('selectedColor').value = color;
+            refreshIcon.classList.add('spin-slow');
+            refreshText.textContent = 'Refreshing...';
             
-            // Update preview background
-            const preview = document.querySelector('.bg-gradient-to-br');
-            const colors = {
-                purple: 'from-purple-400 to-pink-400',
-                blue: 'from-blue-400 to-cyan-400',
-                green: 'from-green-400 to-emerald-400',
-                orange: 'from-orange-400 to-red-400',
-                pink: 'from-pink-400 to-rose-400',
-                violet: 'from-violet-400 to-purple-400',
-                yellow: 'from-yellow-400 to-amber-400',
-                gray: 'from-gray-400 to-gray-600'
-            };
-            preview.className = preview.className.replace(/from-\w+-\d+ to-\w+-\d+/, colors[color]);
-        }
-
-        // Real-time Preview Updates
-        document.getElementById('categoryName').addEventListener('input', function() {
-            document.getElementById('previewName').textContent = this.value || 'Category Name';
-        });
-
-        document.getElementById('categoryDescription').addEventListener('input', function() {
-            document.getElementById('previewDesc').textContent = this.value || 'Category description will appear here';
-        });
-
-        // Save Category Function
-        function saveCategory() {
-            const categoryName = document.getElementById('categoryName').value;
-            const categoryDescription = document.getElementById('categoryDescription').value;
-            
-            if (!categoryName || !categoryDescription) {
-                alert('Please fill in all required fields (Category Name and Description)');
-                return;
-            }
-
-            // Simulate saving
-            const formData = {
-                name: categoryName,
-                description: categoryDescription,
-                parentCategory: document.getElementById('parentCategory').value,
-                displayOrder: document.getElementById('displayOrder').value,
-                status: document.getElementById('categoryStatus').value,
-                featured: document.getElementById('featuredCategory').checked,
-                showInMenu: document.getElementById('showInMenu').checked,
-                showInHomepage: document.getElementById('showInHomepage').checked,
-                color: document.getElementById('selectedColor').value,
-                seoTitle: document.getElementById('seoTitle').value,
-                metaDescription: document.getElementById('metaDescription').value,
-                urlSlug: document.getElementById('urlSlug').value
-            };
-
-            console.log('Category Data:', formData);
-            
-            // Show success message
-            alert('Category created successfully!');
-            
-            // Redirect to categories list
+            // Simulate refresh - in real app would reload data
             setTimeout(() => {
-                window.location.href = 'admin-categories.html';
-            }, 1000);
+                refreshIcon.classList.remove('spin-slow');
+                refreshText.textContent = 'Try Again';
+                // window.location.reload();
+                alert('Cart refreshed! In a real app, this would reload your cart data.');
+            }, 1500);
         }
-
-        function saveAndAddAnother() {
-            const categoryName = document.getElementById('categoryName').value;
-            const categoryDescription = document.getElementById('categoryDescription').value;
-            
-            if (!categoryName || !categoryDescription) {
-                alert('Please fill in all required fields (Category Name and Description)');
-                return;
-            }
-
-            // Simulate saving
-            console.log('Category saved and preparing for new entry');
-            
-            // Show success message
-            alert('Category created successfully! Adding new category...');
-            
-            // Reset form for new entry
-            document.getElementById('categoryName').value = '';
-            document.getElementById('categoryDescription').value = '';
-            document.getElementById('parentCategory').value = '';
-            document.getElementById('displayOrder').value = '1';
-            document.getElementById('categoryStatus').value = 'active';
-            document.getElementById('featuredCategory').checked = false;
-            document.getElementById('showInMenu').checked = true;
-            document.getElementById('showInHomepage').checked = true;
-            document.getElementById('seoTitle').value = '';
-            document.getElementById('metaDescription').value = '';
-            document.getElementById('urlSlug').value = '';
-            removeImage();
-            
-            // Reset preview
-            document.getElementById('previewName').textContent = 'Category Name';
-            document.getElementById('previewDesc').textContent = 'Category description will appear here';
-            
-            // Focus on category name
-            document.getElementById('categoryName').focus();
+        
+        // Navigate to homepage
+        function goHome() {
+            // window.location.href = '/';
+            alert('In a real app, this would navigate to your homepage.');
         }
-
-        // Auto-generate URL slug from category name
-        document.getElementById('categoryName').addEventListener('blur', function() {
-            if (this.value && !document.getElementById('urlSlug').value) {
-                const slug = this.value
-                    .toLowerCase()
-                    .replace(/[^a-z0-9 -]/g, '')
-                    .replace(/\s+/g, '-')
-                    .replace(/-+/g, '-');
-                document.getElementById('urlSlug').value = slug;
-            }
-        });
-
-        // Character counters
-        document.getElementById('seoTitle').addEventListener('input', function() {
-            const count = this.value.length;
-            const counter = this.parentElement.querySelector('.text-xs');
-            if (counter) {
-                counter.textContent = `Characters: ${count}/60`;
-                if (count > 60) {
-                    counter.classList.add('text-red-500');
-                } else {
-                    counter.classList.remove('text-red-500');
-                }
-            }
-        });
-
-        document.getElementById('metaDescription').addEventListener('input', function() {
-            const count = this.value.length;
-            const counter = this.parentElement.querySelector('.text-xs');
-            if (counter) {
-                counter.textContent = `Characters: ${count}/160`;
-                if (count > 160) {
-                    counter.classList.add('text-red-500');
-                } else {
-                    counter.classList.remove('text-red-500');
-                }
+        
+        // Add keyboard shortcuts
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'r' || e.key === 'R') {
+                refreshPage();
             }
         });
     </script>
+    
 </body>
 </html>
