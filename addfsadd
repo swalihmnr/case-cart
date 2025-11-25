@@ -1,0 +1,18 @@
+[33mcommit 9baf2ab899ff68028f15b3b692efafbbad13edfa[m[33m ([m[1;36mHEAD[m[33m -> [m[1;32madmin-customer[m[33m, [m[1;31morigin/develop[m[33m, [m[1;31morigin/admin-customer[m[33m, [m[1;32mdevelop[m[33m)[m
+Author: swalimnr <swalimohd048@gmail.com>
+Date:   Fri Nov 21 10:07:11 2025 +0530
+
+    Implement user authentication Ui and backend functionalities
+    Implement admin authentication Ui and backend functionalities
+    Implement admin side category ui only
+    Implement admin side add category ui
+    Implement admin side dashboard Ui
+    Implement admin side customers management ui
+    Implement user side landing page
+    Implement user side Home page
+
+[33mcommit 328097294e45dbc278ba2bc42c8bdf6f99e39255[m[33m ([m[1;31morigin/main[m[33m, [m[1;32mmain[m[33m)[m
+Author: swalimnr <swalimohd048@gmail.com>
+Date:   Fri Oct 17 15:40:26 2025 +0530
+
+    first commit
