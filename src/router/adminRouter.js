@@ -17,7 +17,7 @@ router.post('/category/edit/:id',adminController.postEditCategory)
 router.get('/add-product',adminController.getAddproduct)
 router.post('/add-product',upload.array('images',5),adminController.postAddproduct);
 router.get('/product-list',adminController.getProductList)
-router.get('/product-view',adminController.getProductView)
+router.get('/product-view/:id',adminController.getProductView)
 router.post('/product-list/block/:id',adminController.blockProduct)
 
 export default router

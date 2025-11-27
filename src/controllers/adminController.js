@@ -303,18 +303,24 @@ const postEditCategory=async(req,res)=>{
 const getProductList=async(req,res)=>{
     const products= await productModel.find().populate('variants').populate('catgId')
     let totalStock=0;
-    products.forEach((product)=>{
-        totalStock=product.variants.reduce((acc,crnt)=>acc+crnt.stock,0)
-    })
-    let productStatus=''
-    console.log(totalStock)
-   if(totalStock>20){
-    productStatus="In Stock"
-   }else if (totalStock<6){
-    productStatus="Medium Stock"
-   }else if(totalStock<1){
-    productStatus="Out of stock"
-   }
+    products.forEach(product => {
+    totalStock += product.variants.reduce((acc, crnt) => acc + crnt.stock, 0);
+});
+
+let productStatus;
+
+if (totalStock < 1) {
+    productStatus = "Out of stock";
+} 
+else if (totalStock < 6) {
+    productStatus = "Medium Stock";
+} 
+else if (totalStock > 20) {
+    productStatus = "In Stock";
+} 
+else {
+    productStatus = "Low Stock";
+}
     const categories=await Category.find()
 
     res.render('./admin/product-list',{
@@ -345,10 +351,10 @@ try {
         req.files.map(file => uploadBufferTocloudnery(file.buffer))
         );
        const productImgUrls = uploadResults.map((upload, index) => ({
-       url: upload.secure_url,
-       publicId:public_id,
-       isMain: Number(mainImageIndex) === index
-       }));
+      url: upload.secure_url,
+      publicId: upload.public_id,
+      isMain: Number(mainImageIndex) === index,
+    }));
 
         const parsedDevices=JSON.parse(devices);
         console.log(parsedDevices)
@@ -397,7 +403,12 @@ try {
    
 }
 const getProductView=async(req,res)=>{
-    res.render('./admin/view-product')
+    const id=req.params.id;
+    const objectId= new mongoose.Types.ObjectId(id)
+    const product=await productModel.findOne({_id:objectId}).populate('catgId').populate('variants') 
+    res.render('./admin/view-product',{
+        product
+    })
 }
 const blockProduct=async(req,res)=>{
     try {
@@ -430,6 +441,9 @@ const blockProduct=async(req,res)=>{
     } catch (error) {
         console.log(error)
     }
+}
+const productImageEdit=async(req,res)=>{
+
 }
 
 export default {

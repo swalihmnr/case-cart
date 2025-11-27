@@ -6,7 +6,7 @@
     <title>Admin - Product Details</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <script src="https://upload-widget.cloudinary.com/global/all.js" type="text/javascript"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/cropperjs@1.5.12/dist/cropper.min.css">
     <style>
         .image-container {
             position: relative;
@@ -31,46 +31,17 @@
         .main-image {
             border: 2px solid #3b82f6;
         }
-        .image-edit-menu {
-            position: absolute;
-            top: 100%;
-            right: 0;
-            background: white;
-            border: 1px solid #e5e7eb;
-            border-radius: 0.5rem;
-            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
-            z-index: 10;
-            min-width: 150px;
-            display: none;
+        .cropper-container {
+            direction: ltr;
+            font-size: 0;
+            line-height: 0;
+            position: relative;
+            touch-action: none;
+            user-select: none;
         }
-        .image-edit-menu.show {
-            display: block;
-        }
-        .loading-spinner {
-            display: inline-block;
-            width: 20px;
-            height: 20px;
-            border: 3px solid #f3f3f3;
-            border-top: 3px solid #3498db;
-            border-radius: 50%;
-            animation: spin 1s linear infinite;
-        }
-        @keyframes spin {
-            0% { transform: rotate(0deg); }
-            100% { transform: rotate(360deg); }
-        }
-        .cloudinary-button {
-            background: #3b82f6;
-            color: white;
-            border: none;
-            padding: 10px 20px;
-            border-radius: 5px;
-            cursor: pointer;
-            font-size: 14px;
-            transition: background 0.3s;
-        }
-        .cloudinary-button:hover {
-            background: #2563eb;
+        .edit-mode {
+            border: 1px dashed #3b82f6;
+            background-color: #f0f9ff;
         }
     </style>
 </head>
@@ -116,7 +87,7 @@
                 <div class="bg-white rounded-lg shadow-sm p-6">
                     <div class="flex items-center justify-between mb-4">
                         <h2 class="text-lg font-semibold text-gray-900">Product Images</h2>
-                        <button onclick="openCloudinaryUploader()" class="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition text-sm">
+                        <button onclick="openImageUploader()" class="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition text-sm">
                             <i class="fas fa-plus mr-2"></i>Add Images
                         </button>
                     </div>
@@ -126,68 +97,62 @@
                 </div>
 
                 <!-- Basic Information -->
-                <div class="bg-white rounded-lg shadow-sm p-6">
-                    <h2 class="text-lg font-semibold text-gray-900 mb-4">Basic Information</h2>
+                <div class="bg-white rounded-lg shadow-sm p-6" id="basicInfoSection">
+                    <div class="flex items-center justify-between mb-4">
+                        <h2 class="text-lg font-semibold text-gray-900">Basic Information</h2>
+                        <button id="editBasicInfoBtn" class="px-3 py-1 bg-blue-600 text-white text-sm rounded hover:bg-blue-700 transition">
+                            <i class="fas fa-edit mr-1"></i>Edit
+                        </button>
+                    </div>
                     <div class="space-y-4">
                         <div>
                             <label class="text-sm font-medium text-gray-600">Product Name</label>
-                            <p class="text-gray-900 mt-1">Gradient Dream Case</p>
+                            <p id="productNameDisplay" class="text-gray-900 mt-1"><%= product.name %></p>
+                            <input id="productNameEdit" type="text" class="hidden w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500" value="Gradient Dream Case">
                         </div>
-                        <div>
-                            <label class="text-sm font-medium text-gray-600">Brand</label>
-                            <p class="text-gray-900 mt-1">eCover</p>
-                        </div>
+                        
                         <div>
                             <label class="text-sm font-medium text-gray-600">Category</label>
-                            <p class="text-gray-900 mt-1">Phone Cases</p>
+                            <p id="categoryDisplay" class="text-gray-900 mt-1"><%= product.catgId.name%></p>
+                            <select id="categoryEdit" class="hidden w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500">
+                                <option value="Phone Cases" selected>Phone Cases</option>
+                                <option value="Phone Accessories">Phone Accessories</option>
+                                <option value="Screen Protectors">Screen Protectors</option>
+                                <option value="Chargers">Chargers</option>
+                            </select>
                         </div>
                         <div>
                             <label class="text-sm font-medium text-gray-600">Product Description</label>
-                            <p class="text-gray-700 mt-1 leading-relaxed">Protect your phone with our stunning Gradient Dream case. Features military-grade protection with a sleek, modern design. The vibrant gradient colors add personality while keeping your device safe from drops and scratches.</p>
+                            <p id="descriptionDisplay" class="text-gray-700 mt-1 leading-relaxed"><%= product.description %></p>
+                            <textarea id="descriptionEdit" class="hidden w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500" rows="4">Protect your phone with our stunning Gradient Dream case. Features military-grade protection with a sleek, modern design. The vibrant gradient colors add personality while keeping your device safe from drops and scratches.</textarea>
                         </div>
+                    </div>
+                    <div id="basicInfoActions" class="hidden mt-4 flex justify-end space-x-3">
+                        <button id="cancelBasicInfoBtn" class="px-4 py-2 border border-gray-300 text-gray-700 rounded-md hover:bg-gray-50 transition">
+                            Cancel
+                        </button>
+                        <button id="saveBasicInfoBtn" class="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition">
+                            Save Changes
+                        </button>
                     </div>
                 </div>
 
                 <!-- Pricing & Stock -->
-                <div class="bg-white rounded-lg shadow-sm p-6">
-                    <h2 class="text-lg font-semibold text-gray-900 mb-4">Pricing & Inventory</h2>
-                    <div class="grid grid-cols-2 gap-6">
-                        <div>
-                            <label class="text-sm font-medium text-gray-600">Current Price</label>
-                            <p class="text-2xl font-bold text-gray-900 mt-1">₹124.99</p>
-                        </div>
-                        <div>
-                            <label class="text-sm font-medium text-gray-600">Original Price</label>
-                            <p class="text-xl text-gray-500 line-through mt-1">₹142.99</p>
-                        </div>
-                        <div>
-                            <label class="text-sm font-medium text-gray-600">Discount</label>
-                            <p class="text-lg font-semibold text-green-600 mt-1">12% OFF</p>
-                        </div>
-                        <div>
-                            <label class="text-sm font-medium text-gray-600">Total Stock</label>
-                            <p class="text-lg font-semibold text-gray-900 mt-1">847 units</p>
-                        </div>
-                    </div>
-                </div>
+                
 
                 <!-- Variants -->
                 <div class="bg-white rounded-lg shadow-sm p-6">
                     <div class="flex items-center justify-between mb-4">
                         <h2 class="text-lg font-semibold text-gray-900">Product Variants</h2>
                         <div class="flex items-center space-x-2">
-                            <button onclick="bulkUnlistVariants()" class="px-3 py-1 bg-gray-600 text-white text-sm rounded hover:bg-gray-700 transition">
-                                <i class="fas fa-eye-slash mr-1"></i>Unlist Selected
-                            </button>
+                           
                         </div>
                     </div>
                     <div class="overflow-x-auto">
                         <table class="min-w-full divide-y divide-gray-200">
                             <thead class="bg-gray-50">
                                 <tr>
-                                    <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">
-                                        <input type="checkbox" id="select-all-variants" onchange="toggleAllVariants()" class="rounded border-gray-300 text-blue-600 focus:ring-blue-500">
-                                    </th>
+                                   
                                     <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Model</th>
                                     <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Stock</th>
                                     <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Original Price</th>
@@ -197,14 +162,13 @@
                                 </tr>
                             </thead>
                             <tbody class="bg-white divide-y divide-gray-200">
-                                <tr class="hover:bg-gray-50" data-variant-id="variant-1">
-                                    <td class="px-4 py-3">
-                                        <input type="checkbox" value="variant-1" class="variant-checkbox rounded border-gray-300 text-blue-600 focus:ring-blue-500">
-                                    </td>
-                                    <td class="px-4 py-3 text-sm text-gray-900 variant-model">iPhone 15 Pro</td>
-                                    <td class="px-4 py-3 text-sm text-gray-700 variant-stock">142</td>
-                                    <td class="px-4 py-3 text-sm text-gray-700 variant-original-price">₹149.99</td>
-                                    <td class="px-4 py-3 text-sm text-gray-700 variant-sale-price">₹129.99</td>
+                                <% product.variants.forEach(veriant=> { %>
+                                 <tr class="hover:bg-gray-50" data-variant-id="variant-1">
+                                    
+                                    <td class="px-4 py-3 text-sm text-gray-900 variant-model"><%= veriant.deviceModel %></td>
+                                    <td class="px-4 py-3 text-sm text-gray-700 variant-stock"><%= veriant.stock %></td>
+                                    <td class="px-4 py-3 text-sm text-gray-700 variant-original-price">₹<%= veriant.orgPrice %></td>
+                                    <td class="px-4 py-3 text-sm text-gray-700 variant-sale-price">₹<%= veriant.salePrice %></td>
                                     <td class="px-4 py-3" id="status-variant-1">
                                         <span class="px-2 py-1 text-xs font-medium rounded-full bg-green-100 text-green-800">In Stock</span>
                                     </td>
@@ -217,26 +181,9 @@
                                         </button>
                                     </td>
                                 </tr>
-                                <tr class="hover:bg-gray-50" data-variant-id="variant-2">
-                                    <td class="px-4 py-3">
-                                        <input type="checkbox" value="variant-2" class="variant-checkbox rounded border-gray-300 text-blue-600 focus:ring-blue-500">
-                                    </td>
-                                    <td class="px-4 py-3 text-sm text-gray-900 variant-model">iPhone 15</td>
-                                    <td class="px-4 py-3 text-sm text-gray-700 variant-stock">198</td>
-                                    <td class="px-4 py-3 text-sm text-gray-700 variant-original-price">₹139.99</td>
-                                    <td class="px-4 py-3 text-sm text-gray-700 variant-sale-price">₹119.99</td>
-                                    <td class="px-4 py-3" id="status-variant-2">
-                                        <span class="px-2 py-1 text-xs font-medium rounded-full bg-green-100 text-green-800">In Stock</span>
-                                    </td>
-                                    <td class="px-4 py-3 flex space-x-2">
-                                        <button onclick="editVariant('variant-2')" class="px-3 py-1 bg-blue-600 text-white text-xs rounded hover:bg-blue-700 transition">
-                                            <i class="fas fa-edit mr-1"></i>Edit
-                                        </button>
-                                        <button id="action-variant-2" onclick="toggleVariantStatus('variant-2', 'active')" class="px-3 py-1 bg-gray-600 text-white text-xs rounded hover:bg-gray-700 transition">
-                                            <i class="fas fa-eye-slash mr-1"></i>Unlist
-                                        </button>
-                                    </td>
-                                </tr>
+                                <% }) %>
+                                
+                                
                             </tbody>
                         </table>
                     </div>
@@ -267,23 +214,7 @@
                 </div>
 
                 <!-- Product Info -->
-                <div class="bg-white rounded-lg shadow-sm p-6">
-                    <h2 class="text-lg font-semibold text-gray-900 mb-4">Product Information</h2>
-                    <div class="space-y-3 text-sm">
-                        <div class="flex justify-between">
-                            <span class="text-gray-600">SKU</span>
-                            <span class="text-gray-900 font-medium">GDC-2024-001</span>
-                        </div>
-                        <div class="flex justify-between">
-                            <span class="text-gray-600">Date Added</span>
-                            <span class="text-gray-900">Jan 15, 2024</span>
-                        </div>
-                        <div class="flex justify-between">
-                            <span class="text-gray-600">Last Updated</span>
-                            <span class="text-gray-900">Oct 20, 2025</span>
-                        </div>
-                    </div>
-                </div>
+                
             </div>
         </div>
     </main>
@@ -324,445 +255,108 @@
         </div>
     </div>
 
-    <!-- Replace Image Modal -->
-    <div id="replaceImageModal" class="hidden fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-        <div class="bg-white rounded-lg shadow-xl w-full max-w-md">
+    <!-- Add Images Modal -->
+    <div id="addImagesModal" class="hidden fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+        <div class="bg-white rounded-lg shadow-xl w-full max-w-2xl">
             <div class="px-6 py-4 border-b border-gray-200">
-                <h3 class="text-lg font-semibold text-gray-900">Replace Image</h3>
+                <h3 class="text-lg font-semibold text-gray-900">Add Product Images</h3>
             </div>
             <div class="px-6 py-4">
-                <div class="text-center mb-4">
-                    <p class="text-sm text-gray-600">Upload a new image to replace the current one</p>
+                <input type="file" id="productImages" accept="image/*" multiple class="hidden" onchange="handleImagesUpload(event)">
+                <div onclick="document.getElementById('productImages').click()" class="border-2 border-dashed border-gray-300 rounded-lg p-8 text-center hover:border-purple-400 transition-colors cursor-pointer mb-4">
+                    <svg class="mx-auto text-gray-400 mb-2" width="32" height="32" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12"></path>
+                    </svg>
+                    <p class="text-sm font-medium text-gray-700">Upload Product Images</p>
+                    <p class="text-xs text-gray-500 mt-1">PNG, JPG up to 5MB each (Multiple files)</p>
+                    <p class="text-xs text-purple-600 mt-1">First image will be the main image</p>
                 </div>
-                <button onclick="openCloudinaryUploaderForReplace()" class="w-full cloudinary-button py-3">
-                    <i class="fas fa-cloud-upload-alt mr-2"></i>Choose New Image
-                </button>
-                <div id="replaceImagePreview" class="text-center mt-4"></div>
+                
+                <!-- Images Preview Grid -->
+                <div id="imagesPreview" class="grid grid-cols-2 gap-3"></div>
             </div>
             <div class="px-6 py-4 border-t border-gray-200 flex justify-end space-x-3">
-                <button onclick="closeReplaceModal()" class="px-4 py-2 border border-gray-300 text-gray-700 rounded-md hover:bg-gray-50 transition">
+                <button onclick="closeModal()" class="px-4 py-2 border border-gray-300 text-gray-700 rounded-md hover:bg-gray-50 transition">
                     Cancel
                 </button>
-                <button onclick="confirmReplaceImage()" class="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition">
-                    Replace Image
+                <button onclick="saveImages()" class="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition">
+                    Save Changes
                 </button>
             </div>
         </div>
     </div>
 
-    <script>
-        // Cloudinary configuration
-        const CLOUDINARY_CLOUD_NAME = 'your-cloud-name'; // Replace with your Cloudinary cloud name
-        const CLOUDINARY_UPLOAD_PRESET = 'your-upload-preset'; // Replace with your upload preset
+    <!-- Crop Modal -->
+    <div id="cropModal" class="hidden fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+        <div class="bg-white rounded-xl shadow-xl p-6 max-w-4xl w-full">
+            <div class="flex items-center justify-between mb-4">
+                <h2 class="text-xl font-bold text-gray-900">Crop Image</h2>
+                <button onclick="closeCropModal()" class="text-gray-400 hover:text-gray-600">
+                    <svg width="24" height="24" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                    </svg>
+                </button>
+            </div>
 
-        // Global variables
-        let productImages = [
-            { 
-                id: 1, 
-                src: 'https://images.unsplash.com/photo-1601784551446-20c9e07cdbdb?w=400', 
-                isMain: true,
-                publicId: 'sample1' // Cloudinary public ID
-            },
-            { 
-                id: 2, 
-                src: 'https://images.unsplash.com/photo-1511707171634-5f897ff02aa9?w=400', 
-                isMain: false,
-                publicId: 'sample2'
-            },
-            { 
-                id: 3, 
-                src: 'https://images.unsplash.com/photo-1546868871-7041f2a55e12?w=400', 
-                isMain: false,
-                publicId: 'sample3'
-            },
-            { 
-                id: 4, 
-                src: 'https://images.unsplash.com/photo-1585155828332-2b6c1a1d45e6?w=400', 
-                isMain: false,
-                publicId: 'sample4'
-            }
-        ];
-
-        let imageToReplace = null;
-        let newImageForReplace = null;
-
-        // Initialize the page
-        document.addEventListener('DOMContentLoaded', function() {
-            renderProductImages();
-        });
-
-        // Render product images
-        function renderProductImages() {
-            const container = document.getElementById('productImagesContainer');
-            container.innerHTML = '';
-            
-            productImages.forEach(image => {
-                const imageElement = document.createElement('div');
-                imageElement.id = `image-${image.id}`;
-                imageElement.className = `image-container rounded-lg ${image.isMain ? 'main-image' : 'border border-gray-200'}`;
-                imageElement.innerHTML = `
-                    <img src="${image.src}" alt="Product" class="w-full h-32 object-cover rounded-lg">
-                    ${image.isMain ? '<span class="absolute top-2 left-2 bg-blue-600 text-white text-xs px-2 py-1 rounded">Main</span>' : ''}
-                    <div class="image-overlay">
-                        <div class="flex flex-col space-y-2">
-                            <button onclick="setAsMain(${image.id})" class="p-2 bg-white text-blue-600 rounded-full hover:bg-blue-100 transition" title="Set as Main">
-                                <i class="fas fa-star"></i>
-                            </button>
-                            <button onclick="replaceImage(${image.id})" class="p-2 bg-white text-green-600 rounded-full hover:bg-green-100 transition" title="Replace Image">
-                                <i class="fas fa-sync"></i>
-                            </button>
-                            <button onclick="removeImage(${image.id})" class="p-2 bg-white text-red-600 rounded-full hover:bg-red-100 transition" title="Delete Image">
-                                <i class="fas fa-trash"></i>
-                            </button>
+            <!-- Cropper Container -->
+            <div class="w-full flex">
+                <div class="w-2/3 pr-4">
+                    <div class="border rounded-lg overflow-hidden" style="height: 400px;">
+                        <img id="cropImage" class="block" style="max-width: 100%; max-height: 100%;" />
+                    </div>
+                </div>
+                <div class="w-1/3 pl-4">
+                    <h3 class="font-medium text-gray-900 mb-3">Crop Options</h3>
+                    <div class="space-y-4">
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-1">Aspect Ratio</label>
+                            <select id="aspectRatio" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500" onchange="updateAspectRatio()">
+                                <option value="1">Square (1:1)</option>
+                                <option value="4/3">Standard (4:3)</option>
+                                <option value="16/9">Widescreen (16:9)</option>
+                                <option value="0">Free</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-1">Rotation</label>
+                            <div class="flex items-center space-x-2">
+                                <button onclick="rotateImage(-90)" class="p-2 border border-gray-300 rounded-md hover:bg-gray-50">
+                                    <i class="fas fa-undo"></i>
+                                </button>
+                                <button onclick="rotateImage(90)" class="p-2 border border-gray-300 rounded-md hover:bg-gray-50">
+                                    <i class="fas fa-redo"></i>
+                                </button>
+                            </div>
+                        </div>
+                        <div class="bg-blue-50 p-3 rounded-lg">
+                            <p class="text-sm text-blue-700">Drag the corners to adjust the crop area. The preview will show how your image will look.</p>
                         </div>
                     </div>
-                `;
-                container.appendChild(imageElement);
-            });
-        }
-
-        // Cloudinary Upload Widget for adding new images
-        function openCloudinaryUploader() {
-            const cloudinaryWidget = cloudinary.createUploadWidget({
-                cloudName: CLOUDINARY_CLOUD_NAME,
-                uploadPreset: CLOUDINARY_UPLOAD_PRESET,
-                sources: ['local', 'url', 'camera'],
-                multiple: true,
-                maxFiles: 10,
-                cropping: true,
-                showAdvancedOptions: true,
-                styles: {
-                    palette: {
-                        window: "#FFFFFF",
-                        sourceBg: "#F4F4F5",
-                        windowBorder: "#90a0b3",
-                        tabIcon: "#3b82f6",
-                        inactiveTabIcon: "#6B7280",
-                        menuIcons: "#3b82f6",
-                        link: "#3b82f6",
-                        action: "#3b82f6",
-                        inProgress: "#3b82f6",
-                        complete: "#10B981",
-                        error: "#EF4444",
-                        textDark: "#000000",
-                        textLight: "#FFFFFF"
-                    }
-                }
-            }, (error, result) => {
-                if (!error && result && result.event === "success") {
-                    // Add new image to product
-                    const newId = Math.max(...productImages.map(img => img.id), 0) + 1;
-                    const isMain = productImages.length === 0; // Set as main if it's the first image
-                    
-                    productImages.push({
-                        id: newId,
-                        src: result.info.secure_url,
-                        isMain: isMain,
-                        publicId: result.info.public_id
-                    });
-                    
-                    // Re-render images
-                    renderProductImages();
-                    
-                    showNotification('Image uploaded successfully to Cloudinary');
-                }
-                
-                if (error) {
-                    console.error('Cloudinary upload error:', error);
-                    showNotification('Error uploading image: ' + error.message, 'error');
-                }
-            });
-
-            cloudinaryWidget.open();
-        }
-
-        // Cloudinary Upload Widget for replacing images
-        function openCloudinaryUploaderForReplace() {
-            const cloudinaryWidget = cloudinary.createUploadWidget({
-                cloudName: CLOUDINARY_CLOUD_NAME,
-                uploadPreset: CLOUDINARY_UPLOAD_PRESET,
-                sources: ['local', 'url', 'camera'],
-                multiple: false,
-                cropping: true,
-                showAdvancedOptions: true,
-                styles: {
-                    palette: {
-                        window: "#FFFFFF",
-                        sourceBg: "#F4F4F5",
-                        windowBorder: "#90a0b3",
-                        tabIcon: "#3b82f6",
-                        inactiveTabIcon: "#6B7280",
-                        menuIcons: "#3b82f6",
-                        link: "#3b82f6",
-                        action: "#3b82f6",
-                        inProgress: "#3b82f6",
-                        complete: "#10B981",
-                        error: "#EF4444",
-                        textDark: "#000000",
-                        textLight: "#FFFFFF"
-                    }
-                }
-            }, (error, result) => {
-                if (!error && result && result.event === "success") {
-                    // Store the new image data for replacement
-                    newImageForReplace = {
-                        src: result.info.secure_url,
-                        publicId: result.info.public_id
-                    };
-                    
-                    // Show preview
-                    const preview = document.getElementById('replaceImagePreview');
-                    preview.innerHTML = `
-                        <div class="mb-4">
-                            <p class="text-sm font-medium text-gray-700 mb-2">New Image Preview:</p>
-                            <img src="${result.info.secure_url}" class="mx-auto max-h-40 rounded-lg border">
-                        </div>
-                    `;
-                    
-                    showNotification('New image ready for replacement');
-                }
-                
-                if (error) {
-                    console.error('Cloudinary upload error:', error);
-                    showNotification('Error uploading image: ' + error.message, 'error');
-                }
-            });
-
-            cloudinaryWidget.open();
-        }
-
-        // Delete image from Cloudinary (simulated - in real implementation, you'd call your backend)
-        function deleteImageFromCloudinary(publicId) {
-            // In a real implementation, you would call your backend API
-            // which would then call Cloudinary's delete API
-            console.log('Deleting image from Cloudinary:', publicId);
-            
-            // Simulate API call
-            return new Promise((resolve) => {
-                setTimeout(() => {
-                    resolve({ result: 'ok' });
-                }, 500);
-            });
-        }
-
-        // Set image as main
-        function setAsMain(imageId) {
-            // Update data model
-            productImages.forEach(image => {
-                image.isMain = image.id === imageId;
-            });
-            
-            // Re-render images
-            renderProductImages();
-            
-            showNotification('Main image set successfully');
-        }
-
-        // Remove image
-        async function removeImage(imageId) {
-            if (confirm('Are you sure you want to remove this image?')) {
-                const imageToRemove = productImages.find(img => img.id === imageId);
-                
-                // Show loading
-                showNotification('Deleting image...', 'info');
-                
-                try {
-                    // Delete from Cloudinary
-                    if (imageToRemove.publicId) {
-                        await deleteImageFromCloudinary(imageToRemove.publicId);
-                    }
-                    
-                    // Remove from data model
-                    productImages = productImages.filter(image => image.id !== imageId);
-                    
-                    // If we removed the main image and there are other images, set the first one as main
-                    if (productImages.length > 0 && !productImages.some(img => img.isMain)) {
-                        productImages[0].isMain = true;
-                    }
-                    
-                    // Re-render images
-                    renderProductImages();
-                    
-                    showNotification('Image removed successfully');
-                } catch (error) {
-                    console.error('Error deleting image:', error);
-                    showNotification('Error deleting image', 'error');
-                }
-            }
-        }
-
-        // Replace image
-        function replaceImage(imageId) {
-            imageToReplace = imageId;
-            newImageForReplace = null;
-            document.getElementById('replaceImagePreview').innerHTML = '';
-            document.getElementById('replaceImageModal').classList.remove('hidden');
-        }
-
-        // Confirm replace image
-        async function confirmReplaceImage() {
-            if (!newImageForReplace) {
-                alert('Please select a new image first.');
-                return;
-            }
-            
-            const imageIndex = productImages.findIndex(img => img.id === imageToReplace);
-            if (imageIndex !== -1) {
-                const oldImage = productImages[imageIndex];
-                
-                // Show loading
-                showNotification('Replacing image...', 'info');
-                
-                try {
-                    // Delete old image from Cloudinary
-                    if (oldImage.publicId) {
-                        await deleteImageFromCloudinary(oldImage.publicId);
-                    }
-                    
-                    // Update the image in our data model
-                    productImages[imageIndex].src = newImageForReplace.src;
-                    productImages[imageIndex].publicId = newImageForReplace.publicId;
-                    
-                    // Re-render images
-                    renderProductImages();
-                    
-                    closeReplaceModal();
-                    showNotification('Image replaced successfully');
-                } catch (error) {
-                    console.error('Error replacing image:', error);
-                    showNotification('Error replacing image', 'error');
-                }
-            }
-        }
-
-        // Close replace modal
-        function closeReplaceModal() {
-            document.getElementById('replaceImageModal').classList.add('hidden');
-            document.getElementById('replaceImagePreview').innerHTML = '';
-            imageToReplace = null;
-            newImageForReplace = null;
-        }
-
-        // Show notification
-        function showNotification(message, type = 'success') {
-            const bgColor = type === 'error' ? 'bg-red-600' : 
-                           type === 'info' ? 'bg-blue-600' : 'bg-green-600';
-            
-            // Create notification element
-            const notification = document.createElement('div');
-            notification.className = `fixed top-4 right-4 ${bgColor} text-white px-6 py-3 rounded-lg shadow-lg z-50 transform transition-transform duration-300 translate-x-0`;
-            notification.innerHTML = `
-                <div class="flex items-center">
-                    <i class="fas ${type === 'error' ? 'fa-exclamation-circle' : type === 'info' ? 'fa-info-circle' : 'fa-check-circle'} mr-2"></i>
-                    <span>${message}</span>
                 </div>
-            `;
-            
-            document.body.appendChild(notification);
-            
-            // Remove notification after 3 seconds
-            setTimeout(() => {
-                notification.classList.add('translate-x-full');
-                setTimeout(() => {
-                    document.body.removeChild(notification);
-                }, 300);
-            }, 3000);
-        }
+            </div>
 
-        // Other existing functions (variant management, etc.)
-        function toggleVariantStatus(variantId, currentStatus) {
-            const newStatus = currentStatus === 'active' ? 'unlisted' : 'active';
-            const statusElement = document.getElementById(`status-${variantId}`);
-            const actionButton = document.getElementById(`action-${variantId}`);
-            
-            if (newStatus === 'unlisted') {
-                statusElement.innerHTML = '<span class="px-2 py-1 text-xs font-medium rounded-full bg-gray-100 text-gray-800">Unlisted</span>';
-                actionButton.innerHTML = '<i class="fas fa-eye mr-1"></i>List';
-                actionButton.className = 'px-3 py-1 bg-green-600 text-white text-xs rounded hover:bg-green-700 transition';
-            } else {
-                statusElement.innerHTML = '<span class="px-2 py-1 text-xs font-medium rounded-full bg-green-100 text-green-800">In Stock</span>';
-                actionButton.innerHTML = '<i class="fas fa-eye-slash mr-1"></i>Unlist';
-                actionButton.className = 'px-3 py-1 bg-gray-600 text-white text-xs rounded hover:bg-gray-700 transition';
-            }
-            
-            showNotification(`Variant ${newStatus === 'unlisted' ? 'unlisted' : 'listed'} successfully`);
-        }
-        
-        function bulkUnlistVariants() {
-            const checkboxes = document.querySelectorAll('.variant-checkbox:checked');
-            if (checkboxes.length === 0) {
-                alert('Please select at least one variant to unlist.');
-                return;
-            }
-            
-            if (confirm(`Are you sure you want to unlist ${checkboxes.length} variant(s)?`)) {
-                checkboxes.forEach(checkbox => {
-                    const variantId = checkbox.value;
-                    const currentStatus = checkbox.closest('tr').querySelector('[id^="status-"]').textContent.includes('Unlisted') ? 'unlisted' : 'active';
-                    if (currentStatus === 'active') {
-                        toggleVariantStatus(variantId, 'active');
-                    }
-                });
-                showNotification(`${checkboxes.length} variant(s) unlisted successfully`);
-            }
-        }
-        
-        function toggleAllVariants() {
-            const checkboxes = document.querySelectorAll('.variant-checkbox');
-            const selectAll = document.getElementById('select-all-variants');
-            checkboxes.forEach(checkbox => {
-                checkbox.checked = selectAll.checked;
-            });
-        }
-        
-        function editVariant(variantId) {
-            const row = document.querySelector(`[data-variant-id="${variantId}"]`);
-            const model = row.querySelector('.variant-model').textContent;
-            const stock = row.querySelector('.variant-stock').textContent;
-            const originalPrice = row.querySelector('.variant-original-price').textContent.replace('₹', '');
-            const salePrice = row.querySelector('.variant-sale-price').textContent.replace('₹', '');
-            
-            document.getElementById('editVariantModal').classList.remove('hidden');
-            document.getElementById('editVariantId').value = variantId;
-            document.getElementById('editVariantModel').value = model;
-            document.getElementById('editVariantStock').value = stock;
-            document.getElementById('editVariantOriginalPrice').value = originalPrice;
-            document.getElementById('editVariantSalePrice').value = salePrice;
-        }
-        
-        function saveVariantChanges() {
-            const variantId = document.getElementById('editVariantId').value;
-            const model = document.getElementById('editVariantModel').value;
-            const stock = document.getElementById('editVariantStock').value;
-            const originalPrice = document.getElementById('editVariantOriginalPrice').value;
-            const salePrice = document.getElementById('editVariantSalePrice').value;
-            
-            const row = document.querySelector(`[data-variant-id="${variantId}"]`);
-            row.querySelector('.variant-model').textContent = model;
-            row.querySelector('.variant-stock').textContent = stock;
-            row.querySelector('.variant-original-price').textContent = `₹${originalPrice}`;
-            row.querySelector('.variant-sale-price').textContent = `₹${salePrice}`;
-            
-            const statusElement = row.querySelector('[id^="status-"]');
-            if (parseInt(stock) === 0) {
-                statusElement.innerHTML = '<span class="px-2 py-1 text-xs font-medium rounded-full bg-red-100 text-red-800">Out of Stock</span>';
-            } else if (parseInt(stock) < 20) {
-                statusElement.innerHTML = '<span class="px-2 py-1 text-xs font-medium rounded-full bg-yellow-100 text-yellow-800">Low Stock</span>';
-            } else {
-                statusElement.innerHTML = '<span class="px-2 py-1 text-xs font-medium rounded-full bg-green-100 text-green-800">In Stock</span>';
-            }
-            
-            document.getElementById('editVariantModal').classList.add('hidden');
-            showNotification('Variant updated successfully');
-        }
-        
-        function closeModal() {
-            document.getElementById('editVariantModal').classList.add('hidden');
-        }
-        
-        function goToProductList() {
-            window.location.href = 'product-list.html';
-        }
-    </script>
+            <div class="flex justify-between items-center mt-6">
+                <div class="text-sm text-gray-500">
+                    Editing: <span id="editingImageName" class="font-medium">New Image</span>
+                </div>
+                <div class="flex gap-3">
+                    <button onclick="closeCropModal()" class="px-4 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors">Cancel</button>
+                    <button onclick="cropAndSave()" class="px-4 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition-colors">Apply Crop</button>
+                </div>
+            </div>
+        </div>
+    </div>
+  <script>
+    // This inserts a JSON string literal which must be parsed client-side.
+    // Example output: window.productImagesString = '[{"id": 1}, {"id": 2}]';
+    const productImagesString = '<%- JSON.stringify(product.productImages) %>';
+
+    // Parse the string into a usable array/object.
+    window.productImages = JSON.parse(productImagesString);
+</script>
+
+    <script src="https://cdn.jsdelivr.net/npm/cropperjs@1.5.12/dist/cropper.min.js"></script>
+
+ <script type="module" src="/js/admin/view-product.js"></script>
 </body>
 </html>
