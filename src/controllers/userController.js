@@ -216,7 +216,17 @@ let getLandingPage=(req,res)=>{
 let getHome=(req,res)=>{
     res.render('./user/home')
 }
-
+let logOut=(req,res)=>{
+    req.session.destroy((err)=>{
+        if(err){
+            console.log('logout error');
+          return  res.redirect('/home')
+        }else{
+            res.clearCookie('connect.sid');
+            return  res.redirect('/landingPage')
+        }
+    })
+}
 export default {
     getLogin,
     postLogin,
@@ -230,6 +240,7 @@ export default {
     getLandingPage,
     getHome,
     register,
-    OtpVerify
+    OtpVerify,
+    logOut
 
 };
