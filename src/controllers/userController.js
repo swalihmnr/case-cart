@@ -27,6 +27,11 @@ let postLogin=async(req,res)=>{
                     
                     console.log('login successfully')
                     req.session.isLogin=true
+                    req.session.user={
+                        id:existing._id,
+                        name:`${existing.firstName} ${existing.lastName}`,
+                        emial:existing.email
+                    }
                     return res.json({success:true,message:"login successfully..",redirectUrl:'/home'})
                     
                 }
@@ -242,5 +247,5 @@ export default {
     register,
     OtpVerify,
     logOut
-
+    
 };

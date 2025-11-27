@@ -14,6 +14,7 @@ import connectDB from './config/db.js';
 import passport from 'passport';
 import './config/passport.js'
 import morgan from 'morgan';
+import { attachUser } from './middlewares/auth.js';
 app.use(session({
     secret:process.env.SECRET_KEY,
     resave:false,
@@ -30,6 +31,7 @@ app.use(nocache())
 app.use(morgan('dev'))
 app.use(passport.initialize())
 app.use(passport.session())
+app.use(attachUser)
 app.use('/auth',authRouter)
 app.use('/',userRouter)
 app.use('/admin',adminRouter)

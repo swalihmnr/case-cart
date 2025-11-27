@@ -12,3 +12,8 @@ export const isLogged=(req,res,next)=>{
     next();
   }
 }
+
+export const attachUser=(req,res,next)=>{
+  res.locals.user=req.session.user|| null
+  next()
+}
