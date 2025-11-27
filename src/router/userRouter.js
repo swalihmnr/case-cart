@@ -11,7 +11,7 @@ router.get('/otpVerfication',otpAccess,userController.getOtpVerify);
 router.post('/otpVerfication',otpAccess,userController.OtpVerify);
 router.get('/resetPassword',userController.getResetPass);
 router.post('/resetPassword',userController.postResetPass);
-router.get('/landingPage',isLogin,userController.getLandingPage)
+router.get('/landingPage',userController.getLandingPage)
 router.get('/home',isLogin,userController.getHome)
 router.get('/forgotPassword',userController.getForgetPassword)
 router.post('/forgotPassword',userController.PostForgetPassword)    

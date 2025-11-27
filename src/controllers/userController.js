@@ -27,6 +27,11 @@ let postLogin=async(req,res)=>{
                     
                     console.log('login successfully')
                     req.session.isLogin=true
+                    req.session.user={
+                        id:existing._id,
+                        name:`${existing.firstName} ${existing.lastName}`,
+                        emial:existing.email
+                    }
                     return res.json({success:true,message:"login successfully..",redirectUrl:'/home'})
                     
                 }
@@ -216,7 +221,17 @@ let getLandingPage=(req,res)=>{
 let getHome=(req,res)=>{
     res.render('./user/home')
 }
-
+let logOut=(req,res)=>{
+    req.session.destroy((err)=>{
+        if(err){
+            console.log('logout error');
+          return  res.redirect('/home')
+        }else{
+            res.clearCookie('connect.sid');
+            return  res.redirect('/landingPage')
+        }
+    })
+}
 export default {
     getLogin,
     postLogin,
@@ -230,6 +245,7 @@ export default {
     getLandingPage,
     getHome,
     register,
-    OtpVerify
+    OtpVerify,
+    logOut
 
 };

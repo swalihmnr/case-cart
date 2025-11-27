@@ -1,14 +1,9 @@
 import mongoose from 'mongoose';
-const variantSchema=mongoose.Schema({
-    deviceModal:{
+const variantSchema=new mongoose.Schema({
+    deviceModel:{
         type:String,
         required:true
     },
-    images:[
-        {
-            type:String
-        }
-    ],
     discount:{
         type:Number,
         required:false,
@@ -29,8 +24,8 @@ const variantSchema=mongoose.Schema({
     },
     productId:{
         type:mongoose.Types.ObjectId,
-        ref:"product",
-        required:true
+        ref:"product"
+        
 
     },
     stock:{

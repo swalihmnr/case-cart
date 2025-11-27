@@ -1,5 +1,5 @@
 import mongoose from "mongoose";
-let produtSchema= mongoose.Schema({
+let produtSchema=new  mongoose.Schema({
     name:{
         type:String,
         required:true
@@ -22,16 +22,27 @@ let produtSchema= mongoose.Schema({
     },
     catgId:{
         type:mongoose.Types.ObjectId,
-        ref:"category",
-        required:true
+        ref:"Category",
+        required:false
     },
-    variants:{
+    variants:[{
         type:mongoose.Types.ObjectId,
         ref:"variant",
         required:true
-    },
+    }],
     productImages:[{
-        type:String
+        url:{
+            type:String,
+            required:true
+        },
+        publicId:{
+            type:String,
+            required:true
+        },
+        isMain:{
+            type:Boolean,
+            default:false
+        }
 
     }
     ]
