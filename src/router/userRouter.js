@@ -16,5 +16,5 @@ router.get('/home',isLogin,userController.getHome)
 router.get('/forgotPassword',userController.getForgetPassword)
 router.post('/forgotPassword',userController.PostForgetPassword)    
 router.post('/resendOtpVerification',userController.resendOtpVerify)
-router.get('/logut',userController.logOut)
+router.get('/logout',userController.logOut)
 export default router
