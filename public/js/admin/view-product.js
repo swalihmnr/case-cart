@@ -1,8 +1,13 @@
+import adminApi from "../adminApi.js";
+let  btnMode=null;
+
       // Global variables
         let cropper = null;
+        const product=window.product;
+        const productId=product._id.toString()
         const productsImages = window.productImages
-        console.log(productsImages);
        let productImages = productsImages.map((img, index) => ({
+        _id:img._id,
         id: index + 1,
         src: img.url,
         isMain: img.isMain
@@ -27,41 +32,75 @@
                 imageElement.id = `image-${image.id}`;
                 imageElement.className = `image-container rounded-lg ${image.isMain ? 'main-image' : 'border border-gray-200'}`;
                 imageElement.innerHTML = `
-                    <img src="${image.src}" alt="Product" class="w-full h-32 object-cover rounded-lg">
-                    ${image.isMain ? '<span class="absolute top-2 left-2 bg-blue-600 text-white text-xs px-2 py-1 rounded">Main</span>' : ''}
-                    <div class="image-overlay">
-                        <div class="flex flex-col space-y-2">
-                            <button onclick="setAsMain(${image.id})" class="p-2 bg-white text-blue-600 rounded-full hover:bg-blue-100 transition" title="Set as Main">
-                                <i class="fas fa-star"></i>
-                            </button>
-                            <button onclick="updateImage(${image.id})" class="p-2 bg-white text-green-600 rounded-full hover:bg-green-100 transition" title="Update Image">
-                                <i class="fas fa-edit"></i>
-                            </button>
-                        </div>
-                    </div>
-                `;
+    <img src="${image.src}" alt="Product" class="w-full h-32 object-cover rounded-lg">
+    ${image.isMain ? '<span class="absolute top-2 left-2 bg-blue-600 text-white text-xs px-2 py-1 rounded">Main</span>' : ''}
+    <div class="image-overlay">
+        <div class="flex flex-col space-y-2">
+            
+            <!-- SET MAIN BUTTON -->
+            <button onclick="setAsMain('${image.id}')" 
+                class="p-2 bg-white text-blue-600 rounded-full hover:bg-blue-100 transition" 
+                title="Set as Main">
+                <i class="fas fa-star"></i>
+            </button>
+
+            <!-- UPDATE BUTTON -->
+            <button onclick="updateImage('${image._id}', this)" data-btnmode="edit"
+                class="p-2 bg-white text-green-600 rounded-full hover:bg-green-100 transition" 
+                
+                title="Update Image">
+                <i class="fas fa-edit"></i>
+            </button>
+
+            <!-- DELETE BUTTON -->
+            <button onclick="deleteImage('${image._id}')" 
+                class="p-2 bg-white text-red-600 rounded-full hover:bg-red-100 transition" 
+                title="Delete Image">
+                <i class="fas fa-trash"></i>
+            </button>
+
+        </div>
+    </div>
+`;
+
                 container.appendChild(imageElement);
             });
         }
 
         // Set image as main
-        function setAsMain(imageId) {
-            // Update data model
-            productImages.forEach(image => {
-                image.isMain = image.id === imageId;
-            });
+        async function setAsMain(imageId) {
+                let res= await adminApi.setMainAxios(productId,imageId)
+                if(res.data.success){
+                    Swal.fire({
+                    icon: "success",
+                    title: " added as Main!",
+                    text: res.data.message,
+                    timer: 1800,
+                    showConfirmButton: false,
+                  }).then(()=>{
+                      location.reload()
+                  })
+                   
+                }else{
+                     Swal.fire({
+                     icon: "warning",
+                     title: " Something went wrong",
+                     text: res.data.message,
+                     timer: 1800,
+                     showConfirmButton: false,
+                   })
+                }
+            };
             
             // Re-render images
-            renderProductImages();
             
-            showNotification('Main image set successfully');
-        }
+           
+        
 
         // Update image
-        function updateImage(imageId) {
+        function updateImage(imageId,btn) {
+            btnMode = btn.dataset.btnmode;
             currentImageId = imageId;
-            
-            // Create a file input element
             const fileInput = document.createElement('input');
             fileInput.type = 'file';
             fileInput.accept = 'image/*';
@@ -83,7 +122,8 @@
         }
 
         // Open image uploader
-        function openImageUploader() {
+        function openImageUploader(btn) {
+              btnMode = btn.dataset.btnmode;
             document.getElementById('addImagesModal').classList.remove('hidden');
         }
 
@@ -110,7 +150,6 @@
             
             const image = document.getElementById('cropImage');
             image.src = imageSrc;
-            
             // Initialize cropper
             if (cropper) {
                 cropper.destroy();
@@ -157,45 +196,101 @@
         }
 
         // Crop and save image
-        function cropAndSave() {
+         function cropAndSave() {
             if (!cropper) return;
             
             // Get cropped canvas
             const canvas = cropper.getCroppedCanvas();
             
             // Convert to blob
-            canvas.toBlob(function(blob) {
-                const reader = new FileReader();
-                reader.onload = function(e) {
-                    if (currentImageId) {
-                        // Update existing image
-                        const imageIndex = productImages.findIndex(img => img.id === currentImageId);
-                        if (imageIndex !== -1) {
-                            productImages[imageIndex].src = e.target.result;
-                        }
-                    } else {
-                        // Add new image to our data model
-                        const newId = Math.max(...productImages.map(img => img.id), 0) + 1;
-                        const isMain = productImages.length === 0; // Set as main if it's the first image
+            let file;
+            canvas.toBlob(async function(blob) {
+                const ext=blob.type.split('/').pop();
+                const fileName=`cropped-image.${ext}`;
+                file =new File([blob],fileName,{type:blob.type})
+                const newForm=new FormData();
+                newForm.append('image',file)
+                newForm.append('imageId',currentImageId)
+                const produtId=product._id
+                // Re-render images 
+                if(btnMode==='edit'){
+                    try {
+                        let res= await adminApi.editImgProductAxios(newForm,produtId)
+                        console.log(res.data)
+                    if(res.data.success){
+                        console.log('hlow ')
+                        closeCropModal(); 
+                        Swal.fire({
+                            icon: "success",
+                            title: " image updated!",
+                            text: res.data.message,
+                            timer: 1800,
+                            showConfirmButton: false,
+                        }).then(()=>{
+                            document.getElementById('addImagesModal').classList.add('hidden');
+                            location.reload()
+                        })
                         
-                        productImages.push({
-                            id: newId,
-                            src: e.target.result,
-                            isMain: isMain
-                        });
                     }
+                    } catch (error) {
+                        console.log(error)
+                        Swal.fire({
+                           icon: "warning",
+                           title: " someting went wrong!",
+                           text: error.response.message,
+                           timer: 1800,
+                           showConfirmButton: false,
+                       })
+                        
+                    }
+
                     
-                    // Re-render images
-                    renderProductImages();
+                }
+                if(btnMode==="add"){
+                    try {
+                       const res= await adminApi.uploadImgProductAxios(productId,newForm)
+                       console.log(res)
+                    if(res.data.success){
+                        closeCropModal(); 
+                        Swal.fire({
+                            icon: "success",
+                            title: " image added!",
+                            text: res.data.message,
+                            timer: 1800,
+                            showConfirmButton: false,
+                        }).then(()=>{
+                            document.getElementById('addImagesModal').classList.add('hidden');
+                            location.reload()
+                        })
+                        
+                    } else{
+                        Swal.fire({
+                            icon: "warning",
+                            title: " someting went wrong!",
+                            text: res.data.message,
+                            timer: 1800,
+                            showConfirmButton: false,
+                        })
+                    }
+                    } catch (error) {
+                            Swal.fire({
+                            icon: "warning",
+                            title: " someting went wrong!",
+                            text: error.response.data.message,
+                            timer: 1800,
+                            showConfirmButton: false,
+                        }).then(()=>{
+                            document.getElementById('addImagesModal').classList.add('hidden');
+                            location.reload()
+                        })
+                        
+                    }
+                   
+                        
                     
-                    // Close modals
-                    closeCropModal();
-                    document.getElementById('addImagesModal').classList.add('hidden');
-                    
-                    showNotification(currentImageId ? 'Image updated successfully' : 'Image cropped and added successfully');
-                };
-                reader.readAsDataURL(blob);
-            }, 'image/jpeg', 0.9);
+                }
+            });
+            
         }
 
         // Save images (for adding new images)
@@ -203,10 +298,54 @@
             // This function is now handled by the crop flow
             // We keep it for compatibility with the HTML
             if (!currentUploadedImage) {
-                alert('Please upload an image first.');
+               Swal.fire({
+                            icon: "warning",
+                            title: " someting went wrong!",
+                            text: 'upload Image first',
+                            timer: 1800,
+                            showConfirmButton: false,
+                        })
                 return;
             }
         }
+
+   async function deleteImage(id) {
+    Swal.fire({
+        title: "Are you sure?",
+        text: "This image will be permanently deleted!",
+        icon: "warning",
+        showCancelButton: true,
+        confirmButtonColor: "#d33",
+        cancelButtonColor: "#3085d6",
+        confirmButtonText: "Yes, delete it!"
+    }).then(async(result) => {
+
+        if (!result.isConfirmed) return;
+
+        try {
+            let res = await adminApi.editImgDeleteAxios(id, productId);
+          
+
+            Swal.fire({
+                icon: "success",
+                title: "Image deleted!",
+                text: res.data.message,
+                timer: 1800,
+                showConfirmButton: false
+            }).then(() => location.reload());
+
+        } catch (err) {
+
+            Swal.fire({
+                icon: "error",
+                title: "Delete Failed!",
+                text: err.response.data.message,
+                timer: 1800,
+                showConfirmButton: false
+            });
+        }
+    });
+}
 
         // Setup basic information edit functionality
         function setupBasicInfoEdit() {
@@ -256,19 +395,16 @@
             cancelBasicInfoBtn.addEventListener('click', function() {
                 // Reset values to original
                 productNameEdit.value = productNameDisplay.textContent;
-                brandEdit.value = brandDisplay.textContent;
                 categoryEdit.value = categoryDisplay.textContent;
                 descriptionEdit.value = descriptionDisplay.textContent;
                 
                 // Hide edit elements
                 productNameEdit.classList.add('hidden');
-                brandEdit.classList.add('hidden');
                 categoryEdit.classList.add('hidden');
                 descriptionEdit.classList.add('hidden');
                 
                 // Show display elements
                 productNameDisplay.classList.remove('hidden');
-                brandDisplay.classList.remove('hidden');
                 categoryDisplay.classList.remove('hidden');
                 descriptionDisplay.classList.remove('hidden');
                 
@@ -283,22 +419,16 @@
             });
             
             // Save button click handler
-            saveBasicInfoBtn.addEventListener('click', function() {
+            saveBasicInfoBtn.addEventListener('click',  async() =>{
                 // Update display values with edited values
-                productNameDisplay.textContent = productNameEdit.value;
-                brandDisplay.textContent = brandEdit.value;
-                categoryDisplay.textContent = categoryEdit.value;
-                descriptionDisplay.textContent = descriptionEdit.value;
-                
                 // Hide edit elements
                 productNameEdit.classList.add('hidden');
-                brandEdit.classList.add('hidden');
                 categoryEdit.classList.add('hidden');
                 descriptionEdit.classList.add('hidden');
                 
                 // Show display elements
                 productNameDisplay.classList.remove('hidden');
-                brandDisplay.classList.remove('hidden');
+
                 categoryDisplay.classList.remove('hidden');
                 descriptionDisplay.classList.remove('hidden');
                 
@@ -310,134 +440,111 @@
                 
                 // Show edit button
                 editBasicInfoBtn.classList.remove('hidden');
-                
-                // Show success message
-                showNotification('Basic information updated successfully!', 'success');
+                const data={
+                    productName:productNameEdit.value,
+                    category:categoryEdit.value,
+                    description:descriptionEdit.value
+                }
+                const  res=await  adminApi.editProductBasicInfoAxios(data, productId)
+                if(res.data.success){
+                    Swal.fire({
+                icon: "success",
+                title: "product info updated!",
+                text: res.data.message,
+                timer: 1800,
+                showConfirmButton: false
+            }).then(()=>{
+
+                location.reload()
+            })
+                }else{
+                    Swal.fire({
+                icon: "warning",
+                title: "Something went wrong!",
+                text: res.data.message,
+                timer: 1800,
+                showConfirmButton: false
+            })
+                }
             });
         }
 
-        // Show notification
-        function showNotification(message, type = 'success') {
-            const bgColor = type === 'error' ? 'bg-red-600' : 
-                           type === 'info' ? 'bg-blue-600' : 'bg-green-600';
-            
-            // Create notification element
-            const notification = document.createElement('div');
-            notification.className = `fixed top-4 right-4 ${bgColor} text-white px-6 py-3 rounded-lg shadow-lg z-50 transform transition-transform duration-300 translate-x-0`;
-            notification.innerHTML = `
-                <div class="flex items-center">
-                    <i class="fas ${type === 'error' ? 'fa-exclamation-circle' : type === 'info' ? 'fa-info-circle' : 'fa-check-circle'} mr-2"></i>
-                    <span>${message}</span>
-                </div>
-            `;
-            
-            document.body.appendChild(notification);
-            
-            // Remove notification after 3 seconds
-            setTimeout(() => {
-                notification.classList.add('translate-x-full');
-                setTimeout(() => {
-                    document.body.removeChild(notification);
-                }, 300);
-            }, 3000);
-        }
-
-        // Other existing functions (variant management, etc.)
-        function toggleVariantStatus(variantId, currentStatus) {
-            const newStatus = currentStatus === 'active' ? 'unlisted' : 'active';
-            const statusElement = document.getElementById(`status-${variantId}`);
-            const actionButton = document.getElementById(`action-${variantId}`);
-            
-            if (newStatus === 'unlisted') {
-                statusElement.innerHTML = '<span class="px-2 py-1 text-xs font-medium rounded-full bg-gray-100 text-gray-800">Unlisted</span>';
-                actionButton.innerHTML = '<i class="fas fa-eye mr-1"></i>List';
-                actionButton.className = 'px-3 py-1 bg-green-600 text-white text-xs rounded hover:bg-green-700 transition';
-            } else {
-                statusElement.innerHTML = '<span class="px-2 py-1 text-xs font-medium rounded-full bg-green-100 text-green-800">In Stock</span>';
-                actionButton.innerHTML = '<i class="fas fa-eye-slash mr-1"></i>Unlist';
-                actionButton.className = 'px-3 py-1 bg-gray-600 text-white text-xs rounded hover:bg-gray-700 transition';
-            }
-            
-            showNotification(`Variant ${newStatus === 'unlisted' ? 'unlisted' : 'listed'} successfully`);
-        }
-        
-        function bulkUnlistVariants() {
-            const checkboxes = document.querySelectorAll('.variant-checkbox:checked');
-            if (checkboxes.length === 0) {
-                alert('Please select at least one variant to unlist.');
-                return;
-            }
-            
-            if (confirm(`Are you sure you want to unlist ${checkboxes.length} variant(s)?`)) {
-                checkboxes.forEach(checkbox => {
-                    const variantId = checkbox.value;
-                    const currentStatus = checkbox.closest('tr').querySelector('[id^="status-"]').textContent.includes('Unlisted') ? 'unlisted' : 'active';
-                    if (currentStatus === 'active') {
-                        toggleVariantStatus(variantId, 'active');
-                    }
-                });
-                showNotification(`${checkboxes.length} variant(s) unlisted successfully`);
-            }
-        }
-        
-        function toggleAllVariants() {
-            const checkboxes = document.querySelectorAll('.variant-checkbox');
-            const selectAll = document.getElementById('select-all-variants');
-            checkboxes.forEach(checkbox => {
-                checkbox.checked = selectAll.checked;
-            });
-        }
-        
-        function editVariant(variantId) {
-            const row = document.querySelector(`[data-variant-id="${variantId}"]`);
-            const model = row.querySelector('.variant-model').textContent;
-            const stock = row.querySelector('.variant-stock').textContent;
-            const originalPrice = row.querySelector('.variant-original-price').textContent.replace('₹', '');
-            const salePrice = row.querySelector('.variant-sale-price').textContent.replace('₹', '');
-            
+        let currenctVariantId;
+       async function editVariant(variantId) {
             document.getElementById('editVariantModal').classList.remove('hidden');
-            document.getElementById('editVariantId').value = variantId;
-            document.getElementById('editVariantModel').value = model;
-            document.getElementById('editVariantStock').value = stock;
-            document.getElementById('editVariantOriginalPrice').value = originalPrice;
-            document.getElementById('editVariantSalePrice').value = salePrice;
+            const res=await adminApi.variantDetialsAxios(variantId)
+            currenctVariantId=res.data.variant._id
+            console.log(currenctVariantId)
+            document.getElementById('editVariantModel').value = res.data.variant.deviceModel
+            document.getElementById('editVariantStock').value = res.data.variant.stock
+            document.getElementById('editVariantOriginalPrice').value = res.data.variant.orgPrice
+            document.getElementById('editVariantSalePrice').value = res.data.variant.salePrice
         }
         
-        function saveVariantChanges() {
-            const variantId = document.getElementById('editVariantId').value;
+        
+         async function saveVariantChanges() {
+            const id=currenctVariantId
+
             const model = document.getElementById('editVariantModel').value;
             const stock = document.getElementById('editVariantStock').value;
             const originalPrice = document.getElementById('editVariantOriginalPrice').value;
             const salePrice = document.getElementById('editVariantSalePrice').value;
+
             
-            const row = document.querySelector(`[data-variant-id="${variantId}"]`);
-            row.querySelector('.variant-model').textContent = model;
-            row.querySelector('.variant-stock').textContent = stock;
-            row.querySelector('.variant-original-price').textContent = `₹${originalPrice}`;
-            row.querySelector('.variant-sale-price').textContent = `₹${salePrice}`;
-            
-            const statusElement = row.querySelector('[id^="status-"]');
-            if (parseInt(stock) === 0) {
-                statusElement.innerHTML = '<span class="px-2 py-1 text-xs font-medium rounded-full bg-red-100 text-red-800">Out of Stock</span>';
-            } else if (parseInt(stock) < 20) {
-                statusElement.innerHTML = '<span class="px-2 py-1 text-xs font-medium rounded-full bg-yellow-100 text-yellow-800">Low Stock</span>';
-            } else {
-                statusElement.innerHTML = '<span class="px-2 py-1 text-xs font-medium rounded-full bg-green-100 text-green-800">In Stock</span>';
+            const data={
+                deviceModel:model,
+                stock:stock,
+                orgPrice:originalPrice,
+                salePrice:salePrice
+            }
+            try {
+                document.getElementById('editVariantModal').classList.add('hidden');
+            const res=await adminApi.editVariantSaveAxios(id,data)
+            if(res.data.success){
+                Swal.fire({
+                icon: "success",
+                title: "veriant updeted successfully",
+                text: res.data.message,
+                timer: 1800,
+                showConfirmButton: false
+            }).then(()=>{
+                location.reload()
+            })
+            }else{
+                Swal.fire({
+                icon: "warning",
+                title: "something went wrong",
+                text: res.data.message,
+                timer: 1800,
+                showConfirmButton: false
+            })
+            }
+            } catch (error) {
+                 Swal.fire({
+                icon: "warning",
+                title: "something went wrong",
+                text: error.response.data.message,
+                timer: 1800,
+                showConfirmButton: false
+            })
             }
             
-            document.getElementById('editVariantModal').classList.add('hidden');
-            showNotification('Variant updated successfully');
         }
+
+       async function toggleListUnlist(id){
+        const res=await adminApi.toggleListUnlistAxios(id)
+        if(res.data.success){
+            location.reload()
+        }
+       }
+
         
         function closeModal() {
             document.getElementById('editVariantModal').classList.add('hidden');
             document.getElementById('addImagesModal').classList.add('hidden');
         }
         
-        function goToProductList() {
-            window.location.href = 'product-list.html';
-        }
-
+       
 // Make all functions global for HTML access
 window.renderProductImages = renderProductImages;
 window.setAsMain = setAsMain;
@@ -451,11 +558,8 @@ window.openImageUploader = openImageUploader;
 window.handleImagesUpload = handleImagesUpload;
 window.saveImages = saveImages;
 window.setupBasicInfoEdit = setupBasicInfoEdit;
-window.showNotification = showNotification;
-window.toggleVariantStatus = toggleVariantStatus;
-window.bulkUnlistVariants = bulkUnlistVariants;
-window.toggleAllVariants = toggleAllVariants;
 window.editVariant = editVariant;
 window.saveVariantChanges = saveVariantChanges;
 window.closeModal = closeModal;
-window.goToProductList = goToProductList;
+window.deleteImage=deleteImage;
+window.toggleListUnlist=toggleListUnlist;

@@ -25,7 +25,6 @@
             <input
             id="searchInput"
               type="text"
-              data-searchmode="category"
               value="<%= search %>"
               placeholder="Search categories..."
               class="px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-purple-500 flex-1"
@@ -99,7 +98,7 @@
       </div>
   
       <!-- Pagination -->
-      <div class="flex space-x-1">y
+      <div class="flex space-x-1">
   
           <!-- Prev Button -->
           <!-- Pagination -->
@@ -173,6 +172,6 @@
   
 </div>
 <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
-<script type="module" src="/js/admin/list-search.js"></script>
+<script type="module" src="/js/admin/category-filter.js"></script>
 <script type="module" src="/js/admin/block-category.js"></script>
 <%- include('../partials/footer') %>

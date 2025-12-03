@@ -199,29 +199,7 @@
                             </button>
                         </div>
                     </div>
-
-                <!-- Color Options -->
-                <div class="mb-6">
-                    <label class="block text-sm font-semibold text-gray-700 mb-3">Color: <span class="font-normal text-purple-600">Purple Gradient</span></label>
-                    <div class="flex space-x-3">
-                        <div class="color-option selected w-12 h-12 rounded-full cursor-pointer border-4 border-purple-600" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);"></div>
-                        <div class="color-option w-12 h-12 rounded-full cursor-pointer border-4 border-transparent hover:border-gray-300" style="background: linear-gradient(135deg, #3B82F6 0%, #06B6D4 100%);"></div>
-                        <div class="color-option w-12 h-12 rounded-full cursor-pointer border-4 border-transparent hover:border-gray-300" style="background: linear-gradient(135deg, #10B981 0%, #34D399 100%);"></div>
-                        <div class="color-option w-12 h-12 rounded-full cursor-pointer border-4 border-transparent hover:border-gray-300" style="background: linear-gradient(135deg, #F97316 0%, #EF4444 100%);"></div>
-                        <div class="color-option w-12 h-12 rounded-full cursor-pointer border-4 border-transparent hover:border-gray-300" style="background: linear-gradient(135deg, #EC4899 0%, #F43F5E 100%);"></div>
-                    </div>
-                </div>
-
-                <!-- Quantity -->
-                <div class="mb-6">
-                    <label class="block text-sm font-semibold text-gray-700 mb-3">Quantity</label>
-                    <div class="flex items-center space-x-4">
-                        <button onclick="decrementQty()" class="w-12 h-12 border-2 border-gray-300 rounded-lg hover:bg-gray-100 transition font-semibold">-</button>
-                        <input type="number" id="quantity" value="1" min="1" class="w-20 h-12 text-center border-2 border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500 font-semibold text-lg">
-                        <button onclick="incrementQty()" class="w-12 h-12 border-2 border-gray-300 rounded-lg hover:bg-gray-100 transition font-semibold">+</button>
-                    </div>
-                </div>
-
+            
                 <!-- Action Buttons -->
                 <div class="flex flex-col sm:flex-row gap-4 mb-6">
                     <button class="flex-1 bg-purple-600 text-white py-4 rounded-lg font-semibold hover:bg-purple-700 transition flex items-center justify-center space-x-2">
@@ -236,35 +214,7 @@
                 </div>
 
                 <!-- Features -->
-                <div class="bg-gray-100 rounded-lg p-6">
-                    <h3 class="font-semibold text-gray-800 mb-4">Key Features</h3>
-                    <ul class="space-y-2">
-                        <li class="flex items-center text-gray-600">
-                            <svg class="w-5 h-5 text-green-500 mr-2" fill="currentColor" viewBox="0 0 20 20">
-                                <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"/>
-                            </svg>
-                            Military-grade drop protection
-                        </li>
-                        <li class="flex items-center text-gray-600">
-                            <svg class="w-5 h-5 text-green-500 mr-2" fill="currentColor" viewBox="0 0 20 20">
-                                <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"/>
-                            </svg>
-                            Raised edges protect screen & camera
-                        </li>
-                        <li class="flex items-center text-gray-600">
-                            <svg class="w-5 h-5 text-green-500 mr-2" fill="currentColor" viewBox="0 0 20 20">
-                                <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"/>
-                            </svg>
-                            Wireless charging compatible
-                        </li>
-                        <li class="flex items-center text-gray-600">
-                            <svg class="w-5 h-5 text-green-500 mr-2" fill="currentColor" viewBox="0 0 20 20">
-                                <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"/>
-                            </svg>
-                            Premium TPU material
-                        </li>
-                    </ul>
-                </div>
+                
             </div>
         </div>
 
@@ -273,9 +223,8 @@
             <div class="border-b border-gray-200">
                 <div class="flex space-x-8">
                     <button class="tab-btn active py-4 px-2 font-semibold" onclick="switchTab('description')">Description</button>
-                    <button class="tab-btn py-4 px-2 font-semibold text-gray-600 hover:text-gray-800" onclick="switchTab('specifications')">Specifications</button>
                     <button class="tab-btn py-4 px-2 font-semibold text-gray-600 hover:text-gray-800" onclick="switchTab('reviews')">Reviews (48)</button>
-                    <button class="tab-btn py-4 px-2 font-semibold text-gray-600 hover:text-gray-800" onclick="switchTab('shipping')">Shipping</button>
+
                 </div>
             </div>
 
@@ -287,44 +236,10 @@
                     <p class="text-gray-600 leading-relaxed mb-4">
                         The Gradient Dream case combines style and protection in one sleek package. Crafted from premium TPU material, this case offers military-grade drop protection while maintaining a slim profile that won't add bulk to your device.
                     </p>
-                    <p class="text-gray-600 leading-relaxed mb-4">
-                        The stunning gradient finish is achieved through an advanced printing process that ensures the colors remain vibrant and won't fade over time. Each case features raised bezels around the screen and camera to provide extra protection against scratches and cracks.
-                    </p>
-                    <p class="text-gray-600 leading-relaxed">
-                        With precise cutouts for all buttons, ports, and cameras, you'll have full access to all your device's features without removing the case. The responsive button covers provide excellent tactile feedback while keeping dust and debris out.
-                    </p>
+                   
                 </div>
 
-                <!-- Specifications Tab (Hidden) -->
-                <div id="specifications" class="tab-content hidden">
-                    <h3 class="text-2xl font-bold text-gray-800 mb-4">Technical Specifications</h3>
-                    <div class="grid md:grid-cols-2 gap-6">
-                        <div>
-                            <h4 class="font-semibold text-gray-700 mb-2">Material</h4>
-                            <p class="text-gray-600">Premium TPU (Thermoplastic Polyurethane)</p>
-                        </div>
-                        <div>
-                            <h4 class="font-semibold text-gray-700 mb-2">Protection Level</h4>
-                            <p class="text-gray-600">Military-grade (MIL-STD-810G)</p>
-                        </div>
-                        <div>
-                            <h4 class="font-semibold text-gray-700 mb-2">Weight</h4>
-                            <p class="text-gray-600">28 grams</p>
-                        </div>
-                        <div>
-                            <h4 class="font-semibold text-gray-700 mb-2">Thickness</h4>
-                            <p class="text-gray-600">1.2mm slim profile</p>
-                        </div>
-                        <div>
-                            <h4 class="font-semibold text-gray-700 mb-2">Compatibility</h4>
-                            <p class="text-gray-600">Wireless charging, MagSafe</p>
-                        </div>
-                        <div>
-                            <h4 class="font-semibold text-gray-700 mb-2">Finish</h4>
-                            <p class="text-gray-600">Matte gradient with anti-fingerprint coating</p>
-                        </div>
-                    </div>
-                </div>
+                
 
                 <!-- Reviews Tab (Hidden) -->
                 <div id="reviews" class="tab-content hidden">
@@ -416,48 +331,7 @@
                     </div>
                 </div>
 
-                <!-- Shipping Tab (Hidden) -->
-                <div id="shipping" class="tab-content hidden">
-                    <h3 class="text-2xl font-bold text-gray-800 mb-4">Shipping Information</h3>
-                    <div class="space-y-4">
-                        <div class="flex items-start space-x-3">
-                            <svg class="w-6 h-6 text-purple-600 flex-shrink-0 mt-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/>
-                            </svg>
-                            <div>
-                                <h4 class="font-semibold text-gray-800 mb-1">Free Standard Shipping</h4>
-                                <p class="text-gray-600">On orders over $50. Delivery in 5-7 business days.</p>
-                            </div>
-                        </div>
-                        <div class="flex items-start space-x-3">
-                            <svg class="w-6 h-6 text-purple-600 flex-shrink-0 mt-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"/>
-                            </svg>
-                            <div>
-                                <h4 class="font-semibold text-gray-800 mb-1">Express Shipping</h4>
-                                <p class="text-gray-600">$9.99 flat rate. Delivery in 2-3 business days.</p>
-                            </div>
-                        </div>
-                        <div class="flex items-start space-x-3">
-                            <svg class="w-6 h-6 text-purple-600 flex-shrink-0 mt-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z"/>
-                            </svg>
-                            <div>
-                                <h4 class="font-semibold text-gray-800 mb-1">Easy Returns</h4>
-                                <p class="text-gray-600">30-day return policy. Full refund if not satisfied.</p>
-                            </div>
-                        </div>
-                        <div class="flex items-start space-x-3">
-                            <svg class="w-6 h-6 text-purple-600 flex-shrink-0 mt-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"/>
-                            </svg>
-                            <div>
-                                <h4 class="font-semibold text-gray-800 mb-1">Secure Packaging</h4>
-                                <p class="text-gray-600">All orders are carefully packed to ensure safe delivery.</p>
-                            </div>
-                        </div>
-                    </div>
-                </div>
+
             </div>
         </div>
 
@@ -596,62 +470,6 @@
         </div>
     </footer>
 
-    <script>
-        function incrementQty() {
-            const input = document.getElementById('quantity');
-            input.value = parseInt(input.value) + 1;
-        }
-
-        function decrementQty() {
-            const input = document.getElementById('quantity');
-            if (parseInt(input.value) > 1) {
-                input.value = parseInt(input.value) - 1;
-            }
-        }
-
-        function switchTab(tabName) {
-            // Hide all tab contents
-            document.querySelectorAll('.tab-content').forEach(content => {
-                content.classList.add('hidden');
-            });
-            
-            // Remove active class from all tabs
-            document.querySelectorAll('.tab-btn').forEach(btn => {
-                btn.classList.remove('active', 'text-purple-600');
-                btn.classList.add('text-gray-600');
-            });
-            
-            // Show selected tab content
-            document.getElementById(tabName).classList.remove('hidden');
-            
-            // Add active class to clicked tab
-            event.target.classList.add('active', 'text-purple-600');
-            event.target.classList.remove('text-gray-600');
-        }
-
-        // Color selection
-        document.querySelectorAll('.color-option').forEach(option => {
-            option.addEventListener('click', function() {
-                document.querySelectorAll('.color-option').forEach(opt => {
-                    opt.classList.remove('selected', 'border-purple-600');
-                    opt.classList.add('border-transparent');
-                });
-                this.classList.add('selected', 'border-purple-600');
-                this.classList.remove('border-transparent');
-            });
-        });
-
-        // Thumbnail selection
-        document.querySelectorAll('.thumbnail').forEach(thumb => {
-            thumb.addEventListener('click', function() {
-                document.querySelectorAll('.thumbnail').forEach(t => {
-                    t.classList.remove('active', 'border-purple-600');
-                    t.classList.add('border-gray-200');
-                });
-                this.classList.add('active', 'border-purple-600');
-                this.classList.remove('border-gray-200');
-            });
-        });
-    </script>
+    <script></script>
 </body>
 </html>

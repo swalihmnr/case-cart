@@ -43,11 +43,55 @@ const addProductAxios=async(formData)=>{
 }
 const blockProductyAxios=async(data)=>{
   try {
-   let res=await api.post(`/admin/product-list/block/${data}`);
+   let res=await api.post(`/admin/product/list/block/${data}`);
    return  res
   } catch (err) {
     console.log(err)
   }
+}
+const uploadImgProductAxios=async(id,formData)=>{
+  
+    let res=await api.post(`/admin/product/edit/${id}/img-upload`,formData,{
+      headers:{'content-Type':"multipart/form-data"}
+    })
+    return res
+}
+
+
+const editImgProductAxios=async(formData,productId)=>{
+
+  let res=await api.post(`/admin/product/${productId}/edit-image`,formData,{
+    headers: { "Content-Type": "multipart/form-data" }
+  })
+  return res
+
+}
+const setMainAxios=async(id,imgIndx)=>{
+  try {
+    let res=await api.post(`/admin/product/edit/${id}/img-set-main`,{imgIndx})
+    return res;
+  } catch (error) {
+    console.log(error)
+  }
+}
+const editImgDeleteAxios=async(id,productId)=>{
+  let res =await api.post(`/admin/product/edit/${productId}/img-delete`,{id})
+  console.log(res)
+  return res
+}
+const editProductBasicInfoAxios=async(data,productId)=>{
+return await api.post(`/admin/product/edit/${productId}/basic-info`,data)
+
+}
+
+const variantDetialsAxios=async(data)=>{
+  return await api.post(`/admin/product/edit/${data}/variant-data`);
+}
+const editVariantSaveAxios=async(id,data)=>{
+  return await api.post(`/admin/product/edit/${id}/variant-save`,data)
+}
+const toggleListUnlistAxios=async(id)=>{
+  return await api.patch(`/admin/product/edit/${id}/veriant-toggle`)
 }
 export default {
     addCategoryAxios,
@@ -55,5 +99,13 @@ export default {
     editCategoryAxios,
     blockCustomerAxios,
     addProductAxios,
-    blockProductyAxios
-}
+    blockProductyAxios,
+    editImgProductAxios,
+    setMainAxios,
+    uploadImgProductAxios,
+    editImgDeleteAxios,
+    editProductBasicInfoAxios,
+    variantDetialsAxios,
+    editVariantSaveAxios,
+    toggleListUnlistAxios
+} 

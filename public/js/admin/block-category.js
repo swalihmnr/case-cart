@@ -1,3 +1,4 @@
+import adminApi from "../adminApi.js";
 document.querySelectorAll(".block-btn").forEach((btn) => {
   btn.addEventListener("click", async () => {
     const id = btn.dataset.id;
@@ -11,6 +12,7 @@ document.querySelectorAll(".block-btn").forEach((btn) => {
       confirmButtonText: "Yes, Continue",
     }).then(async(result) => {
       if(result.isConfirmed){
+        console.log('confirmed')
         let res = await adminApi.blockCategoryAxios(id);
         if (res.data.success) 
             location.reload();

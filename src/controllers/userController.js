@@ -2,6 +2,7 @@ import user from '../models/userModel.js'
 import modelOtp from '../models/otpModel.js'
 import bcrypt from 'bcrypt'
 import otpGeneratorTodb from '../utils/otpGeneratorToDb.js'
+import productModel from '../models/admin/productModel.js'
 
 
 let getLogin=(req,res)=>{
@@ -232,6 +233,27 @@ let logOut=(req,res)=>{
         }
     })
 }
+ 
+const getProduct= async(req,res)=>{
+    try {
+        const products= await productModel.find().populate('catgId')
+        res.render('./user/product-list',{
+            products
+        })
+    } catch (error) {
+        
+    }
+}
+const getDetialProduct= async(req,res)=>{
+    try {
+        const products= await productModel.find()
+        res.render('./user/product-detial',{
+            products
+        })
+    } catch (error) {
+        console.log(error)
+    }
+}
 export default {
     getLogin,
     postLogin,
@@ -246,6 +268,8 @@ export default {
     getHome,
     register,
     OtpVerify,
-    logOut
+    logOut,
+    getProduct,
+    getDetialProduct
     
 };
