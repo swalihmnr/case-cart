@@ -18,5 +18,5 @@ router.post('/forgotPassword',userController.PostForgetPassword)
 router.post('/resendOtpVerification',userController.resendOtpVerify)
 router.get('/logout',userController.logOut)
 router.get('/product',userController.getProduct)
-router.get('/product/detials',userController.getDetialProduct)
+router.get('/product/:id/detials',userController.getDetialProduct);
 export default router

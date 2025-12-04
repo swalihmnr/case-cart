@@ -50,4 +50,6 @@ let produtSchema=new  mongoose.Schema({
 },
 {timestamps:true}
 )
+produtSchema.index({ name: "text", description: "text" });
+
 export default mongoose.model('product',produtSchema)

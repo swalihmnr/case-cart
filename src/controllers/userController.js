@@ -3,6 +3,10 @@ import modelOtp from '../models/otpModel.js'
 import bcrypt from 'bcrypt'
 import otpGeneratorTodb from '../utils/otpGeneratorToDb.js'
 import productModel from '../models/admin/productModel.js'
+import Category from '../models/admin/categoryModel.js'
+import variantModel from '../models/admin/variantModel.js'
+import mongoose from 'mongoose'
+import { name } from 'ejs'
 
 
 let getLogin=(req,res)=>{
@@ -234,21 +238,171 @@ let logOut=(req,res)=>{
     })
 }
  
-const getProduct= async(req,res)=>{
+const getProduct = async (req, res) => {
     try {
-        const products= await productModel.find().populate('catgId')
-        res.render('./user/product-list',{
-            products
-        })
-    } catch (error) {
-        
-    }
+        let { page = 1, search = "", price = "all", Categories = "", sort = "" } = req.query;
+        page = Number(page);
+
+        const limit = 9;
+        const skip = (page - 1) * limit;
+
+    
+        const selectedCategories = Categories ? Categories.split(",") : [];
+
+        let matchStage = { isBlock: false };
+
+    
+        if (search.trim()) {
+            matchStage.name = { $regex: search, $options: "i" };
+        }
+
+
+        if (selectedCategories.length > 0) {
+          matchStage.catgId = { 
+        $in: selectedCategories.map(id => new mongoose.Types.ObjectId(id)) 
+    };
 }
+
+        // PRICE FILTER
+        let priceFilter = {};
+        if (price === "under-150") {
+            priceFilter = { "variants.salePrice": { $lte: 150 } };
+        }
+        if (price === "500-700") {
+            priceFilter = { "variants.salePrice": { $gte: 500, $lte: 700 } };
+        }
+        if (price === "above-1000") {
+            priceFilter = { "variants.salePrice": { $gte: 1000 } };
+        }
+
+        // SORT LOGIC
+        let sortStage = {};
+        if (sort === "priceLowHigh") sortStage = { minPrice: 1 };
+        if (sort === "priceHighLow") sortStage = { minPrice: -1 };
+        if (sort === "aToZ") sortStage = { name: 1 };
+        if (sort === "zToA") sortStage = { name: -1 };
+
+        
+        const pipeline = [
+            { $match: matchStage },
+
+       
+            {
+                $lookup: {
+                    from: "variants",
+                    localField: "variants",
+                    foreignField: "_id",
+                    as: "variants"
+                }
+            },
+
+            // JOIN CATEGORY
+            {
+                $lookup: {
+                    from: "categories",
+                    localField: "catgId",
+                    foreignField: "_id",
+                    as: "catgId"
+                }
+            },
+            { $unwind: "$catgId" },
+
+            // ADD MIN PRICE & MAIN IMAGE
+            {
+                $addFields: {
+                    minPrice: { $min: "$variants.salePrice" },
+                    mainImage: {
+                        $first: {
+                            $filter: {
+                                input: "$productImages",
+                                as: "img",
+                                cond: { $eq: ["$$img.isMain", true] }
+                            }
+                        }
+                    }
+                }
+            },
+
+            // PRICE FILTER
+            { $match: priceFilter },
+        ];
+
+        // APPLY SORT ONLY IF NOT EMPTY
+        if (Object.keys(sortStage).length > 0) {
+            pipeline.push({ $sort: sortStage });
+        }
+
+        // PAGINATION + COUNT IN SINGLE CALL
+        pipeline.push(
+            {
+                $facet: {
+                    data: [
+                        { $skip: skip },
+                        { $limit: limit }
+                    ],
+                    totalCount: [
+                        { $count: "count" }
+                    ]
+                }
+            }
+        );
+
+        const result = await productModel.aggregate(pipeline);
+
+        const products = result[0].data;
+        const totalItems = result[0].totalCount[0]?.count || 0;
+        const totalPages = Math.ceil(totalItems / limit);
+
+        const categories = await Category.find();
+
+        res.render("user/product-list", {
+            products,
+            categories,
+            selectedCategories,
+            search,
+            price,
+            sort,
+            totalItems,
+            currentPage: page,
+            totalPages
+        });
+
+    } catch (err) {
+        console.log(err);
+        res.status(500).send("Internal Server Error");
+    }
+};
+
+
+
 const getDetialProduct= async(req,res)=>{
     try {
-        const products= await productModel.find()
+        const veriantid=req.query.veriantId
+        let veriant;
+        const veriantId=new mongoose.Types.ObjectId(veriantid);
+        const id=req.params.id;
+        const objectId=new mongoose.Types.ObjectId(id);
+        const product= await productModel.findById(objectId).populate('catgId').populate("variants");
+        if(veriantid===undefined){
+            veriant=await variantModel.findOne({_id:product.variants[0]._id})
+        }else{
+            veriant=await variantModel.findOne({_id:veriantId})
+
+        }
+        const relatedProducts=await productModel.find({catgId:product.catgId,_id:{$ne:product._id}}).limit(4)
+        console.log(veriantid)
+        if(veriantId===null){
+        }else{
+           
+        }
+        let salePrice=veriant.salePrice
+        let orgPrice=veriant.orgPrice
+       
         res.render('./user/product-detial',{
-            products
+            product,
+            salePrice,
+            orgPrice,
+            relatedProducts
         })
     } catch (error) {
         console.log(error)
@@ -270,6 +424,6 @@ export default {
     OtpVerify,
     logOut,
     getProduct,
-    getDetialProduct
-    
+    getDetialProduct,
+
 };

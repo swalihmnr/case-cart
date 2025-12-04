@@ -11,7 +11,7 @@ const api = axios.create({
 // ---------------------------
 // SIGNUP
 // ---------------------------
-export const userSignupAxios = async (data) => {
+ const userSignupAxios = async (data) => {
   try {
     const res = await api.post("/signup", data);
 
@@ -31,7 +31,7 @@ export const userSignupAxios = async (data) => {
 // ---------------------------
 // OTP VERIFICATION
 // ---------------------------
-export const userOtpAxios = async (otp) => {
+ const userOtpAxios = async (otp) => {
   try {
     const email = sessionStorage.getItem("email");
 
@@ -72,7 +72,7 @@ export const userOtpAxios = async (otp) => {
 // ---------------------------
 // RESEND OTP
 // ---------------------------
-export const resendOtpAxios = async () => {
+ const resendOtpAxios = async () => {
   try {
     const email = sessionStorage.getItem("email");
     if (!email) throw new Error("Cannot resend OTP. Email missing.");
@@ -87,7 +87,7 @@ export const resendOtpAxios = async () => {
 // ---------------------------
 // LOGIN
 // ---------------------------
-export const loginAxios = async (data) => {
+const loginAxios = async (data) => {
   try {
     const res = await api.post("/login", data);
     return res;
@@ -100,7 +100,7 @@ export const loginAxios = async (data) => {
 // ---------------------------
 // FORGOT PASSWORD
 // ---------------------------
-export const forgotPassAxios = async (data) => {
+ const forgotPassAxios = async (data) => {
   try {
     const res = await api.post("/forgotPassword", data);
 
@@ -125,7 +125,7 @@ export const forgotPassAxios = async (data) => {
 ///   ------------------------
 ///  RESET PASSWORD SUBMIT
 ///   ------------------------
-export const resetPassAxios = async (data) => {
+ const resetPassAxios = async (data) => {
   try {
     const email = sessionStorage.getItem("email");
     if (!email) throw new Error("Session expired. Email missing.");
@@ -137,8 +137,7 @@ export const resetPassAxios = async (data) => {
     throw err;
   }
 };
-
-export const admnLoginAxios=async(data)=>{
+const admnLoginAxios=async(data)=>{
   try{
     
     return await api.post('/admin/login',data)
@@ -147,6 +146,7 @@ export const admnLoginAxios=async(data)=>{
   }
 }
 
+
 export default {
   userSignupAxios,
   userOtpAxios,
@@ -154,5 +154,6 @@ export default {
   loginAxios,
   forgotPassAxios,
   resetPassAxios,
-  admnLoginAxios
+  admnLoginAxios,
+
 };

@@ -92,88 +92,73 @@
                     <!-- Search -->
                     <div class="mb-6">
                         <label class="block text-sm font-semibold text-gray-700 mb-2">Search</label>
-                        <input type="text" placeholder="Search products..." class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500">
+                       <input id="search" value="<%= search || '' %>" 
+                      type="text" placeholder="Search products..." class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500">
                     </div>
 
                     <!-- Categories -->
-                    <div class="mb-6">
-                        <h3 class="text-sm font-semibold text-gray-700 mb-3">Categories</h3>
-                        <div class="space-y-2">
+                      <div class="mb-6">
+                          <h3 class="text-sm font-semibold text-gray-700 mb-3">Categories</h3>
+                      
+                          <!-- Scrollable container -->
+                          <div class="space-y-2 max-h-48 overflow-y-auto pr-1 custom-scroll">
+                              
+                              <!-- All Products -->
+                              <div class="flex items-center">
+                                  <input type="checkbox" id="cat_all" class="filter-checkbox hidden"value="">
+                                  <label for="cat_all" class="flex-1 px-3 py-2 text-sm border border-gray-300 rounded-lg cursor-pointer hover:bg-gray-50 transition">
+                                      All Products
+                                  </label>
+                              </div>
+                      
+                             
+                              <% categories.forEach(cat => { %>
+                <div>
+                    <input type="checkbox"
+                           class="filter-checkbox"
+                           id="cat_<%= cat._id %>"
+                           value="<%= cat._id %>"
+                           <%= selectedCategories.includes(String(cat._id)) ? "checked" : "" %>>
+                    <label for="cat_<%= cat._id %>"><%= cat.name %></label>
+                </div>
+            <% }) %>
+                                     </div>
+                                    </div>
+                                                  
+                             <!-- Price Range -->
+                             <div class="mb-6">
+                              <h3 class="text-sm font-semibold text-gray-700 mb-3">Price Range</h3>
+                             <div class="space-y-2">
                             <div class="flex items-center">
-                                <input type="checkbox" id="cat1" class="filter-checkbox hidden" checked>
-                                <label for="cat1" class="flex-1 px-3 py-2 text-sm border border-gray-300 rounded-lg cursor-pointer hover:bg-gray-50 transition">
-                                    All Products
-                                </label>
-                            </div>
-                            <div class="flex items-center">
-                                <input type="checkbox" id="cat2" class="filter-checkbox hidden">
-                                <label for="cat2" class="flex-1 px-3 py-2 text-sm border border-gray-300 rounded-lg cursor-pointer hover:bg-gray-50 transition">
-                                    Minimalist
-                                </label>
-                            </div>
-                            <div class="flex items-center">
-                                <input type="checkbox" id="cat3" class="filter-checkbox hidden">
-                                <label for="cat3" class="flex-1 px-3 py-2 text-sm border border-gray-300 rounded-lg cursor-pointer hover:bg-gray-50 transition">
-                                    Artistic
-                                </label>
-                            </div>
-                            <div class="flex items-center">
-                                <input type="checkbox" id="cat4" class="filter-checkbox hidden">
-                                <label for="cat4" class="flex-1 px-3 py-2 text-sm border border-gray-300 rounded-lg cursor-pointer hover:bg-gray-50 transition">
-                                    Nature
-                                </label>
-                            </div>
-                            <div class="flex items-center">
-                                <input type="checkbox" id="cat5" class="filter-checkbox hidden">
-                                <label for="cat5" class="flex-1 px-3 py-2 text-sm border border-gray-300 rounded-lg cursor-pointer hover:bg-gray-50 transition">
-                                    Geometric
-                                </label>
-                            </div>
-                        </div>
-                    </div>
-
-                    <!-- Price Range -->
-                    <div class="mb-6">
-                        <h3 class="text-sm font-semibold text-gray-700 mb-3">Price Range</h3>
-                        <div class="space-y-2">
-                            <div class="flex items-center">
-                                <input type="radio" name="price" id="price1" class="mr-2" checked>
+                                <input type="radio" name="price" value="all" <%= price === "all" ? "checked" : "" %>>
                                 <label for="price1" class="text-sm text-gray-700 cursor-pointer">All Prices</label>
                             </div>
+                        
                             <div class="flex items-center">
-                                <input type="radio" name="price" id="price2" class="mr-2">
-                                <label for="price2" class="text-sm text-gray-700 cursor-pointer">Under $20</label>
+                                <input type="radio" name="price" value="under-150" <%= price === "under-150" ? "checked" : "" %>>
+                                <label for="price2" class="text-sm text-gray-700 cursor-pointer">Under ₹150</label>
                             </div>
+                        
                             <div class="flex items-center">
-                                <input type="radio" name="price" id="price3" class="mr-2">
-                                <label for="price3" class="text-sm text-gray-700 cursor-pointer">$20 - $30</label>
+                                <input type="radio" name="price" value="500-700" <%= price === "500-700" ? "checked" : "" %>> 
+                                <label for="price3" class="text-sm text-gray-700 cursor-pointer">₹500 – ₹700</label>
                             </div>
+                        
                             <div class="flex items-center">
-                                <input type="radio" name="price" id="price4" class="mr-2">
-                                <label for="price4" class="text-sm text-gray-700 cursor-pointer">Above $30</label>
+                                <input type="radio" name="price" value="above-1000" <%= price === "above-1000" ? "checked" : "" %>>
+                                <label for="price4" class="text-sm text-gray-700 cursor-pointer">Above ₹1000</label>
                             </div>
                         </div>
-                    </div>
+                        
 
-                    <!-- Device Model -->
-                    <div class="mb-6">
-                        <h3 class="text-sm font-semibold text-gray-700 mb-3">Device Model</h3>
-                        <select class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500">
-                            <option>All Models</option>
-                            <option>iPhone 15 Pro Max</option>
-                            <option>iPhone 15 Pro</option>
-                            <option>iPhone 15</option>
-                            <option>Samsung S24 Ultra</option>
-                            <option>Samsung S24</option>
-                            <option>Google Pixel 8 Pro</option>
-                        </select>
                     </div>
+                   
 
                     <!-- Rating -->
                     <div class="mb-6">
-                        <h3 class="text-sm font-semibold text-gray-700 mb-3">Rating</h3>
+                        <!-- <h3 class="text-sm font-semibold text-gray-700 mb-3">Rating</h3> -->
                         <div class="space-y-2">
-                            <div class="flex items-center cursor-pointer hover:bg-gray-50 p-2 rounded">
+                            <!-- <div class="flex items-center cursor-pointer hover:bg-gray-50 p-2 rounded">
                                 <span class="text-yellow-400">★★★★★</span>
                                 <span class="text-xs text-gray-600 ml-2">(4.5+)</span>
                             </div>
@@ -184,7 +169,7 @@
                             <div class="flex items-center cursor-pointer hover:bg-gray-50 p-2 rounded">
                                 <span class="text-yellow-400">★★★☆☆</span>
                                 <span class="text-xs text-gray-600 ml-2">(3.0+)</span>
-                            </div>
+                            </div> -->
                         </div>
                     </div>
                 </div>
@@ -200,13 +185,13 @@
                         </div>
                         <div class="flex items-center space-x-4">
                             <label class="text-sm text-gray-600">Sort by:</label>
-                            <select class="px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500">
-                                <option>Featured</option>
-                                <option>Price: Low to High</option>
-                                <option>Price: High to Low</option>
-                                <option>Newest</option>
-                                <option>Best Selling</option>
-                                <option>Top Rated</option>
+                            <select id="sort" class="px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500">
+                                <option value="">Default</option>
+                                <option value="priceLowHigh" <%= sort==="priceLowHigh"?"selected":"" %>>Price: Low → High</option>
+                                <option value="priceHighLow" <%= sort==="priceHighLow"?"selected":"" %>>Price: High → Low</option>
+                                <option value="aToZ" <%= sort==="aToZ"?"selected":"" %>>A → Z</option>
+                                <option value="zToA" <%= sort==="zToA"?"selected":"" %>>Z → A</option>
+                                
                             </select>
                         </div>
                     </div>
@@ -216,85 +201,90 @@
         <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
                                         <!-- Product 1 -->
                 <% products.forEach(product => { %>
-                                          
-                 <div class="product-card bg-white rounded-xl shadow-md overflow-hidden cursor-pointer">
-    <!-- Image / Banner -->
-    <div class="relative bg-gradient-to-br from-purple-400 to-pink-400 h-64 flex items-center justify-center">
-        <img 
-            src="<%= product.productImages.find(img=>img.isMain).url %>" 
-            
-            alt="Phone Case"
-        />
-
-        <button class="absolute top-4 right-4 bg-white rounded-full p-2 hover:bg-gray-100 transition">
-            <svg class="w-5 h-5 text-gray-400 hover:text-red-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z"/>
-            </svg>
-        </button>
-    </div>
-
-    <!-- Content -->
-    <div class="p-4">
-        <!-- Product Name -->
-        <h3 class="text-lg font-bold text-gray-800 mb-1">
-            Pure Matte Black Case
-        </h3>
-
-        <!-- Category Name -->
-        <p class="text-sm text-gray-500 mb-2">
-            Minimalist
-        </p>
-
-        <!-- Rating -->
-        <div class="flex items-center mb-3">
-            <div class="flex text-yellow-400 text-sm">
-                <span>★★★★★</span>
-            </div>
-            <span class="text-xs text-gray-600 ml-2">(48)</span>
-        </div>
-
-        <!-- Variant Selection -->
-        <label class="text-sm text-gray-600 block mb-1">
-            Choose Device Model
-        </label>
-        <select class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm mb-3">
-            <option value="iphone-15">iPhone 15 </option>
-            <option value="iphone-14">iPhone 14</option>
-            <option value="samsung-s24">Samsung S24</option>
-            <option value="oneplus-12">OnePlus 12 </option>
-        </select>
-
-        <!-- Price + Button -->
-        <div class="flex items-center justify-between">
-            <span class="text-xl font-bold text-purple-600">
-                ₹249
-            </span>
-            <button class="bg-purple-600 text-white px-4 py-2 rounded-lg hover:bg-purple-700 transition text-sm">
-                Add to Cart
-            </button>
-        </div>
-    </div>
-</div>
-
+                      <a href="/product/<%= product._id%>/detials">
+                            <div class="product-card bg-white rounded-xl shadow-md overflow-hidden cursor-pointer">
+              <!-- Image / Banner -->
+              <div class="relative bg-gradient-to-br from-purple-400 to-pink-400 h-64 flex items-center justify-center">
+                  <img 
+                      src="<%= product.productImages.find(img=>img.isMain).url %>" 
+                      alt="Phone Case"
+                  />
+          
+                  <button class="absolute top-4 right-4 bg-white rounded-full p-2 hover:bg-gray-100 transition">
+                      <svg class="w-5 h-5 text-gray-400 hover:text-red-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z"/>
+                      </svg>
+                  </button>
+              </div>
+          
+              <!-- Content -->
+              <div class="p-4">
+                  <!-- Product Name -->
+                  <h3 class="text-lg font-bold text-gray-800 mb-1">
+                      <%= product.name %>
+                  </h3>
+          
+                  <!-- Category Name -->
+                  <p class="text-sm text-gray-500 mb-2">
+                      <%= product.catgId.name %>
+                  </p>
+          
+                  <!-- Rating -->
+                  <div class="flex items-center mb-3">
+                      <div class="flex text-yellow-400 text-sm">
+                          <span>★★★★★</span>
+                      </div>
+                      <span class="text-xs text-gray-600 ml-2">(48)</span>
+                  </div>
+          
+                  <!-- Variant Selection -->
+                  
+                  <!-- Price + Button -->
+                  <div class="flex items-center justify-between">
+                     
+                   <span class="text-xl font-bold text-purple-600">
+                    ₹<%= product.minPrice %>
+                   </span>
+                      <button class="bg-purple-600 text-white px-4 py-2 rounded-lg hover:bg-purple-700 transition text-sm">
+                          Add to Cart
+                      </button>
+                  </div>
+              </div>
+          </div>
+          
+                      </a>                   
+               
                       <% }) %>
                     
                 <!-- Pagination -->
-                <div class="mt-12 flex justify-center items-center space-x-2">
-                    <button class="px-4 py-2 border border-gray-300 rounded-lg hover:bg-gray-50 transition">
-                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"/>
-                        </svg>
-                    </button>
-                    <button class="px-4 py-2 bg-purple-600 text-white rounded-lg font-semibold">1</button>
-                    <button class="px-4 py-2 border border-gray-300 rounded-lg hover:bg-gray-50 transition">2</button>
-                    <button class="px-4 py-2 border border-gray-300 rounded-lg hover:bg-gray-50 transition">3</button>
-                    <button class="px-4 py-2 border border-gray-300 rounded-lg hover:bg-gray-50 transition">4</button>
-                    <button class="px-4 py-2 border border-gray-300 rounded-lg hover:bg-gray-50 transition">
-                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/>
-                        </svg>
-                    </button>
-                </div>
+                <div class="flex justify-center mt-10 space-x-2">
+            <% if(currentPage > 1) { %>
+                <a href="/product?page=<%= currentPage - 1 %>&search=<%= search %>&price=<%= price %>&sort=<%= sort %>&Categories=<%= selectedCategories %>"
+                   class="px-4 py-2 border rounded-lg">Prev</a>
+            <% } else { %>
+                <span class="px-4 py-2 border rounded-lg text-gray-400">Prev</span>
+            <% } %>
+
+            <% for(let i=1; i<= totalPages; i++) { %>
+                <% if(i === currentPage) { %>
+                    <span class="px-4 py-2 bg-purple-600 text-white rounded-lg"><%= i %></span>
+                <% } else { %>
+                    <a href="/product?page=<%= i %>&search=<%= search %>&price=<%= price %>&sort=<%= sort %>&Categories=<%= selectedCategories %>"
+                       class="px-4 py-2 border rounded-lg"><%= i %></a>
+                <% } %>
+            <% } %>
+
+            <% if(currentPage < totalPages) { %>
+                <a href="/product?page=<%= currentPage + 1 %>&search=<%= search %>&price=<%= price %>&sort=<%= sort %>&Categories=<%= selectedCategories %>"
+                   class="px-4 py-2 border rounded-lg">Next</a>
+            <% } else { %>
+                <span class="px-4 py-2 border rounded-lg text-gray-400">Next</span>
+            <% } %>
+        </div>
+
+                
+
+
             </main>
         </div>
     </div>
@@ -350,7 +340,7 @@
             </div>
         </div>
     </footer>
-    <script type="module" src="/js/user/list-product.js"></script>
+   <script type="module" src="/js/user/list-product.js"></script>
     
 </body>
 </html>
