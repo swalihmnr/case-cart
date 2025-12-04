@@ -84,10 +84,10 @@
 
                 <!-- Desktop Navigation -->
                 <div class="hidden md:flex items-center space-x-8">
-                    <a href="#" class="nav-link text-gray-700 hover:text-purple-600 font-medium">Home</a>
-                    <a href="#products" class="nav-link text-gray-700 hover:text-purple-600 font-medium">Products</a>
+                    <a href="/home" class="nav-link text-gray-700 hover:text-purple-600 font-medium">Home</a>
+                    <a href="/product" class="nav-link text-gray-700 hover:text-purple-600 font-medium">Products</a>
                     <a href="#categories" class="nav-link text-gray-700 hover:text-purple-600 font-medium">Categories</a>
-                    <a href="#brands" class="nav-link text-gray-700 hover:text-purple-600 font-medium">Brands</a>
+                  
                 </div>
 
                 <!-- Right Side Icons -->
@@ -127,10 +127,10 @@
 
             <!-- Mobile Menu -->
             <div id="mobileMenu" class="hidden md:hidden pb-4">
-                <a href="#" class="block py-2 text-gray-700 hover:text-purple-600">Home</a>
-                <a href="#products" class="block py-2 text-gray-700 hover:text-purple-600">Products</a>
+                <a href="/home" class="block py-2 text-gray-700 hover:text-purple-600">Home</a>
+                <a href="/product" class="block py-2 text-gray-700 hover:text-purple-600">Products</a>
                 <a href="#categories" class="block py-2 text-gray-700 hover:text-purple-600">Categories</a>
-                <a href="#brands" class="block py-2 text-gray-700 hover:text-purple-600">Brands</a>
+              
                <% if (!user) { %>
     <a href="/login" 
        class="block bg-purple-600 text-white px-6 py-2 rounded-lg hover:bg-purple-700 transition font-medium">
@@ -140,7 +140,7 @@
     <div class="block space-y-2 mt-2">
 
         <span class="text-gray-700 font-medium block">
-            Hi, <%= user.name %>
+            Hi, `<%= user.firstName %> <%= user.lastName %>`
         </span>
 
         <a href="/logout" 
@@ -200,7 +200,7 @@
                     </div>
                     
                     <div class="flex flex-wrap gap-4 pt-4">
-                        <a href="#products" class="group bg-white text-purple-600 px-8 py-4 rounded-xl font-bold hover:bg-yellow-300 hover:text-purple-900 transition-all shadow-xl hover:shadow-2xl hover:scale-105 inline-flex items-center gap-2">
+                        <a href="/products" class="group bg-white text-purple-600 px-8 py-4 rounded-xl font-bold hover:bg-yellow-300 hover:text-purple-900 transition-all shadow-xl hover:shadow-2xl hover:scale-105 inline-flex items-center gap-2">
                             Shop Now
                             <i class="fas fa-arrow-right group-hover:translate-x-1 transition-transform"></i>
                         </a>
@@ -315,7 +315,9 @@
                     </div>
                     <h3 class="font-bold text-lg mb-1">iPhone</h3>
                     <p class="text-sm text-gray-500 mb-3">200+ cases</p>
-                    <span class="inline-block text-purple-600 font-medium text-sm group-hover:underline">Shop Now →</span>
+                    <a href="/product">
+                        <span class="inline-block text-purple-600 font-medium text-sm group-hover:underline">Shop Now →</span>
+                    </a>
                 </div>
                 
                 <div class="bg-white rounded-2xl shadow-md p-6 text-center hover-lift cursor-pointer group">
@@ -324,7 +326,9 @@
                     </div>
                     <h3 class="font-bold text-lg mb-1">Samsung</h3>
                     <p class="text-sm text-gray-500 mb-3">180+ cases</p>
-                    <span class="inline-block text-purple-600 font-medium text-sm group-hover:underline">Shop Now →</span>
+                     <a href="/product">
+                        <span class="inline-block text-purple-600 font-medium text-sm group-hover:underline">Shop Now →</span>
+                    </a>
                 </div>
                 
                 <div class="bg-white rounded-2xl shadow-md p-6 text-center hover-lift cursor-pointer group">
@@ -333,7 +337,9 @@
                     </div>
                     <h3 class="font-bold text-lg mb-1">OnePlus</h3>
                     <p class="text-sm text-gray-500 mb-3">120+ cases</p>
-                    <span class="inline-block text-purple-600 font-medium text-sm group-hover:underline">Shop Now →</span>
+                    <a href="/product">
+                        <span class="inline-block text-purple-600 font-medium text-sm group-hover:underline">Shop Now →</span>
+                    </a>
                 </div>
                 
                 <div class="bg-white rounded-2xl shadow-md p-6 text-center hover-lift cursor-pointer group">
@@ -342,7 +348,9 @@
                     </div>
                     <h3 class="font-bold text-lg mb-1">Xiaomi</h3>
                     <p class="text-sm text-gray-500 mb-3">150+ cases</p>
-                    <span class="inline-block text-purple-600 font-medium text-sm group-hover:underline">Shop Now →</span>
+                     <a href="/product">
+                        <span class="inline-block text-purple-600 font-medium text-sm group-hover:underline">Shop Now →</span>
+                    </a>
                 </div>
             </div>
         </div>

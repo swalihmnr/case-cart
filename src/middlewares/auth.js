@@ -1,5 +1,5 @@
 export const isLogin=(req,res,next)=>{
-  if(req.session.isLogin){
+  if(req.session.isLogin||req.session.user){
     next()
   }else{
     return res.redirect('/signup')
@@ -12,6 +12,7 @@ export const isLogged=(req,res,next)=>{
     next();
   }
 }
+
 
 export const attachUser=(req,res,next)=>{
   res.locals.user=req.session.user|| null

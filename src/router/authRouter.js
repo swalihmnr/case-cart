@@ -6,7 +6,11 @@ const router = express.Router();
 router.get("/google", authController.googleAuth);
 
 router.get("/google/callback",authController.googleAuthCallback,(req, res) => {
-    req.session.isLogin=true
+   req.session.user = {
+            name: `${req.user.firstName} ${req.user.lastName} `,
+            
+            email: req.user.email,
+        };
         res.redirect("/home"); 
     }
 );

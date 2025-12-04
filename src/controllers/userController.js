@@ -17,35 +17,43 @@ let postLogin=async(req,res)=>{
     try{
         let existing=await user.findOne({email:Email})
         if(existing){
-            if(existing.isVerified===true){
-                console.log('user verified....')
-                if(existing.email!==Email){
-                    console.log('user email not match')
-                    return res.json({success:false,message:"user email not match",emailErr:true})
-                }
-                let isValidPass= await bcrypt.compare(Password,existing.password);
-                if(!isValidPass){
-                    console.log('incorrect password')
-                    return res.json({success:false,message:"incorrect password",passErr:true,redirectUrl:'/login'});
-                    
-                }else{
-                    
-                    console.log('login successfully')
-                    req.session.isLogin=true
-                    req.session.user={
-                        id:existing._id,
-                        name:`${existing.firstName} ${existing.lastName}`,
-                        emial:existing.email
+            if(existing.isBlock!==true){
+
+                if(existing.isVerified===true){
+                    console.log('user verified....')
+                    if(existing.email!==Email){
+                        console.log('user email not match')
+                        return res.json({success:false,message:"user email not match",emailErr:true})
                     }
-                    return res.json({success:true,message:"login successfully..",redirectUrl:'/home'})
-                    
+                    let isValidPass= await bcrypt.compare(Password,existing.password);
+                    if(!isValidPass){
+                        console.log('incorrect password')
+                        return res.json({success:false,message:"incorrect password",passErr:true,redirectUrl:'/login'});
+                        
+                    }else{
+                        
+                        console.log('login successfully')
+                        req.session.isLogin=true
+                        req.session.user={
+                            id:existing._id,
+                            name:`${existing.firstName} ${existing.lastName}`,
+                            emial:existing.email
+                        }
+                        return res.status(200).json({success:true,message:"login successfully..",redirectUrl:'/home'})
+                        
+                    }
+                }else{
+                    return res.status(403).json({isVerified:false,message:"user not verified"})
                 }
             }else{
-                return res.json({isVerified:false,message:"user not verified"})
+                return res.status(403).json({
+                    success:false,
+                    message:"admin blocked you "
+                })
             }
         }else{
             console.log('signup first')
-            return res.json({success:false,message:"user hasn't signup yet"})
+            return res.status(404).json({success:false,message:"user hasn't signup yet"})
         }
     }catch(err){
 
@@ -224,6 +232,7 @@ let getLandingPage=(req,res)=>{
     res.render("./user/landingPage")
 }
 let getHome=(req,res)=>{
+    console.log(req)
     res.render('./user/home')
 }
 let logOut=(req,res)=>{
