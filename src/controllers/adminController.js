@@ -538,7 +538,7 @@ const productImageEdit=async(req,res)=>{
         success:true,
         message:"Product Image updated"
     })
-    console.log(index)
+   
    } catch (error) {
     console.log(error)
    }

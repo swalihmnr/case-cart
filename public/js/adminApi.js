@@ -19,14 +19,14 @@ const addCategoryAxios = async (data)=>{
 }
 const blockCategoryAxios=async(data)=>{
   try {
-   let res=await api.post(`/admin/category/block/${data}`);
+   let res=await api.patch(`/admin/category/block/${data}`);
    return  res
   } catch (err) {
     console.log(err)
   }
 }
 const editCategoryAxios=async(id,data)=>{
-  let res=await api.post(`/admin/category/edit/${id}`,data)
+  let res=await api.patch(`/admin/category/edit/${id}`,data)
   return res
 }
 const blockCustomerAxios=async(id)=>{
@@ -43,7 +43,7 @@ const addProductAxios=async(formData)=>{
 }
 const blockProductyAxios=async(data)=>{
   try {
-   let res=await api.post(`/admin/product/list/block/${data}`);
+   let res=await api.patch(`/admin/product/list/block/${data}`);
    return  res
   } catch (err) {
     console.log(err)
@@ -51,7 +51,7 @@ const blockProductyAxios=async(data)=>{
 }
 const uploadImgProductAxios=async(id,formData)=>{
   
-    let res=await api.post(`/admin/product/edit/${id}/img-upload`,formData,{
+    let res=await api.patch(`/admin/product/edit/${id}/img-upload`,formData,{
       headers:{'content-Type':"multipart/form-data"}
     })
     return res
@@ -60,7 +60,7 @@ const uploadImgProductAxios=async(id,formData)=>{
 
 const editImgProductAxios=async(formData,productId)=>{
 
-  let res=await api.post(`/admin/product/${productId}/edit-image`,formData,{
+  let res=await api.patch(`/admin/product/${productId}/edit-image`,formData,{
     headers: { "Content-Type": "multipart/form-data" }
   })
   return res
@@ -68,24 +68,24 @@ const editImgProductAxios=async(formData,productId)=>{
 }
 const setMainAxios=async(id,imgIndx)=>{
   try {
-    let res=await api.post(`/admin/product/edit/${id}/img-set-main`,{imgIndx})
+    let res=await api.patch(`/admin/product/edit/${id}/img-set-main`,{imgIndx})
     return res;
   } catch (error) {
     console.log(error)
   }
 }
 const editImgDeleteAxios=async(id,productId)=>{
-  let res =await api.post(`/admin/product/edit/${productId}/img-delete`,{id})
+  let res =await api.patch(`/admin/product/edit/${productId}/img-delete`,{id})
   console.log(res)
   return res
 }
 const editProductBasicInfoAxios=async(data,productId)=>{
-return await api.post(`/admin/product/edit/${productId}/basic-info`,data)
+return await api.patch(`/admin/product/edit/${productId}/basic-info`,data)
 
 }
 
 const variantDetialsAxios=async(data)=>{
-  return await api.post(`/admin/product/edit/${data}/variant-data`);
+  return await api.patch(`/admin/product/edit/${data}/variant-data`);
 }
 const editVariantSaveAxios=async(id,data)=>{
   return await api.post(`/admin/product/edit/${id}/variant-save`,data)

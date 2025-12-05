@@ -35,7 +35,10 @@ app.use(attachUser)
 app.use('/auth',authRouter)
 app.use('/',userRouter)
 app.use('/admin',adminRouter)
-app.use(express.static(path.join(__dirname,'../public')))
+app.use(express.static(path.join(__dirname,'../public')));
+app.use((req,res)=>{
+    res.status(404).render('error')
+})
 connectDB()
 app.listen(process.env.PORT_NUMBER,()=>{
  console.log(`it's running on ${process.env.PORT_NUMBER}`)

@@ -33,7 +33,7 @@ let postLogin=async(req,res)=>{
                     }else{
                         
                         console.log('login successfully')
-                        req.session.isLogin=true
+
                         req.session.user={
                             id:existing._id,
                             name:`${existing.firstName} ${existing.lastName}`,

@@ -124,6 +124,7 @@ let  btnMode=null;
         // Open image uploader
         function openImageUploader(btn) {
               btnMode = btn.dataset.btnmode;
+              console.log(btn)
             document.getElementById('addImagesModal').classList.remove('hidden');
         }
 
