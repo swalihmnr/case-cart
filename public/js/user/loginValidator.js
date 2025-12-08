@@ -1,4 +1,5 @@
 import api from '../api.js'
+const url=new URL(window.location.href)
 window.togglePassword=togglePassword
 function togglePassword(inputId) {
     const input = document.getElementById(inputId);
@@ -21,6 +22,14 @@ function togglePassword(inputId) {
     password: /^.{8,}$/,
   };
 
+  
+if (url.searchParams.get("blocked") === "true") {
+    Swal.fire({
+        icon: "error",
+        title: "Account Blocked",
+        text: "Your account has been blocked by admin."
+    });
+}
   document.querySelector("form").addEventListener("submit", async (e) => {
     e.preventDefault();
 
@@ -52,8 +61,14 @@ function togglePassword(inputId) {
       }
      let res= await api.loginAxios(data)
      console.log(res)
-     if(!res.data.success){
-        if(res.data.emailErr){
+     try {
+      if(res.data.success){
+        console.log("hlow")
+          if(res.data.redirectUrl==='/home'){
+          window.location.href=res.data.redirectUrl;
+          }
+      }else{
+         if(res.data.emailErr){
             emailErr.innerText=res.data.message;
         }else if (res.data.passErr){
             passErr.innerText=res.data.message
@@ -63,17 +78,18 @@ function togglePassword(inputId) {
         title: 'Signup',
         text: res.data.message,
         confirmButtonColor: '#667eea'
-      });
+      })
       
         }
-        
-        
-     }else{
-        Swal.close();
+      }
+    } catch (error) {
+     
+        Swal.fire({
+          icon:"error",
+          title:"Access deneid!",
+          text:error.response.data.message
+        })
      }
-     if(res.data.redirectUrl==='/home')
-     window.location.href=res.data.redirectUrl
-
     }
   });
 

@@ -1,0 +1,155 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CaseCart - Premium Phone Cases for All Brands</title>
+    <meta name="description" content="Shop premium phone cases for iPhone, Samsung, OnePlus, Xiaomi and more. Free shipping on orders over $50. 30-day returns guaranteed.">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+        .fade-in-up {
+            animation: fadeInUp 0.8s ease-out forwards;
+        }
+        .gradient-bg {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        }
+        .product-card {
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+        .product-card:hover {
+            transform: translateY(-8px);
+            box-shadow: 0 20px 40px rgba(0,0,0,0.15);
+        }
+        .category-card {
+            transition: all 0.3s ease;
+        }
+        .category-card:hover {
+            transform: scale(1.05);
+        }
+        .nav-link {
+            position: relative;
+            transition: color 0.3s ease;
+        }
+        .nav-link::after {
+            content: '';
+            position: absolute;
+            width: 0;
+            height: 2px;
+            bottom: -4px;
+            left: 0;
+            background-color: #667eea;
+            transition: width 0.3s ease;
+        }
+        .nav-link:hover::after {
+            width: 100%;
+        }
+        .product-image {
+            height: 250px;
+            object-fit: cover;
+            background-color: #f8fafc;
+        }
+        .brand-logo {
+            height: 60px;
+            width: 60px;
+            object-fit: contain;
+            margin: 0 auto 16px;
+        }
+    </style>
+</head>
+<body class="bg-gray-50">
+    <!-- Navigation -->
+    <nav class="bg-white shadow-md sticky top-0 z-50">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex justify-between items-center h-16">
+                <!-- Logo -->
+                <div class="flex items-center">
+                    <a href="#" class="flex items-center space-x-2">
+                        <div class="w-10 h-10 gradient-bg rounded-lg flex items-center justify-center">
+                            <span class="text-white font-bold text-xl">CC</span>
+                        </div>
+                        <span class="text-2xl font-bold text-gray-800">CaseCart</span>
+                    </a>
+                </div>
+
+                <!-- Desktop Navigation -->
+                <div class="hidden md:flex items-center space-x-8">
+                    <a href="/home" class="nav-link text-gray-700 hover:text-purple-600 font-medium">Home</a>
+                    <a href="/product" class="nav-link text-gray-700 hover:text-purple-600 font-medium">Products</a>
+                    <a href="#categories" class="nav-link text-gray-700 hover:text-purple-600 font-medium">Categories</a>
+                  
+                </div>
+
+                <!-- Right Side Icons -->
+                <div class="flex items-center space-x-4">
+                   
+                    <a href="#" class="text-gray-700 hover:text-purple-600 transition relative">
+                        <i class="fas fa-heart"></i>
+                        <span class="absolute -top-2 -right-2 bg-red-500 text-white text-xs rounded-full w-5 h-5 flex items-center justify-center">3</span>
+                    </a>
+                    <a href="#" class="text-gray-700 hover:text-purple-600 transition relative">
+                        <i class="fas fa-shopping-cart"></i>
+                        <span class="absolute -top-2 -right-2 bg-purple-600 text-white text-xs rounded-full w-5 h-5 flex items-center justify-center">2</span>
+                    </a>
+                   <% if (!user) { %>
+    <a href="/login" 
+       class="hidden md:block bg-purple-600 text-white px-6 py-2 rounded-lg hover:bg-purple-700 transition font-medium">
+       Login
+    </a>
+<% } else { %>
+    <div class="hidden md:flex items-center space-x-4">
+        <span class="text-gray-700 font-medium">
+            Hi, <%= user.name %>
+        </span>
+        <a href="/logout" 
+           class="bg-red-500 text-white px-4 py-2 rounded-lg hover:bg-red-600 transition font-medium">
+           Logout
+        </a>
+    </div>
+<% } %>
+
+                    <!-- Mobile Menu Button -->
+                    <button class="md:hidden text-gray-700" onclick="toggleMobileMenu()">
+                        <i class="fas fa-bars"></i>
+                    </button>
+                </div>
+            </div>
+
+            <!-- Mobile Menu -->
+            <div id="mobileMenu" class="hidden md:hidden pb-4">
+                <a href="/home" class="block py-2 text-gray-700 hover:text-purple-600">Home</a>
+                <a href="/product" class="block py-2 text-gray-700 hover:text-purple-600">Products</a>
+                <a href="#categories" class="block py-2 text-gray-700 hover:text-purple-600">Categories</a>
+              
+               <% if (!user) { %>
+    <a href="/login" 
+       class="block bg-purple-600 text-white px-6 py-2 rounded-lg hover:bg-purple-700 transition font-medium">
+       Login
+    </a>
+<% } else { %>
+    <div class="block space-y-2 mt-2">
+
+        <span class="text-gray-700 font-medium block">
+            Hi, `<%= user.firstName %> <%= user.lastName %>`
+        </span>
+
+        <a href="/logout" 
+           class="block bg-red-500 text-white px-4 py-2 rounded-lg hover:bg-red-600 transition font-medium">
+           Logout
+        </a>
+    </div>
+<% } %>
+
+            </div>
+        </div>
+    </nav>

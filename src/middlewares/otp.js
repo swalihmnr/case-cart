@@ -1,8 +1,8 @@
 export const otpAccess=(req,res,next)=>{
-    if(req.session.tempUserId){
+    if( req.session.requre_sign){
         next()
     }else{
-        res.redirect('/signup')
+        res.redirect('/login')
     }
    
 }

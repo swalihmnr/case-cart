@@ -7,7 +7,7 @@ router.get("/google", authController.googleAuth);
 
 router.get("/google/callback",authController.googleAuthCallback,(req, res) => {
    req.session.user = {
-            name: `${req.user.firstName} ${req.user.lastName} `,
+            name: `${req.user.firstName} ${req.user.lastName}`,
             
             email: req.user.email,
         };

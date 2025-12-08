@@ -6,54 +6,61 @@ import productModel from '../models/admin/productModel.js'
 import Category from '../models/admin/categoryModel.js'
 import variantModel from '../models/admin/variantModel.js'
 import mongoose from 'mongoose'
-import { name } from 'ejs'
+import {STATUS_CODES} from '../utils/statusCodes.js'
 
 
 let getLogin=(req,res)=>{
     res.render('./user/userLogin')
 }
 let postLogin=async(req,res)=>{
+
     const {Email,Password}=req.body
     try{
         let existing=await user.findOne({email:Email})
         if(existing){
-            if(existing.isBlock!==true){
 
                 if(existing.isVerified===true){
                     console.log('user verified....')
                     if(existing.email!==Email){
                         console.log('user email not match')
-                        return res.json({success:false,message:"user email not match",emailErr:true})
+                        return res.status(STATUS_CODES.NOT_FOUND).json({success:false,message:"user email not match",emailErr:true})
                     }
                     let isValidPass= await bcrypt.compare(Password,existing.password);
                     if(!isValidPass){
                         console.log('incorrect password')
-                        return res.json({success:false,message:"incorrect password",passErr:true,redirectUrl:'/login'});
+                        return res.status(STATUS_CODES.UNAUTHORIZED).json({success:false,message:"incorrect password",passErr:true,redirectUrl:'/login'});
                         
                     }else{
-                        
+                        req.session.requre_sign=false
                         console.log('login successfully')
-
-                        req.session.user={
-                            id:existing._id,
-                            name:`${existing.firstName} ${existing.lastName}`,
-                            emial:existing.email
-                        }
-                        return res.status(200).json({success:true,message:"login successfully..",redirectUrl:'/home'})
+                        if(existing.isBlock){
+                            console.log('you are blocked user ')
+                            return res.status(STATUS_CODES.FORBIDDEN).json({
+                                success:false,
+                                isBlock:true,
+                                message:"you are blocked user!"
+                            })
                         
+                        }else{
+                            
+                            
+                            req.session.user={
+                                id:existing._id,
+                                name:`${existing.firstName} ${existing.lastName}`,
+                                email:existing.email,
+                                isBlock:existing.isBlock
+                            }
+                            return res.status(STATUS_CODES.OK).json({success:true,message:"login successfully..",redirectUrl:'/home'})
+                            
+                        }
                     }
                 }else{
-                    return res.status(403).json({isVerified:false,message:"user not verified"})
+                    return res.status(STATUS-STATUS_CODES.FORBIDDEN).json({isVerified:false,message:"user not verified"})
                 }
-            }else{
-                return res.status(403).json({
-                    success:false,
-                    message:"admin blocked you "
-                })
-            }
+          
         }else{
             console.log('signup first')
-            return res.status(404).json({success:false,message:"user hasn't signup yet"})
+            return res.status(STATUS_CODES.NOT_FOUND).json({success:false,message:"user hasn't signup yet"})
         }
     }catch(err){
 
@@ -86,8 +93,8 @@ let register=async(req,res)=>{
                 
             })
             console.log(hashedPassword)
+            req.session.requre_sign=true
             await newUser.save()
-            req.session.tempUserId=true;
             let newOtp=await otpGeneratorTodb(newUser,email)
             if(newOtp){ 
                 console.log('user registration successfully')
@@ -128,8 +135,6 @@ let OtpVerify= async(req,res)=>{
             await user.updateOne({email:userEmail},{$set:{isVerified:true}})
            
            console.log(`otp verified successfully: ${data}`);
-           req.session.isLogin=true;
-          
            return res.json({
            success: true,
            message: 'OTP verified',
@@ -219,7 +224,6 @@ let PostForgetPassword=async(req,res)=>{
             console.log('it is user otp on post frogot',Userotp)
              let otp= await otpGeneratorTodb(User,email)
              console.log('it is the Otp'+otp)
-             req.session.resetMode=true
              return res.json({success:true,redirectUrl:'/otpVerfication',successUrl:'/resetPassword'})
             
        }else{
@@ -416,7 +420,7 @@ const getDetialProduct= async(req,res)=>{
     } catch (error) {
         console.log(error)
     }
-}
+}   
 export default {
     getLogin,
     postLogin,

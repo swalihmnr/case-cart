@@ -90,11 +90,14 @@ const api = axios.create({
 const loginAxios = async (data) => {
   try {
     const res = await api.post("/login", data);
+    console.log(res)
     return res;
-  } catch (err) {
-    console.error("Login error:", err);
-    throw err;
+    
+  } catch (error) {
+    console.log('here is the main problem right')
+    return error.response
   }
+ 
 };
 
 // ---------------------------
