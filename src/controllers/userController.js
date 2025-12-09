@@ -552,6 +552,14 @@ const editProfileImg=async(req,res)=>{
         })
     }
 }
+const getWishlist=async(req,res)=>{
+    const user={
+        profileUrl:'sdfsdfsdfs'
+    }
+    res.render('./user/wishlist',{
+        user
+    })
+}
 
 export default {
     getLogin,
@@ -572,6 +580,7 @@ export default {
     getDetialProduct,
     getUserProfil,
     editProfileInfo,
-    editProfileImg
+    editProfileImg,
+    getWishlist
 
 };

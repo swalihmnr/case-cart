@@ -1,0 +1,115 @@
+<%- include('../partials/user/header') %>
+
+
+<div class="flex">
+    
+    <main class="max-w-7xl mx-auto px-4 py-8 md:py-12">
+        <div class="mb-8 fade-in">
+            <h1 class="text-3xl md:text-4xl font-bold mb-2">My Account</h1>
+            <p class="text-gray-600">Manage your account settings and preferences</p>
+        </div>
+        <div class="grid lg:grid-cols-4 gap-8">
+            <%- include('../partials/user/sidebar') %>
+            <div class="lg:col-span-3 space-y-6">
+                <div class="lg:col-span-3">
+                <h3 class="text-2xl font-bold text-gray-900 mb-6">My Wishlist</h3>
+                
+                <div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
+                    <!-- Product Card 1 -->
+                    <div class="bg-white rounded-lg shadow-sm overflow-hidden hover:shadow-md transition">
+                        <div class="relative">
+                            <img src="https://images.unsplash.com/photo-1627919299411-1ea18a3a1b6e?w=400&h=300&fit=crop" alt="Premium Leather Wallet Case" class="w-full h-56 object-cover">
+                            <button class="absolute top-3 right-3 bg-white rounded-full p-2 shadow-md hover:bg-red-50 transition">
+                                <svg class="w-5 h-5 text-red-500" fill="currentColor" viewBox="0 0 24 24">
+                                    <path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"></path>
+                                </svg>
+                            </button>
+                        </div>
+                        <div class="p-4">
+                            <h4 class="font-semibold text-gray-900 mb-2">Premium Leather Wallet Case</h4>
+                            <div class="flex items-center mb-3">
+                                <div class="flex text-yellow-400">
+                                    <svg class="w-4 h-4 fill-current" viewBox="0 0 24 24"><path d="M12 17.27L18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z"/></svg>
+                                    <svg class="w-4 h-4 fill-current" viewBox="0 0 24 24"><path d="M12 17.27L18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z"/></svg>
+                                    <svg class="w-4 h-4 fill-current" viewBox="0 0 24 24"><path d="M12 17.27L18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z"/></svg>
+                                    <svg class="w-4 h-4 fill-current" viewBox="0 0 24 24"><path d="M12 17.27L18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z"/></svg>
+                                    <svg class="w-4 h-4 fill-current text-gray-300" viewBox="0 0 24 24"><path d="M12 17.27L18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z"/></svg>
+                                </div>
+                                <span class="ml-2 text-sm text-gray-600">4.5</span>
+                            </div>
+                            <p class="text-2xl font-bold text-purple-600 mb-3">₹1899</p>
+                            <button class="w-full bg-purple-600 text-white py-2 rounded-lg hover:bg-purple-700 transition font-medium">
+                                Add to Cart
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Product Card 2 -->
+                    <div class="bg-white rounded-lg shadow-sm overflow-hidden hover:shadow-md transition">
+                        <div class="relative">
+                            <img src="https://images.unsplash.com/photo-1601784551446-20c9e07cdbdb?w=400&h=300&fit=crop" alt="Silicone Phone Case - Blue" class="w-full h-56 object-cover">
+                            <button class="absolute top-3 right-3 bg-white rounded-full p-2 shadow-md hover:bg-red-50 transition">
+                                <svg class="w-5 h-5 text-red-500" fill="currentColor" viewBox="0 0 24 24">
+                                    <path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"></path>
+                                </svg>
+                            </button>
+                        </div>
+                        <div class="p-4">
+                            <h4 class="font-semibold text-gray-900 mb-2">Silicone Phone Case - Blue</h4>
+                            <div class="flex items-center mb-3">
+                                <div class="flex text-yellow-400">
+                                    <svg class="w-4 h-4 fill-current" viewBox="0 0 24 24"><path d="M12 17.27L18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z"/></svg>
+                                    <svg class="w-4 h-4 fill-current" viewBox="0 0 24 24"><path d="M12 17.27L18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z"/></svg>
+                                    <svg class="w-4 h-4 fill-current" viewBox="0 0 24 24"><path d="M12 17.27L18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z"/></svg>
+                                    <svg class="w-4 h-4 fill-current" viewBox="0 0 24 24"><path d="M12 17.27L18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z"/></svg>
+                                    <svg class="w-4 h-4 fill-current text-gray-300" viewBox="0 0 24 24"><path d="M12 17.27L18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z"/></svg>
+                                </div>
+                                <span class="ml-2 text-sm text-gray-600">4.2</span>
+                            </div>
+                            <p class="text-2xl font-bold text-purple-600 mb-3">₹499</p>
+                            <button class="w-full bg-purple-600 text-white py-2 rounded-lg hover:bg-purple-700 transition font-medium">
+                                Add to Cart
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Product Card 3 - Out of Stock -->
+                    <div class="bg-white rounded-lg shadow-sm overflow-hidden hover:shadow-md transition opacity-90">
+                        <div class="relative">
+                            <img src="https://images.unsplash.com/photo-1556656793-08538906a9f8?w=400&h=300&fit=crop" alt="Rugged Armor Case" class="w-full h-56 object-cover">
+                            <span class="absolute top-3 left-3 bg-red-500 text-white px-3 py-1 rounded-md text-sm font-medium">Out of Stock</span>
+                            <button class="absolute top-3 right-3 bg-white rounded-full p-2 shadow-md hover:bg-red-50 transition">
+                                <svg class="w-5 h-5 text-red-500" fill="currentColor" viewBox="0 0 24 24">
+                                    <path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"></path>
+                                </svg>
+                            </button>
+                        </div>
+                        <div class="p-4">
+                            <h4 class="font-semibold text-gray-900 mb-2">Rugged Armor Case</h4>
+                            <div class="flex items-center mb-3">
+                                <div class="flex text-yellow-400">
+                                    <svg class="w-4 h-4 fill-current" viewBox="0 0 24 24"><path d="M12 17.27L18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z"/></svg>
+                                    <svg class="w-4 h-4 fill-current" viewBox="0 0 24 24"><path d="M12 17.27L18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z"/></svg>
+                                    <svg class="w-4 h-4 fill-current" viewBox="0 0 24 24"><path d="M12 17.27L18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z"/></svg>
+                                    <svg class="w-4 h-4 fill-current" viewBox="0 0 24 24"><path d="M12 17.27L18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z"/></svg>
+                                    <svg class="w-4 h-4 fill-current" viewBox="0 0 24 24"><path d="M12 17.27L18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z"/></svg>
+                                </div>
+                                <span class="ml-2 text-sm text-gray-600">4.8</span>
+                            </div>
+                            <p class="text-2xl font-bold text-purple-600 mb-3">₹1299</p>
+                            <button class="w-full bg-gray-300 text-gray-600 py-2 rounded-lg cursor-not-allowed font-medium" disabled>
+                                Out of Stock
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            </div>
+        </div>
+
+  </main>
+  
+</div>
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+<script type="module" src="/js/user/user-profile.js"></script>
+<%- include('../partials/user/footer') %>

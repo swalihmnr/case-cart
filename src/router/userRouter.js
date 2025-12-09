@@ -24,5 +24,6 @@ router.get('/product/:id/detials',userAuth,blockUser,userController.getDetialPro
 router.get('/user-profile',userAuth,blockUser,userController.getUserProfil);
 router.post('/profile/info/edit',userAuth,userController.editProfileInfo);
 router.patch('/profile/edit/img',upload.single('image'),userController.editProfileImg)
+router.get('/wishlist',userController.getWishlist)
 
 export default router
