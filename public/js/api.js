@@ -149,6 +149,22 @@ const admnLoginAxios=async(data)=>{
   }
 }
 
+const userProfileAxios=async(data)=>{
+  try {
+  return  await api.post('/profile/info/edit',data);
+  } catch (error) {
+    return error.response
+  }
+}
+const userProfileImgUplaoderAxios=async(file)=>{
+  try {
+    return await api.patch('/profile/edit/img',file,{
+      headers:{'content-Type':"multipart/form-data"}
+    })
+  } catch (error) {
+    return error.response
+  }
+}
 
 export default {
   userSignupAxios,
@@ -158,5 +174,7 @@ export default {
   forgotPassAxios,
   resetPassAxios,
   admnLoginAxios,
+  userProfileAxios,
+  userProfileImgUplaoderAxios
 
 };

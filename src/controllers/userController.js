@@ -6,61 +6,58 @@ import productModel from '../models/admin/productModel.js'
 import Category from '../models/admin/categoryModel.js'
 import variantModel from '../models/admin/variantModel.js'
 import mongoose from 'mongoose'
-import {STATUS_CODES} from '../utils/statusCodes.js'
+import { STATUS_CODES } from '../utils/statusCodes.js'
+import { uploadBufferTocloudnery } from '../utils/cloudneryUpload.js'
 
 
 let getLogin=(req,res)=>{
     res.render('./user/userLogin')
 }
 let postLogin=async(req,res)=>{
-
     const {Email,Password}=req.body
     try{
+       
         let existing=await user.findOne({email:Email})
         if(existing){
+            if(existing.isBlock!==true){
 
                 if(existing.isVerified===true){
                     console.log('user verified....')
                     if(existing.email!==Email){
                         console.log('user email not match')
-                        return res.status(STATUS_CODES.NOT_FOUND).json({success:false,message:"user email not match",emailErr:true})
+                        return res.json({success:false,message:"user email not match",emailErr:true})
                     }
                     let isValidPass= await bcrypt.compare(Password,existing.password);
                     if(!isValidPass){
                         console.log('incorrect password')
-                        return res.status(STATUS_CODES.UNAUTHORIZED).json({success:false,message:"incorrect password",passErr:true,redirectUrl:'/login'});
+                        return res.json({success:false,message:"incorrect password",passErr:true,redirectUrl:'/login'});
                         
                     }else{
-                        req.session.requre_sign=false
-                        console.log('login successfully')
-                        if(existing.isBlock){
-                            console.log('you are blocked user ')
-                            return res.status(STATUS_CODES.FORBIDDEN).json({
-                                success:false,
-                                isBlock:true,
-                                message:"you are blocked user!"
-                            })
                         
-                        }else{
-                            
-                            
-                            req.session.user={
-                                id:existing._id,
-                                name:`${existing.firstName} ${existing.lastName}`,
-                                email:existing.email,
-                                isBlock:existing.isBlock
-                            }
-                            return res.status(STATUS_CODES.OK).json({success:true,message:"login successfully..",redirectUrl:'/home'})
-                            
+                        console.log('login successfully')
+                        
+                        req.session.user={
+                            id:existing._id,
+                            name:`${existing.firstName} ${existing.lastName}`,
+                            email:existing.email,
+                            profileUrl:existing.profileImg
                         }
+                        console.log(req.session.user.profileUrl)
+                        return res.status(200).json({success:true,message:"login successfully..",redirectUrl:'/home'})
+                        
                     }
                 }else{
-                    return res.status(STATUS-STATUS_CODES.FORBIDDEN).json({isVerified:false,message:"user not verified"})
+                    return res.status(403).json({isVerified:false,message:"user not verified"})
                 }
-          
+            }else{
+                return res.status(403).json({
+                    success:false,
+                    message:"admin blocked you "
+                })
+            }
         }else{
             console.log('signup first')
-            return res.status(STATUS_CODES.NOT_FOUND).json({success:false,message:"user hasn't signup yet"})
+            return res.status(404).json({success:false,message:"user hasn't signup yet"})
         }
     }catch(err){
 
@@ -93,8 +90,8 @@ let register=async(req,res)=>{
                 
             })
             console.log(hashedPassword)
-            req.session.requre_sign=true
             await newUser.save()
+            req.session.requre_sign=true
             let newOtp=await otpGeneratorTodb(newUser,email)
             if(newOtp){ 
                 console.log('user registration successfully')
@@ -133,8 +130,9 @@ let OtpVerify= async(req,res)=>{
 
          if (dbOtp === data) {
             await user.updateOne({email:userEmail},{$set:{isVerified:true}})
-           
-           console.log(`otp verified successfully: ${data}`);
+            console.log(`otp verified successfully: ${data}`);
+            req.session.requre_sign=false;
+          
            return res.json({
            success: true,
            message: 'OTP verified',
@@ -224,6 +222,7 @@ let PostForgetPassword=async(req,res)=>{
             console.log('it is user otp on post frogot',Userotp)
              let otp= await otpGeneratorTodb(User,email)
              console.log('it is the Otp'+otp)
+             req.session.resetMode=true
              return res.json({success:true,redirectUrl:'/otpVerfication',successUrl:'/resetPassword'})
             
        }else{
@@ -420,7 +419,140 @@ const getDetialProduct= async(req,res)=>{
     } catch (error) {
         console.log(error)
     }
-}   
+}
+const getUserProfil=async(req,res)=>{
+    let User=await user.findOne({email:req.session.user.email});
+
+    res.render('./user/user-profile',{User});
+}
+const editProfileInfo=async(req,res)=>{
+    try {
+       const {firstName,lastName,email,number}=req.body
+       const existing=await user.findOne({email:req.session.user.email});
+      if(!existing){
+        console.log('user not exist')
+        return res.status(STATUS_CODES.NOT_FOUND).json({
+            success:false,
+            message:"user does not exist"
+        })
+      }else{
+        let isChanged=false;
+        if(existing.password!=="google-auth"){
+            if(firstName!==existing.firstName){
+                isChanged=true
+            }
+            if(lastName!==existing.lastName){
+                isChanged=true
+            }
+            if(email!==existing.email){
+                isChanged=true
+            }
+            if(number!==existing.number){
+                isChanged=true
+            }
+            
+            if(isChanged){
+                    const updatedUser=await user.findByIdAndUpdate(existing._id,{
+                        firstName:firstName,
+                        lastName:lastName,
+                        number:number,
+                        email:email
+
+                    },{new:true})
+                    req.session.user.name = `${updatedUser.firstName} ${updatedUser.lastName}`;
+                    req.session.user.email = updatedUser.email;
+
+                return res.status(STATUS_CODES.OK).json({
+                    isGoogle:false,
+                    isChanged:true,
+                    success:true,
+                    message:'profile info updated successfully...'
+                })
+            }else{
+                return res.status(STATUS_CODES.OK).json({
+                    isGoogle:false,
+                    isChanged:false,
+                    success:false,
+                    message:'Nothing to update'
+                })
+            }
+        }else{
+             if(firstName!==existing.firstName){
+                isChanged=true
+            }
+            if(lastName!==existing.lastName){
+                isChanged=true
+            }
+            if(number!==existing.number){
+                isChanged=true
+            }
+            if(email!==existing.email){
+                return res.status(STATUS_CODES.FORBIDDEN).json({
+                    isGoogle:true,
+                    isChanged:false,
+                    success:false,
+                    message:'you are Google user ,you could not change your email'
+                })
+            }
+            if(isChanged){
+                    const updatedUser=await user.findByIdAndUpdate(existing._id,{
+                        firstName:firstName,
+                        lastName:lastName,
+                        number:number
+                    },{new:true})
+                     req.session.user.name = `${updatedUser.firstName} ${updatedUser.lastName}`;
+
+                    return res.status(STATUS_CODES.OK).json({
+                        isChanged:true,
+                        success:true,
+                        isGoogle:true,
+                        message:'profile info updated'
+                    })
+            }else{
+                return res.status(STATUS_CODES.OK).json({
+                    isGoogle:true,
+                    success:false,
+                    isChanged:false,
+                    message:"Nothing to update"
+                })
+            }
+
+        }
+      }
+    } catch (error) {
+       console.log(error)
+    }
+}
+const editProfileImg=async(req,res)=>{
+    try {
+        console.log(req.file)
+        const uploadResult=await uploadBufferTocloudnery(req.file.buffer);
+        const existing= await user.findOne({email:req.session.user.email})
+        console.log(existing)
+        if(!existing){
+            return res.status(STATUS_CODES.NOT_FOUND).json({
+                success:false,
+                message:"User not founded"
+            })
+        }else{
+            existing.profileImg= await uploadResult.secure_url;
+            existing.profileImgId=await uploadResult.public_id;
+            await existing.save()
+            req.session.user.profileUrl=await existing.profileImg
+            return res.status(STATUS_CODES.OK).json({
+                success:true,
+                message:"Profile Image updated"
+            })
+        }
+
+    } catch (error) {
+        return res.status(STATUS_CODES.INTERNAL_SERVER_ERROR).json({
+            success:false,
+            message:"Internal Server Error !"
+        })
+    }
+}
+
 export default {
     getLogin,
     postLogin,
@@ -438,5 +570,8 @@ export default {
     logOut,
     getProduct,
     getDetialProduct,
+    getUserProfil,
+    editProfileInfo,
+    editProfileImg
 
 };

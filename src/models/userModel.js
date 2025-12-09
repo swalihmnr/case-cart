@@ -33,6 +33,11 @@ const userSchema= new mongoose.Schema({
     },
     profileImg:{
         type:String,
+        required:false,
+        default:'https://imgs.search.brave.com/OrvFL2AD85Wyt_GL_x3kyCCYdVUybANnlgtKHDXaLiM/rs:fit:500:0:1:0/g:ce/aHR0cHM6Ly9pLnBp/bmltZy5jb20vb3Jp/Z2luYWxzLzE0LzQz/LzU1LzE0NDM1NWQ3/YjM2YzVmNjQ2NDM1/NDIzNzk4MjgxY2U5/LmpwZw'
+    },
+    profileImgId:{
+        type:String,
         required:false
     },
     createdAt:{
