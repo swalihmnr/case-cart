@@ -82,7 +82,7 @@ document.addEventListener("DOMContentLoaded", () => {
   }
   if (Err_flag) {
     console.log("Submitting signup form...");
-    const data={
+    const data={  
       firstname: fname,
       lastname: lname,
       number: pnumber,

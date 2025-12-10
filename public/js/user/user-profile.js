@@ -94,13 +94,17 @@ document.querySelector('form').addEventListener('submit', async function (e) {
         }
         try {
             let res=await api.userProfileAxios(data)
-            
+           
             if(res.data.success){
                  let alert_box=  document.querySelector('.warning-box');
                   numberErr.classList.remove('text-red-500')
                   numberErr.classList.add('text-blue-500')
                   alert_box.classList.remove('hidden')
                   alert_box.innerText=res.data.message
+                  if(res.data.otpVerify){
+                    console.log('here entered')
+                    location.href=res.data.redirect
+                  }
             }else{
                 if(res.data.isGoogle){
                   let alert_box=  document.querySelector('.warning-box');

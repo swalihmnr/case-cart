@@ -11,12 +11,12 @@ import { uploadBufferTocloudnery } from '../utils/cloudneryUpload.js'
 
 
 let getLogin=(req,res)=>{
+    req.session.isKey=false
     res.render('./user/userLogin')
 }
 let postLogin=async(req,res)=>{
     const {Email,Password}=req.body
     try{
-       
         let existing=await user.findOne({email:Email})
         if(existing){
             if(existing.isBlock!==true){
@@ -112,11 +112,11 @@ let getOtpVerify= async(req,res)=>{
 }
 let OtpVerify= async(req,res)=>{
     try{
-        
+         req.session.requre_sign=false;
         const {data,userEmail}=req.body
         const User=await user.findOne({email:userEmail})
         const userId=User._id
-        
+        console.log(userId)
         const userOtp=await modelOtp.findOne({userId:userId})
         if(userOtp){
             console.log('valid otp')
@@ -131,11 +131,27 @@ let OtpVerify= async(req,res)=>{
          if (dbOtp === data) {
             await user.updateOne({email:userEmail},{$set:{isVerified:true}})
             console.log(`otp verified successfully: ${data}`);
+            req.session.isKey=true
             req.session.requre_sign=false;
-          
+            if(req.session.user?.redirect=='/user-profile'){
+                req.session.user.redirect='';
+                return res.status(STATUS_CODES.OK).json({
+                    success:true,
+                    message:"OTP verified & Email changed",
+                    redirectUrl:'/user-profile'
+                })
+            }
+          if(req.session.redirect=="resetPassword"){
+            req.session.redirect='';
+            return res.status(STATUS_CODES.OK).json({
+                success:true,
+                message:"OTP verified ",
+                redirectUrl:'/resetPassword'
+            })
+          }
            return res.json({
            success: true,
-           message: 'OTP verified',
+           message: 'OTP verified ',
            redirectUrl:'/login'  
             });
              
@@ -152,14 +168,13 @@ let OtpVerify= async(req,res)=>{
         }
    
     }catch(err){
-
+        console.log(err,"it is the eoror")
     }
 
 }
 let resendOtpVerify = async (req, res) => {
     
   const {  userEmail } = req.body;
-
   const User = await user.findOne({ email: userEmail });
   if (!User) {
       return res.json({ success: false, message: 'User not found' });
@@ -177,19 +192,19 @@ let resendOtpVerify = async (req, res) => {
 };
 
 let getResetPass=(req,res)=>{
-    req.session.resetMode=false
     res.render('./user/resetPassword')
 }
 let postResetPass=async(req,res)=>{
     console.log(req.body)
     const {password,userEmail}=req.body
     if(!userEmail){
-       return  res.json({
-        success:false,
-        message:"user Email has missed!"
-
-       })
+        return  res.json({
+            success:false,
+            message:"user Email has missed!"
+            
+        })
     }else{
+        req.session.isKey=false
         let User=await user.findOne({email:userEmail})
         let salt_round=Number(process.env.SALT_ROUND)
         let hashedPassword=await bcrypt.hash(password,salt_round)
@@ -216,13 +231,16 @@ let PostForgetPassword=async(req,res)=>{
     if(!existing){
         return res.json({success:false,message:"User not exist"})
     }else{
-       if (existing.password!=='google-auth'){
+        if(existing.isBlock){
+           return res.json({success:false,message:"Your are blocked by admin"})
+        }
+        if (existing.password!=='google-auth'){
+           req.session.redirect='resetPassword'
+         req.session.requre_sign=true
             const User = await user.findOne({ email: email });
-            const Userotp = await modelOtp.findOne({ userId: User._id });
-            console.log('it is user otp on post frogot',Userotp)
+             await modelOtp.findOne({ userId: User._id });
              let otp= await otpGeneratorTodb(User,email)
              console.log('it is the Otp'+otp)
-             req.session.resetMode=true
              return res.json({success:true,redirectUrl:'/otpVerfication',successUrl:'/resetPassword'})
             
        }else{
@@ -444,9 +462,34 @@ const editProfileInfo=async(req,res)=>{
             if(lastName!==existing.lastName){
                 isChanged=true
             }
-            if(email!==existing.email){
-                isChanged=true
-            }
+            if (email !== existing.email) {
+                 req.session.requre_sign=true
+                 req.session.user.redirect='/user-profile'
+              const emailExists = await user.findOne({ email:email });
+              if (emailExists) {
+                  return res.status(409).json({
+                      success: false,
+                      message: "This email is already taken",
+                  });
+              }
+             req.session.user.prevousEmail=existing.email;
+              existing.email=email;
+              await existing.save()
+              req.session.user.email=existing.email
+             let result= await otpGeneratorTodb(existing._id,email);
+             if(result){
+                return res.status(STATUS_CODES.OK).json({
+                    success:true,
+                    otpVerify:true,
+                    email:email,
+                    redirect:'/otpVerfication',
+                    message:"verify your Email"
+
+                })
+
+             }
+}
+
             if(number!==existing.number){
                 isChanged=true
             }
@@ -538,7 +581,7 @@ const editProfileImg=async(req,res)=>{
             existing.profileImg= await uploadResult.secure_url;
             existing.profileImgId=await uploadResult.public_id;
             await existing.save()
-            req.session.user.profileUrl=await existing.profileImg
+            req.session.user.profileUrl= existing.profileImg
             return res.status(STATUS_CODES.OK).json({
                 success:true,
                 message:"Profile Image updated"

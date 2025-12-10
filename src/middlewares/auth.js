@@ -45,3 +45,12 @@ export const blockUser = async(req, res, next) => {
 
   next();
 };
+export const keResetPass=(req,res,next)=>{
+  if(req.session?.isKey===true){
+    console.log('it is true')
+    next()
+  }else{
+    res.redirect('/login')
+  }
+
+}

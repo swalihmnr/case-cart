@@ -34,7 +34,7 @@ const api = axios.create({
  const userOtpAxios = async (otp) => {
   try {
     const email = sessionStorage.getItem("email");
-
+    console.log(email+'it is the email')
     if (!email) {
       throw new Error("Session expired. Email not found.");
     }
@@ -50,10 +50,11 @@ const api = axios.create({
     if (sessionStorage.getItem("Otpmod") === "reset") {
       const resetUrl = sessionStorage.getItem("resetUrl");
 
-      if (resetUrl) {
+      if (resetUrl!==null) {
         sessionStorage.setItem("urlLoginPage", resetUrl);
       }
     } else {
+      console.log('low')
       if (res.data.redirectUrl) {
         sessionStorage.setItem("urlLoginPage", res.data.redirectUrl);
       }
@@ -62,7 +63,7 @@ const api = axios.create({
     // Immediately remove reset flag (no race condition)
     sessionStorage.removeItem("Otpmod");
 
-    return res.data.success;
+    return res;
   } catch (err) {
     console.error("OTP verify error:", err);
     throw err;
@@ -148,10 +149,18 @@ const admnLoginAxios=async(data)=>{
 
   }
 }
-
+let profileEmail=false
 const userProfileAxios=async(data)=>{
   try {
-  return  await api.post('/profile/info/edit',data);
+  let res = await api.post('/profile/info/edit',data);
+  if(res.data.email){
+     clearInterval(window.OtpTimer); 
+  localStorage.removeItem('otpTimer');
+  localStorage.removeItem('otpExpire');
+  sessionStorage.setItem("email", res.data.email)
+  sessionStorage.setItem("urlLoginPage", '/user-profile');
+  }
+  return res
   } catch (error) {
     return error.response
   }

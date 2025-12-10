@@ -1,9 +1,7 @@
 import api from '../api.js';
  clearInterval(window.OtpTimer);
-
-
-const resendBtn = document.getElementById('resend-btn');
-const verifyBtn = document.getElementById('verify-btn');
+window.resendBtn = document.getElementById('resend-btn');
+window.verifyBtn = document.getElementById('verify-btn');
 const userEmailDisplay = document.getElementById('user-email');
   
  
@@ -70,10 +68,10 @@ window.verifyOTP = async function verifyOTP(event) {
     timer:"2000"
   });
 
-  const result = await api.userOtpAxios(otp);
+  const res = await api.userOtpAxios(otp);
   Swal.close();
-
-  if (result) {
+console.log(res)
+  if (res.data.success) {
     // Clear timer data on successful verification
     localStorage.removeItem('otpTimer');
     localStorage.removeItem('otpExpire');
@@ -82,7 +80,7 @@ window.verifyOTP = async function verifyOTP(event) {
     Swal.fire({
       icon: 'success',
       title: 'OTP Verified!',
-      text: 'Redirecting...',
+      text: res.data.message,
       confirmButtonColor: '#667eea'
     }).then(() => {
       const loginUrl = sessionStorage.getItem('urlLoginPage');
@@ -212,7 +210,7 @@ function handleTimerExpiration(elementId) {
 
 // ===================== Resend =====================
 window.resendOTP = async function() {
-  const display = document.getElementById('timer');
+  window.display = document.getElementById('timer');
   display.classList.remove("text-red-500");
   localStorage.removeItem('otpTimer');
   localStorage.removeItem('otpExpire');
