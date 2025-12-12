@@ -1,9 +1,10 @@
 import express from 'express';
 import userController from '../controllers/userController.js';
 import {otpAccess} from '../middlewares/otp.js'
-import{userAuth,keResetPass,goBackOtpVerify,blockUser} from '../middlewares/auth.js'
+import{userAuth,keResetPass,goBackOtpVerify,blockUser,wishlistCount} from '../middlewares/auth.js'
 import upload from '../middlewares/multer.js';
 const router=express.Router();
+router.use(wishlistCount)
 router.get('/login',goBackOtpVerify,userController.getLogin);
 router.post('/login',userController.postLogin);
 router.get('/signup',goBackOtpVerify,userController.getSignup);
@@ -23,6 +24,8 @@ router.get('/product/:id/detials',userAuth,blockUser,userController.getDetialPro
 router.get('/user-profile',userAuth,blockUser,userController.getUserProfil);
 router.post('/profile/info/edit',userAuth,userController.editProfileInfo);
 router.patch('/profile/edit/img',upload.single('image'),userController.editProfileImg)
-router.get('/wishlist',userController.getWishlist)
+router.get('/wishlist',userAuth,blockUser,userController.getWishlist)
+router.post('/product/wishlist/add',userAuth,userController.postWishlist);
+router.delete('/product/wishlist/:id/rem',userController.remWishlist)
 
 export default router

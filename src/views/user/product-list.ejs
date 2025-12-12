@@ -48,11 +48,11 @@
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/>
                         </svg>
                     </button> -->
-                    <a href="wishlist.html" class="text-gray-700 hover:text-purple-600 transition relative">
+                    <a href="/wishlist" class="text-gray-700 hover:text-purple-600 transition relative">
                         <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z"/>
                         </svg>
-                        <span class="absolute -top-2 -right-2 bg-red-500 text-white text-xs rounded-full w-5 h-5 flex items-center justify-center">3</span>
+                        <span class="absolute -top-2 -right-2 bg-red-500 text-white text-xs rounded-full w-5 h-5 flex items-center justify-center"><%= wishlistcount %></span>
                     </a>
                     <a href="cart.html" class="text-gray-700 hover:text-purple-600 transition relative">
                         <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -215,23 +215,38 @@
         <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
                                         <!-- Product 1 -->
                 <% products.forEach(product => { %>
-                      <a href="/product/<%= product._id%>/detials">
-                            <div class="product-card bg-white rounded-xl shadow-md overflow-hidden cursor-pointer">
-              <!-- Image / Banner -->
-              <div class="relative bg-gradient-to-br from-purple-400 to-pink-400 h-64 flex items-center justify-center">
-                  <img 
-                      src="<%= product.productImages.find(img=>img.isMain).url %>" 
-                      alt="Phone Case"
-                  />
-          
-                  <button class="absolute top-4 right-4 bg-white rounded-full p-2 hover:bg-gray-100 transition">
-                      <svg class="w-5 h-5 text-gray-400 hover:text-red-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z"/>
-                      </svg>
-                  </button>
-              </div>
-          
-              <!-- Content -->
+                    <% 
+                 const isInWishlist = wishlistItems.some(item =>
+                   item.variantId?.toString() === product.minVariant?._id.toString()
+                    );
+                   %>
+                    <div class="product-card bg-white rounded-xl shadow-md overflow-hidden cursor-pointer">
+                        <!-- Image / Banner -->
+                        <div class="relative bg-gradient-to-br from-purple-400 to-pink-400 h-64 flex items-center justify-center">
+                            <img 
+                            src="<%= product.productImages.find(img=>img.isMain).url %>" 
+                            alt="Phone Case"
+                            />
+                            
+                            <button 
+                               onclick="addWishlist('<%= product._id %>', '<%= product.minVariant._id %>')" 
+                               class="absolute top-4 right-4 bg-white rounded-full p-2 hover:bg-gray-100 transition"
+                           >
+                             <svg
+                              id="wish-icon-"
+                              class="w-5 h-5 <%= isInWishlist ? 'text-red-500' : 'text-gray-400' %>"
+                              viewBox="0 0 24 24"
+                              fill="currentColor"
+                              xmlns="http://www.w3.org/2000/svg"
+                            >
+                              <!-- filled heart path -->
+                              <path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"/>
+                            </svg>
+                           </button>
+                        </div>
+
+                        <!-- Content -->
+                        <a href="/product/<%= product._id%>/detials">
               <div class="p-4">
                   <!-- Product Name -->
                   <h3 class="text-lg font-bold text-gray-800 mb-1">
@@ -264,12 +279,9 @@
                       </button>
                   </div>
               </div>
-          </div>
-          
-                      </a>                   
-               
-                      <% }) %>
-                    
+            </a>                   
+          </div>          
+            <% }) %>
                 <!-- Pagination -->
                 <div class="flex justify-center mt-10 space-x-2">
             <% if(currentPage > 1) { %>

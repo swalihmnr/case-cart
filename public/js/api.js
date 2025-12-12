@@ -149,7 +149,6 @@ const admnLoginAxios=async(data)=>{
 
   }
 }
-let profileEmail=false
 const userProfileAxios=async(data)=>{
   try {
   let res = await api.post('/profile/info/edit',data);
@@ -175,6 +174,27 @@ const userProfileImgUplaoderAxios=async(file)=>{
   }
 }
 
+const addWishlistAxios=async(productId,variant)=>{
+  try {
+    return await api.post('/product/wishlist/add',{
+      productId,variant
+    })
+    
+  } catch (error) {
+    console.log(error.response+"Axios error")
+    return error.response
+  }
+}
+const remWishlistAxios=async(id)=>{
+  try {
+    return await api.delete(`/product/wishlist/${id}/rem`)
+    
+  } catch (error) {
+    console.log(error.response+"Axios error");
+    return error.response
+  }
+}
+
 export default {
   userSignupAxios,
   userOtpAxios,
@@ -184,6 +204,8 @@ export default {
   resetPassAxios,
   admnLoginAxios,
   userProfileAxios,
-  userProfileImgUplaoderAxios
+  userProfileImgUplaoderAxios,
+  addWishlistAxios,
+  remWishlistAxios
 
 };

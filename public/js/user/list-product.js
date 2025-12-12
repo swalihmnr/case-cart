@@ -1,3 +1,5 @@
+import api from "../api.js";
+
 window.clearFilters=clearFilters
 function clearFilters() {
     const query = new URLSearchParams();
@@ -65,3 +67,35 @@ function applyFilters() {
 
     window.location.href = `/product?${query.toString()}`;
 }
+const addWishlist = async (productId, variantId) => {
+    try {
+        let res=await api.addWishlistAxios(productId,variantId)
+        location.reload()
+        if(res.data.success){
+          Swal.fire({
+        icon: 'success',
+        title: 'added to wishlist',
+        text: res.data.message,
+        confirmButtonColor: '#667eea'
+      });
+      location.reload()
+        }else{
+             Swal.fire({
+        icon: 'warning',
+        title: 'something went wrong',
+        text: res.data.message,
+        confirmButtonColor: '#667eea'
+      }); 
+        }
+    } catch (error) {
+          Swal.fire({
+        icon: 'error',
+        title: 'something went wrong',
+        text: error.response.data.message,
+        confirmButtonColor: '#667eea'
+      });
+        console.log(error.response)
+    }
+    
+}; 
+window.addWishlist = addWishlist;

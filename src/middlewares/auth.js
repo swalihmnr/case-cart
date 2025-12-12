@@ -1,6 +1,6 @@
 import { STATUS_CODES } from "../utils/statusCodes.js"
 import user from "../models/userModel.js"
-import mongoose from "mongoose"
+import wishlistModel from '../models/wishlistModel.js'
 export const userAuth=(req,res,next)=>{
   
   if(!req.session.user){
@@ -53,4 +53,12 @@ export const keResetPass=(req,res,next)=>{
     res.redirect('/login')
   }
 
+}
+export const wishlistCount=async(req,res,next)=>{
+  if(req.session.user?.id){
+    res.locals.wishlistcount=await wishlistModel.countDocuments({userId:req.session.user.id});
+  }else{
+    res.locals.wishlistcount=0;
+  }
+  next();
 }

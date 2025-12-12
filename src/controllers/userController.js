@@ -8,6 +8,7 @@ import variantModel from '../models/admin/variantModel.js'
 import mongoose from 'mongoose'
 import { STATUS_CODES } from '../utils/statusCodes.js'
 import { uploadBufferTocloudnery } from '../utils/cloudneryUpload.js'
+import wishlistModel from '../models/wishlistModel.js'
 
 
 let getLogin=(req,res)=>{
@@ -338,9 +339,17 @@ const getProduct = async (req, res) => {
             { $unwind: "$catgId" },
 
             // ADD MIN PRICE & MAIN IMAGE
-            {
+               {
                 $addFields: {
                     minPrice: { $min: "$variants.salePrice" },
+                    minVariant: {
+                    $first: {
+                      $sortArray: {
+                        input: "$variants",
+                        sortBy: { salePrice: 1 }
+                      }
+                    }
+                  },
                     mainImage: {
                         $first: {
                             $filter: {
@@ -378,13 +387,13 @@ const getProduct = async (req, res) => {
         );
 
         const result = await productModel.aggregate(pipeline);
-
+         let wishlistItems=[]
         const products = result[0].data;
         const totalItems = result[0].totalCount[0]?.count || 0;
         const totalPages = Math.ceil(totalItems / limit);
 
         const categories = await Category.find();
-
+         wishlistItems = await wishlistModel.find({ userId: req.session.user.id });
         res.render("user/product-list", {
             products,
             categories,
@@ -394,7 +403,8 @@ const getProduct = async (req, res) => {
             sort,
             totalItems,
             currentPage: page,
-            totalPages
+            totalPages,
+            wishlistItems
         });
 
     } catch (err) {
@@ -596,12 +606,93 @@ const editProfileImg=async(req,res)=>{
     }
 }
 const getWishlist=async(req,res)=>{
-    const user={
-        profileUrl:'sdfsdfsdfs'
-    }
+   const userId= req.session.user.id;
+   console.log(userId)
+   const userID=new mongoose.Types.ObjectId(userId)
+    const products= await wishlistModel.find({userId:userID}).populate('variantId').populate('productId')
+    const wishlsitCount=await wishlistModel.findOne({_id:userID}).countDocuments();
     res.render('./user/wishlist',{
-        user
+        products
+        
     })
+}
+const postWishlist=async(req,res)=>{
+    try {
+        const {productId,variant}=req.body;
+        const variantId=new mongoose.Types.ObjectId(variant);
+        const Variant=await variantModel.findById(variantId);
+        const userId=new mongoose.Types.ObjectId(req.session.user.id)
+        if(!productId){
+            return res.status(STATUS_CODES.NOT_FOUND).json({
+                success:false,
+                message:"product not provided"
+            })
+        }
+        if(!Variant){
+            return res.status(STATUS_CODES.NOT_FOUND).json({
+                success:false,
+                message:"variant not provided"
+            })
+        }
+        const existing=await wishlistModel.findOne({
+            variantId:Variant._id,
+            userId:userId,
+            productId:productId
+        })
+        if(existing){
+            return res.status(STATUS_CODES.CONFLICT).json({
+                success:false,
+                message:"already exists"
+            })
+        }
+        if(!userId){
+            return res.status(STATUS_CODES.NOT_FOUND).json({
+                success:false,
+                message:"user not founded"
+            })
+        }
+       let result= await wishlistModel.create({
+            userId:userId,
+            productId:productId,
+            variantId:Variant._id
+        })
+        return res.status(STATUS_CODES.CREATED).json({
+            success:true,
+            message:'added to wishlist'
+        })
+        
+    } catch (error) {
+        
+    }
+}
+const remWishlist=async(req,res)=>{
+    try {
+        const id=req.params.id
+        const wishlistId=new mongoose.Types.ObjectId(id)
+        const userId=req.session.user.id
+        if(!wishlistId){
+            return res.status(STATUS_CODES.NOT_FOUND).json({
+                success:false,
+                message:"wishlist item not provided"
+            })
+        }
+      await wishlistModel.findOneAndDelete({
+       _id: wishlistId,
+       userId: req.session.user.id
+       });
+       return res.status(STATUS_CODES.OK).json({
+        success:true,
+        message:'Removed from wishlist'
+       })
+
+        
+    } catch (error) {
+        
+        return res.status(STATUS_CODES.INTERNAL_SERVER_ERROR).json({
+            success:false,
+            message:"indernal server error"
+        })
+    }
 }
 
 export default {
@@ -624,6 +715,8 @@ export default {
     getUserProfil,
     editProfileInfo,
     editProfileImg,
-    getWishlist
+    getWishlist,
+    postWishlist,
+    remWishlist
 
 };
