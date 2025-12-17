@@ -228,6 +228,9 @@ const quantityUpdateAxios=async(cartId,change)=>{
     return error.response
   }
 }
+const removeFromCartAxios=async(productId,variantId)=>{
+  return api.patch(`/product/cart/${productId}`)
+}
 export default {
   userSignupAxios,
   userOtpAxios,
@@ -243,6 +246,7 @@ export default {
   addToCartAxios,
   quantityUpdateAxios,
   productDetialAxios,
-  getVariantDataAxios
+  getVariantDataAxios,
+  removeFromCartAxios
 
 };

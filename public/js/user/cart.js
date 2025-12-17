@@ -99,8 +99,25 @@ import api from "../api.js";
             toast.classList.add('hidden');
         }, 3000);
     }
+async function removeFromCart(productId,variantId) {
+     const res=await api.removeFromCartAxios(productId,variantId);
+     if(res.data.success){
+         Swal.fire({
+         icon: 'warning',
+         title: 'Deleting',
+         text: res.data.message,
+         confirmButtonColor: '#667eea'
+      }).then((re)=>{
+        location.reload()
+      })
+        
+          
+  
+     }
+}
 
     // MAKE ALL FUNCTIONS GLOBAL
+    window.removeFromCart=removeFromCart
     window.addToCart=addToCart;
     window.updateQuantity = updateQuantity;
     window.removeItem = removeItem;

@@ -39,71 +39,81 @@
         <div class="grid lg:grid-cols-3 gap-8">
             
             <!-- Cart Items - UX: Clear item display with easy modification options -->
-            <div class="lg:col-span-2 space-y-4">
-                
-              <% products.forEach(product => { %>
-<div class="bg-white rounded-2xl shadow-md p-4 md:p-6 fade-in cart-item">
-  <div class="flex gap-4">
-
-    <!-- Product Image -->
-    <img 
-      src="<%= product.productId.productImages.find(img => img.isMain)?.url %>" 
-      class="w-24 h-24 md:w-32 md:h-32 rounded-xl object-cover"
-    >
-
-    <!-- Product Details -->
-    <div class="flex-1 min-w-0">
-      <div class="flex justify-between items-start mb-2">
-        <div>
-          <h3 class="font-bold text-lg mb-1"><%= product.productId.name %></h3>
-          <p class="text-gray-600 text-sm">
-            <%= product.variantId.deviceModel %> • <%= product.productId.catgId.name %>
-          </p>
-        </div>
-        
-      </div>
-      <% if (product.variantId.isListed||product.productId.isBlock) { %>
-       <div class="bg-red-50 border border-red-200 text-red-600 
-            text-sm px-3 py-2 rounded-lg inline-flex items-center gap-2 mt-2">
-  
-  <svg class="w-4 h-4 text-red-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-      d="M12 9v2m0 4h.01M12 3a9 9 0 100 18 9 9 0 000-18z"/>
-  </svg>
-
-  <span>This product is currently unavailable</span>
-</div>
-      <% } %>
-      <!-- Quantity and Price -->
-      <div class="flex justify-between items-center mt-4">
-
-        <!-- Quantity -->
-        <div class="flex items-center border-2 border-gray-200 rounded-lg">
-          <button
-            onclick="updateQuantity(this, '<%= product._id %>', -1)"
-            class="px-3 py-2 font-bold hover:text-purple-600"
-          >−</button>
-
-          <p class="w-12 text-center font-semibold quantity-text">
-            <%= product.quantity %>
-          </p>
-
-          <button
-            onclick="updateQuantity(this, '<%= product._id %>', +1)"
-            class="px-3 py-2 font-bold hover:text-purple-600"
-          >+</button>
-        </div>
-
-        <!-- Price -->
-        <p class="text-2xl price-field font-bold text-purple-600">
-          ₹ <%= product.quantity * product.variantId.salePrice %>
-        </p>
-
-      </div>
-    </div>
-  </div>
-</div>
-<% }) %>
+                  <div class="lg:col-span-2 space-y-4">
+                      
+                    <% products.forEach(product => { %>
+                     <div class="bg-white rounded-2xl shadow-md p-4 md:p-6 fade-in cart-item">
+                       <div class="flex gap-4">
+                     
+                         <img 
+                           src="<%= product.productId.productImages.find(img => img.isMain)?.url %>" 
+                           class="w-24 h-24 md:w-32 md:h-32 rounded-xl object-cover flex-shrink-0"
+                         >
+                     
+                        
+                         <div class="flex-1 min-w-0">
+                           <div class="flex justify-between items-start mb-2">
+                             <div>
+                               <h3 class="font-bold text-lg mb-1"><%= product.productId.name %></h3>
+                               <p class="text-gray-600 text-sm">
+                                 <%= product.variantId.deviceModel %> • <%= product.productId.catgId.name %>
+                               </p>
+                             </div>
+                             
+                             
+                             <button 
+                               onclick="removeFromCart('<%= product._id %>', '<%= product.variantId._id %>')"
+                               class="text-gray-400 hover:text-red-600 transition-colors p-2 ml-2 flex-shrink-0"
+                               title="Remove from cart"
+                               aria-label="Remove item from cart"
+                             >
+                               <svg xmlns="http://www.w3.org/2000/svg" 
+                                    class="w-5 h-5" 
+                                    fill="none" 
+                                    viewBox="0 0 24 24" 
+                                    stroke="currentColor">
+                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                   d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6M9 7h6m2 0H7m3-3h4a1 1 0 011 1v1H9V5a1 1 0 011-1z"/>
+                               </svg>
+                             </button>
+                           </div>
+                           
+                           <% if (product.variantId.isListed||product.productId.isBlock) { %>
+                             <div class="bg-red-50 border border-red-200 text-red-600 text-sm px-3 py-2 rounded-lg inline-flex items-center gap-2 mt-2">
+                               <svg class="w-4 h-4 text-red-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                   d="M12 9v2m0 4h.01M12 3a9 9 0 100 18 9 9 0 000-18z"/>
+                               </svg>
+                               <span>This product is currently unavailable</span>
+                             </div>
+                           <% } %>
+                           
+                         
+                           <div class="flex justify-between items-center mt-4">
+                     
+                             <div class="flex items-center border-2 border-gray-200 rounded-lg">
+                               <button
+                                 onclick="updateQuantity(this, '<%= product._id %>', -1)"
+                                 class="px-3 py-2 font-bold hover:text-purple-600 hover:bg-gray-50 transition-colors rounded-l"
+                               >−</button>
+                               <p class="w-12 text-center font-semibold quantity-text">
+                                 <%= product.quantity %>
+                               </p>
+                               <button
+                                 onclick="updateQuantity(this, '<%= product._id %>', +1)"
+                                 class="px-3 py-2 font-bold hover:text-purple-600 hover:bg-gray-50 transition-colors rounded-r"
+                               >+</button>
+                             </div>
+                     
+                         
+                             <p class="text-2xl price-field font-bold text-purple-600">
+                               ₹ <%= product.quantity * product.variantId.salePrice %>
+                             </p>
+                           </div>
+                         </div>
+                       </div>
+                     </div>
+                     <% }) %>
 
                 <!-- Continue Shopping Button - UX: Easy way to add more items -->
                 <div class="pt-4">

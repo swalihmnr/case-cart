@@ -31,5 +31,6 @@ router.delete('/product/wishlist/:id/rem',userController.remWishlist)
 router.get('/cart',userController.getCart);
 router.patch('/cart/add',userController.addCart)
 router.post('/cart/quantity/:id',userController.cartQuantityUpdate);
+router.patch('/product/cart/:id',userController.remCart)
 
 export default router

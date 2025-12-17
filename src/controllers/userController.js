@@ -878,6 +878,27 @@ const cartQuantityUpdate=async(req,res)=>{
 }
 
 }
+const remCart=async(req,res)=>{
+    try {
+    const existing= await cartModel.findOne({_id:req.params.id})
+    if(!existing){
+        return res.status(STATUS_CODES.NOT_FOUND).json({
+            success:false,
+            message:'user not founded'
+        })
+    }
+    await cartModel.findByIdAndDelete(req.params.id)
+    return res.status(STATUS_CODES.OK).json({
+        success:true,
+        message:"item deleted from cart."
+    })
+    } catch (error) {
+        return res.status(STATUS_CODES.INTERNAL_SERVER_ERROR).json({
+            success:false,
+            message:"Internal sever Error"
+        })
+    }
+}
 
 export default {
     getLogin,
@@ -905,6 +926,7 @@ export default {
     getCart,
     addCart,
     cartQuantityUpdate,
-    getVariantData
+    getVariantData,
+    remCart
 
 };
