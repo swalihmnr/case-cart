@@ -9,6 +9,7 @@ import mongoose from 'mongoose'
 import { STATUS_CODES } from '../utils/statusCodes.js'
 import { uploadBufferTocloudnery } from '../utils/cloudneryUpload.js'
 import wishlistModel from '../models/wishlistModel.js'
+import cartModel from '../models/cartModel.js'
 
 
 let getLogin=(req,res)=>{
@@ -417,35 +418,56 @@ const getProduct = async (req, res) => {
 
 const getDetialProduct= async(req,res)=>{
     try {
-        const veriantid=req.query.veriantId
-        let veriant;
-        const veriantId=new mongoose.Types.ObjectId(veriantid);
+        console.log('hlow')
         const id=req.params.id;
         const objectId=new mongoose.Types.ObjectId(id);
         const product= await productModel.findById(objectId).populate('catgId').populate("variants");
-        if(veriantid===undefined){
-            veriant=await variantModel.findOne({_id:product.variants[0]._id})
-        }else{
-            veriant=await variantModel.findOne({_id:veriantId})
+        
+        let relatedProducts=await productModel.find({catgId:product.catgId,_id:{$ne:product._id}}).limit(4)
+        if(relatedProducts.length<4){
+            const remains=4-relatedProducts.length
+            const excludeCatgIds=[product._id,...relatedProducts.map(id=>id.catgId._id)]
+            const defCatgProduct=await productModel.find({catgId:{$ne:product.catgId},_id:{$nin:excludeCatgIds}}).limit(remains)
+            relatedProducts=[...relatedProducts,...defCatgProduct]
+        }
 
-        }
-        const relatedProducts=await productModel.find({catgId:product.catgId,_id:{$ne:product._id}}).limit(4)
-        console.log(veriantid)
-        if(veriantId===null){
-        }else{
-           
-        }
-        let salePrice=veriant.salePrice
-        let orgPrice=veriant.orgPrice
-       
+        console.log('last')
         res.render('./user/product-detial',{
             product,
-            salePrice,
-            orgPrice,
             relatedProducts
         })
     } catch (error) {
         console.log(error)
+    }
+}
+const getVariantData=async(req,res)=>{
+    try {
+       const productId=req.params.id
+       const variantId=req.query.variantId
+       if(!productId||!variantId){
+        return res.status(STATUS_CODES.NOT_FOUND).json({
+            success:false,
+            message:"productId or variantId not provided"
+        })
+       }
+       const variant=await variantModel.findOne({_id:variantId});
+       if(!variant){
+        return res.status(STATUS_CODES.NOT_FOUND).json({
+            success:false,
+            message:"variant not founded"
+        })
+       }
+       const salePrice=variant.salePrice
+       const orgPrice=variant.orgPrice
+       return res.status(STATUS_CODES.OK).json({
+        success:false,
+        message:"success",
+        salePrice,
+        orgPrice
+       })
+       
+    } catch (error) {
+        
     }
 }
 const getUserProfil=async(req,res)=>{
@@ -610,7 +632,6 @@ const getWishlist=async(req,res)=>{
    console.log(userId)
    const userID=new mongoose.Types.ObjectId(userId)
     const products= await wishlistModel.find({userId:userID}).populate('variantId').populate('productId')
-    const wishlsitCount=await wishlistModel.findOne({_id:userID}).countDocuments();
     res.render('./user/wishlist',{
         products
         
@@ -639,10 +660,23 @@ const postWishlist=async(req,res)=>{
             userId:userId,
             productId:productId
         })
+        const existingCart=await cartModel.findOne({
+            variantId:Variant._id,
+            userId:userId,
+            productId:productId
+        })
+
         if(existing){
             return res.status(STATUS_CODES.CONFLICT).json({
                 success:false,
-                message:"already exists"
+                message:"already exists in wishlist"
+            })
+        }
+
+        if(existingCart){
+            return res.status(STATUS_CODES.CONFLICT).json({
+                success:false,
+                message:"already exist in cart"
             })
         }
         if(!userId){
@@ -695,6 +729,156 @@ const remWishlist=async(req,res)=>{
     }
 }
 
+const getCart=async(req,res)=>{
+    try {
+    const userId=new mongoose.Types.ObjectId(req.session.user.id)
+    const products=await cartModel.find({userId:userId}).populate('variantId').populate({
+        path:'productId',
+        populate:{
+            path:'catgId',
+            model:'Category'
+        }
+    });
+    let subtotal=0; 
+    const cartItems=await cartModel.find({userId:userId}).populate('variantId').populate('productId');
+     cartItems.forEach((item)=>{
+         subtotal+=item.quantity*item.variantId.salePrice
+     })
+    const totalDocs = await cartModel.countDocuments({ userId: userId });
+   
+   res.render('./user/cart',{
+    products,
+    subtotal,
+    totalDocs
+   })
+    } catch (error) {
+        console.log(error.message)
+    }
+    
+}
+const addCart=async(req,res)=>{
+    try {
+        const userId=new mongoose.Types.ObjectId(req.session.user.id)
+        const {variantId,productId}=req.body
+        const varinatID=new mongoose.Types.ObjectId(variantId);
+        const productID=new mongoose.Types.ObjectId(productId)
+
+        if(!userId){
+            return res.status(STATUS_CODES.NOT_FOUND).json({
+                success:false,
+                message:"User not founded"
+            })
+        }
+        if(!varinatID){
+            return res.status(STATUS_CODES.NOT_FOUND).json({
+                success:false,
+                message:"variantId not provided"
+            })
+        }
+        if(!productID){
+            return res.status(STATUS_CODES.NOT_FOUND).json({
+                success:false,
+                message:"productId not provided"
+            })
+        }
+        const existing=await cartModel.findOne({userId:userId._id,productId:productID,variantId:varinatID}).populate('variantId');
+        if(existing){
+            console.log('already exist ')
+            return res.status(STATUS_CODES.CONFLICT).json({
+                success:false,
+                message:"already added to cart"
+            })
+        }else{
+
+                 await cartModel.create({
+                userId:userId._id,
+                productId:productID,
+                variantId:varinatID
+            }) 
+           await wishlistModel.deleteOne({userId:userId._id,productId:productID,variantId:varinatID})
+           
+            return res.status(STATUS_CODES.CREATED).json({
+                success:true,
+                message:"item added to cart"
+            })
+        }
+    } catch (error) {
+        console.log(error)
+        return res.status(STATUS_CODES.INTERNAL_SERVER_ERROR).json({
+            success:false,
+            message:"Indternal server Error !"
+        })
+    }
+}
+
+const cartQuantityUpdate=async(req,res)=>{
+   try {
+    const cartId = req.params.id;
+    const userId = req.session.user.id;
+    const change = req.body.change;
+
+    const cartItem = await cartModel
+        .findById(cartId)
+        .populate('variantId').populate('productId')
+    if (!cartItem) {
+        return res.status(404).json({
+            success: false,
+            message: "Cart item not found"
+        });
+    }
+    
+
+    const variant = cartItem.variantId;
+    if (change===1) {
+        if (cartItem.quantity >= variant.stock || cartItem.quantity >= 5) {
+            return res.status(403).json({
+                success: false,
+                message: "Order limit or stock limit reached"
+            });
+        }
+        if(variant.isListed){
+            return res.status(STATUS_CODES.FORBIDDEN).json({
+                success:false,
+                message:"This product currently unavailable!"
+            })
+
+        }
+        
+        cartItem.quantity += 1;
+       
+    } else {
+        if (cartItem.quantity>1) {
+            cartItem.quantity-= 1;
+        }
+    }
+    await cartItem.save();
+    const cartItems = await cartModel
+        .find({ userId })
+        .populate('variantId').populate('productId')
+    let subtotal = 0;
+    cartItems.forEach(item => {
+        subtotal += item.quantity * item.variantId.salePrice;
+    });
+
+    
+    return res.status(200).json({
+        success: true,
+        quantity: cartItem.quantity,
+        totalAmountPerPrdct: cartItem.quantity * variant.salePrice,
+        subtotal
+    });
+
+
+} catch (error) {
+    console.error(error);
+    return res.status(500).json({
+        success: false,
+        message: "Internal server error"
+    });
+}
+
+}
+
 export default {
     getLogin,
     postLogin,
@@ -717,6 +901,10 @@ export default {
     editProfileImg,
     getWishlist,
     postWishlist,
-    remWishlist
+    remWishlist,
+    getCart,
+    addCart,
+    cartQuantityUpdate,
+    getVariantData
 
 };

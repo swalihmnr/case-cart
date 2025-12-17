@@ -360,8 +360,8 @@
                 <!-- Price -->
                 <div class="mb-6">
                     <div class="flex items-baseline space-x-3">
-                        <span class="text-4xl font-bold text-purple-600">₹<%= salePrice %></span>
-                        <span class="text-xl text-gray-400 line-through">₹<%= orgPrice %></span>
+                        <span id="sale-span" class="text-4xl font-bold text-purple-600">₹</span>
+                        <span id="org-span" class="text-xl text-gray-400 line-through">₹</span>
                         <span class="bg-red-500 text-white px-3 py-1 rounded-full text-sm font-bold">-29%</span>
                     </div>
                     <p class="text-sm text-gray-500 mt-2">Free shipping on orders over $50</p>
@@ -374,31 +374,43 @@
 
                 <!-- Device Selection -->
                 <div class="mb-6">
-                    <label class="block text-sm font-semibold text-gray-900 mb-3">Select Device Model</label>
-                    <div class="grid grid-cols-2 sm:grid-cols-3 gap-3">
-                        <% product.variants.forEach(veriant => { %>
-                            <button class="device-btn px-4 py-3 border-2 border-purple-600 bg-purple-50 rounded-lg font-medium text-purple-600 hover:bg-purple-100 transition">
-                                <a href="/product/<%= product._id %>/detials?veriantId=<%= veriant._id %>">
-                                <%= veriant.deviceModel %>
-                            </a>  
-                            </button>  
-                        <% }) %>
-                        
-                    </div>
+                   <label class="block text-sm font-semibold text-gray-900 mb-3">
+                     Select Device Model
+                   </label>
+                   
+                   <div class="grid grid-cols-2 sm:grid-cols-3 gap-3">
+                     <% product.variants.forEach((variant, index) => { %>
+                       <button
+                         type="button"
+                         class="device-btn px-4 py-3 border-2 rounded-lg font-medium transition
+                                bg-white text-gray-700 border-gray-300
+                                hover:border-purple-600 hover:text-purple-600 hover:bg-purple-50"
+                         onclick="selectVariant('<%= product._id %>', '<%= variant._id %>', this)"
+                         data-index="<%= index %>"
+                         >
+                         <%= variant.deviceModel %>
+                       </button>
+                     <% }) %>
+                   </div>
+                   
+
                 </div>
         
                 <!-- Action Buttons -->
-                <div class="flex flex-col sm:flex-row gap-4 mb-6">
-                    <button class="flex-1 bg-purple-600 text-white py-4 rounded-lg font-semibold hover:bg-purple-700 transition flex items-center justify-center space-x-2">
-                        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z"/>
-                        </svg>
-                        <span>Add to Cart</span>
-                    </button>
-                    <button class="flex-1 border-2 border-purple-600 text-purple-600 py-4 rounded-lg font-semibold hover:bg-purple-50 transition">
-                        Buy Now
-                    </button>
-                </div>
+                <div class="flex flex-col md:flex-row gap-3 w-full mb-6">
+               <button 
+                   onclick="addToCart()" 
+                   class="flex-1 bg-purple-600 text-white py-3.5 px-6 rounded-xl font-bold hover:bg-purple-700 active:scale-95 transition-all duration-200 shadow-lg shadow-purple-200"
+               >
+                   Add to Cart
+               </button>
+           
+               <button 
+                   class="flex-1 border-2 border-purple-600 text-purple-600 py-3.5 px-6 rounded-xl font-bold hover:bg-purple-50 active:scale-95 transition-all duration-200"
+               >
+                   Buy Now
+               </button>
+</div>
             </div>
         </div>
 
@@ -406,7 +418,7 @@
         <div class="mt-16">
             <div class="border-b border-gray-200">
                 <div class="flex space-x-8">
-                    <button class="tab-btn active py-4 px-2 font-semibold" onclick="switchTab('description')">Description</button>
+                    <!-- <button class="tab-btn active py-4 px-2 font-semibold" onclick="switchTab('description')">Description</button> -->
                     <button class="tab-btn py-4 px-2 font-seproduct-detialsmibold text-gray-600 hover:text-gray-800" onclick="switchTab('reviews')">Reviews (48)</button>
                 </div>
             </div>
@@ -414,12 +426,12 @@
             <!-- Tab Content -->
             <div id="tabContent" class="py-8">
                 <!-- Description Tab -->
-                <div id="description" class="tab-content">
+                <!-- <div id="description" class="tab-content">
                     <h3 class="text-2xl font-bold text-gray-product-detials800 mb-4">Product Description</h3>
                     <p class="text-gray-600 leading-relaxed mb-4">
                         <%= product.description %>
                     
-                </div>
+                </div> -->
                 <!-- Reviews Tab (Hidden) -->
                 <div id="reviews" class="tab-content hidden">
                     <div class="flex items-start justify-between mb-8">
@@ -613,7 +625,7 @@
         </div>
     </footer>
 
-
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script> 
     <script type="module" src="/js/user/product-detials.js"></script>
 </body>
 </html>

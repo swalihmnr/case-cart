@@ -21,11 +21,15 @@ router.post('/resendOtpVerification',userController.resendOtpVerify)
 router.get('/logout',userController.logOut)
 router.get('/product',userAuth,blockUser,userController.getProduct)
 router.get('/product/:id/detials',userAuth,blockUser,userController.getDetialProduct);
+router.post('/product/:id/getVariant',userController.getVariantData)
 router.get('/user-profile',userAuth,blockUser,userController.getUserProfil);
 router.post('/profile/info/edit',userAuth,userController.editProfileInfo);
 router.patch('/profile/edit/img',upload.single('image'),userController.editProfileImg)
 router.get('/wishlist',userAuth,blockUser,userController.getWishlist)
 router.post('/product/wishlist/add',userAuth,userController.postWishlist);
 router.delete('/product/wishlist/:id/rem',userController.remWishlist)
+router.get('/cart',userController.getCart);
+router.patch('/cart/add',userController.addCart)
+router.post('/cart/quantity/:id',userController.cartQuantityUpdate);
 
 export default router

@@ -175,15 +175,11 @@ const userProfileImgUplaoderAxios=async(file)=>{
 }
 
 const addWishlistAxios=async(productId,variant)=>{
-  try {
+
     return await api.post('/product/wishlist/add',{
       productId,variant
     })
     
-  } catch (error) {
-    console.log(error.response+"Axios error")
-    return error.response
-  }
 }
 const remWishlistAxios=async(id)=>{
   try {
@@ -194,7 +190,44 @@ const remWishlistAxios=async(id)=>{
     return error.response
   }
 }
+const productDetialAxios=async(productId,variantId)=>{
+  try {
+    return  await api.get(`/product/${productId}`)
+  } catch (error) {
+    return error.response
+  }
+}
+const getVariantDataAxios=async(productId,variantId)=>{
+    try {
+      return  await api.post(`/product/${productId}/getVariant?variantId=${variantId}`);
 
+    } catch (error) {
+      return error.response
+    }
+}
+
+
+
+const addToCartAxios=async(productId,variantId)=>{
+  try {
+  return await api.patch(`/cart/add`,{
+      variantId,
+      productId
+    })
+  } catch (error) {
+    return error.response
+  }
+}
+const quantityUpdateAxios=async(cartId,change)=>{
+  try {
+   return  await api.post(`/cart/quantity/${cartId}`,{
+      change
+    })
+    
+  } catch (error) {
+    return error.response
+  }
+}
 export default {
   userSignupAxios,
   userOtpAxios,
@@ -206,6 +239,10 @@ export default {
   userProfileAxios,
   userProfileImgUplaoderAxios,
   addWishlistAxios,
-  remWishlistAxios
+  remWishlistAxios,
+  addToCartAxios,
+  quantityUpdateAxios,
+  productDetialAxios,
+  getVariantDataAxios
 
 };

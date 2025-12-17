@@ -274,12 +274,13 @@
                    <span class="text-xl font-bold text-purple-600">
                     ₹<%= product.minPrice %>
                    </span>
-                      <button class="bg-purple-600 text-white px-4 py-2 rounded-lg hover:bg-purple-700 transition text-sm">
+                </a>       
+                                
+                      <button onclick="addToCart('<%= product._id %>', '<%= product.minVariant._id %>')"  class="bg-purple-600 text-white px-4 py-2 rounded-lg hover:bg-purple-700 transition text-sm">
                           Add to Cart
                       </button>
                   </div>
               </div>
-            </a>                   
           </div>          
             <% }) %>
                 <!-- Pagination -->
@@ -366,7 +367,9 @@
             </div>
         </div>
     </footer>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script> 
    <script type="module" src="/js/user/list-product.js"></script>
+   <script type="module" src="/js/user/cart.js"></script>
     
 </body>
 </html>

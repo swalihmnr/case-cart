@@ -68,34 +68,27 @@ function applyFilters() {
     window.location.href = `/product?${query.toString()}`;
 }
 const addWishlist = async (productId, variantId) => {
-    try {
-        let res=await api.addWishlistAxios(productId,variantId)
-        location.reload()
-        if(res.data.success){
-          Swal.fire({
-        icon: 'success',
-        title: 'added to wishlist',
-        text: res.data.message,
-        confirmButtonColor: '#667eea'
-      });
-      location.reload()
-        }else{
-             Swal.fire({
-        icon: 'warning',
-        title: 'something went wrong',
-        text: res.data.message,
-        confirmButtonColor: '#667eea'
-      }); 
-        }
-    } catch (error) {
-          Swal.fire({
-        icon: 'error',
-        title: 'something went wrong',
-        text: error.response.data.message,
-        confirmButtonColor: '#667eea'
-      });
-        console.log(error.response)
-    }
-    
-}; 
+  try {
+    const res = await api.addWishlistAxios(productId, variantId);
+    console.log(res, 'it is the response');
+    // Swal.fire({
+    //   icon: 'success',
+    //   title: 'Added to wishlist',
+    //   text: res.data.message,
+    //   confirmButtonColor: '#667eea'
+    // });
+
+    setTimeout(() => location.reload(), 800);
+
+  } catch (error) {
+    console.log(error.response);
+    Swal.fire({
+      icon: 'info',
+      title: 'Notice',
+      text: error.response?.data?.message || 'Something went wrong',
+      confirmButtonColor: '#667eea'
+    });
+  }
+};
+
 window.addWishlist = addWishlist;
