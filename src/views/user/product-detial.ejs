@@ -4,6 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Gradient Dream - CaseCart</title>
+     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
         .gradient-bg {
@@ -213,11 +214,12 @@
 </head>
 <body class="bg-gray-50">
     <!-- Navigation -->
-    <nav class="bg-white shadow-md sticky top-0 z-50">
+     <nav class="bg-white shadow-md sticky top-0 z-50">
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <div class="flex justify-between items-center h-16">
+                <!-- Logo -->
                 <div class="flex items-center">
-                    <a href="index.html" class="flex items-center space-x-2">
+                    <a href="#" class="flex items-center space-x-2">
                         <div class="w-10 h-10 gradient-bg rounded-lg flex items-center justify-center">
                             <span class="text-white font-bold text-xl">CC</span>
                         </div>
@@ -225,37 +227,77 @@
                     </a>
                 </div>
 
+                <!-- Desktop Navigation -->
                 <div class="hidden md:flex items-center space-x-8">
-                    <a href="/login" class="text-gray-700 hover:text-purple-600 font-medium">Home</a>
-                    <a href="products.html" class="text-gray-700 hover:text-purple-600 font-medium">Products</a>
-                    <a href="#" class="text-gray-700 hover:text-purple-600 font-medium">Categories</a>
-                    <a href="#" class="text-gray-700 hover:text-purple-600 font-medium">About</a>
+                    <a href="/home" class="nav-link text-gray-700 hover:text-purple-600 font-medium">Home</a>
+                    <a href="/product" class="nav-link text-gray-700 hover:text-purple-600 font-medium">Products</a>
+                    <a href="#categories" class="nav-link text-gray-700 hover:text-purple-600 font-medium">Categories</a>
+                  
                 </div>
 
+                <!-- Right Side Icons -->
                 <div class="flex items-center space-x-4">
-                    <button class="text-gray-700 hover:text-purple-600 transition">
-                        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/>
-                        </svg>
+                   
+                    <a href="/wishlist" class="text-gray-700 hover:text-purple-600 transition relative">
+                        <i class="fas fa-heart"></i>
+                        <span class="absolute -top-2 -right-2 bg-red-500 text-white text-xs rounded-full w-5 h-5 flex items-center justify-center"><%= wishlistcount %></span>
+                    </a>
+                    <a href="/cart" class="text-gray-700 hover:text-purple-600 transition relative">
+                        <i class="fas fa-shopping-cart"></i>
+                        <span class="absolute -top-2 -right-2 bg-purple-600 text-white text-xs rounded-full w-5 h-5 flex items-center justify-center"><%= cartCount %></span>
+                    </a>
+                   <% if (!user) { %>
+    <a href="/login" 
+       class="hidden md:block bg-purple-600 text-white px-6 py-2 rounded-lg hover:bg-purple-700 transition font-medium">
+       Login
+    </a>
+<% } else { %>
+    <div class="hidden md:flex items-center space-x-4">
+        <span class="text-gray-700 font-medium">
+            Hi, <%= user.name %>
+        </span>
+        <a href="/logout" 
+           class="bg-red-500 text-white px-4 py-2 rounded-lg hover:bg-red-600 transition font-medium">
+           Logout
+        </a>
+    </div>
+<% } %>
+
+                    <!-- Mobile Menu Button -->
+                    <button class="md:hidden text-gray-700" onclick="toggleMobileMenu()">
+                        <i class="fas fa-bars"></i>
                     </button>
-                    <a href="wishlist.html" class="text-gray-700 hover:text-purple-600 transition relative">
-                        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z"/>
-                        </svg>
-                        <span class="absolute -top-2 -right-2 bg-red-500 text-white text-xs rounded-full w-5 h-5 flex items-center justify-center">3</span>
-                    </a>
-                    <a href="cart.html" class="text-gray-700 hover:text-purple-600 transition relative">
-                        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z"/>
-                        </svg>
-                        <span class="absolute -top-2 -right-2 bg-purple-600 text-white text-xs rounded-full w-5 h-5 flex items-center justify-center">2</span>
-                    </a>
-                    <a href="login.html" class="hidden md:block bg-purple-600 text-white px-6 py-2 rounded-lg hover:bg-purple-700 transition font-medium">Login</a>
                 </div>
+            </div>
+
+            <!-- Mobile Menu -->
+            <div id="mobileMenu" class="hidden md:hidden pb-4">
+                <a href="/home" class="block py-2 text-gray-700 hover:text-purple-600">Home</a>
+                <a href="/product" class="block py-2 text-gray-700 hover:text-purple-600">Products</a>
+                <a href="#categories" class="block py-2 text-gray-700 hover:text-purple-600">Categories</a>
+              
+               <% if (!user) { %>
+    <a href="/login" 
+       class="block bg-purple-600 text-white px-6 py-2 rounded-lg hover:bg-purple-700 transition font-medium">
+       Login
+    </a>
+<% } else { %>
+    <div class="block space-y-2 mt-2">
+
+        <span class="text-gray-700 font-medium block">
+            Hi, `<%= user.firstName %> <%= user.lastName %>`
+        </span>
+
+        <a href="/logout" 
+           class="block bg-red-500 text-white px-4 py-2 rounded-lg hover:bg-red-600 transition font-medium">
+           Logout
+        </a>
+    </div>
+<% } %>
+
             </div>
         </div>
     </nav>
-
     <!-- Breadcrumb -->
     <div class="bg-white border-b">
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">

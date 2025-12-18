@@ -1,6 +1,7 @@
 import { STATUS_CODES } from "../utils/statusCodes.js"
 import user from "../models/userModel.js"
 import wishlistModel from '../models/wishlistModel.js'
+import cartModel from '../models/cartModel.js'
 export const userAuth=(req,res,next)=>{
   
   if(!req.session.user){
@@ -59,6 +60,15 @@ export const wishlistCount=async(req,res,next)=>{
     res.locals.wishlistcount=await wishlistModel.countDocuments({userId:req.session.user.id});
   }else{
     res.locals.wishlistcount=0;
+  }
+  next();
+}
+export const cartCount=async(req,res,next)=>{
+  if(req.session.user?.id){
+    res.locals.cartCount=await cartModel.countDocuments({userId:req.session.user.id});
+
+  }else{
+    res.locals.cartCount=0;
   }
   next();
 }

@@ -744,7 +744,8 @@ const getCart=async(req,res)=>{
      cartItems.forEach((item)=>{
          subtotal+=item.quantity*item.variantId.salePrice
      })
-    const totalDocs = await cartModel.countDocuments({ userId: userId });
+     const totalDocs=await cartModel.countDocuments({userId:userId})
+    console.log('finished')
    
    res.render('./user/cart',{
     products,
@@ -819,7 +820,13 @@ const cartQuantityUpdate=async(req,res)=>{
 
     const cartItem = await cartModel
         .findById(cartId)
-        .populate('variantId').populate('productId')
+        .populate('variantId').populate({
+        path:'productId',
+        populate:{
+            path:'catgId',
+            model:'Category'
+        }
+    });
     if (!cartItem) {
         return res.status(404).json({
             success: false,
@@ -836,7 +843,7 @@ const cartQuantityUpdate=async(req,res)=>{
                 message: "Order limit or stock limit reached"
             });
         }
-        if(variant.isListed){
+        if(variant.isListed||cartItem.productId.isBlock||cartItem.productId.catgId.isActive===false){
             return res.status(STATUS_CODES.FORBIDDEN).json({
                 success:false,
                 message:"This product currently unavailable!"
@@ -848,6 +855,13 @@ const cartQuantityUpdate=async(req,res)=>{
        
     } else {
         if (cartItem.quantity>1) {
+            if(variant.isListed||cartItem.productId.isBlock||cartItem.productId.catgId.isActive===false){
+            return res.status(STATUS_CODES.FORBIDDEN).json({
+                success:false,
+                message:"This product currently unavailable!"
+            })
+
+        }
             cartItem.quantity-= 1;
         }
     }

@@ -1,10 +1,11 @@
 import express from 'express';
 import userController from '../controllers/userController.js';
 import {otpAccess} from '../middlewares/otp.js'
-import{userAuth,keResetPass,goBackOtpVerify,blockUser,wishlistCount} from '../middlewares/auth.js'
+import{userAuth,keResetPass,goBackOtpVerify,blockUser,wishlistCount,cartCount} from '../middlewares/auth.js'
 import upload from '../middlewares/multer.js';
 const router=express.Router();
 router.use(wishlistCount)
+router.use(cartCount)
 router.get('/login',goBackOtpVerify,userController.getLogin);
 router.post('/login',userController.postLogin);
 router.get('/signup',goBackOtpVerify,userController.getSignup);
