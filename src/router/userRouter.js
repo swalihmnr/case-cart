@@ -33,5 +33,7 @@ router.get('/cart',userController.getCart);
 router.patch('/cart/add',userController.addCart)
 router.post('/cart/quantity/:id',userController.cartQuantityUpdate);
 router.patch('/product/cart/:id',userController.remCart)
+router.get('/checkout',userAuth,blockUser,userController.getCheckout);
+
 
 export default router

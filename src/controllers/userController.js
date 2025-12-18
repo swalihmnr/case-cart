@@ -913,6 +913,53 @@ const remCart=async(req,res)=>{
         })
     }
 }
+const getCheckout=async(req,res)=>{
+    const userId=new mongoose.Types.ObjectId(req.session.user.id)
+    const cartItems=await cartModel.aggregate([{$match:{userId:userId}},
+        {$lookup:{
+            from:'products',
+            localField:'productId',
+            foreignField:'_id',
+            as:"product"
+        }},
+        {$unwind:'$product'},
+        {$lookup:{
+            from:'variants',
+            localField:'variantId',
+            foreignField:'_id',
+            as:'variant'
+        }},
+        {$addFields:{
+            mainImage:{
+              $first:{
+                  $filter:{
+                      input:"$product.productImages",
+                      as:'img',
+                      cond:"$$img.isMain"
+                  }
+              }  
+            }
+        }},
+        {$unwind:"$variant"},
+        {$project:{
+            quantity:1,
+            "product.name":1,
+            "variant.deviceModel":1,
+            "variant.salePrice":1,
+            "mainImage.url":1
+
+        }}
+
+    ])
+    let subtotal=0;
+    cartItems.forEach((item)=>{
+       subtotal+= item.quantity*item.variant.salePrice
+    })
+    res.render('./user/checkout',{
+        cartItems,
+        subtotal
+    })
+}
 
 export default {
     getLogin,
@@ -941,6 +988,7 @@ export default {
     addCart,
     cartQuantityUpdate,
     getVariantData,
-    remCart
+    remCart,
+    getCheckout
 
 };
