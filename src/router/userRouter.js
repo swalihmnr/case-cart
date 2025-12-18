@@ -34,6 +34,12 @@ router.patch('/cart/add',userController.addCart)
 router.post('/cart/quantity/:id',userController.cartQuantityUpdate);
 router.patch('/product/cart/:id',userController.remCart)
 router.get('/checkout',userAuth,blockUser,userController.getCheckout);
+router.get('/address',userAuth,userController.getAddressMngmnt);
+router.get('/address/edit/:id',userAuth,userController.geteditAddress);
+router.get('/address/add',userController.getAddAddress);
+router.post('/address/add',userController.addAddress);
+router.post('/address/edit',userController.editAddress);
+router.patch('/address/:id/del',userController.deleteAddress)
 
 
 export default router

@@ -231,6 +231,34 @@ const quantityUpdateAxios=async(cartId,change)=>{
 const removeFromCartAxios=async(productId,variantId)=>{
   return api.patch(`/product/cart/${productId}`)
 }
+
+const addAddressAxios=async(data)=>{
+  try {
+    return await api.post(`/address/add`,{
+      data
+    })
+    
+  } catch (error) {
+    return error.response
+  }
+}
+const editAddressAxios=async(data)=>{
+  try {
+    return await api.post(`/address/edit`,{
+      data
+    })
+  } catch (error) {
+    return error.response
+  }
+}
+const deleteAddressAxios=async(addressId)=>{
+  try {
+    console.log('hlowow')
+    return api.patch(`/address/${addressId}/del`);
+  } catch (error) {
+    return error.response
+  }
+}
 export default {
   userSignupAxios,
   userOtpAxios,
@@ -247,6 +275,9 @@ export default {
   quantityUpdateAxios,
   productDetialAxios,
   getVariantDataAxios,
-  removeFromCartAxios
+  removeFromCartAxios,
+  addAddressAxios,
+  editAddressAxios,
+  deleteAddressAxios
 
 };
