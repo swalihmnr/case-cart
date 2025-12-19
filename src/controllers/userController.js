@@ -943,6 +943,10 @@ const getCheckout=async(req,res)=>{
             }
         }},
         {$unwind:"$variant"},
+        {$match:{"product.isBlock":false,
+                "variant.isListed":false,
+                "variant.stock":{$gt:0}
+        }},
         {$project:{
             quantity:1,
             "product.name":1,
@@ -957,7 +961,10 @@ const getCheckout=async(req,res)=>{
     cartItems.forEach((item)=>{
        subtotal+= item.quantity*item.variant.salePrice
     })
+    const addresses=await addressModel.find()
+    console.log('her reached')
     res.render('./user/checkout',{
+        addresses,
         cartItems,
         subtotal
     })
