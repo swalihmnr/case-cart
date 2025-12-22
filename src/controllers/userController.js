@@ -11,6 +11,7 @@ import { uploadBufferTocloudnery } from '../utils/cloudneryUpload.js'
 import wishlistModel from '../models/wishlistModel.js'
 import cartModel from '../models/cartModel.js'
 import addressModel from '../models/addressModel.js';
+import orderModel from '../models/orderModel.js'
 
 
 
@@ -277,7 +278,7 @@ const getProduct = async (req, res) => {
         let { page = 1, search = "", price = "all", Categories = "", sort = "" } = req.query;
         page = Number(page);
 
-        const limit = 9;
+        const limit = 6;
         const skip = (page - 1) * limit;
 
     
@@ -961,6 +962,10 @@ const getCheckout=async(req,res)=>{
     cartItems.forEach((item)=>{
        subtotal+= item.quantity*item.variant.salePrice
     })
+    console.log(cartItems)
+    if(cartItems.length===0){
+        return res.status(STATUS_CODES.FORBIDDEN)
+    }
     const addresses=await addressModel.find()
     console.log('her reached')
     res.render('./user/checkout',{
@@ -1082,6 +1087,182 @@ const deleteAddress=async(req,res)=>{
         console.log(error)
     }
 }
+const getConfirmation=async(req,res)=>{ 
+
+    const userId=req.session.user.id
+        const orderId=req.params.id;
+        const order=await orderModel.findOne({_id:orderId}).populate('orderItems.productId').populate('orderItems.variantId')
+
+     res.render('./user/ord-confirmation',{
+        order
+
+     })
+}
+const ordConfirmation=async(req,res)=>{
+ try {
+  let shippingAddress;
+  const userId= new mongoose.Types.ObjectId(req.session.user.id);
+  const data=req.body.data;
+  if (data.address?.addressId) {
+    const addressId = new mongoose.Types.ObjectId(data.address.addressId);
+    const savedAddress= await addressModel.findById(addressId);
+    if (!savedAddress) {
+      return res.status(STATUS_CODES.NOT_FOUND).json({
+        success: false,
+        message: "Address not found"
+      });
+    }
+    console.log(savedAddress.landMark,"it is the landMark")
+    shippingAddress = {
+      addressType: savedAddress.addressType,
+      firstName: savedAddress.firstName,
+      lastName: savedAddress.lastName,
+      phone: savedAddress.phone,
+      streetAddress: savedAddress.streetAddress,
+      landMark: savedAddress.landMark,
+      city: savedAddress.city,
+      state: savedAddress.state,
+      pinCode: savedAddress.pinCode
+    };
+  } else {
+    const {
+      firstName,
+      lastName,
+      phone,
+      streetAddress,
+      landMark,
+      city,
+      state,
+      pinCode
+    } = data.address ;
+
+    shippingAddress = {
+      addressType: "manual",
+      firstName,
+      lastName,
+      phone,
+      streetAddress,
+      landMark,
+      city,
+      state,
+      pinCode
+    };
+  }
+
+  const paymentMethod = data.paymentMethod;
+
+  if (!["cod", "wallet", "razorpay"].includes(paymentMethod)) {
+    return res.status(STATUS_CODES.BAD_REQUEST).json({
+      success: false,
+      message: "Invalid payment method"
+    });
+  }
+ 
+  const cartItems = await cartModel.aggregate([
+    { $match: { userId } },
+
+    {
+      $lookup: {
+        from: "products",
+        localField: "productId",
+        foreignField: "_id",
+        as: "product"
+      }
+    },
+    { $unwind: "$product" },
+
+    {
+      $lookup: {
+        from: "variants",
+        localField: "variantId",
+        foreignField: "_id",
+        as: "variant"
+      }
+    },
+    { $unwind: "$variant" },
+    {
+      $match: {
+        "product.isBlock": false,
+        "variant.isListed": false,
+        "variant.stock": { $gt: 0 }
+      }
+    },
+
+    {
+      $project: {
+        productId: 1,
+        variantId: 1,
+        quantity: 1,
+        "variant.salePrice": 1
+      }
+    }
+  ]);
+console.log('it s the cartitems',cartItems)
+  if (!cartItems.length) {
+     console.log('entered1')
+    return res.status(STATUS_CODES.NOT_FOUND).json({
+      success: false,
+      message: "Cart is empty or items unavailable"
+    });
+  }
+
+  let subtotal = 0;
+  cartItems.forEach(item => {
+    subtotal += item.quantity * item.variant.salePrice;
+  });
+
+  const discount = 0;
+  const finalAmount = subtotal - discount;
+
+  const order = await orderModel.create({
+    userId,
+    paymentMethod,
+    paymentStatus: paymentMethod === "cod" ?"pending": "initiated",
+    shippingAddress,
+    totalPrice: subtotal,
+    discount,
+    finalAmount,
+    orderItems: cartItems.map(item => ({
+      productId: item.productId,
+      variantId: item.variantId,
+      quantity: item.quantity,
+      price: item.variant.salePrice,
+      status: "processing",
+      processingAt: new Date()
+    }))
+  });
+  for (const item of cartItems) {
+  const result = await variantModel.updateOne(
+    {
+      _id: item.variantId,
+      stock: { $gte: item.quantity }   
+    },
+    {
+      $inc: { stock: -item.quantity }  
+    }
+  );
+  if (result.modifiedCount === 0) {
+    throw new Error("Insufficient stock for a product");
+  }
+}
+
+  await cartModel.deleteMany({ userId });
+    console.log('low')
+  return res.status(STATUS_CODES.CREATED).json({
+    success: true,
+    message: "Order placed successfully",
+    orderId: order._id
+  });
+
+} catch (error) {
+  console.error(error);
+  return res.status(STATUS_CODES.INTERNAL_SERVER_ERROR).json({
+    success: false,
+    message: "Internal server error"
+  });
+}
+
+}
 
 export default {
     getLogin,
@@ -1117,6 +1298,8 @@ export default {
     geteditAddress,
     addAddress,
     editAddress,
-    deleteAddress
+    deleteAddress,
+    getConfirmation,
+    ordConfirmation
 
 };

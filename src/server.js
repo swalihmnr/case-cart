@@ -39,9 +39,14 @@ app.use(express.static(path.join(__dirname,'../public')));
 app.use((req,res)=>{
     res.status(404).render('error')
 })
-app.use((err,req,res,next)=>{
-    
-})
+app.use((err, req, res, next) => {
+  console.error(err.stack); 
+  res.status(500).json({
+    success: false,
+    message: err.message||"Internal Server Error"
+  });
+});
+
 connectDB()
 app.listen(process.env.PORT_NUMBER,()=>{
  console.log(`it's running on ${process.env.PORT_NUMBER}`)

@@ -1,4 +1,4 @@
-
+import api from "../api.js";
 async function placeOrder() {
 
   // ----------------------------
@@ -80,7 +80,12 @@ async function placeOrder() {
     paymentMethod,
     couponCode
   };
-
+    const res=await api.confirmationAxios(payload);
+    if(res.data.success){
+        if(res.data.orderId){
+            location.href=`/order/confirm/${res.data.orderId}`
+        }
+    }
   
 
   // ----------------------------

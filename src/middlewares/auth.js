@@ -72,3 +72,10 @@ export const cartCount=async(req,res,next)=>{
   }
   next();
 }
+export const requiredAdmin =async(req,res,next)=>{
+  if(req.session.admin){
+    next()
+  }else{
+    return res.redirect('/admin/login')
+  }
+}

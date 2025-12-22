@@ -16,11 +16,11 @@ const postLogin=async(req,res)=>{
 const {Email,Password}=req.body
 let existing= await adminModel.findOne({email:Email})
 if(!existing){
-    res.json({success:false,message:"it is not user"})
+    res.json({success:false,message:"it is not admin"})
 }else{
     let isValidPass=await bcrypt.compare(Password,existing.password);
     if(isValidPass){
-
+        req.session.admin=true;
         res.json({
             success:true,
             message:'admin logged'
@@ -764,6 +764,9 @@ const patchListUnlist=async(req,res)=>{
         })
    }
 }
+const getOrderMngmnt=(req,res)=>{
+    res.render('./admin/order-management')
+}
 export default {
     getLogin,
     postLogin,
@@ -789,6 +792,7 @@ export default {
     editProductBasicInformation,
     passVariantData,
     postEditVariantSave,
-    patchListUnlist
+    patchListUnlist,
+    getOrderMngmnt
 
 }

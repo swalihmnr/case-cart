@@ -40,6 +40,8 @@ router.get('/address/add',userController.getAddAddress);
 router.post('/address/add',userController.addAddress);
 router.post('/address/edit',userController.editAddress);
 router.patch('/address/:id/del',userController.deleteAddress)
-
+router.get('/order/confirm/:id',userController.getConfirmation);
+router.post('/order/confirm',userController.ordConfirmation)
+// router.get('/order/')
 
 export default router

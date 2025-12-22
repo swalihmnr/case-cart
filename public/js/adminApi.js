@@ -92,6 +92,9 @@ const editVariantSaveAxios=async(id,data)=>{
 }
 const toggleListUnlistAxios=async(id)=>{
   return await api.patch(`/admin/product/edit/${id}/veriant-toggle`)
+};
+const updateStatus=(data)=>{
+  
 }
 export default {
     addCategoryAxios,

@@ -1,0 +1,143 @@
+<%- include('../partials/user/header') %>
+
+<div class="min-h-screen bg-gray-50">
+    <!-- Breadcrumb -->
+    <div class="bg-white border-b">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-3 md:py-4">
+            <div class="flex items-center space-x-2 text-sm">
+                <a href="/" class="text-gray-600 hover:text-purple-600 transition">Home</a>
+                <span class="text-gray-400">/</span>
+                <span class="text-gray-800 font-medium">Products</span>
+            </div>
+        </div>
+    </div>
+
+    <!-- Main Content -->
+    <div class="max-w-7xl mx-auto px-3 sm:px-4 lg:px-8 py-4 md:py-8">
+        <div class="flex flex-col lg:flex-row gap-4 md:gap-8">
+            <!-- Products Grid -->
+            <main class="flex-1">
+                <div class="bg-white rounded-lg shadow-sm p-6">
+                    <div class="flex items-center justify-between mb-6">
+                        <div>
+                            <h2 class="text-2xl font-bold text-gray-800">My Account</h2>
+                            <p class="text-gray-500 text-sm">Manage your account settings and preferences</p>
+                        </div>
+                    </div>
+
+                    <div class="flex items-center justify-between mb-6">
+                        <h3 class="text-xl font-semibold text-gray-800">My Orders</h3>
+                        <button class="px-4 py-2 border border-gray-300 rounded-lg text-gray-600 hover:bg-gray-50">
+                            Cancelled
+                        </button>
+                    </div>
+
+                    <!-- Orders List -->
+                    <div class="space-y-4">
+                        <!-- Order 1 -->
+                        <div class="border border-gray-200 rounded-lg p-4 hover:shadow-md transition-shadow">
+                            <div class="flex flex-col md:flex-row md:items-center justify-between mb-4">
+                                <div>
+                                    <h4 class="font-semibold text-gray-800">ORD-2025-001</h4>
+                                    <p class="text-sm text-gray-500">Placed on 03/10/2025</p>
+                                </div>
+                                <span class="mt-2 md:mt-0 inline-block px-3 py-1 bg-green-100 text-green-600 text-sm rounded-full self-start">Delivered</span>
+                            </div>
+                            <div class="flex items-start space-x-4 mb-4">
+                                <div class="w-16 h-16 bg-gradient-to-br from-purple-400 to-purple-600 rounded-lg flex items-center justify-center flex-shrink-0">
+                                    <svg class="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 18h.01M8 21h8a2 2 0 002-2V5a2 2 0 00-2-2H8a2 2 0 00-2 2v14a2 2 0 002 2z"></path>
+                                    </svg>
+                                </div>
+                                <div class="flex-1">
+                                    <h5 class="font-medium text-gray-800">iPhone 14 Pro Case</h5>
+                                    <p class="text-sm text-gray-500">Qty: 1</p>
+                                </div>
+                                <div class="text-right">
+                                    <p class="font-semibold text-gray-800">₹899</p>
+                                </div>
+                            </div>
+                            <div class="flex items-center justify-between pt-4 border-t border-gray-200">
+                                <p class="text-gray-600">Total Amount: <span class="font-semibold text-purple-600">₹2499</span></p>
+                                <div class="flex space-x-2">
+                                    <button onclick="showOrderDetails('001')" class="px-4 py-2 border border-purple-600 text-purple-600 rounded-lg hover:bg-purple-50">Order Details</button>
+                                    <button class="px-4 py-2 bg-gray-100 text-gray-600 rounded-lg hover:bg-gray-200">Download Invoice</button>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Order 2 -->
+                        <div class="border border-gray-200 rounded-lg p-4 hover:shadow-md transition-shadow">
+                            <div class="flex flex-col md:flex-row md:items-center justify-between mb-4">
+                                <div>
+                                    <h4 class="font-semibold text-gray-800">ORD-2025-002</h4>
+                                    <p class="text-sm text-gray-500">Placed on 12/10/2025</p>
+                                </div>
+                                <span class="mt-2 md:mt-0 inline-block px-3 py-1 bg-blue-100 text-blue-600 text-sm rounded-full self-start">In Transit</span>
+                            </div>
+                            <div class="flex items-start space-x-4 mb-4">
+                                <div class="w-16 h-16 bg-gradient-to-br from-purple-400 to-purple-600 rounded-lg flex items-center justify-center flex-shrink-0">
+                                    <svg class="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 18h.01M8 21h8a2 2 0 002-2V5a2 2 0 00-2-2H8a2 2 0 00-2 2v14a2 2 0 002 2z"></path>
+                                    </svg>
+                                </div>
+                                <div class="flex-1">
+                                    <h5 class="font-medium text-gray-800">Premium Leather Case</h5>
+                                    <p class="text-sm text-gray-500">Qty: 1</p>
+                                </div>
+                                <div class="text-right">
+                                    <p class="font-semibold text-gray-800">₹1299</p>
+                                </div>
+                            </div>
+                            <div class="flex items-center justify-between pt-4 border-t border-gray-200">
+                                <p class="text-gray-600">Total Amount: <span class="font-semibold text-purple-600">₹1299</span></p>
+                                <div class="flex space-x-2">
+                                    <button onclick="trackOrder('002')" class="px-4 py-2 border border-purple-600 text-purple-600 rounded-lg hover:bg-purple-50">Track Order</button>
+                                    <button class="px-4 py-2 bg-gray-100 text-gray-600 rounded-lg hover:bg-gray-200">Download Invoice</button>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Order 3 -->
+                        <div class="border border-gray-200 rounded-lg p-4 hover:shadow-md transition-shadow">
+                            <div class="flex flex-col md:flex-row md:items-center justify-between mb-4">
+                                <div>
+                                    <h4 class="font-semibold text-gray-800">ORD-2025-003</h4>
+                                    <p class="text-sm text-gray-500">Placed on 05/10/2025</p>
+                                </div>
+                                <span class="mt-2 md:mt-0 inline-block px-3 py-1 bg-yellow-100 text-yellow-600 text-sm rounded-full self-start">Processing</span>
+                            </div>
+                            <div class="flex items-start space-x-4 mb-4">
+                                <div class="w-16 h-16 bg-gradient-to-br from-purple-400 to-purple-600 rounded-lg flex items-center justify-center flex-shrink-0">
+                                    <svg class="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 18h.01M8 21h8a2 2 0 002-2V5a2 2 0 00-2-2H8a2 2 0 00-2 2v14a2 2 0 002 2z"></path>
+                                    </svg>
+                                </div>
+                                <div class="flex-1">
+                                    <h5 class="font-medium text-gray-800">Wireless Charging Case</h5>
+                                    <p class="text-sm text-gray-500">Qty: 1</p>
+                                </div>
+                                <div class="text-right">
+                                    <p class="font-semibold text-gray-800">₹999</p>
+                                </div>
+                            </div>
+                            <div class="flex items-center justify-between pt-4 border-t border-gray-200">
+                                <p class="text-gray-600">Total Amount: <span class="font-semibold text-purple-600">₹1598</span></p>
+                                <div class="flex space-x-2">
+                                    <button onclick="trackOrder('003')" class="px-4 py-2 border border-purple-600 text-purple-600 rounded-lg hover:bg-purple-50">Track Order</button>
+                                    <button class="px-4 py-2 bg-gray-100 text-gray-600 rounded-lg hover:bg-gray-200">Download Invoice</button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </main>
+        </div>
+    </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script> 
+<script type="module" src="/js/user/list-product.js"></script>
+<script type="module" src="/js/user/cart.js"></script>
+
+<%- include('../partials/footer') %>

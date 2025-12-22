@@ -253,10 +253,20 @@ const editAddressAxios=async(data)=>{
 }
 const deleteAddressAxios=async(addressId)=>{
   try {
-    console.log('hlowow')
+
     return api.patch(`/address/${addressId}/del`);
   } catch (error) {
     return error.response
+  }
+}
+const confirmationAxios=async(data)=>{
+  try {
+    return await api.post(`/order/confirm`,{
+      data
+    })
+    
+  } catch (error) {
+    
   }
 }
 export default {
@@ -278,6 +288,7 @@ export default {
   removeFromCartAxios,
   addAddressAxios,
   editAddressAxios,
-  deleteAddressAxios
+  deleteAddressAxios,
+  confirmationAxios
 
 };

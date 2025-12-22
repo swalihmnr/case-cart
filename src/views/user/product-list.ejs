@@ -1,91 +1,11 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Products - CaseCart</title>
-    <script src="https://cdn.tailwindcss.com"></script>
-    <style>
-        .gradient-bg {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-        }
-        .product-card {
-            transition: transform 0.3s ease, box-shadow 0.3s ease;
-        }
-        .product-card:hover {
-            transform: translateY(-8px);
-            box-shadow: 0 20px 40px rgba(0,0,0,0.15);
-        }
-        .filter-checkbox:checked + label {
-            background-color: #667eea;
-            color: white;
-        }
-    </style>
-</head>
-<body class="bg-gray-50">
-    <!-- Navigation -->
-    <nav class="bg-white shadow-md sticky top-0 z-50">
-        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-            <div class="flex justify-between items-center h-16">
-                <div class="flex items-center">
-                    <a href="index.html" class="flex items-center space-x-2">
-                        <div class="w-10 h-10 gradient-bg rounded-lg flex items-center justify-center">
-                            <span class="text-white font-bold text-xl">CC</span>
-                        </div>
-                        <span class="text-2xl font-bold text-gray-800">CaseCart</span>
-                    </a>
-                </div>
+<%- include('../partials/user/header') %>
 
-                <div class="hidden md:flex items-center space-x-8">
-                    <a href="/home" class="text-gray-700 hover:text-purple-600 font-medium">Home</a>
-                    <a href="#" class="text-purple-600 font-medium border-b-2 border-purple-600">Products</a>
-                    <a href="#" class="text-gray-700 hover:text-purple-600 font-medium">About</a>
-                </div>
-
-                <div class="flex items-center space-x-4">
-                    <!-- <button class="text-gray-700 hover:text-purple-600 transition">
-                        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/>
-                        </svg>
-                    </button> -->
-                    <a href="/wishlist" class="text-gray-700 hover:text-purple-600 transition relative">
-                        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z"/>
-                        </svg>
-                        <span class="absolute -top-2 -right-2 bg-red-500 text-white text-xs rounded-full w-5 h-5 flex items-center justify-center"><%= wishlistcount %></span>
-                    </a>
-                    <a href="/cart" class="text-gray-700 hover:text-purple-600 transition relative">
-                        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z"/>
-                        </svg>
-                        <span class="absolute -top-2 -right-2 bg-purple-600 text-white text-xs rounded-full w-5 h-5 flex items-center justify-center">2</span>
-                    </a>
-                     <% if (!user) { %>
-    <a href="/login" 
-       class="hidden md:block bg-purple-600 text-white px-6 py-2 rounded-lg hover:bg-purple-700 transition font-medium">
-       Login
-    </a>
-<% } else { %>
-    <div class="hidden md:flex items-center space-x-4">
-        <span class="text-gray-700 font-medium">
-            Hi, <%= user.name %>
-        </span>
-        <a href="/logout" 
-           class="bg-red-500 text-white px-4 py-2 rounded-lg hover:bg-red-600 transition font-medium">
-           Logout
-        </a>
-    </div>
-<% } %>
-                </div>
-            </div>
-        </div>
-    </nav>
-
+<div class="min-h-screen bg-gray-50">
     <!-- Breadcrumb -->
     <div class="bg-white border-b">
-        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-3 md:py-4">
             <div class="flex items-center space-x-2 text-sm">
-                <a href="/home" class="text-gray-600 hover:text-purple-600">Home</a>
+                <a href="/" class="text-gray-600 hover:text-purple-600 transition">Home</a>
                 <span class="text-gray-400">/</span>
                 <span class="text-gray-800 font-medium">Products</span>
             </div>
@@ -93,97 +13,183 @@
     </div>
 
     <!-- Main Content -->
-    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        <div class="flex flex-col lg:flex-row gap-8">
+    <div class="max-w-7xl mx-auto px-3 sm:px-4 lg:px-8 py-4 md:py-8">
+        <div class="flex flex-col lg:flex-row gap-4 md:gap-8">
+            <!-- Mobile Filter Toggle -->
+            <div class="lg:hidden mb-4">
+                <button id="filterToggle" class="w-full bg-purple-600 text-white px-4 py-3 rounded-lg font-semibold hover:bg-purple-700 transition flex items-center justify-center gap-2">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 4a1 1 0 011-1h16a1 1 0 011 1v2.586a1 1 0 01-.293.707l-6.414 6.414a1 1 0 00-.293.707V17l-4 4v-6.586a1 1 0 00-.293-.707L3.293 7.293A1 1 0 013 6.586V4z"/>
+                    </svg>
+                    Filter Products
+                </button>
+            </div>
+
             <!-- Sidebar Filters -->
-            <aside class="lg:w-64 flex-shrink-0">
-                <div class="bg-white rounded-lg shadow-md p-6 sticky top-24">
-                    <div class="flex items-center justify-between mb-6">
-                        <h2 class="text-xl font-bold text-gray-800">Filters</h2>
-                        <button onclick="clearFilters()" class="text-sm text-purple-600 hover:text-purple-700">Clear All</button>
+            <aside id="sidebarFilters" class="lg:w-64 flex-shrink-0 hidden lg:block">
+                <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-4 md:p-6 sticky top-24">
+                    <div class="flex items-center justify-between mb-4 md:mb-6">
+                        <h2 class="text-lg md:text-xl font-bold text-gray-800">Filters</h2>
+                        <button onclick="clearFilters()" class="text-sm text-purple-600 hover:text-purple-700 transition font-medium">
+                            Clear All
+                        </button>
                     </div>
 
                     <!-- Search -->
-                    <div class="mb-6">
+                    <div class="mb-4 md:mb-6">
                         <label class="block text-sm font-semibold text-gray-700 mb-2">Search</label>
-                       <input id="search" value="<%= search || '' %>" 
-                      type="text" placeholder="Search products..." class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500">
+                        <div class="relative">
+                            <input 
+                                id="search" 
+                                value="<%= search || '' %>" 
+                                type="text" 
+                                placeholder="Search products..." 
+                                class="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent text-sm md:text-base"
+                            >
+                            <svg class="absolute right-3 top-3 w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/>
+                            </svg>
+                        </div>
                     </div>
 
                     <!-- Categories -->
-                      <div class="mb-6">
-                          <h3 class="text-sm font-semibold text-gray-700 mb-3">Categories</h3>
-                      
-                          <!-- Scrollable container -->
-                          <div class="space-y-2 max-h-48 overflow-y-auto pr-1 custom-scroll">
-                              
-                              <!-- All Products -->
-                              <div class="flex items-center">
-                                  <input type="checkbox" id="cat_all" class="filter-checkbox hidden "value="">
-                                  <label for="cat_all" class="flex-1 px-3 py-2 text-sm border border-gray-300 rounded-lg cursor-pointer hover:bg-gray-50 transition">
-                                      All Products
-                                  </label>
-                              </div>
-                      
-                             
-                              <% categories.forEach(cat => { %>
-                <div>
-                    <input type="checkbox"
-                           class="filter-checkbox "
-                           id="cat_<%= cat._id %>"
-                           value="<%= cat._id %>"
-                           <%= selectedCategories.includes(String(cat._id)) ? "checked" : "" %>>
-                    <label for="cat_<%= cat._id %>"><%= cat.name %></label>
-                </div>
-            <% }) %>
-                                     </div>
-                                    </div>
-                                                  
-                             <!-- Price Range -->
-                             <div class="mb-6">
-                              <h3 class="text-sm font-semibold text-gray-700 mb-3">Price Range</h3>
-                             <div class="space-y-2">
+                    <div class="mb-4 md:mb-6">
+                        <h3 class="text-sm font-semibold text-gray-700 mb-3">Categories</h3>
+                        <div class="space-y-2 max-h-60 overflow-y-auto pr-2 custom-scrollbar">
+                            <!-- All Products -->
                             <div class="flex items-center">
-                                <input type="radio" name="price" value="all" <%= price === "all" ? "checked" : "" %>>
-                                <label for="price1" class="text-sm text-gray-700 cursor-pointer">All Prices</label>
+                                <input 
+                                    type="radio" 
+                                    id="cat_all" 
+                                    name="category" 
+                                    value=""
+                                    class="sr-only"
+                                    <%= selectedCategories.length === 0 ? "checked" : "" %>
+                                    onchange="handleFilterChange()"
+                                >
+                                <label 
+                                    for="cat_all" 
+                                    class="flex-1 px-3 py-2.5 text-sm border border-gray-300 rounded-lg cursor-pointer hover:bg-gray-50 transition flex items-center justify-between"
+                                >
+                                    <span>All Products</span>
+                                    <svg class="w-4 h-4 hidden" id="check_cat_all" fill="currentColor" viewBox="0 0 20 20">
+                                        <path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"/>
+                                    </svg>
+                                </label>
                             </div>
-                        
-                            <div class="flex items-center">
-                                <input type="radio" name="price" value="under-150" <%= price === "under-150" ? "checked" : "" %>>
-                                <label for="price2" class="text-sm text-gray-700 cursor-pointer">Under ₹150</label>
-                            </div>
-                        
-                            <div class="flex items-center">
-                                <input type="radio" name="price" value="500-700" <%= price === "500-700" ? "checked" : "" %>> 
-                                <label for="price3" class="text-sm text-gray-700 cursor-pointer">₹500 – ₹700</label>
-                            </div>
-                        
-                            <div class="flex items-center">
-                                <input type="radio" name="price" value="above-1000" <%= price === "above-1000" ? "checked" : "" %>>
-                                <label for="price4" class="text-sm text-gray-700 cursor-pointer">Above ₹1000</label>
-                            </div>
+
+                            <% categories.forEach(cat => { %>
+                                <div class="flex items-center">
+                                    <input 
+                                        type="radio" 
+                                        id="cat_<%= cat._id %>" 
+                                        name="category" 
+                                        value="<%= cat._id %>"
+                                        class="sr-only"
+                                        <%= selectedCategories.includes(String(cat._id)) ? "checked" : "" %>
+                                        onchange="handleFilterChange()"
+                                    >
+                                    <label 
+                                        for="cat_<%= cat._id %>" 
+                                        class="flex-1 px-3 py-2.5 text-sm border border-gray-300 rounded-lg cursor-pointer hover:bg-gray-50 transition flex items-center justify-between"
+                                    >
+                                        <span><%= cat.name %></span>
+                                        <svg class="w-4 h-4 hidden" id="check_cat_<%= cat._id %>" fill="currentColor" viewBox="0 0 20 20">
+                                            <path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"/>
+                                        </svg>
+                                    </label>
+                                </div>
+                            <% }) %>
                         </div>
-                        
-
                     </div>
-                   
 
-                    <!-- Rating -->
-                    <div class="mb-6">
-                        <!-- <h3 class="text-sm font-semibold text-gray-700 mb-3">Rating</h3> -->
+                    <!-- Price Range -->
+                    <div class="mb-4 md:mb-6">
+                        <h3 class="text-sm font-semibold text-gray-700 mb-3">Price Range</h3>
                         <div class="space-y-2">
-                            <!-- <div class="flex items-center cursor-pointer hover:bg-gray-50 p-2 rounded">
-                                <span class="text-yellow-400">★★★★★</span>
-                                <span class="text-xs text-gray-600 ml-2">(4.5+)</span>
+                            <div class="flex items-center">
+                                <input 
+                                    type="radio" 
+                                    id="price_all" 
+                                    name="price" 
+                                    value="all" 
+                                    class="sr-only"
+                                    <%= price === "all" || !price ? "checked" : "" %>
+                                    onchange="handleFilterChange()"
+                                >
+                                <label 
+                                    for="price_all" 
+                                    class="flex-1 px-3 py-2.5 text-sm border border-gray-300 rounded-lg cursor-pointer hover:bg-gray-50 transition flex items-center justify-between"
+                                >
+                                    <span>All Prices</span>
+                                    <svg class="w-4 h-4 hidden" id="check_price_all" fill="currentColor" viewBox="0 0 20 20">
+                                        <path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"/>
+                                    </svg>
+                                </label>
                             </div>
-                            <div class="flex items-center cursor-pointer hover:bg-gray-50 p-2 rounded">
-                                <span class="text-yellow-400">★★★★☆</span>
-                                <span class="text-xs text-gray-600 ml-2">(4.0+)</span>
+                            
+                            <div class="flex items-center">
+                                <input 
+                                    type="radio" 
+                                    id="price_under_150" 
+                                    name="price" 
+                                    value="under-150" 
+                                    class="sr-only"
+                                    <%= price === "under-150" ? "checked" : "" %>
+                                    onchange="handleFilterChange()"
+                                >
+                                <label 
+                                    for="price_under_150" 
+                                    class="flex-1 px-3 py-2.5 text-sm border border-gray-300 rounded-lg cursor-pointer hover:bg-gray-50 transition flex items-center justify-between"
+                                >
+                                    <span>Under ₹150</span>
+                                    <svg class="w-4 h-4 hidden" id="check_price_under_150" fill="currentColor" viewBox="0 0 20 20">
+                                        <path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"/>
+                                    </svg>
+                                </label>
                             </div>
-                            <div class="flex items-center cursor-pointer hover:bg-gray-50 p-2 rounded">
-                                <span class="text-yellow-400">★★★☆☆</span>
-                                <span class="text-xs text-gray-600 ml-2">(3.0+)</span>
-                            </div> -->
+                            
+                            <div class="flex items-center">
+                                <input 
+                                    type="radio" 
+                                    id="price_500_700" 
+                                    name="price" 
+                                    value="500-700" 
+                                    class="sr-only"
+                                    <%= price === "500-700" ? "checked" : "" %>
+                                    onchange="handleFilterChange()"
+                                >
+                                <label 
+                                    for="price_500_700" 
+                                    class="flex-1 px-3 py-2.5 text-sm border border-gray-300 rounded-lg cursor-pointer hover:bg-gray-50 transition flex items-center justify-between"
+                                >
+                                    <span>₹500 – ₹700</span>
+                                    <svg class="w-4 h-4 hidden" id="check_price_500_700" fill="currentColor" viewBox="0 0 20 20">
+                                        <path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"/>
+                                    </svg>
+                                </label>
+                            </div>
+                            
+                            <div class="flex items-center">
+                                <input 
+                                    type="radio" 
+                                    id="price_above_1000" 
+                                    name="price" 
+                                    value="above-1000" 
+                                    class="sr-only"
+                                    <%= price === "above-1000" ? "checked" : "" %>
+                                    onchange="handleFilterChange()"
+                                >
+                                <label 
+                                    for="price_above_1000" 
+                                    class="flex-1 px-3 py-2.5 text-sm border border-gray-300 rounded-lg cursor-pointer hover:bg-gray-50 transition flex items-center justify-between"
+                                >
+                                    <span>Above ₹1000</span>
+                                    <svg class="w-4 h-4 hidden" id="check_price_above_1000" fill="currentColor" viewBox="0 0 20 20">
+                                        <path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"/>
+                                    </svg>
+                                </label>
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -192,43 +198,55 @@
             <!-- Products Grid -->
             <main class="flex-1">
                 <!-- Toolbar -->
-                <div class="bg-white rounded-lg shadow-md p-4 mb-6">
-                    <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
-                        <div class="text-gray-600">
-                            Showing <span class="font-semibold text-gray-800">1-12</span> of <span class="font-semibold text-gray-800">48</span> products
+                <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-4 mb-4 md:mb-6">
+                    <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3 md:gap-4">
+                        <div class="text-gray-600 text-sm md:text-base">
+                            <% 
+                            const limit = 12; // Set your limit per page
+                            const startIndex = (currentPage - 1) * limit;
+                            const endIndex = Math.min(startIndex + limit, totalItems);
+                            %>
+                            Showing <span class="font-semibold text-gray-800"><%= startIndex + 1 %>-<%= endIndex %></span> of <span class="font-semibold text-gray-800"><%= totalItems %></span> products
                         </div>
-                        <div class="flex items-center space-x-4">
+                        <div class="flex items-center gap-3">
                             <label class="text-sm text-gray-600">Sort by:</label>
-                            <select id="sort" class="px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500">
+                            <select 
+                                id="sort" 
+                                class="px-4 py-2.5 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent text-sm md:text-base w-full sm:w-auto"
+                                onchange="handleFilterChange()"
+                            >
                                 <option value="">Default</option>
-                                <option value="priceLowHigh" <%= sort==="priceLowHigh"?"selected":"" %>>Price: Low → High</option>
-                                <option value="priceHighLow" <%= sort==="priceHighLow"?"selected":"" %>>Price: High → Low</option>
-                                <option value="aToZ" <%= sort==="aToZ"?"selected":"" %>>A → Z</option>
-                                <option value="zToA" <%= sort==="zToA"?"selected":"" %>>Z → A</option>
-                                
+                                <option value="priceLowHigh" <%= sort === "priceLowHigh" ? "selected" : "" %>>Price: Low → High</option>
+                                <option value="priceHighLow" <%= sort === "priceHighLow" ? "selected" : "" %>>Price: High → Low</option>
+                                <option value="aToZ" <%= sort === "aToZ" ? "selected" : "" %>>A → Z</option>
+                                <option value="zToA" <%= sort === "zToA" ? "selected" : "" %>>Z → A</option>
                             </select>
                         </div>
                     </div>
                 </div>
 
-                                    <!-- Products Grid -->
-        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-                                        <!-- Product 1 -->
-                <% products.forEach(product => { %>
-                    <% 
-                 const isInWishlist = wishlistItems.some(item =>
-                   item.variantId?.toString() === product.minVariant?._id.toString()
-                    );
-                   %>
-                    <div class="product-card bg-white rounded-xl shadow-md overflow-hidden cursor-pointer">
-                        <!-- Image / Banner -->
-                        <div class="relative bg-gradient-to-br from-purple-400 to-pink-400 h-64 flex items-center justify-center">
-                            <img 
-                            src="<%= product.productImages.find(img=>img.isMain).url %>" 
-                            alt="Phone Case"
-                            />
-                            
-                            <button 
+                <!-- Products Grid -->
+                <% if (products.length > 0) { %>
+                    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-6">
+                        <% products.forEach(product => { %>
+                            <% 
+                            const isInWishlist = wishlistItems && wishlistItems.some(item =>
+                                item.variantId && item.variantId.toString() === product.minVariant._id.toString()
+                            );
+                            %>
+                            <div class="product-card bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden hover:shadow-md transition-shadow duration-300">
+                                <!-- Image Section -->
+                                <div class="relative bg-gradient-to-br from-gray-100 to-gray-200 h-48 md:h-56 flex items-center justify-center overflow-hidden">
+                                    <a href="/product/<%= product._id %>/details">
+                                        <img 
+                                            src="<%= product.productImages.find(img => img.isMain).url %>" 
+                                            alt="<%= product.name %>"
+                                            class="w-full h-full object-cover transition-transform duration-500 hover:scale-105"
+                                        />
+                                    </a>
+                                    
+                                    <!-- Wishlist Button -->
+                                    <button 
                                onclick="addWishlist('<%= product._id %>', '<%= product.minVariant._id %>')" 
                                class="absolute top-4 right-4 bg-white rounded-full p-2 hover:bg-gray-100 transition"
                            >
@@ -243,133 +261,295 @@
                               <path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"/>
                             </svg>
                            </button>
-                        </div>
+                                    
+                                    <!-- Stock Badge -->
+                                   
+                                </div>
 
-                        <!-- Content -->
-                        <a href="/product/<%= product._id%>/detials">
-              <div class="p-4">
-                  <!-- Product Name -->
-                  <h3 class="text-lg font-bold text-gray-800 mb-1">
-                      <%= product.name %>
-                  </h3>
-          
-                  <!-- Category Name -->
-                  <p class="text-sm text-gray-500 mb-2">
-                      <%= product.catgId.name %>
-                  </p>
-          
-                  <!-- Rating -->
-                  <div class="flex items-center mb-3">
-                      <div class="flex text-yellow-400 text-sm">
-                          <span>★★★★★</span>
-                      </div>
-                      <span class="text-xs text-gray-600 ml-2">(48)</span>
-                  </div>
-          
-                  <!-- Variant Selection -->
-                  
-                  <!-- Price + Button -->
-                  <div class="flex items-center justify-between">
-                     
-                   <span class="text-xl font-bold text-purple-600">
-                    ₹<%= product.minPrice %>
-                   </span>
-                </a>       
-                                
-                      <button onclick="addToCart('<%= product._id %>', '<%= product.minVariant._id %>')"  class="bg-purple-600 text-white px-4 py-2 rounded-lg hover:bg-purple-700 transition text-sm">
-                          Add to Cart
-                      </button>
-                  </div>
-              </div>
-          </div>          
-            <% }) %>
-                <!-- Pagination -->
-                <div class="flex justify-center mt-10 space-x-2">
-            <% if(currentPage > 1) { %>
-                <a href="/product?page=<%= currentPage - 1 %>&search=<%= search %>&price=<%= price %>&sort=<%= sort %>&Categories=<%= selectedCategories %>"
-                   class="px-4 py-2 border rounded-lg">Prev</a>
-            <% } else { %>
-                <span class="px-4 py-2 border rounded-lg text-gray-400">Prev</span>
-            <% } %>
-  
-            <% for(let i=1; i<= totalPages; i++) { %>
-                <% if(i === currentPage) { %>
-                    <span class="px-4 py-2 bg-purple-600 text-white rounded-lg"><%= i %></span>
-                <% } else { %>
-                    <a href="/product?page=<%= i %>&search=<%= search %>&price=<%= price %>&sort=<%= sort %>&Categories=<%= selectedCategories %>"
-                       class="px-4 py-2 border rounded-lg"><%= i %></a>
-                <% } %>
-            <% } %>
-  
-            <% if(currentPage < totalPages) { %>
-                <a href="/product?page=<%= currentPage + 1 %>&search=<%= search %>&price=<%= price %>&sort=<%= sort %>&Categories=<%= selectedCategories %>"
-                   class="px-4 py-2 border rounded-lg">Next</a>
-            <% } else { %>
-                <span class="px-4 py-2 border rounded-lg text-gray-400">Next</span>
-            <% } %>
+                                <!-- Content -->
+                                <div class="p-4">
+                                    <a href="/product/<%= product._id %>/detials" class="block">
+                                        <!-- Product Name -->
+                                        <h3 class="text-base md:text-lg font-bold text-gray-800 mb-1 truncate hover:text-purple-600 transition">
+                                            <%= product.name %>
+                                        </h3>
+                                        
+                                        <!-- Category -->
+                                        <p class="text-xs md:text-sm text-gray-500 mb-2">
+                                            <%= product.catgId.name %>
+                                        </p>
+                                        
+                                        <!-- Rating -->
+                                        <div class="flex items-center mb-3">
+                                            <div class="flex text-yellow-400 text-xs md:text-sm">
+                                                <span>★★★★★</span>
+                                            </div>
+                                            <span class="text-xs text-gray-600 ml-1 md:ml-2">(<%= product.ratingCount || 48 %>)</span>
+                                        </div>
+                                    </a>
+                                    
+                                    <!-- Price -->
+                                    <div class="flex items-center justify-between">
+                                        <div class="flex flex-col">
+                                            <span class="text-lg md:text-xl font-bold text-purple-600">
+                                                ₹<%= product.minPrice %>
+                                            </span>
+                                            <% if (product.originalPrice && product.originalPrice > product.minPrice) { %>
+                                                <span class="text-xs text-gray-400 line-through">
+                                                    ₹<%= product.originalPrice %>
+                                                </span>
+                                            <% } %>
+                                        </div>
+                                        
+                                        <!-- Add to Cart Button -->
+                                        <button 
+                                            onclick="addToCart('<%= product._id %>', '<%= product.minVariant._id %>')" 
+                                            class="bg-purple-600 text-white px-3 md:px-4 py-2 rounded-lg hover:bg-purple-700 transition text-xs md:text-sm font-medium"
+                                        >
+                                            Add to Cart
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                        <% }) %>
                     </div>
-
+                <% } else { %>
+                    <!-- No Products Found -->
+                    <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-8 md:p-12 text-center">
+                        <div class="w-20 h-20 md:w-24 md:h-24 mx-auto mb-4 text-gray-300">
+                            <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M9.172 16.172a4 4 0 015.656 0M9 10h.01M15 10h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                            </svg>
+                        </div>
+                        <h3 class="text-lg md:text-xl font-bold text-gray-800 mb-2">No products found</h3>
+                        <p class="text-gray-600 mb-6">Try adjusting your filters or search term</p>
+                        <button onclick="clearFilters()" class="bg-purple-600 text-white px-6 py-2.5 rounded-lg hover:bg-purple-700 transition font-medium">
+                            Clear All Filters
+                        </button>
+                    </div>
+                <% } %>
                 
-
-
+                <% if (totalPages > 1) { %>
+                    <div class="flex justify-center mt-8 md:mt-10 space-x-2">
+                        <!-- Previous Button -->
+                        <% if (currentPage > 1) { %>
+                            <a 
+                                href="/product?page=<%= currentPage - 1 %><%= search ? '&search=' + encodeURIComponent(search) : '' %><%= price ? '&price=' + price : '' %><%= sort ? '&sort=' + sort : '' %><%= selectedCategories && selectedCategories.length > 0 ? '&Categories=' + selectedCategories.join(',') : '' %>"
+                                class="px-4 py-2 border rounded-lg hover:bg-gray-50 transition text-sm font-medium"
+                            >
+                                Prev
+                            </a>
+                        <% } else { %>
+                            <span class="px-4 py-2 border rounded-lg text-gray-400 cursor-not-allowed text-sm">
+                                Prev
+                            </span>
+                        <% } %>
+                        
+                        <!-- Page Numbers -->
+                        <% for (let i = 1; i <= totalPages; i++) { %>
+                            <% if (i === currentPage) { %>
+                                <span class="px-4 py-2 bg-purple-600 text-white rounded-lg font-medium text-sm">
+                                    <%= i %>
+                                </span>
+                            <% } else { %>
+                                <a 
+                                    href="/product?page=<%= i %><%= search ? '&search=' + encodeURIComponent(search) : '' %><%= price ? '&price=' + price : '' %><%= sort ? '&sort=' + sort : '' %><%= selectedCategories && selectedCategories.length > 0 ? '&Categories=' + selectedCategories.join(',') : '' %>"
+                                    class="px-4 py-2 border rounded-lg hover:bg-gray-50 transition text-sm font-medium"
+                                >
+                                    <%= i %>
+                                </a>
+                            <% } %>
+                        <% } %>
+                        
+                        <!-- Next Button -->
+                        <% if (currentPage < totalPages) { %>
+                            <a 
+                                href="/product?page=<%= currentPage + 1 %><%= search ? '&search=' + encodeURIComponent(search) : '' %><%= price ? '&price=' + price : '' %><%= sort ? '&sort=' + sort : '' %><%= selectedCategories && selectedCategories.length > 0 ? '&Categories=' + selectedCategories.join(',') : '' %>"
+                                class="px-4 py-2 border rounded-lg hover:bg-gray-50 transition text-sm font-medium"
+                            >
+                                Next
+                            </a>
+                        <% } else { %>
+                            <span class="px-4 py-2 border rounded-lg text-gray-400 cursor-not-allowed text-sm">
+                                Next
+                            </span>
+                        <% } %>
+                    </div>
+                <% } %>
             </main>
         </div>
     </div>
+</div>
 
-    <!-- Footer -->
-    <footer class="bg-gray-900 text-white py-12 mt-16">
-        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-            <div class="grid grid-cols-1 md:grid-cols-4 gap-8 mb-8">
-                <div>
-                    <div class="flex items-center space-x-2 mb-4">
-                        <div class="w-10 h-10 gradient-bg rounded-lg flex items-center justify-center">
-                            <span class="text-white font-bold text-xl">CC</span>
-                        </div>
-                        <span class="text-2xl font-bold">CaseCart</span>
-                    </div>
-                    <p class="text-gray-400">Premium phone cases for every style and device.</p>
-                </div>
-                <div>
-                    <h4 class="font-bold text-lg mb-4">Quick Links</h4>
-                    <ul class="space-y-2">
-                        <li><a href="#" class="text-gray-400 hover:text-white transition">About Us</a></li>
-                        <li><a href="#" class="text-gray-400 hover:text-white transition">Shop</a></li>
-                        <li><a href="#" class="text-gray-400 hover:text-white transition">Blog</a></li>
-                        <li><a href="#" class="text-gray-400 hover:text-white transition">Contact</a></li>
-                    </ul>
-                </div>
-                <div>
-                    <h4 class="font-bold text-lg mb-4">Customer Service</h4>
-                    <ul class="space-y-2">
-                        <li><a href="#" class="text-gray-400 hover:text-white transition">Shipping Info</a></li>
-                        <li><a href="#" class="text-gray-400 hover:text-white transition">Returns</a></li>
-                        <li><a href="#" class="text-gray-400 hover:text-white transition">FAQ</a></li>
-                        <li><a href="#" class="text-gray-400 hover:text-white transition">Track Order</a></li>
-                    </ul>
-                </div>
-                <div>
-                    <h4 class="font-bold text-lg mb-4">Follow Us</h4>
-                    <div class="flex space-x-4">
-                        <a href="#" class="w-10 h-10 bg-gray-800 rounded-full flex items-center justify-center hover:bg-purple-600 transition">
-                            <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 24 24"><path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z"/></svg>
-                        </a>
-                        <a href="#" class="w-10 h-10 bg-gray-800 rounded-full flex items-center justify-center hover:bg-purple-600 transition">
-                            <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 24 24"><path d="M23.953 4.57a10 10 0 01-2.825.775 4.958 4.958 0 002.163-2.723c-.951.555-2.005.959-3.127 1.184a4.92 4.92 0 00-8.384 4.482C7.69 8.095 4.067 6.13 1.64 3.162a4.822 4.822 0 00-.666 2.475c0 1.71.87 3.213 2.188 4.096a4.904 4.904 0 01-2.228-.616v.06a4.923 4.923 0 003.946 4.827 4.996 4.996 0 01-2.212.085 4.936 4.936 0 004.604 3.417 9.867 9.867 0 01-6.102 2.105c-.39 0-.779-.023-1.17-.067a13.995 13.995 0 007.557 2.209c9.053 0 13.998-7.496 13.998-13.985 0-.21 0-.42-.015-.63A9.935 9.935 0 0024 4.59z"/></svg>
-                        </a>
-                        <a href="#" class="w-10 h-10 bg-gray-800 rounded-full flex items-center justify-center hover:bg-purple-600 transition">
-                            <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 24 24"><path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zm0-2.163c-3.259 0-3.667.014-4.947.072-4.358.2-6.78 2.618-6.98 6.98-.059 1.281-.073 1.689-.073 4.948 0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98 1.281.058 1.689.072 4.948.072 3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98-1.281-.059-1.69-.073-4.949-.073zm0 5.838c-3.403 0-6.162 2.759-6.162 6.162s2.759 6.163 6.162 6.163 6.162-2.759 6.162-6.163c0-3.403-2.759-6.162-6.162-6.162zm0 10.162c-2.209 0-4-1.79-4-4 0-2.209 1.791-4 4-4s4 1.791 4 4c0 2.21-1.791 4-4 4zm6.406-11.845c-.796 0-1.441.645-1.441 1.44s.645 1.44 1.441 1.44c.795 0 1.439-.645 1.439-1.44s-.644-1.44-1.439-1.44z"/></svg>
-                        </a>
-                    </div>
-                </div>
-            </div>
-            <div class="border-t border-gray-800 pt-8 text-center text-gray-400">
-                <p>&copy; 2025 CaseCart. All rights reserved.</p>
-            </div>
-        </div>
-    </footer>
-    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script> 
-   <script type="module" src="/js/user/list-product.js"></script>
-   <script type="module" src="/js/user/cart.js"></script>
+<script>
+    // Initialize checkmark display
+    document.addEventListener('DOMContentLoaded', function() {
+        updateCheckmarks();
+        
+        // Mobile filter toggle
+        const filterToggle = document.getElementById('filterToggle');
+        const sidebarFilters = document.getElementById('sidebarFilters');
+        
+        if (filterToggle) {
+            filterToggle.addEventListener('click', function() {
+                sidebarFilters.classList.toggle('hidden');
+                sidebarFilters.classList.toggle('block');
+                this.innerHTML = sidebarFilters.classList.contains('hidden') 
+                    ? '<svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 4a1 1 0 011-1h16a1 1 0 011 1v2.586a1 1 0 01-.293.707l-6.414 6.414a1 1 0 00-.293.707V17l-4 4v-6.586a1 1 0 00-.293-.707L3.293 7.293A1 1 0 013 6.586V4z"/></svg>Filter Products'
+                    : '<svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>Close Filters';
+            });
+        }
+    });
     
-</body>
-</html>
+    function updateCheckmarks() {
+        // Category checkmarks
+        const selectedCategory = document.querySelector('input[name="category"]:checked');
+        document.querySelectorAll('[id^="check_cat_"]').forEach(check => check.classList.add('hidden'));
+        if (selectedCategory) {
+            const checkId = 'check_cat_' + selectedCategory.value;
+            const checkElement = document.getElementById(checkId);
+            if (checkElement) checkElement.classList.remove('hidden');
+        }
+        
+        // Price checkmarks
+        const selectedPrice = document.querySelector('input[name="price"]:checked');
+        document.querySelectorAll('[id^="check_price_"]').forEach(check => check.classList.add('hidden'));
+        if (selectedPrice) {
+            const checkId = 'check_price_' + selectedPrice.value.replace(/-/g, '_');
+            const checkElement = document.getElementById(checkId);
+            if (checkElement) checkElement.classList.remove('hidden');
+        }
+        
+        // Update label styles for selected items
+        document.querySelectorAll('label[for^="cat_"], label[for^="price_"]').forEach(label => {
+            const inputId = label.getAttribute('for');
+            const input = document.getElementById(inputId);
+            if (input && input.checked) {
+                label.classList.add('border-purple-500', 'bg-purple-50', 'text-purple-700');
+                label.classList.remove('border-gray-300', 'text-gray-700');
+            } else {
+                label.classList.remove('border-purple-500', 'bg-purple-50', 'text-purple-700');
+                label.classList.add('border-gray-300', 'text-gray-700');
+            }
+        });
+    }
+    
+    function handleFilterChange() {
+        updateCheckmarks();
+        
+        const search = document.getElementById('search').value;
+        const sort = document.getElementById('sort').value;
+        const category = document.querySelector('input[name="category"]:checked')?.value || '';
+        const price = document.querySelector('input[name="price"]:checked')?.value || '';
+        
+        // Build query string
+        const params = new URLSearchParams();
+        params.append('page', '1'); // Reset to page 1 when filters change
+        if (search) params.append('search', search);
+        if (sort) params.append('sort', sort);
+        if (category) params.append('Categories', category); // Note: Capital C to match your existing code
+        if (price) params.append('price', price);
+        
+        // Redirect with new filters
+        window.location.href = `/product?${params.toString()}`;
+    }
+    
+    function clearFilters() {
+        // Reset form elements
+        document.getElementById('search').value = '';
+        document.getElementById('sort').value = '';
+        
+        const categoryAll = document.getElementById('cat_all');
+        if (categoryAll) categoryAll.checked = true;
+        
+        const priceAll = document.getElementById('price_all');
+        if (priceAll) priceAll.checked = true;
+        
+        // Update checkmarks
+        updateCheckmarks();
+        
+        // Redirect without filters
+        window.location.href = '/product';
+    }
+    
+    // Add debounce for search input
+    let searchTimeout;
+    document.getElementById('search').addEventListener('input', function() {
+        clearTimeout(searchTimeout);
+        searchTimeout = setTimeout(() => {
+            handleFilterChange();
+        }, 500);
+    });
+    
+    // Update checkmark display on radio change
+    document.querySelectorAll('input[name="category"], input[name="price"]').forEach(input => {
+        input.addEventListener('change', updateCheckmarks);
+    });
+</script>
+
+<style>
+    /* Custom Scrollbar */
+    .custom-scrollbar::-webkit-scrollbar {
+        width: 6px;
+    }
+    
+    .custom-scrollbar::-webkit-scrollbar-track {
+        background: #f1f1f1;
+        border-radius: 3px;
+    }
+    
+    .custom-scrollbar::-webkit-scrollbar-thumb {
+        background: #c1c1c1;
+        border-radius: 3px;
+    }
+    
+    .custom-scrollbar::-webkit-scrollbar-thumb:hover {
+        background: #a1a1a1;
+    }
+    
+    /* Smooth transitions */
+    .product-card {
+        transition: all 0.3s ease;
+    }
+    
+    .product-card:hover {
+        transform: translateY(-4px);
+    }
+    
+    /* Mobile filter sidebar */
+    @media (max-width: 1024px) {
+        #sidebarFilters {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100vh;
+            z-index: 50;
+            background: white;
+            overflow-y: auto;
+            padding-top: 60px;
+        }
+        
+        #sidebarFilters.hidden {
+            display: none;
+        }
+    }
+    
+    /* Responsive pagination */
+    @media (max-width: 640px) {
+        .flex.justify-center.space-x-2 {
+            flex-wrap: wrap;
+            gap: 4px;
+        }
+        
+        .flex.justify-center.space-x-2 > * {
+            margin: 2px;
+        }
+    }
+</style>
+
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script> 
+<script type="module" src="/js/user/list-product.js"></script>
+<script type="module" src="/js/user/cart.js"></script>
+
+<%- include('../partials/footer') %>
