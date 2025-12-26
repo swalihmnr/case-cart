@@ -269,6 +269,21 @@ const confirmationAxios=async(data)=>{
     
   }
 }
+const ordCancelAxios=async(data,orderItemId)=>{
+  try {
+    return await api.patch(`/order/${orderItemId}/cancel`,data)
+  } catch (error) {
+   return  error.response
+  }
+}
+const orderInvoice=async(orderId,orderItemId)=>{
+  try {
+    console.log(orderItemId,'it is the order Id')
+    window.location.href=`/order/${orderItemId}/invoice?odrId=${orderId}`
+  } catch (error) {
+    
+  }
+}
 export default {
   userSignupAxios,
   userOtpAxios,
@@ -289,6 +304,8 @@ export default {
   addAddressAxios,
   editAddressAxios,
   deleteAddressAxios,
-  confirmationAxios
+  confirmationAxios,
+  ordCancelAxios,
+  orderInvoice
 
 };

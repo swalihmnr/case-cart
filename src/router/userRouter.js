@@ -42,6 +42,8 @@ router.post('/address/edit',userController.editAddress);
 router.patch('/address/:id/del',userController.deleteAddress)
 router.get('/order/confirm/:id',userController.getConfirmation);
 router.post('/order/confirm',userController.ordConfirmation)
-// router.get('/order/')
+router.get('/order',userController.getOrder);
+router.patch('/order/:id/cancel',userController.orderCancel)
+router.get('/order/:id/invoice',userController.invoice)
 
 export default router

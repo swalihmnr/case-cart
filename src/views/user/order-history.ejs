@@ -26,118 +26,180 @@
                     </div>
 
                     <div class="flex items-center justify-between mb-6">
-                        <h3 class="text-xl font-semibold text-gray-800">My Orders</h3>
-                        <button class="px-4 py-2 border border-gray-300 rounded-lg text-gray-600 hover:bg-gray-50">
-                            Cancelled
-                        </button>
+                      <h3 class="text-xl font-semibold text-gray-800">My Orders</h3>
+                    
+                      <form method="GET" action="/order">
+                        <select
+                          name="status"
+                          class="px-4 py-2 border border-gray-300 rounded-lg text-gray-600 bg-white
+                                 focus:outline-none focus:ring-2 focus:ring-purple-500
+                                 hover:bg-gray-50 cursor-pointer"
+                          onchange="this.form.submit()"
+                        >
+                          <option value="" <%= !status ? 'selected' : '' %>>All Orders</option>
+
+                           <option value="processing" <%= status === 'processing' ? 'selected' : '' %>>
+                             Processing
+                           </option>
+                         
+                           <option value="shipped" <%= status === 'shipped' ? 'selected' : '' %>>
+                             Shipped
+                           </option>
+                         
+                           <option value="delivered" <%= status === 'delivered' ? 'selected' : '' %>>
+                             Delivered
+                           </option>
+                         
+                           <option value="cancelled" <%= status === 'cancelled' ? 'selected' : '' %>>
+                             Cancelled
+                           </option>
+                        </select>
+                      </form>
                     </div>
+
 
                     <!-- Orders List -->
                     <div class="space-y-4">
-                        <!-- Order 1 -->
+                        <% orders.forEach(order => { %>
+                        <% 
+                        const placedOn = new Date(order.createdAt).toLocaleString("en-IN", {
+                            month: "short",
+                            day: "2-digit",
+                            year: "numeric",
+                            hour: "2-digit",
+                            minute: "2-digit",
+                            hour12: true
+                        });
+                        %>
+                        
                         <div class="border border-gray-200 rounded-lg p-4 hover:shadow-md transition-shadow">
                             <div class="flex flex-col md:flex-row md:items-center justify-between mb-4">
                                 <div>
-                                    <h4 class="font-semibold text-gray-800">ORD-2025-001</h4>
-                                    <p class="text-sm text-gray-500">Placed on 03/10/2025</p>
+                                    <h4 class="font-semibold text-gray-800"><%= order.orderId %></h4>
+                                    <p class="text-sm text-gray-500"><%= placedOn %></p>
                                 </div>
-                                <span class="mt-2 md:mt-0 inline-block px-3 py-1 bg-green-100 text-green-600 text-sm rounded-full self-start">Delivered</span>
+                                <span class="mt-2 md:mt-0 inline-block px-3 py-1 bg-green-100 text-green-600 text-sm rounded-full self-start">
+                                    <%= order.orderItems.status %>
+                                </span>
                             </div>
                             <div class="flex items-start space-x-4 mb-4">
-                                <div class="w-16 h-16 bg-gradient-to-br from-purple-400 to-purple-600 rounded-lg flex items-center justify-center flex-shrink-0">
-                                    <svg class="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 18h.01M8 21h8a2 2 0 002-2V5a2 2 0 00-2-2H8a2 2 0 00-2 2v14a2 2 0 002 2z"></path>
-                                    </svg>
-                                </div>
+                                <img src="<%= order.product.productImages.find(img => img.isMain).url %>" 
+                                     class="w-16 h-16 object-cover rounded-lg flex-shrink-0">
                                 <div class="flex-1">
-                                    <h5 class="font-medium text-gray-800">iPhone 14 Pro Case</h5>
-                                    <p class="text-sm text-gray-500">Qty: 1</p>
+                                    <h5 class="font-medium text-gray-800"><%= order.product.name %></h5>
+                                    <p class="text-sm text-gray-500"><%= order.variant.deviceModel %></p>
+                                    <p class="text-sm text-gray-500">Qty: <%= order.orderItems.quantity %></p>
                                 </div>
                                 <div class="text-right">
-                                    <p class="font-semibold text-gray-800">₹899</p>
+                                    <p class="font-semibold text-gray-800">₹<%= order.variant.salePrice %></p>
                                 </div>
                             </div>
                             <div class="flex items-center justify-between pt-4 border-t border-gray-200">
-                                <p class="text-gray-600">Total Amount: <span class="font-semibold text-purple-600">₹2499</span></p>
+                                <p class="text-gray-600">Total Amount: 
+                                    <span class="font-semibold text-purple-600">₹<%= order.orderItems.price %></span>
+                                </p>
                                 <div class="flex space-x-2">
-                                    <button onclick="showOrderDetails('001')" class="px-4 py-2 border border-purple-600 text-purple-600 rounded-lg hover:bg-purple-50">Order Details</button>
-                                    <button class="px-4 py-2 bg-gray-100 text-gray-600 rounded-lg hover:bg-gray-200">Download Invoice</button>
+                                    <button onclick="showOrderDetails('<%= order._id %>','<%= order.product._id %>','<%= order.orderItems._id %>')" 
+                                            class="px-4 py-2 border border-purple-600 text-purple-600 rounded-lg hover:bg-purple-50">
+                                        Order Details
+                                    </button>
+                                    <button 
+                                            class="px-4 py-2 bg-gray-100 text-gray-600 rounded-lg hover:bg-gray-200">
+                                        <%= order.orderItems.status %>
+                                    </button>
                                 </div>
                             </div>
                         </div>
-
-                        <!-- Order 2 -->
-                        <div class="border border-gray-200 rounded-lg p-4 hover:shadow-md transition-shadow">
-                            <div class="flex flex-col md:flex-row md:items-center justify-between mb-4">
-                                <div>
-                                    <h4 class="font-semibold text-gray-800">ORD-2025-002</h4>
-                                    <p class="text-sm text-gray-500">Placed on 12/10/2025</p>
-                                </div>
-                                <span class="mt-2 md:mt-0 inline-block px-3 py-1 bg-blue-100 text-blue-600 text-sm rounded-full self-start">In Transit</span>
-                            </div>
-                            <div class="flex items-start space-x-4 mb-4">
-                                <div class="w-16 h-16 bg-gradient-to-br from-purple-400 to-purple-600 rounded-lg flex items-center justify-center flex-shrink-0">
-                                    <svg class="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 18h.01M8 21h8a2 2 0 002-2V5a2 2 0 00-2-2H8a2 2 0 00-2 2v14a2 2 0 002 2z"></path>
-                                    </svg>
-                                </div>
-                                <div class="flex-1">
-                                    <h5 class="font-medium text-gray-800">Premium Leather Case</h5>
-                                    <p class="text-sm text-gray-500">Qty: 1</p>
-                                </div>
-                                <div class="text-right">
-                                    <p class="font-semibold text-gray-800">₹1299</p>
-                                </div>
-                            </div>
-                            <div class="flex items-center justify-between pt-4 border-t border-gray-200">
-                                <p class="text-gray-600">Total Amount: <span class="font-semibold text-purple-600">₹1299</span></p>
-                                <div class="flex space-x-2">
-                                    <button onclick="trackOrder('002')" class="px-4 py-2 border border-purple-600 text-purple-600 rounded-lg hover:bg-purple-50">Track Order</button>
-                                    <button class="px-4 py-2 bg-gray-100 text-gray-600 rounded-lg hover:bg-gray-200">Download Invoice</button>
-                                </div>
-                            </div>
-                        </div>
-
-                        <!-- Order 3 -->
-                        <div class="border border-gray-200 rounded-lg p-4 hover:shadow-md transition-shadow">
-                            <div class="flex flex-col md:flex-row md:items-center justify-between mb-4">
-                                <div>
-                                    <h4 class="font-semibold text-gray-800">ORD-2025-003</h4>
-                                    <p class="text-sm text-gray-500">Placed on 05/10/2025</p>
-                                </div>
-                                <span class="mt-2 md:mt-0 inline-block px-3 py-1 bg-yellow-100 text-yellow-600 text-sm rounded-full self-start">Processing</span>
-                            </div>
-                            <div class="flex items-start space-x-4 mb-4">
-                                <div class="w-16 h-16 bg-gradient-to-br from-purple-400 to-purple-600 rounded-lg flex items-center justify-center flex-shrink-0">
-                                    <svg class="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 18h.01M8 21h8a2 2 0 002-2V5a2 2 0 00-2-2H8a2 2 0 00-2 2v14a2 2 0 002 2z"></path>
-                                    </svg>
-                                </div>
-                                <div class="flex-1">
-                                    <h5 class="font-medium text-gray-800">Wireless Charging Case</h5>
-                                    <p class="text-sm text-gray-500">Qty: 1</p>
-                                </div>
-                                <div class="text-right">
-                                    <p class="font-semibold text-gray-800">₹999</p>
-                                </div>
-                            </div>
-                            <div class="flex items-center justify-between pt-4 border-t border-gray-200">
-                                <p class="text-gray-600">Total Amount: <span class="font-semibold text-purple-600">₹1598</span></p>
-                                <div class="flex space-x-2">
-                                    <button onclick="trackOrder('003')" class="px-4 py-2 border border-purple-600 text-purple-600 rounded-lg hover:bg-purple-50">Track Order</button>
-                                    <button class="px-4 py-2 bg-gray-100 text-gray-600 rounded-lg hover:bg-gray-200">Download Invoice</button>
-                                </div>
-                            </div>
-                        </div>
+                        <% }) %>
                     </div>
                 </div>
+                <% if (orders.length!==0) { %>
+                 
+                
+                <!-- <% if (totalPages > 1) { %> -->
+                    <div class="flex justify-center mt-8 md:mt-10 space-x-2">
+                        <!-- Previous Button -->
+                        <% if (currentPage > 1) { %>
+                            <a 
+                                 href="/order?page=<%= currentPage - 1 %><%= status ? `&status=${status}` : '' %>"
+                                class="px-4 py-2 border rounded-lg hover:bg-gray-50 transition text-sm font-medium"
+                            >
+                                Prev
+                            </a>
+                        <% } else { %>
+                            <span class="px-4 py-2 border rounded-lg text-gray-400 cursor-not-allowed text-sm">
+                                Prev
+                            </span>
+                        <% } %>
+                        
+                        <!-- Page Numbers -->
+                        <% for (let i = 1; i <= totalPages; i++) { %>
+                            <% if (i === currentPage) { %>
+                                <span class="px-4 py-2 bg-purple-600 text-white rounded-lg font-medium text-sm">
+                                    <%= i %>
+                                </span>
+                            <% } else { %>
+                                <a 
+                                    href="/order?page=<%= i %><%= status ? `&status=${status}` : '' %>"
+
+                                    class="px-4 py-2 border rounded-lg hover:bg-gray-50 transition text-sm font-medium"
+                                >
+                                    <%= i %>
+                                </a>
+                            <% } %>
+                        <% } %>
+                        
+                        <!-- Next Button -->
+                        <% if (currentPage < totalPages) { %>
+                            <a 
+                                  href="/order?page=<%= currentPage + 1 %><%= status ? `&status=${status}` : '' %>"
+                                class="px-4 py-2 border rounded-lg hover:bg-gray-50 transition text-sm font-medium"
+                            >
+                                Next
+                            </a>
+                        <% } else { %>
+                            <span class="px-4 py-2 border rounded-lg text-gray-400 cursor-not-allowed text-sm">
+                                Next
+                            </span>
+                        <% } %>
+                    </div>
+                <% } %>
+                <% } %>
             </main>
         </div>
     </div>
 </div>
 
-<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script> 
-<script type="module" src="/js/user/list-product.js"></script>
-<script type="module" src="/js/user/cart.js"></script>
+<!-- Single Modal for Order Details (outside the loop) -->
+<div id="orderDetailsModal" class="hidden fixed inset-0 z-50 overflow-y-auto">
+    <div class="flex items-center justify-center min-h-screen px-4">
+        <div class="fixed inset-0 bg-black bg-opacity-50" onclick="closeOrderDetails()"></div>
+        <div class="bg-white rounded-lg shadow-xl max-w-2xl w-full z-10 relative">
+            <div class="bg-gradient-to-r from-purple-600 to-purple-700 p-6 text-white rounded-t-lg">
+                <button onclick="closeOrderDetails()" class="absolute top-4 right-4 text-white hover:text-gray-200">
+                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                    </svg>
+                </button>
+                <h3 class="text-2xl font-bold mb-2">Order Details</h3>
+                <p id="orderIdDetail" class="text-purple-100"></p>
+            </div>
+            <div class="p-6" id="modalContent">
+                <!-- Modal content will be dynamically inserted here -->
+            </div>
+        </div>
+    </div>
+</div>
 
+<div id="modalOverlay"
+     class="fixed inset-0 bg-black/30 backdrop-blur-sm hidden z-40"
+     onclick="closeAllModals()">
+</div>
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script> 
+<script>
+   window.ordersData = <%- JSON.stringify(orders) %>;
+</script>
+
+
+<script type="module" src="/js/user/orderFunc.js"></script>
 <%- include('../partials/footer') %>

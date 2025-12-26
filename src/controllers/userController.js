@@ -1091,8 +1091,7 @@ const getConfirmation=async(req,res)=>{
 
     const userId=req.session.user.id
         const orderId=req.params.id;
-        const order=await orderModel.findOne({_id:orderId}).populate('orderItems.productId').populate('orderItems.variantId')
-
+        const order=await orderModel.findOne({_id:orderId}).populate('orderItems.productId').populate('orderItems.variantId');
      res.render('./user/ord-confirmation',{
         order
 
@@ -1263,6 +1262,152 @@ console.log('it s the cartitems',cartItems)
 }
 
 }
+const getOrder=async(req,res)=>{
+    const userId=new mongoose.Types.ObjectId(req.session.user.id)
+    const currentPage=parseInt(req.query.page)||1
+    const status=req.query.status
+    const limit=4;
+    const skip =(currentPage-1)*limit
+
+const result = await orderModel.aggregate([
+    {$match:{userId:userId}},
+    {$sort:{createdAt:-1}},
+    {$facet:{
+        data:[
+            {$unwind:"$orderItems"},
+            {$skip:skip},
+            {$limit:limit}
+            ,
+            {$lookup:{
+                from:"products",
+                localField:"orderItems.productId",
+                foreignField:"_id",
+                as:"product"
+            }},
+            {$unwind:"$product"},
+            ...(status?[{$match:{"orderItems.status":status}}]:[]),
+            {$lookup:{
+                from:"variants",
+                localField:"orderItems.variantId",
+                foreignField:"_id",
+                as:"variant"
+            }},
+            {$unwind:"$variant"}
+        ],
+        totalCount:[
+            {$unwind:'$orderItems'},
+            {$count:"count"}
+        ]
+    }},
+
+]);
+const orders=result[0].data
+const totalItems=result[0].totalCount[0]?.count||0;
+const  totalPages=Math.ceil(totalItems/limit)
+console.log(orders,totalPages,
+    currentPage,
+    totalItems
+)
+res.render("./user/order-history", { 
+        orders,
+        totalPages,
+        currentPage,
+        totalItems,
+        status
+ });
+
+}
+
+const orderCancel=async(req,res)=>{
+    try {
+        const orderItemId=new mongoose.Types.ObjectId(req.params.id);
+        console.log(orderItemId)
+        const {orderId,reason}=req.body
+        const orderID=new mongoose.Types.ObjectId(orderId);
+        console.log(reason)
+        const order=await orderModel.findOne({_id:orderID},{orderItems:{$elemMatch:{_id:orderItemId}}})
+        if(!order){
+            return res.status(STATUS_CODES.NOT_FOUND).json({
+                success:false,
+                message:'Order not founded'
+            })
+        }
+       let cor= await orderModel.updateOne({_id:orderID,"orderItems._id":orderItemId},
+            {$set:{
+                "orderItems.$.status":"cancelled",
+                "orderItems.$.cancelledAt":new Date(),
+                "orderItems.$.cancellationReason":reason
+
+            }}
+        )
+        return res.status(STATUS_CODES.CREATED).json({
+            success:true,
+            message:`${orderId} order cancelled`
+        })
+    } catch (error) {
+        
+    }
+}
+const invoice=async(req,res)=>{
+    const orderItemsId=new mongoose.Types.ObjectId(req.params.id);
+    console.log(req.query)
+    const order_id= req.query.odrId
+    const order = await orderModel.aggregate([
+  {
+    $match: { _id: new mongoose.Types.ObjectId(order_id) }
+  },
+  {
+    $unwind:"$orderItems"
+  },
+  {
+    $match:{
+        "orderItems._id":orderItemsId
+    }
+  },
+  {
+    $lookup:{
+        from:"variants",
+        localField:"orderItems.variantId",
+        foreignField:"_id",
+        as:"variant"
+    }
+  },
+  {
+    $unwind:"$variant"
+  },
+  {
+    $lookup:{
+        from:'products',
+        localField:"orderItems.productId",
+        foreignField:"_id",
+        as:"product"
+    }
+  },{
+    $unwind:"$product" 
+  },
+  {
+    $project: {
+      shippingAddress: 1,
+      orderId: 1,
+      paymentMethod: 1,
+      paymentStatus: 1,
+      totalPrice: 1,
+      finalAmount: 1,
+      createdAt: 1,
+      orderItem:"$orderItems",
+      variant:1,
+      product:1
+    }
+  }
+])
+
+console.log(order,"it is working properly")
+    res.render('./user/invoice',{
+        order:order[0],
+    });
+}
+
+
 
 export default {
     getLogin,
@@ -1300,6 +1445,9 @@ export default {
     editAddress,
     deleteAddress,
     getConfirmation,
-    ordConfirmation
+    ordConfirmation,
+    getOrder,
+    orderCancel,
+    invoice
 
 };

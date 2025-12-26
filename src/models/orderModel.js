@@ -5,8 +5,6 @@ function generateOrderId() {
   const random = Math.floor(100000 + Math.random() * 900000);
   return `ORD-${year}-${random}`;
 }
-
-
 const orderSchema = new Schema({
  orderId:{
   type:String,
@@ -98,8 +96,13 @@ const orderSchema = new Schema({
         enum: ["processing", "shipped", "delivered", "cancelled", "returned"],
         default: "processing"
       },
+      invoiceNumber:String,
+      invoiceCreatedAt:Date,
+      invoiceGenerated:{
+        type:Boolean,
+        default:false
 
-      processingAt: Date,
+      },
       shippedAt: Date,
       deliveredAt: Date,
       cancelledAt: Date,
