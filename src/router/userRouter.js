@@ -45,5 +45,4 @@ router.post('/order/confirm',userController.ordConfirmation)
 router.get('/order',userController.getOrder);
 router.patch('/order/:id/cancel',userController.orderCancel)
 router.get('/order/:id/invoice',userController.invoice)
-
 export default router

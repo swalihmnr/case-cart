@@ -1,253 +1,701 @@
-
-
 <!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Document</title>
+    <title>Invoice - #<%= order.orderId %></title>
     <script src="https://cdn.tailwindcss.com"></script>
-     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        /* Reset for PDF generation */
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+        
+        /* Responsive styles for screen display */
+        @media screen {
+            body {
+                background: #f3f4f6;
+                padding: 1rem;
+            }
+            
+            #invoice-container {
+                max-width: 1200px;
+                margin: 0 auto;
+                background: white;
+                border-radius: 12px;
+                box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+                overflow: hidden;
+            }
+            
+            .watermark {
+                display: none !important;
+            }
+        }
+        
+        /* Print styles */
+        @media print {
+            body, html {
+                margin: 0 !important;
+                padding: 0 !important;
+                background: white !important;
+            }
+            
+            @page {
+                size: A4;
+                margin: 15mm;
+            }
+            
+            #invoice-container {
+                width: 100% !important;
+                max-width: 100% !important;
+                margin: 0 !important;
+                padding: 15mm !important;
+                box-shadow: none !important;
+                border-radius: 0 !important;
+                border: none !important;
+            }
+            
+            .no-print {
+                display: none !important;
+            }
+            
+            .watermark {
+                display: block !important;
+                position: fixed !important;
+                top: 50% !important;
+                left: 50% !important;
+                transform: translate(-50%, -50%) rotate(-45deg) !important;
+                font-size: 100px !important;
+                opacity: 0.05 !important;
+                color: #7c3aed !important;
+                pointer-events: none !important;
+                z-index: 9999 !important;
+                font-weight: bold !important;
+            }
+            
+            * {
+                -webkit-print-color-adjust: exact !important;
+                print-color-adjust: exact !important;
+            }
+            
+            /* Ensure proper page breaks */
+            .page-break {
+                page-break-after: always;
+            }
+            
+            /* Force black text for printing */
+            .print-black {
+                color: #000 !important;
+            }
+        }
+        
+        /* PDF specific styles */
+        .pdf-mode {
+            width: 100% !important;
+            max-width: 100% !important;
+            padding: 15mm !important;
+            background: white !important;
+        }
+        
+        /* Ensure all content fits in PDF */
+        .pdf-content {
+            width: 100% !important;
+            max-width: 100% !important;
+        }
+        
+        .pdf-content table {
+            width: 100% !important;
+            max-width: 100% !important;
+        }
+        
+        .pdf-content img {
+            max-width: 100% !important;
+            height: auto !important;
+        }
+        
+        /* Mobile responsiveness */
+        @media (max-width: 768px) {
+            .mobile-stack {
+                flex-direction: column !important;
+            }
+            
+            .mobile-padding {
+                padding: 1rem !important;
+            }
+            
+            .mobile-text {
+                font-size: 0.875rem !important;
+            }
+        }
+        
+        /* Prevent content overflow */
+        .no-overflow {
+            overflow: hidden !important;
+        }
+        
+        /* Force line breaks in PDF */
+        .pdf-break {
+            word-wrap: break-word !important;
+            overflow-wrap: break-word !important;
+        }
+    </style>
 </head>
 <body>
+    <!-- Action Buttons -->
+    <div class="container mx-auto px-4 py-4 no-print">
+        <div class="flex flex-wrap gap-3 mb-6">
+            <button onclick="window.print()"
+                class="px-5 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors flex items-center gap-2 shadow-sm">
+                <i class="fas fa-print"></i>
+                <span>Print Invoice</span>
+            </button>
+           
+            <button onclick="downloadPDF()" 
+                class="px-5 py-3 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors flex items-center gap-2 shadow-sm">
+                <i class="fas fa-download"></i>
+                <span>Download PDF</span>
+            </button>
+            
+            <button onclick="window.history.back()" 
+                class="px-5 py-3 bg-gray-600 text-white rounded-lg hover:bg-gray-700 transition-colors flex items-center gap-2 shadow-sm">
+                <i class="fas fa-arrow-left"></i>
+                <span>Go Back</span>
+            </button>
+            
+            <!-- Test Button -->
+            <button onclick="testPDFCapture()" 
+                class="px-5 py-3 bg-yellow-600 text-white rounded-lg hover:bg-yellow-700 transition-colors flex items-center gap-2 shadow-sm no-print">
+                <i class="fas fa-eye"></i>
+                <span>Test PDF View</span>
+            </button>
+        </div>
+    </div>
     
-    <div class="flex">
-      <main class="max-w-4xl mx-auto p-6">
-            <!-- Invoice Container -->
-            <div class="bg-white rounded-xl shadow-sm print-shadow border border-gray-200 print-border p-8 relative overflow-hidden">
-                <!-- Watermark -->
-                <div class="watermark text-purple-600 font-bold">CASECART</div>
-                
-                <!-- Invoice Header -->
-                <div class="flex flex-col md:flex-row justify-between items-start md:items-center mb-8 pb-6 border-b border-gray-200">
-                    <div>
-                        <h1 class="text-3xl font-bold text-gray-900">INVOICE</h1>
-                        <p class="text-gray-500 mt-1">Thank you for your order</p>
-                    </div>
-                    <div class="mt-4 md:mt-0 text-right">
-                        <div class="flex items-center gap-3 mb-2">
-                            <div class="w-12 h-12 bg-purple-600 rounded-lg flex items-center justify-center flex-shrink-0">
-                                <i class="fas fa-shopping-cart text-white text-xl"></i>
-                            </div>
-                            <div>
-                                <h2 class="text-xl font-bold text-gray-900">CaseCart</h2>
-                                <p class="text-sm text-gray-500">Premium Phone Cases</p>
-                            </div>
+    <!-- Invoice Container -->
+    <div id="invoice">
+        <div id="invoice-container" class="p-6 sm:p-8 md:p-12 relative pdf-content">
+            <!-- Watermark -->
+            <div class="watermark">CASECART</div>
+            
+            <!-- Invoice Header -->
+            <div class="flex flex-col lg:flex-row justify-between items-start lg:items-center mb-8 pb-6 border-b border-gray-200">
+                <div class="mb-6 lg:mb-0">
+                    <h1 class="text-3xl md:text-4xl font-bold text-gray-900 mb-2">INVOICE</h1>
+                    <p class="text-gray-500 text-lg">Thank you for your order</p>
+                </div>
+                <div class="text-left lg:text-right">
+                    <div class="flex items-center gap-3 mb-3">
+                        <div class="w-12 h-12 bg-purple-600 rounded-lg flex items-center justify-center flex-shrink-0">
+                            <i class="fas fa-shopping-cart text-white text-xl"></i>
                         </div>
-                        <p class="text-sm text-gray-600">123 Business Avenue, Suite 500</p>
-                        <p class="text-sm text-gray-600">New York, NY 10001</p>
-                        <p class="text-sm text-gray-600">contact@casecart.com</p>
+                        <div>
+                            <h2 class="text-xl font-bold text-gray-900">CaseCart</h2>
+                            <p class="text-sm text-gray-500">Premium Phone Cases</p>
+                        </div>
+                    </div>
+                    <div class="text-sm text-gray-600 space-y-1">
+                        <p>123 Business Avenue, Suite 500</p>
+                        <p>New York, NY 10001</p>
+                        <p>contact@casecart.com</p>
                     </div>
                 </div>
-    
-                <!-- Order and Customer Info -->
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-8 mb-8">
-                    <!-- Order Details -->
-                    <div>
-                        <h3 class="text-lg font-semibold text-gray-900 mb-4">Order Details</h3>
-                        <div class="space-y-3">
-                            <div class="flex justify-between">
-                                <span class="text-gray-600">Order ID:</span>
-                                <span class="font-medium">#<%= order.orderId %></span>
-                            </div>
-                            <div class="flex justify-between">
-                                <span class="text-gray-600">Status:</span>
-                                <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">
-                                
-                                    <i class="fas fa-check-circle mr-1"></i> <%= order.orderItem.status %>
-                                </span>
-                            </div>
-                            <div class="flex justify-between">
-                                <span class="text-gray-600">Order Date:</span>
-                              <span class="font-medium">
+            </div>
+
+            <!-- Order Details -->
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-8">
+                <!-- Order Information -->
+                <div class="bg-gray-50 p-6 rounded-lg border border-gray-200">
+                    <h3 class="text-lg font-semibold text-gray-900 mb-4 border-b pb-2">Order Details</h3>
+                    <div class="space-y-4">
+                        <div class="flex justify-between">
+                            <span class="text-gray-600">Order ID:</span>
+                            <span class="font-medium">#<%= order.orderId %></span>
+                        </div>
+                        <div class="flex justify-between">
+                            <span class="text-gray-600">Status:</span>
+                            <span class="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-green-100 text-green-800">
+                                <i class="fas fa-check-circle mr-2"></i> <%= order.orderItem.status %>
+                            </span>
+                        </div>
+                        <div class="flex justify-between">
+                            <span class="text-gray-600">Order Date:</span>
+                            <span class="font-medium">
                                 <%= new Date(order.createdAt).toLocaleDateString('en-IN') %>
-                              </span>
-    
-                            </div>
-                            <div class="flex justify-between">
-                                <span class="text-gray-600">Delivery Date:</span>
-                                <span class="font-medium"><%= new Date(order.deliveredAt).toLocaleDateString('en-IN') %></span>
-                            </div>
+                            </span>
                         </div>
-                    </div>
-    
-                    <!-- Customer Details -->
-                    <div>
-                        <h3 class="text-lg font-semibold text-gray-900 mb-4">Delivery Address</h3>
-                        <div class="bg-gray-50 p-4 rounded-lg">
-                            <p class="font-medium text-gray-900"><%= order.shippingAddress.firstName %> <%= order.shippingAddress.lastName %></p>
-                            <p class="text-gray-600 mt-1"><%= order.shippingAddress.streetAddress %>, <%= order.shippingAddress.landMark %></p>
-                            <p class="text-gray-600"><%= order.shippingAddress.city %></p>
-                            <p class="text-gray-600"><%= order.shippingAddress.state %></p>
-                            <p class="text-gray-600 mt-2">
-                                <i class="fas fa-phone mr-2"></i>+91 <%= order.shippingAddress.phone %>
-                            </p>
+                        <div class="flex justify-between">
+                            <span class="text-gray-600">Delivery Date:</span>
+                            <span class="font-medium">
+                                <%= new Date(order.deliveredAt).toLocaleDateString('en-IN') %>
+                            </span>
                         </div>
                     </div>
                 </div>
-    
-                <!-- Order Items -->
-                <div class="mb-8">
-                    <h3 class="text-lg font-semibold text-gray-900 mb-4">Order Item</h3>
-                    <div class="border border-gray-200 rounded-lg overflow-hidden">
-                        <table class="w-full">
-                            <thead class="bg-gray-50">
-                                <tr>
-                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Product</th>
-                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Device</th>
-                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Price</th>
-                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Qty</th>
-                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Total</th>
-                                </tr>
-                            </thead>
-                            <tbody class="divide-y divide-gray-200 bg-white">
-                                <tr>
-                                    <td class="px-6 py-4 whitespace-nowrap">
-                                        <div class="flex items-center">
-                                            <img src="<%= order.product.productImages.find(img=>img.isMain).url %>" class="h-16 w-16 flex-shrink-0 bg-gradient-to-r from-purple-400 to-pink-500 rounded-lg flex items-center justify-center text-white font-bold">
-                                                
-                                            
-                                            <div class="ml-4">
-                                                <div class="text-sm font-medium text-gray-900"><%= order.product.name %></div>
+
+                <!-- Customer Details -->
+                <div class="bg-gray-50 p-6 rounded-lg border border-gray-200">
+                    <h3 class="text-lg font-semibold text-gray-900 mb-4 border-b pb-2">Delivery Address</h3>
+                    <div class="space-y-2">
+                        <p class="font-medium text-gray-900">
+                            <%= order.shippingAddress.firstName %> <%= order.shippingAddress.lastName %>
+                        </p>
+                        <p class="text-gray-600"><%= order.shippingAddress.streetAddress %></p>
+                        <p class="text-gray-600"><%= order.shippingAddress.landMark %></p>
+                        <p class="text-gray-600"><%= order.shippingAddress.city %>, <%= order.shippingAddress.state %></p>
+                        <p class="text-gray-600 mt-3">
+                            <i class="fas fa-phone mr-2"></i>+91 <%= order.shippingAddress.phone %>
+                        </p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Order Items Table -->
+            <div class="mb-8">
+                <h3 class="text-lg font-semibold text-gray-900 mb-4 border-b pb-2">Order Items</h3>
+                <div class="overflow-x-auto">
+                    <table class="w-full border border-gray-200 rounded-lg overflow-hidden" style="table-layout: fixed; width: 100%;">
+                        <thead class="bg-gray-50">
+                            <tr>
+                                <th class="px-6 py-4 text-left text-sm font-medium text-gray-700 uppercase border-r border-gray-200" style="width: 35%;">Product</th>
+                                <th class="px-6 py-4 text-left text-sm font-medium text-gray-700 uppercase border-r border-gray-200" style="width: 20%;">Device Model</th>
+                                <th class="px-6 py-4 text-left text-sm font-medium text-gray-700 uppercase border-r border-gray-200" style="width: 15%;">Price</th>
+                                <th class="px-6 py-4 text-left text-sm font-medium text-gray-700 uppercase border-r border-gray-200" style="width: 10%;">Quantity</th>
+                                <th class="px-6 py-4 text-left text-sm font-medium text-gray-700 uppercase" style="width: 20%;">Total</th>
+                            </tr>
+                        </thead>
+                        <tbody class="divide-y divide-gray-200 bg-white">
+                            <tr>
+                                <td class="px-6 py-4 border-r border-gray-200 pdf-break">
+                                    <div class="flex items-center">
+                                        <div class="relative w-20 h-20 flex-shrink-0 mr-4">
+                                            <img 
+                                                src="<%= order.product.productImages.find(img=>img.isMain).url %>" 
+                                                class="w-full h-full rounded-lg object-cover border border-gray-200"
+                                                onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';"
+                                                alt="<%= order.product.name %>">
+                                            <div class="w-full h-full bg-gradient-to-r from-purple-400 to-pink-500 rounded-lg flex items-center justify-center text-white font-bold hidden">
+                                                <i class="fas fa-box text-xl"></i>
                                             </div>
                                         </div>
-                                    </td>
-                                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900"><%= order.variant.deviceModel %></td>
-                                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">₹<%= order.variant.salePrice %></td>
-                                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900"><%= order.orderItem.quantity %></td>
-                                    <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">₹<%= order.variant.salePrice %></td>
-                                </tr>
-                            </tbody>
-                        </table>
-                    </div>
-                </div>
-    
-                <!-- Order Summary and Payment -->
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
-                    <!-- Order Summary -->
-                    <div>
-                        <h3 class="text-lg font-semibold text-gray-900 mb-4">Order Summary</h3>
-                        <div class="bg-gray-50 p-4 rounded-lg">
-                            <div class="space-y-3">
-                                <div class="flex justify-between">
-                                    <span class="text-gray-600">Subtotal:</span>
-                                    <span class="font-medium">₹ <%= order.orderItem.quantity*order.variant.salePrice %></span>
-                                </div>
-                                <div class="flex justify-between">
-                                    <span class="text-gray-600">Shipping:</span>
-                                    <span class="font-medium text-green-600">Free</span>
-                                </div>
-                                <!-- <div class="flex justify-between">
-                                    <span class="text-gray-600">Tax:</span>
-                                    <span class="font-medium">₹4.08</span>
-                                </div> -->
-                                <div class="border-t border-gray-200 pt-3 mt-3">
-                                    <div class="flex justify-between">
-                                        <span class="text-lg font-bold text-gray-900">Total:</span>
-                                        <span class="text-lg font-bold text-gray-900">₹<%= order.orderItem.quantity*order.variant.salePrice %> </span>
+                                        <div class="pdf-break">
+                                            <div class="font-medium text-gray-900 text-lg"><%= order.product.name %></div>
+                                            <div class="text-sm text-gray-500">Phone Case</div>
+                                        </div>
                                     </div>
-                                </div>
+                                </td>
+                                <td class="px-6 py-4 border-r border-gray-200 font-medium text-lg pdf-break">
+                                    <%= order.variant.deviceModel %>
+                                </td>
+                                <td class="px-6 py-4 border-r border-gray-200 font-medium text-lg">
+                                    ₹<%= order.variant.salePrice.toFixed(2) %>
+                                </td>
+                                <td class="px-6 py-4 border-r border-gray-200 font-medium text-lg">
+                                    <%= order.orderItem.quantity %>
+                                </td>
+                                <td class="px-6 py-4 font-bold text-lg">
+                                    ₹<%= (order.orderItem.quantity * order.variant.salePrice).toFixed(2) %>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- Order Summary and Payment -->
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-8">
+                <!-- Order Summary -->
+                <div class="border border-gray-200 rounded-lg p-6">
+                    <h3 class="text-lg font-semibold text-gray-900 mb-6 border-b pb-3">Order Summary</h3>
+                    <div class="space-y-4">
+                        <div class="flex justify-between items-center">
+                            <span class="text-gray-600 text-lg">Subtotal:</span>
+                            <span class="font-medium text-lg">
+                                ₹ <%= (order.orderItem.quantity * order.variant.salePrice).toFixed(2) %>
+                            </span>
+                        </div>
+                        
+                        <div class="flex justify-between items-center">
+                            <span class="text-gray-600 text-lg">Shipping:</span>
+                            <span class="font-medium text-green-600 text-lg">FREE</span>
+                        </div>
+                        
+                        <% if (order.taxAmount && order.taxAmount > 0) { %>
+                        <div class="flex justify-between items-center">
+                            <span class="text-gray-600 text-lg">Tax (GST):</span>
+                            <span class="font-medium text-lg">
+                                ₹ <%= order.taxAmount.toFixed(2) %>
+                            </span>
+                        </div>
+                        <% } %>
+                        
+                        <% if (order.discountAmount && order.discountAmount > 0) { %>
+                        <div class="flex justify-between items-center">
+                            <span class="text-gray-600 text-lg">Discount:</span>
+                            <span class="font-medium text-red-600 text-lg">
+                                -₹ <%= order.discountAmount.toFixed(2) %>
+                            </span>
+                        </div>
+                        <% } %>
+                        
+                        <div class="border-t border-gray-300 pt-4 mt-4">
+                            <div class="flex justify-between items-center">
+                                <span class="text-xl font-bold text-gray-900">Total Amount:</span>
+                                <span class="text-2xl font-bold text-gray-900">
+                                    <% 
+                                        let total = order.orderItem.quantity * order.variant.salePrice;
+                                        if (order.taxAmount) total += order.taxAmount;
+                                        if (order.discountAmount) total -= order.discountAmount;
+                                    %>
+                                    ₹<%= total.toFixed(2) %>
+                                </span>
+                            </div>
+                            <div class="mt-2 text-sm text-gray-500">
+                                <% if (order.paymentStatus === 'PAID') { %>
+                                <span class="text-green-600">
+                                    <i class="fas fa-check-circle mr-1"></i> Paid on <%= new Date(order.paymentDate).toLocaleDateString('en-IN') %>
+                                </span>
+                                <% } else if (order.paymentStatus === 'PENDING') { %>
+                                <span class="text-yellow-600">
+                                    <i class="fas fa-clock mr-1"></i> Payment Pending
+                                </span>
+                                <% } %>
                             </div>
                         </div>
                     </div>
-    
-                    <!-- Payment Method -->
-                    <div>
-                        <h3 class="text-lg font-semibold text-gray-900 mb-4">Payment Method</h3>
-                        <div class="bg-gray-50 p-4 rounded-lg">
-                            <div class="flex items-center justify-between mb-3">
-                                <div class="flex items-center">
-                                    <div class="w-10 h-6 bg-blue-100 rounded flex items-center justify-center mr-3">
-                                        <i class="fas fa-credit-card text-blue-600"></i>
-                                    </div>
-                                    <%= order.paymentMethod %>
-                                    <!-- <div>
-                                        <p class="font-medium text-gray-900">Credit Card</p>
-                                        <p class="text-sm text-gray-600">•••• •••• •••• 4242</p>
-                                    </div> -->
+                </div>
+
+                <!-- Payment Method -->
+                <div class="border border-gray-200 rounded-lg p-6">
+                    <h3 class="text-lg font-semibold text-gray-900 mb-6 border-b pb-3">Payment Information</h3>
+                    <div class="space-y-6">
+                        <!-- Payment Method -->
+                        <div class="flex items-center justify-between">
+                            <div class="flex items-center">
+                                <div class="w-12 h-12 bg-blue-100 rounded-lg flex items-center justify-center mr-4">
+                                    <i class="fas fa-credit-card text-blue-600 text-xl"></i>
                                 </div>
-                                <div class="text-green-600">
-                                    <i class="fas fa-check-circle"></i>
+                                <div>
+                                    <p class="font-medium text-gray-900 text-lg">
+                                        <%= order.paymentMethod === 'ONLINE' ? 'Online Payment' : order.paymentMethod %>
+                                    </p>
+                                    <p class="text-sm text-gray-600">
+                                        <% if (order.transactionId) { %>
+                                        Transaction: <%= order.transactionId %>
+                                        <% } else { %>
+                                        Payment processed
+                                        <% } %>
+                                    </p>
                                 </div>
                             </div>
-                            <div class="flex items-center justify-between">
-                                <div class="flex items-center">
-                                    <div class="w-10 h-6 bg-purple-100 rounded flex items-center justify-center mr-3">
-                                        <i class="fas fa-wallet text-purple-600"></i>
-                                    </div>
-                                    <%= order.paymentStatus %>
-                                    <!-- <div>
-                                        <p class="font-medium text-gray-900">Razorpay</p>
-                                        <p class="text-sm text-gray-600">Payment Gateway</p>
-                                    </div> -->
-                                </div>
-                                <div class="text-green-600">
-                                    <i class="fas fa-check-circle"></i>
-                                </div>
+                            <div class="text-green-600">
+                                <i class="fas fa-check-circle text-2xl"></i>
                             </div>
                         </div>
                         
-                        <!-- Action Buttons -->
-                        <div class="mt-6 flex flex-wrap gap-3 no-print">
-                            <!-- <button class="px-4 py-2 bg-purple-600 text-white text-sm rounded-lg hover:bg-purple-700 transition-colors flex items-center gap-2">
-                                <i class="fas fa-redo-alt"></i>
-                                <span>Return Order</span>
-                            </button> -->
-                            <button onclick="invoicePrint()" class="px-4 py-2 bg-blue-600 text-white text-sm rounded-lg hover:bg-blue-700 transition-colors flex items-center gap-2">
-                                <i class="fas fa-download"></i>
-                                <span>Download Invoice</span>
-                            </button>
+                        <!-- Payment Gateway -->
+                        <div class="flex items-center justify-between">
+                            <div class="flex items-center">
+                                <div class="w-12 h-12 bg-purple-100 rounded-lg flex items-center justify-center mr-4">
+                                    <i class="fas fa-wallet text-purple-600 text-xl"></i>
+                                </div>
+                                <div>
+                                    <p class="font-medium text-gray-900 text-lg">Razorpay</p>
+                                    <p class="text-sm text-gray-600">Payment Gateway</p>
+                                </div>
+                            </div>
+                            <div class="text-green-600">
+                                <i class="fas fa-check-circle text-2xl"></i>
+                            </div>
                         </div>
-                    </div>
-                </div>
-    
-                <!-- Footer -->
-                <div class="mt-12 pt-6 border-t border-gray-200 text-center text-gray-500 text-sm">
-                    <p>If you have any questions about this invoice, please contact</p>
-                    <p class="mt-1">support@casecart.com or call us at +1 (800) 123-4567</p>
-                    <p class="mt-4">CaseCart Inc. • 123 Business Avenue, Suite 500 • New York, NY 10001</p>
-                </div>
-            </div>
-    
-            <!-- Help Section -->
-            <div class="mt-8 bg-white rounded-xl shadow-sm border border-gray-200 p-6 no-print">
-                <h3 class="text-lg font-semibold text-gray-900 mb-4">Need Help?</h3>
-                <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
-                    <div class="flex items-start gap-3 p-4 bg-gray-50 rounded-lg">
-                        <div class="w-10 h-10 bg-purple-100 rounded-lg flex items-center justify-center flex-shrink-0">
-                            <i class="fas fa-question-circle text-purple-600"></i>
-                        </div>
-                        <div>
-                            <h4 class="font-medium text-gray-900">FAQ</h4>
-                            <p class="text-sm text-gray-600 mt-1">Find answers to common questions</p>
-                        </div>
-                    </div>
-                    <div class="flex items-start gap-3 p-4 bg-gray-50 rounded-lg">
-                        <div class="w-10 h-10 bg-blue-100 rounded-lg flex items-center justify-center flex-shrink-0">
-                            <i class="fas fa-headset text-blue-600"></i>
-                        </div>
-                        <div>
-                            <h4 class="font-medium text-gray-900">Contact Support</h4>
-                            <p class="text-sm text-gray-600 mt-1">Get help from our support team</p>
-                        </div>
-                    </div>
-                    <div class="flex items-start gap-3 p-4 bg-gray-50 rounded-lg">
-                        <div class="w-10 h-10 bg-green-100 rounded-lg flex items-center justify-center flex-shrink-0">
-                            <i class="fas fa-undo-alt text-green-600"></i>
-                        </div>
-                        <div>
-                            <h4 class="font-medium text-gray-900">Return Policy</h4>
-                            <p class="text-sm text-gray-600 mt-1">Learn about our return process</p>
+                        
+                        <!-- Payment Status -->
+                        <div class="bg-gray-50 p-4 rounded-lg mt-4">
+                            <div class="flex justify-between items-center">
+                                <span class="text-gray-600">Payment Status:</span>
+                                <span class="font-medium <%= order.paymentStatus === 'PAID' ? 'text-green-600' : 'text-yellow-600' %>">
+                                    <%= order.paymentStatus %>
+                                </span>
+                            </div>
+                            <% if (order.paymentDate) { %>
+                            <div class="flex justify-between items-center mt-2">
+                                <span class="text-gray-600">Payment Date:</span>
+                                <span class="font-medium">
+                                    <%= new Date(order.paymentDate).toLocaleDateString('en-IN') %>
+                                </span>
+                            </div>
+                            <% } %>
                         </div>
                     </div>
                 </div>
             </div>
-        </main>
-      
+
+            <!-- Invoice Footer -->
+            <div class="mt-12 pt-6 border-t border-gray-200 text-center text-gray-500 text-sm">
+                <p class="mb-2">If you have any questions about this invoice, please contact</p>
+                <p class="mb-4 font-medium">support@casecart.com or call us at +1 (800) 123-4567</p>
+                <p class="font-medium">CaseCart Inc. • 123 Business Avenue, Suite 500 • New York, NY 10001</p>
+                <div class="mt-4 flex justify-center space-x-8 text-xs">
+                    <p>Invoice Date: <%= new Date(order.createdAt).toLocaleDateString('en-IN') %></p>
+                    <p>Invoice #: <%= order.orderId %></p>
+                </div>
+            </div>
+        </div>
     </div>
+
+    <!-- Help Section -->
+    <div class="container mx-auto px-4 mt-8 no-print">
+        <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
+            <h3 class="text-lg font-semibold text-gray-900 mb-4">Need Help?</h3>
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                <div class="flex items-start gap-3 p-4 bg-gray-50 rounded-lg">
+                    <div class="w-10 h-10 bg-purple-100 rounded-lg flex items-center justify-center flex-shrink-0">
+                        <i class="fas fa-question-circle text-purple-600"></i>
+                    </div>
+                    <div>
+                        <h4 class="font-medium text-gray-900">FAQ</h4>
+                        <p class="text-sm text-gray-600 mt-1">Find answers to common questions</p>
+                    </div>
+                </div>
+                <div class="flex items-start gap-3 p-4 bg-gray-50 rounded-lg">
+                    <div class="w-10 h-10 bg-blue-100 rounded-lg flex items-center justify-center flex-shrink-0">
+                        <i class="fas fa-headset text-blue-600"></i>
+                    </div>
+                    <div>
+                        <h4 class="font-medium text-gray-900">Contact Support</h4>
+                        <p class="text-sm text-gray-600 mt-1">Get help from our support team</p>
+                    </div>
+                </div>
+                <div class="flex items-start gap-3 p-4 bg-gray-50 rounded-lg">
+                    <div class="w-10 h-10 bg-green-100 rounded-lg flex items-center justify-center flex-shrink-0">
+                        <i class="fas fa-undo-alt text-green-600"></i>
+                    </div>
+                    <div>
+                        <h4 class="font-medium text-gray-900">Return Policy</h4>
+                        <p class="text-sm text-gray-600 mt-1">30-day return policy</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
-    <script type="module" src="/js/user/invoice.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+    <script>
+        // Simple and reliable PDF download function
+        async function downloadPDF() {
+            try {
+                const element = document.getElementById('invoice-container');
+                
+                if (!element) {
+                    console.error('Invoice container not found');
+                    return;
+                }
+
+                // Show loading state
+                const btn = event?.target;
+                if (btn) {
+                    const originalHTML = btn.innerHTML;
+                    btn.innerHTML = '<i class="fas fa-spinner fa-spin mr-2"></i> Generating PDF...';
+                    btn.disabled = true;
+                }
+
+                // Store original styles
+                const originalWidth = element.style.width;
+                const originalPadding = element.style.padding;
+                const originalMargin = element.style.margin;
+                const originalDisplay = element.style.display;
+                const originalPosition = element.style.position;
+
+                // Apply PDF-friendly styles
+                element.style.width = '100%';
+                element.style.maxWidth = '100%';
+                element.style.padding = '15mm';
+                element.style.margin = '0';
+                element.style.display = 'block';
+                element.style.position = 'relative';
+                element.style.backgroundColor = '#ffffff';
+                
+                // Make watermark visible
+                const watermark = element.querySelector('.watermark');
+                if (watermark) {
+                    watermark.style.display = 'block';
+                    watermark.style.position = 'fixed';
+                    watermark.style.top = '50%';
+                    watermark.style.left = '50%';
+                    watermark.style.transform = 'translate(-50%, -50%) rotate(-45deg)';
+                    watermark.style.fontSize = '80px';
+                    watermark.style.opacity = '0.05';
+                    watermark.style.color = '#7c3aed';
+                    watermark.style.pointerEvents = 'none';
+                    watermark.style.zIndex = '9999';
+                }
+
+                // Wait a moment for styles to apply
+                await new Promise(resolve => setTimeout(resolve, 100));
+
+                // Configure html2pdf with proper settings
+                const options = {
+                    margin: [10, 10, 10, 10], // Smaller margins
+                    filename: `Invoice_#<%= order.orderId %>.pdf`,
+                    image: { 
+                        type: 'jpeg', 
+                        quality: 0.98 
+                    },
+                    html2canvas: { 
+                        scale: 1.5, // Lower scale but better for width
+                        useCORS: true,
+                        backgroundColor: '#ffffff',
+                        logging: true,
+                        allowTaint: true,
+                        scrollX: 0,
+                        scrollY: 0,
+                        windowWidth: element.scrollWidth,
+                        windowHeight: element.scrollHeight
+                    },
+                    jsPDF: { 
+                        unit: 'mm', 
+                        format: 'a4', 
+                        orientation: 'portrait',
+                        compress: true
+                    }
+                };
+
+                console.log('Element dimensions:', element.scrollWidth, 'x', element.scrollHeight);
+                console.log('Generating PDF...');
+
+                // Generate and save PDF
+                await html2pdf().set(options).from(element).save();
+                
+                console.log('PDF generated successfully');
+                
+                // Restore original styles
+                element.style.width = originalWidth;
+                element.style.padding = originalPadding;
+                element.style.margin = originalMargin;
+                element.style.display = originalDisplay;
+                element.style.position = originalPosition;
+                
+                // Hide watermark again
+                if (watermark) {
+                    watermark.style.display = '';
+                    watermark.style.position = '';
+                    watermark.style.top = '';
+                    watermark.style.left = '';
+                    watermark.style.transform = '';
+                    watermark.style.fontSize = '';
+                    watermark.style.opacity = '';
+                    watermark.style.color = '';
+                    watermark.style.pointerEvents = '';
+                    watermark.style.zIndex = '';
+                }
+                
+                // Restore button
+                if (btn) {
+                    btn.innerHTML = originalHTML;
+                    btn.disabled = false;
+                }
+
+            } catch (error) {
+                console.error('PDF Generation Error:', error);
+               
+                
+                // Restore button on error
+                if (event?.target) {
+                    event.target.innerHTML = '<i class="fas fa-download"></i> Download PDF';
+                    event.target.disabled = false;
+                }
+            }
+        }
+
+        // Test function to preview what html2canvas captures
+        async function testPDFCapture() {
+            const element = document.getElementById('invoice-container');
+            
+            // Apply PDF styles temporarily
+            element.style.width = '100%';
+            element.style.padding = '15mm';
+            element.style.backgroundColor = '#ffffff';
+            
+            const canvas = await html2canvas(element, {
+                scale: 1,
+                useCORS: true,
+                backgroundColor: '#ffffff',
+                logging: true,
+                windowWidth: element.scrollWidth,
+                windowHeight: element.scrollHeight
+            });
+            
+            // Show captured image
+            const img = document.createElement('img');
+            img.src = canvas.toDataURL();
+            img.style.maxWidth = '100%';
+            img.style.border = '2px solid red';
+            img.style.margin = '10px';
+            
+            const container = document.createElement('div');
+            container.style.position = 'fixed';
+            container.style.top = '0';
+            container.style.left = '0';
+            container.style.right = '0';
+            container.style.bottom = '0';
+            container.style.background = 'white';
+            container.style.zIndex = '99999';
+            container.style.overflow = 'auto';
+            container.style.padding = '20px';
+            container.style.textAlign = 'center';
+            
+            const title = document.createElement('h2');
+            title.textContent = 'PDF Preview Test';
+            title.style.marginBottom = '20px';
+            title.style.color = '#333';
+            
+            const closeBtn = document.createElement('button');
+            closeBtn.textContent = 'Close Preview';
+            closeBtn.className = 'px-4 py-2 bg-red-600 text-white rounded-lg mt-4';
+            closeBtn.onclick = () => document.body.removeChild(container);
+            
+            container.appendChild(title);
+            container.appendChild(img);
+            container.appendChild(closeBtn);
+            
+            document.body.appendChild(container);
+            
+            console.log('Canvas size:', canvas.width, 'x', canvas.height);
+            console.log('Element scroll dimensions:', element.scrollWidth, 'x', element.scrollHeight);
+            
+            // Restore styles
+            element.style.width = '';
+            element.style.padding = '';
+            element.style.backgroundColor = '';
+        }
+
+        // Make functions globally available
+        window.downloadPDF = downloadPDF;
+        window.testPDFCapture = testPDFCapture;
+        
+        // Debug function
+        function debugLayout() {
+            const element = document.getElementById('invoice-container');
+            console.log('Invoice Container Debug:');
+            console.log('- Offset width:', element.offsetWidth);
+            console.log('- Scroll width:', element.scrollWidth);
+            console.log('- Client width:', element.clientWidth);
+            console.log('- Computed width:', window.getComputedStyle(element).width);
+            console.log('- Has overflow:', element.scrollWidth > element.clientWidth);
+            
+            // Check tables
+            const tables = element.getElementsByTagName('table');
+            console.log('Number of tables:', tables.length);
+            for (let i = 0; i < tables.length; i++) {
+                console.log(`Table ${i}:`, tables[i].scrollWidth, 'x', tables[i].scrollHeight);
+            }
+        }
+        
+        // Run debug on load
+        document.addEventListener('DOMContentLoaded', debugLayout);
+    </script>
 </body>
 </html>
-
-

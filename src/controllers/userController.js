@@ -1408,7 +1408,9 @@ console.log(order,"it is working properly")
 }
 
 
-
+const example=(req,res)=>{
+    res.render('./user/home')
+}
 export default {
     getLogin,
     postLogin,
@@ -1448,6 +1450,7 @@ export default {
     ordConfirmation,
     getOrder,
     orderCancel,
-    invoice
+    invoice,
+    example
 
 };
