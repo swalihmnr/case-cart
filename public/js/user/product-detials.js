@@ -1,3 +1,5 @@
+import api from "../api.js";
+
  const mainImage = document.getElementById('mainImageTag');
         const zoomLens = document.getElementById('zoomLens');
         const zoomPreviewContainer = document.getElementById('zoomPreviewContainer');
@@ -170,12 +172,7 @@
                     this.classList.remove('border-gray-200', 'text-gray-700');
                 });
             });
-            
-            // Add to cart button
-            const addToCartBtn = document.querySelector('button[class*="bg-purple-600"]');
-            addToCartBtn.addEventListener('click', function() {
-                alert('Product added to cart!');
-            });
+        
             
             // Buy now button
             
@@ -188,9 +185,51 @@
                 }
             });
         });
+        window.addEventListener('DOMContentLoaded', () => {
+          const firstBtn = document.querySelector('.device-btn');
+          if (firstBtn) {
+            firstBtn.click(); 
+          }
+        });
+        let productID=null
+        let variantID=null
+       async function selectVariant(productId,variantId){
+           productID=productId;
+           variantID=variantId;
+           console.log(variantID,productID)
+          const resVariant= await api.getVariantDataAxios(productID,variantID)
+           await api.productDetialAxios(productID)
+          
+            const salePriceField=document.getElementById('sale-span')
+            const orgPriceField=document.getElementById("org-span");
+           
+             salePriceField.innerText = `₹${resVariant.data.salePrice}`;
+             orgPriceField.innerText = `₹${resVariant.data.orgPrice}`;
+          }
+        
+        async function addToCart(){
+            console.log(productID,variantID)
+           const res=await api.addToCartAxios(productID,variantID)
+           if(res.data.success){
+             Swal.fire({
+             icon: 'success',
+             title: 'added',
+             text: res.data.message,
+             confirmButtonColor: '#667eea'
+           });
+           }else{
+             Swal.fire({
+             icon: 'warning',
+             text: res.data.message,
+             confirmButtonColor: '#667eea'
+           });
+           }
+        }
 
         // Make all required functions global for HTML access
 // Make all required functions global for HTML access
+window.selectVariant=selectVariant;
+window.addToCart=addToCart
 window.handleImageHover = handleImageHover;
 window.showZoomPreview = showZoomPreview;
 window.hideZoomPreview = hideZoomPreview;

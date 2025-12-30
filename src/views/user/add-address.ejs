@@ -1,0 +1,212 @@
+<%- include('../partials/user/header') %>
+
+
+<div class="flex">
+    
+    <main class="max-w-7xl mx-auto px-4 py-8 md:py-12">
+        <div class="mb-8 fade-in">
+            <h1 class="text-3xl md:text-4xl font-bold mb-2">My Account</h1>
+            <p class="text-gray-600">Manage your account settings and preferences</p>
+        </div>
+        <div class="grid lg:grid-cols-4 gap-8">
+            <%- include('../partials/user/sidebar') %>
+            <div class="lg:col-span-3 space-y-6">
+                <div class="lg:col-span-3">
+                <h3 class="text-2xl font-bold text-gray-900 mb-6">Add Address</h3>
+                    <div id="addressForm" class="p-6 ">
+  <form class="space-y-4" id="addressForm">
+
+  <!-- First Name & Last Name -->
+  <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+
+    <!-- First Name -->
+    <div>
+      <label class="block text-sm font-medium text-gray-700 mb-2">
+        First Name *
+      </label>
+      <input
+        type="text"
+        id="first-name"
+        class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-600"
+        placeholder="Enter first name"
+      >
+      <p class="text-sm text-red-500 mt-1" id="firstNameError"></p>
+    </div>
+
+    <!-- Last Name -->
+    <div>
+      <label class="block text-sm font-medium text-gray-700 mb-2">
+        Last Name *
+      </label>
+      <input
+        type="text"
+        id="last-name"
+        class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-600"
+        placeholder="Enter last name"
+      >
+      <p class="text-sm text-red-500 mt-1" id="lastNameError"></p>
+    </div>
+
+  </div>
+
+  <!-- Phone Number -->
+  <div>
+    <label class="block text-sm font-medium text-gray-700 mb-2">
+      Phone Number *
+    </label>
+    <input
+      type="tel"
+      id="phone"
+      class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-600"
+      placeholder="Enter phone number"
+    >
+    <p class="text-sm text-red-500 mt-1" id="phoneError"></p>
+  </div>
+
+  <!-- Address Line 1 -->
+  <div>
+    <label class="block text-sm font-medium text-gray-700 mb-2">
+      Street Address *
+    </label>
+    <input
+      type="text"
+      id="line1"
+      class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-600"
+      placeholder="House No, Building Name"
+    >
+    <p class="text-sm text-red-500 mt-1" id="line1Error"></p>
+  </div>
+
+  <!-- Landmark -->
+  <div>
+    <label class="block text-sm font-medium text-gray-700 mb-2">
+      Landmark (Optional)
+    </label>
+    <input
+      type="text"
+      id="landmark"
+      class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-600"
+      placeholder="Near school, hospital etc."
+    >
+  </div>
+
+  <!-- City / State / PIN -->
+  <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+
+    <!-- City -->
+    <div>
+      <label class="block text-sm font-medium text-gray-700 mb-2">
+        City *
+      </label>
+      <input
+        type="text"
+        id="city"
+        class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-600"
+        placeholder="City"
+      >
+      <p class="text-sm text-red-500 mt-1" id="cityError"></p>
+    </div>
+
+    <!-- State -->
+    <div>
+      <label class="block text-sm font-medium text-gray-700 mb-2">
+        State *
+      </label>
+      <select
+        id="state"
+        class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-600"
+      >
+        <option value="">Select State</option>
+        <option>Kerala</option>
+        <option>Tamil Nadu</option>
+        <option>Karnataka</option>
+        <option>Maharashtra</option>
+      </select>
+      <p class="text-sm text-red-500 mt-1" id="stateError"></p>
+    </div>
+
+    <!-- PIN -->
+    <div>
+      <label class="block text-sm font-medium text-gray-700 mb-2">
+        PIN Code *
+      </label>
+      <input
+        type="text"
+        id="pincode"
+        class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-600"
+        placeholder="PIN Code"
+      >
+      <p class="text-sm text-red-500 mt-1" id="pincodeError"></p>
+    </div>
+
+  </div>
+
+  <!-- Address Type -->
+  <div>
+    <label class="block text-sm font-medium text-gray-700 mb-2">
+      Address Type *
+    </label>
+    <div class="flex space-x-4">
+      <label class="flex items-center">
+        <input type="radio" name="addressType" value="Home" checked>
+        <span class="ml-2">Home</span>
+      </label>
+      <label class="flex items-center">
+        <input type="radio" name="addressType" value="Work">
+        <span class="ml-2">Work</span>
+      </label>
+      <label class="flex items-center">
+        <input type="radio" name="addressType" value="Work">
+        <span class="ml-2">Other</span>
+      </label>
+    </div>
+    <p class="text-sm text-red-500 mt-1" id="addressTypeError"></p>
+  </div>
+
+  <!-- Default Address -->
+  <div class="flex items-center">
+    <input
+      type="checkbox"
+      id="isDefault"
+      checked
+      class="w-4 h-4 text-purple-600 border-gray-300 rounded"
+    >
+    <label class="ml-2 text-sm text-gray-700">
+      Set as default address
+    </label>
+  </div>
+
+  <!-- Buttons -->
+  <div class="flex flex-col sm:flex-row gap-3 pt-4">
+    <button
+      type="submit"
+      class="bg-purple-600 hover:bg-purple-700 text-white px-6 py-2 rounded-lg font-medium"
+    >
+      Save Address
+    </button>
+    <a href="/address">
+    <button
+      type="button"
+      class="bg-gray-200 hover:bg-gray-300 px-6 py-2 rounded-lg font-medium"
+    >
+      Cancel
+    </button>
+    </a>
+  </div>
+
+</form>
+
+                    </div>
+                    <!-- Product Card  -->
+               
+                </div>
+            </div>
+            </div>
+        </div>
+
+  </main>
+  
+</div>
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+<script type="module" src="/js/user/address.js"></script>
+<%- include('../partials/user/footer') %>

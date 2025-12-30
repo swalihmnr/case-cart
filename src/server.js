@@ -15,6 +15,7 @@ import passport from 'passport';
 import './config/passport.js'
 import morgan from 'morgan';
 import { attachUser } from './middlewares/auth.js';
+import { attachAdmin } from './middlewares/auth.js';
 app.use(session({
     secret:process.env.SECRET_KEY,
     resave:false,
@@ -34,11 +35,20 @@ app.use(passport.session())
 app.use(attachUser)
 app.use('/auth',authRouter)
 app.use('/',userRouter)
+app.use(attachAdmin)
 app.use('/admin',adminRouter)
 app.use(express.static(path.join(__dirname,'../public')));
 app.use((req,res)=>{
     res.status(404).render('error')
 })
+app.use((err, req, res, next) => {
+  console.error(err.stack); 
+  res.status(500).json({
+    success: false,
+    message: err.message||"Internal Server Error"
+  });
+});
+
 connectDB()
 app.listen(process.env.PORT_NUMBER,()=>{
  console.log(`it's running on ${process.env.PORT_NUMBER}`)

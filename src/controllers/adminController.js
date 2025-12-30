@@ -6,21 +6,51 @@ import bcrypt from 'bcrypt';
 import mongoose from 'mongoose';
 import variantModel from '../models/admin/variantModel.js';
 import { uploadBufferTocloudnery } from '../utils/cloudneryUpload.js';
+import orderModel from '../models/orderModel.js';
+import { STATUS_CODES } from '../utils/statusCodes.js';
+import flowChecker from '../utils/order-flow-checker.js'
 
 
 
 const getLogin=(req,res)=>{
     res.render('./admin/adminLogin')
 }
+ const adminLogout = (req, res) => {
+  try {
+    req.session.admin = null;     // remove admin session
+    req.session.destroy(err => {
+      if (err) {
+        return res.status(500).json({
+          success: false,
+          message: "Logout failed"
+        });
+      }
+
+      res.clearCookie("connect.sid"); // default session cookie
+      return res.redirect("/admin/login");
+    });
+  } catch (error) {
+    console.error(error);
+    return res.status(500).json({
+      success: false,
+      message: "Internal server error"
+    });
+  }
+};
+
 const postLogin=async(req,res)=>{
 const {Email,Password}=req.body
 let existing= await adminModel.findOne({email:Email})
 if(!existing){
-    res.json({success:false,message:"it is not user"})
+    res.json({success:false,message:"it is not admin"})
 }else{
     let isValidPass=await bcrypt.compare(Password,existing.password);
     if(isValidPass){
-
+        
+        req.session.admin={
+            id:existing._id,
+            email:existing.email
+        }
         res.json({
             success:true,
             message:'admin logged'
@@ -669,7 +699,7 @@ const passVariantData=async(req,res)=>{
         console.log(id)
         const objectId=new mongoose.Types.ObjectId(id);
         const variant=await variantModel.findById(objectId)
-        return res.status(200).json({
+        return res.status(STATUS_CODES.OK).json({
         success: true,
         variant
 });
@@ -684,7 +714,7 @@ const postEditVariantSave=async(req,res)=>{
        const objectId=new mongoose.Types.ObjectId(id);
        const existing=await variantModel.findById(objectId);
        if(!existing){
-        return res.status(404).json({
+        return res.status(STATUS_CODES.NOT_FOUND).json({
             success:false,
             message:"variant not founded"
         })
@@ -717,7 +747,7 @@ const postEditVariantSave=async(req,res)=>{
         isflag=true
        }
        if(isflag){
-        return res.status(200).json({
+        return res.status(STATUS_CODES.OK).json({
             success:true,
             message:'variant updated'
         })
@@ -725,7 +755,7 @@ const postEditVariantSave=async(req,res)=>{
 
 
     } catch (error) {
-        return res.status(500).json({
+        return res.status(STATUS_CODES.INTERNAL_SERVER_ERROR).json({
             success:false,
             message:"server side error"
         })
@@ -737,7 +767,7 @@ const patchListUnlist=async(req,res)=>{
     const objectId=new mongoose.Types.ObjectId(id);
     const existing=await variantModel.findById(objectId);
     if(!existing){
-        return res.status(404).json({
+        return res.status(STATUS_CODES.NOT_FOUND).json({
             success:false,
             message:"veriant not founded"
         })
@@ -745,28 +775,190 @@ const patchListUnlist=async(req,res)=>{
     if(existing.isListed){
         existing.isListed=false
        await existing.save()
-       return res.status(200).json({
+       return res.status(STATUS_CODES.OK).json({
         success:true,
         message:'Unlisted'
        })
     }else{
         existing.isListed=true
         await existing.save()
-         return res.status(200).json({
+         return res.status(STATUS_CODES.OK).json({
         success:true,
         message:'listed'
        })
     }
    } catch (error) {
-        return res.status(500).json({
+        return res.status(STATUS_CODES.INTERNAL_SERVER_ERROR).json({
             success:false,
             message:'server down!'
         })
    }
 }
+const getOrderMngmnt=async (req,res)=>{
+    const limit=8;
+    const page=parseInt(req.query.page)||1;
+    const skip=(page-1)*limit
+const search=(req.query.search)||""
+const selectionFilter=(req.query.filter)||"all"
+const filter = {};
+if (search) {
+  filter.orderId = { $regex: search, $options: "i" };
+}
+
+if (selectionFilter !== "all") {
+  filter["orderItems.status"] = selectionFilter;
+}
+
+const result= await orderModel.aggregate([
+    {$unwind:"$orderItems"},
+    {$match:filter},
+    { 
+        $facet:{data:[
+        {$lookup:{
+            from:"users",
+            localField:"userId",
+            foreignField:"_id",
+            as:"user"
+            
+        }},
+        {$unwind:"$user"},
+    
+        {$lookup:{
+            from:"variants",
+            localField:"orderItems.variantId",
+            foreignField:"_id",
+            as:"variant"
+        }},
+        {$unwind:"$variant"},
+        {$lookup:{
+            from:"products",
+            localField:"orderItems.productId",
+            foreignField:"_id",
+            as:"product"
+        }},
+        {$unwind:"$product"},
+        {$skip:skip},
+        {$limit:limit}
+    ],count:[
+        {$count:"count"}
+    ]}}
+]);
+const currentPage=page;
+const orders=result[0].data
+const totalItems = result[0].count[0]?.count || 0;
+const totalPages=Math.ceil(totalItems/limit)
+console.log(totalItems,totalPages)
+    res.render('./admin/order-management',{
+        orders,
+        selectionFilter,
+        currentPage,
+        totalPages,
+        totalItems,
+        search
+    })
+}
+const orderStatusChanger=async(req,res)=>{
+    try {
+        const {orderItemId,selectedValue}=req.body
+        const orderId=new mongoose.Types.ObjectId(req.params.id);
+        const orderItemID=new mongoose.Types.ObjectId(orderItemId)
+        const crntDbStatus=await orderModel.findOne({_id:orderId,"orderItems._id":orderItemID},{'orderItems.$':1})
+        const currentDbStatus=crntDbStatus.orderItems[0].status;
+        console.log(flowChecker(currentDbStatus,selectedValue))
+        if(!flowChecker(currentDbStatus,selectedValue)){
+            console.log('you can not do that ')
+           return res.status(STATUS_CODES.FORBIDDEN).json({
+            success:false,
+            message:`you had to follow the flow that's why you cann't jumb to ${selectedValue}`
+           })
+        }else{
+            if(selectedValue==='delivered'){
+                await orderModel.updateOne({_id:orderId,"orderItems._id":orderItemID},{
+                    $set:{"orderItems.$.status":selectedValue,"orderItems.$.deliveredAt":new Date(),"orderItems.$.paymentStatus":"paid"}
+                })
+            }
+             await orderModel.updateOne({_id:orderId,"orderItems._id":orderItemID},{
+                    $set:{"orderItems.$.status":selectedValue}
+                })
+
+            console.log('status updated')
+            return res.status(STATUS_CODES.OK).json({
+                success:true,
+                message:'status updated!'
+            })
+        }
+
+       
+    } catch (error) {
+        console.log(error.message)
+        return res.status(STATUS_CODES.INTERNAL_SERVER_ERROR).json({
+            success:false,
+            message:"Internal server Error"
+        })
+    }
+}
+const reqApprove=async(req,res)=>{
+    try {
+        
+        const orderId=new mongoose.Types.ObjectId(req.params.id);
+        const {itemId}=req.body
+        const ordItemId=new mongoose.Types.ObjectId(itemId)
+        const existing=await orderModel.findOne({_id:orderId,'orderItems._id':ordItemId});
+        if(!existing){
+            return res.status(STATUS_CODES.NOT_FOUND).json({
+                success:false,
+                message:"Item not Founded"
+            })
+        }
+        const item=existing.orderItems.id(itemId);
+        item.status="returned"
+        await existing.save()
+        return res.status(STATUS_CODES.OK).json({
+            success:true,
+            message:"Returned Approved"
+        })
+        
+    } catch (error) {
+        return res.status(STATUS_CODES.INTERNAL_SERVER_ERROR).json({
+            success:false,
+            message:"Internal server Error!"
+        })
+    }
+}
+
+const reqReject=async(req,res)=>{
+    try {
+        
+        const orderId=new mongoose.Types.ObjectId(req.params.id);
+        const {itemId}=req.body
+        const ordItemId=new mongoose.Types.ObjectId(itemId)
+        const existing=await orderModel.findOne({_id:orderId,'orderItems._id':ordItemId});
+        if(!existing){
+            return res.status(STATUS_CODES.NOT_FOUND).json({
+                success:false,
+                message:"Item not Founded"
+            })
+        }
+        const item=existing.orderItems.id(itemId);
+        item.status="delivered"
+        item.isReject=true
+        await existing.save()
+    return res.status(STATUS_CODES.CREATED).json({
+        success:true,
+        message:"Return Rejected!"
+    })
+    } catch (error) {
+        return res.status(STATUS_CODES.INTERNAL_SERVER_ERROR).json({
+            success:false,
+            message:"Internal server Error!"
+        })
+    }
+}
+
 export default {
     getLogin,
-    postLogin,
+    postLogin, 
+    adminLogout,              
     getDashboard,
     getCustomer,
     blockCustomer,
@@ -789,6 +981,10 @@ export default {
     editProductBasicInformation,
     passVariantData,
     postEditVariantSave,
-    patchListUnlist
+    patchListUnlist,
+    getOrderMngmnt,
+    orderStatusChanger,
+    reqApprove,
+    reqReject
 
 }

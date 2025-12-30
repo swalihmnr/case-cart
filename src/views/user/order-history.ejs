@@ -1,0 +1,202 @@
+<%- include('../partials/user/header') %>
+
+<div class="min-h-screen bg-gray-50">
+    <!-- Breadcrumb -->
+    <div class="bg-white border-b">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-3 md:py-4">
+            <div class="flex items-center space-x-2 text-sm">
+                <a href="/" class="text-gray-600 hover:text-purple-600 transition">Home</a>
+                <span class="text-gray-400">/</span>
+                <span class="text-gray-800 font-medium">Products</span>
+            </div>
+        </div>
+    </div>
+
+    <!-- Main Content -->
+    <div class="max-w-7xl mx-auto px-3 sm:px-4 lg:px-8 py-4 md:py-8">
+        <div class="flex flex-col lg:flex-row gap-4 md:gap-8">
+            <!-- Products Grid -->
+            <main class="flex-1">
+                <div class="bg-white rounded-lg shadow-sm p-6">
+                    <div class="flex items-center justify-between mb-6">
+                        <div>
+                            <h2 class="text-2xl font-bold text-gray-800">My Account</h2>
+                            <p class="text-gray-500 text-sm">Manage your account settings and preferences</p>
+                        </div>
+                    </div>
+
+                    <div class="flex items-center justify-between mb-6">
+                      <h3 class="text-xl font-semibold text-gray-800">My Orders</h3>
+                    
+                      <form method="GET" action="/order">
+                        <select
+                          name="status"
+                          class="px-4 py-2 border border-gray-300 rounded-lg text-gray-600 bg-white
+                                 focus:outline-none focus:ring-2 focus:ring-purple-500
+                                 hover:bg-gray-50 cursor-pointer"
+                          onchange="this.form.submit()"
+                        >
+                          <option value="" <%= !status ? 'selected' : '' %>>All Orders</option>
+
+                           <option value="processing" <%= status === 'processing' ? 'selected' : '' %>>
+                             Processing
+                           </option>
+                         
+                           <option value="shipped" <%= status === 'shipped' ? 'selected' : '' %>>
+                             Shipped
+                           </option>
+                         
+                           <option value="delivered" <%= status === 'delivered' ? 'selected' : '' %>>
+                             Delivered
+                           </option>
+                         
+                           <option value="cancelled" <%= status === 'cancelled' ? 'selected' : '' %>>
+                             Cancelled
+                           </option>
+                        </select>
+                      </form>
+                    </div>
+
+
+                    <!-- Orders List -->
+                    <div class="space-y-4">
+                        <% orders.forEach(order => { %>
+                        <% 
+                        const placedOn = new Date(order.createdAt).toLocaleString("en-IN", {
+                            month: "short",
+                            day: "2-digit",
+                            year: "numeric",
+                            hour: "2-digit",
+                            minute: "2-digit",
+                            hour12: true
+                        });
+                        %>
+                        
+                        <div class="border border-gray-200 rounded-lg p-4 hover:shadow-md transition-shadow">
+                            <div class="flex flex-col md:flex-row md:items-center justify-between mb-4">
+                                <div>
+                                    <h4 class="font-semibold text-gray-800"><%= order.orderId %></h4>
+                                    <p class="text-sm text-gray-500"><%= placedOn %></p>
+                                </div>
+                                <span class="mt-2 md:mt-0 inline-block px-3 py-1 bg-green-100 text-green-600 text-sm rounded-full self-start">
+                                    <%= order.orderItems.status %>
+                                </span>
+                            </div>
+                            <div class="flex items-start space-x-4 mb-4">
+                                <img src="<%= order.product.productImages.find(img => img.isMain).url %>" 
+                                     class="w-16 h-16 object-cover rounded-lg flex-shrink-0">
+                                <div class="flex-1">
+                                    <h5 class="font-medium text-gray-800"><%= order.product.name %></h5>
+                                    <p class="text-sm text-gray-500"><%= order.variant.deviceModel %></p>
+                                    <p class="text-sm text-gray-500">Qty: <%= order.orderItems.quantity %></p>
+                                </div>
+                                <div class="text-right">
+                                    <p class="font-semibold text-gray-800">₹<%= order.variant.salePrice %></p>
+                                </div>
+                            </div>
+                            <div class="flex items-center justify-between pt-4 border-t border-gray-200">
+                                <p class="text-gray-600">Total Amount: 
+                                    <span class="font-semibold text-purple-600">₹<%= order.orderItems.price %></span>
+                                </p>
+                                <div class="flex space-x-2">
+                                    <button onclick="showOrderDetails('<%= order._id %>','<%= order.product._id %>','<%= order.orderItems._id %>')" 
+                                            class="px-4 py-2 border border-purple-600 text-purple-600 rounded-lg hover:bg-purple-50">
+                                        Order Details
+                                    </button>
+                                    
+                                </div>
+                            </div>
+                        </div>
+                        <% }) %>
+                    </div>
+                </div>
+                <% if (orders.length!==0) { %>
+                 
+                
+                <!-- <% if (totalPages > 1) { %> -->
+                    <div class="flex justify-center mt-8 md:mt-10 space-x-2">
+                        <!-- Previous Button -->
+                        <% if (currentPage > 1) { %>
+                            <a 
+                                 href="/order?page=<%= currentPage - 1 %><%= status ? `&status=${status}` : '' %>"
+                                class="px-4 py-2 border rounded-lg hover:bg-gray-50 transition text-sm font-medium"
+                            >
+                                Prev
+                            </a>
+                        <% } else { %>
+                            <span class="px-4 py-2 border rounded-lg text-gray-400 cursor-not-allowed text-sm">
+                                Prev
+                            </span>
+                        <% } %>
+                        
+                        <!-- Page Numbers -->
+                        <% for (let i = 1; i <= totalPages; i++) { %>
+                            <% if (i === currentPage) { %>
+                                <span class="px-4 py-2 bg-purple-600 text-white rounded-lg font-medium text-sm">
+                                    <%= i %>
+                                </span>
+                            <% } else { %>
+                                <a 
+                                    href="/order?page=<%= i %><%= status ? `&status=${status}` : '' %>"
+
+                                    class="px-4 py-2 border rounded-lg hover:bg-gray-50 transition text-sm font-medium"
+                                >
+                                    <%= i %>
+                                </a>
+                            <% } %>
+                        <% } %>
+                        
+                        <!-- Next Button -->
+                        <% if (currentPage < totalPages) { %>
+                            <a 
+                                  href="/order?page=<%= currentPage + 1 %><%= status ? `&status=${status}` : '' %>"
+                                class="px-4 py-2 border rounded-lg hover:bg-gray-50 transition text-sm font-medium"
+                            >
+                                Next
+                            </a>
+                        <% } else { %>
+                            <span class="px-4 py-2 border rounded-lg text-gray-400 cursor-not-allowed text-sm">
+                                Next
+                            </span>
+                        <% } %>
+                    </div>
+                <% } %>
+                <% } %>
+            </main>
+        </div>
+    </div>
+</div>
+
+<!-- Single Modal for Order Details (outside the loop) -->
+<div id="orderDetailsModal" class="hidden fixed inset-0 z-50 overflow-y-auto">
+    <div class="flex items-center justify-center min-h-screen px-4">
+        <div class="fixed inset-0 bg-black bg-opacity-50" onclick="closeOrderDetails()"></div>
+        <div class="bg-white rounded-lg shadow-xl max-w-2xl w-full z-10 relative">
+            <div class="bg-gradient-to-r from-purple-600 to-purple-700 p-6 text-white rounded-t-lg">
+                <button onclick="closeOrderDetails()" class="absolute top-4 right-4 text-white hover:text-gray-200">
+                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                    </svg>
+                </button>
+                <h3 class="text-2xl font-bold mb-2">Order Details</h3>
+                <p id="orderIdDetail" class="text-purple-100"></p>
+            </div>
+            <div class="p-6" id="modalContent">
+                <!-- Modal content will be dynamically inserted here -->
+            </div>
+        </div>
+    </div>
+</div>
+
+<div id="modalOverlay"
+     class="fixed inset-0 bg-black/30 backdrop-blur-sm hidden z-40"
+     onclick="closeAllModals()">
+</div>
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script> 
+<script>
+   window.ordersData = <%- JSON.stringify(orders) %>;
+</script>
+
+
+<script type="module" src="/js/user/orderFunc.js"></script>
+<%- include('../partials/footer') %>

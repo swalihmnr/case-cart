@@ -8,6 +8,11 @@ import variantModel from '../models/admin/variantModel.js'
 import mongoose from 'mongoose'
 import { STATUS_CODES } from '../utils/statusCodes.js'
 import { uploadBufferTocloudnery } from '../utils/cloudneryUpload.js'
+import wishlistModel from '../models/wishlistModel.js'
+import cartModel from '../models/cartModel.js'
+import addressModel from '../models/addressModel.js';
+import orderModel from '../models/orderModel.js'
+
 
 
 let getLogin=(req,res)=>{
@@ -273,7 +278,7 @@ const getProduct = async (req, res) => {
         let { page = 1, search = "", price = "all", Categories = "", sort = "" } = req.query;
         page = Number(page);
 
-        const limit = 9;
+        const limit = 6;
         const skip = (page - 1) * limit;
 
     
@@ -338,9 +343,17 @@ const getProduct = async (req, res) => {
             { $unwind: "$catgId" },
 
             // ADD MIN PRICE & MAIN IMAGE
-            {
+               {
                 $addFields: {
                     minPrice: { $min: "$variants.salePrice" },
+                    minVariant: {
+                    $first: {
+                      $sortArray: {
+                        input: "$variants",
+                        sortBy: { salePrice: 1 }
+                      }
+                    }
+                  },
                     mainImage: {
                         $first: {
                             $filter: {
@@ -378,13 +391,13 @@ const getProduct = async (req, res) => {
         );
 
         const result = await productModel.aggregate(pipeline);
-
+         let wishlistItems=[]
         const products = result[0].data;
         const totalItems = result[0].totalCount[0]?.count || 0;
         const totalPages = Math.ceil(totalItems / limit);
 
         const categories = await Category.find();
-
+         wishlistItems = await wishlistModel.find({ userId: req.session.user.id });
         res.render("user/product-list", {
             products,
             categories,
@@ -394,7 +407,8 @@ const getProduct = async (req, res) => {
             sort,
             totalItems,
             currentPage: page,
-            totalPages
+            totalPages,
+            wishlistItems
         });
 
     } catch (err) {
@@ -407,35 +421,56 @@ const getProduct = async (req, res) => {
 
 const getDetialProduct= async(req,res)=>{
     try {
-        const veriantid=req.query.veriantId
-        let veriant;
-        const veriantId=new mongoose.Types.ObjectId(veriantid);
+        console.log('hlow')
         const id=req.params.id;
         const objectId=new mongoose.Types.ObjectId(id);
         const product= await productModel.findById(objectId).populate('catgId').populate("variants");
-        if(veriantid===undefined){
-            veriant=await variantModel.findOne({_id:product.variants[0]._id})
-        }else{
-            veriant=await variantModel.findOne({_id:veriantId})
+        
+        let relatedProducts=await productModel.find({catgId:product.catgId,_id:{$ne:product._id}}).limit(4)
+        if(relatedProducts.length<4){
+            const remains=4-relatedProducts.length
+            const excludeCatgIds=[product._id,...relatedProducts.map(id=>id.catgId._id)]
+            const defCatgProduct=await productModel.find({catgId:{$ne:product.catgId},_id:{$nin:excludeCatgIds}}).limit(remains)
+            relatedProducts=[...relatedProducts,...defCatgProduct]
+        }
 
-        }
-        const relatedProducts=await productModel.find({catgId:product.catgId,_id:{$ne:product._id}}).limit(4)
-        console.log(veriantid)
-        if(veriantId===null){
-        }else{
-           
-        }
-        let salePrice=veriant.salePrice
-        let orgPrice=veriant.orgPrice
-       
+        console.log('last')
         res.render('./user/product-detial',{
             product,
-            salePrice,
-            orgPrice,
             relatedProducts
         })
     } catch (error) {
         console.log(error)
+    }
+}
+const getVariantData=async(req,res)=>{
+    try {
+       const productId=req.params.id
+       const variantId=req.query.variantId
+       if(!productId||!variantId){
+        return res.status(STATUS_CODES.NOT_FOUND).json({
+            success:false,
+            message:"productId or variantId not provided"
+        })
+       }
+       const variant=await variantModel.findOne({_id:variantId});
+       if(!variant){
+        return res.status(STATUS_CODES.NOT_FOUND).json({
+            success:false,
+            message:"variant not founded"
+        })
+       }
+       const salePrice=variant.salePrice
+       const orgPrice=variant.orgPrice
+       return res.status(STATUS_CODES.OK).json({
+        success:false,
+        message:"success",
+        salePrice,
+        orgPrice
+       })
+       
+    } catch (error) {
+        
     }
 }
 const getUserProfil=async(req,res)=>{
@@ -596,12 +631,810 @@ const editProfileImg=async(req,res)=>{
     }
 }
 const getWishlist=async(req,res)=>{
-    const user={
-        profileUrl:'sdfsdfsdfs'
-    }
+   const userId= req.session.user.id;
+   console.log(userId)
+   const userID=new mongoose.Types.ObjectId(userId)
+    const products= await wishlistModel.find({userId:userID}).populate('variantId').populate('productId')
     res.render('./user/wishlist',{
-        user
+        products
+        
     })
+}
+const postWishlist=async(req,res)=>{
+    try {
+        const {productId,variant}=req.body;
+        const variantId=new mongoose.Types.ObjectId(variant);
+        const Variant=await variantModel.findById(variantId);
+        const userId=new mongoose.Types.ObjectId(req.session.user.id)
+        if(!productId){
+            return res.status(STATUS_CODES.NOT_FOUND).json({
+                success:false,
+                message:"product not provided"
+            })
+        }
+        if(!Variant){
+            return res.status(STATUS_CODES.NOT_FOUND).json({
+                success:false,
+                message:"variant not provided"
+            })
+        }
+        const existing=await wishlistModel.findOne({
+            variantId:Variant._id,
+            userId:userId,
+            productId:productId
+        })
+        const existingCart=await cartModel.findOne({
+            variantId:Variant._id,
+            userId:userId,
+            productId:productId
+        })
+
+        if(existing){
+            return res.status(STATUS_CODES.CONFLICT).json({
+                success:false,
+                message:"already exists in wishlist"
+            })
+        }
+
+        if(existingCart){
+            return res.status(STATUS_CODES.CONFLICT).json({
+                success:false,
+                message:"already exist in cart"
+            })
+        }
+        if(!userId){
+            return res.status(STATUS_CODES.NOT_FOUND).json({
+                success:false,
+                message:"user not founded"
+            })
+        }
+       let result= await wishlistModel.create({
+            userId:userId,
+            productId:productId,
+            variantId:Variant._id
+        })
+        return res.status(STATUS_CODES.CREATED).json({
+            success:true,
+            message:'added to wishlist'
+        })
+        
+    } catch (error) {
+        
+    }
+}
+const remWishlist=async(req,res)=>{
+    try {
+        const id=req.params.id
+        const wishlistId=new mongoose.Types.ObjectId(id)
+        const userId=req.session.user.id
+        if(!wishlistId){
+            return res.status(STATUS_CODES.NOT_FOUND).json({
+                success:false,
+                message:"wishlist item not provided"
+            })
+        }
+      await wishlistModel.findOneAndDelete({
+       _id: wishlistId,
+       userId: req.session.user.id
+       });
+       return res.status(STATUS_CODES.OK).json({
+        success:true,
+        message:'Removed from wishlist'
+       })
+
+        
+    } catch (error) {
+        
+        return res.status(STATUS_CODES.INTERNAL_SERVER_ERROR).json({
+            success:false,
+            message:"indernal server error"
+        })
+    }
+}
+
+const getCart=async(req,res)=>{
+    try {
+    const userId=new mongoose.Types.ObjectId(req.session.user.id)
+    const products=await cartModel.find({userId:userId}).populate('variantId').populate({
+        path:'productId',
+        populate:{
+            path:'catgId',
+            model:'Category'
+        }
+    });
+    let subtotal=0; 
+    const cartItems=await cartModel.find({userId:userId}).populate('variantId').populate('productId');
+     cartItems.forEach((item)=>{
+         subtotal+=item.quantity*item.variantId.salePrice
+     })
+     const totalDocs=await cartModel.countDocuments({userId:userId})
+    console.log('finished')
+   
+   res.render('./user/cart',{
+    products,
+    subtotal,
+    totalDocs
+   })
+    } catch (error) {
+        console.log(error.message)
+    }
+    
+}
+const addCart=async(req,res)=>{
+    try {
+        const userId=new mongoose.Types.ObjectId(req.session.user.id)
+        const {variantId,productId}=req.body
+        const varinatID=new mongoose.Types.ObjectId(variantId);
+        const productID=new mongoose.Types.ObjectId(productId)
+
+        if(!userId){
+            return res.status(STATUS_CODES.NOT_FOUND).json({
+                success:false,
+                message:"User not founded"
+            })
+        }
+        if(!varinatID){
+            return res.status(STATUS_CODES.NOT_FOUND).json({
+                success:false,
+                message:"variantId not provided"
+            })
+        }
+        if(!productID){
+            return res.status(STATUS_CODES.NOT_FOUND).json({
+                success:false,
+                message:"productId not provided"
+            })
+        }
+        const existing=await cartModel.findOne({userId:userId._id,productId:productID,variantId:varinatID}).populate('variantId');
+        if(existing){
+            console.log('already exist ')
+            return res.status(STATUS_CODES.CONFLICT).json({
+                success:false,
+                message:"already added to cart"
+            })
+        }else{
+
+                 await cartModel.create({
+                userId:userId._id,
+                productId:productID,
+                variantId:varinatID
+            }) 
+           await wishlistModel.deleteOne({userId:userId._id,productId:productID,variantId:varinatID})
+           
+            return res.status(STATUS_CODES.CREATED).json({
+                success:true,
+                message:"item added to cart"
+            })
+        }
+    } catch (error) {
+        console.log(error)
+        return res.status(STATUS_CODES.INTERNAL_SERVER_ERROR).json({
+            success:false,
+            message:"Indternal server Error !"
+        })
+    }
+}
+
+const cartQuantityUpdate=async(req,res)=>{
+   try {
+    const cartId = req.params.id;
+    const userId = req.session.user.id;
+    const change = req.body.change;
+
+    const cartItem = await cartModel
+        .findById(cartId)
+        .populate('variantId').populate({
+        path:'productId',
+        populate:{
+            path:'catgId',
+            model:'Category'
+        }
+    });
+    if (!cartItem) {
+        return res.status(404).json({
+            success: false,
+            message: "Cart item not found"
+        });
+    }
+    
+
+    const variant = cartItem.variantId;
+    if (change===1) {
+        if (cartItem.quantity >= variant.stock || cartItem.quantity >= 5) {
+            return res.status(403).json({
+                success: false,
+                message: "Order limit or stock limit reached"
+            });
+        }
+        if(variant.isListed||cartItem.productId.isBlock||cartItem.productId.catgId.isActive===false){
+            return res.status(STATUS_CODES.FORBIDDEN).json({
+                success:false,
+                message:"This product currently unavailable!"
+            })
+
+        }
+        
+        cartItem.quantity += 1;
+       
+    } else {
+        if (cartItem.quantity>1) {
+            if(variant.isListed||cartItem.productId.isBlock||cartItem.productId.catgId.isActive===false){
+            return res.status(STATUS_CODES.FORBIDDEN).json({
+                success:false,
+                message:"This product currently unavailable!"
+            })
+
+        }
+            cartItem.quantity-= 1;
+        }
+    }
+    await cartItem.save();
+    const cartItems = await cartModel
+        .find({ userId })
+        .populate('variantId').populate('productId')
+    let subtotal = 0;
+    cartItems.forEach(item => {
+        subtotal += item.quantity * item.variantId.salePrice;
+    });
+
+    
+    return res.status(200).json({
+        success: true,
+        quantity: cartItem.quantity,
+        totalAmountPerPrdct: cartItem.quantity * variant.salePrice,
+        subtotal
+    });
+
+
+} catch (error) {
+    console.error(error);
+    return res.status(500).json({
+        success: false,
+        message: "Internal server error"
+    });
+}
+
+}
+const remCart=async(req,res)=>{
+    try {
+    const existing= await cartModel.findOne({_id:req.params.id})
+    if(!existing){
+        return res.status(STATUS_CODES.NOT_FOUND).json({
+            success:false,
+            message:'user not founded'
+        })
+    }
+    await cartModel.findByIdAndDelete(req.params.id)
+    return res.status(STATUS_CODES.OK).json({
+        success:true,
+        message:"item deleted from cart."
+    })
+    } catch (error) {
+        return res.status(STATUS_CODES.INTERNAL_SERVER_ERROR).json({
+            success:false,
+            message:"Internal sever Error"
+        })
+    }
+}
+const getCheckout=async(req,res)=>{
+    const userId=new mongoose.Types.ObjectId(req.session.user.id)
+    const cartItems=await cartModel.aggregate([{$match:{userId:userId}},
+        {$lookup:{
+            from:'products',
+            localField:'productId',
+            foreignField:'_id',
+            as:"product"
+        }},
+        {$unwind:'$product'},
+        {$lookup:{
+            from:'variants',
+            localField:'variantId',
+            foreignField:'_id',
+            as:'variant'
+        }},
+        {$addFields:{
+            mainImage:{
+              $first:{
+                  $filter:{
+                      input:"$product.productImages",
+                      as:'img',
+                      cond:"$$img.isMain"
+                  }
+              }  
+            }
+        }},
+        {$unwind:"$variant"},
+        {$match:{"product.isBlock":false,
+                "variant.isListed":false,
+                "variant.stock":{$gt:0}
+        }},
+        {$project:{
+            quantity:1,
+            "product.name":1,
+            "variant.deviceModel":1,
+            "variant.salePrice":1,
+            "mainImage.url":1
+
+        }}
+
+    ])
+    let subtotal=0;
+    cartItems.forEach((item)=>{
+       subtotal+= item.quantity*item.variant.salePrice
+    })
+    console.log(cartItems)
+    if(cartItems.length===0){
+        return res.status(STATUS_CODES.FORBIDDEN)
+    }
+    const addresses=await addressModel.find()
+    console.log('her reached')
+    res.render('./user/checkout',{
+        addresses,
+        cartItems,
+        subtotal
+    })
+}
+const getAddressMngmnt=async(req,res)=>{
+    const userID=new mongoose.Types.ObjectId(req.session.user.id)
+    const addresses=await addressModel.aggregate([{$match:{userId:userID}}]);
+    res.render('./user/user-address-management',{
+        addresses
+    })
+}
+const addAddress=async(req,res)=>{
+    try {
+        
+        const {firstName,lastName,phone,streetAddress,landmark,city,state,pincode,addressType,isDefault}=req.body.data;
+        const userId=req.session.user.id;
+        console.log(firstName,lastName,phone,streetAddress,landmark,city,state,pincode,addressType,isDefault)
+        const existing=await addressModel.findOne({userId:userId,streetAddress:streetAddress,pinCode:pincode,city:city})
+        if(existing){
+            console.log('existing ')
+            return res.status(STATUS_CODES.CONFLICT).json({
+                success:false,
+                message:"Address already exists"
+            })
+        }
+        console.log("not existing")
+        let resd=await addressModel.create({
+            userId,
+            firstName,
+            lastName,
+            phone,
+            streetAddress,
+            landMark:landmark,
+            pinCode:pincode,
+            city,
+            state,
+            addressType,
+            isDefault
+    
+        })
+
+        return res.status(STATUS_CODES.CREATED).json({
+            success:true,
+            message:"address saved "
+        })
+    } catch (error) {
+        console.log(error)
+    }
+}
+
+const geteditAddress=async(req,res)=>{
+    const addressId=req.params.id;
+    delete req.session.adrsId
+    req.session.adrsId=addressId
+    const userID=new mongoose.Types.ObjectId(req.session.user.id);
+    const address=await addressModel.findOne({userId:userID,_id:addressId})
+    res.render('./user/edit-address',{
+        address
+    })
+}
+const editAddress=async(req,res)=>{
+    try {
+       
+        const addressId=req.session.adrsId;
+        const userId=req.session.user.id
+        const address= await addressModel.findOne({_id:addressId,userId:userId});
+        let isChanged=false;
+       for(let key in req.body.data){
+        console.log(key)
+        console.log(`${address[key]}===${req.body.data[key]}`)
+        console.log(typeof address)
+        console.log(typeof req.body.data)
+        if(req.body.data[key]!==undefined&&String(address[key]) !== String(req.body.data[key])){
+            address[key]=req.body.data[key];
+            isChanged=true
+        }
+    }
+    if(!isChanged){
+        return res.status(STATUS_CODES.OK).json({
+            success:false,
+            message:"data not updated!"
+        })
+    }
+    await address.save()
+    return res.status(STATUS_CODES.OK).json({
+        success:true,
+        message:'address updated!'
+    })
+        
+    } catch (error) {
+        console.log(error)
+    }
+}
+const getAddAddress=async(req,res)=>{
+    console.log('add page')
+    res.render('./user/add-address')
+}
+const deleteAddress=async(req,res)=>{
+    try {
+        const addressId=new mongoose.Types.ObjectId(req.params.id)
+        if(!addressId){
+            return res.status(STATUS_CODES.NOT_FOUND).json({
+                success:false,
+                message:"address not provided"
+            })
+        }
+        await addressModel.deleteOne({_id:addressId,userId:req.session.user.id})
+        return res.status(STATUS_CODES.OK).json({
+            success:true,
+            message:"address deleted"
+        })
+        
+        
+    } catch (error) {
+        console.log(error)
+    }
+}
+const getConfirmation=async(req,res)=>{ 
+
+    const userId=req.session.user.id
+        const orderId=req.params.id;
+        const order=await orderModel.findOne({_id:orderId}).populate('orderItems.productId').populate('orderItems.variantId');
+     res.render('./user/ord-confirmation',{
+        order
+
+     })
+}
+const ordConfirmation=async(req,res)=>{
+ try {
+  let shippingAddress;
+  const userId= new mongoose.Types.ObjectId(req.session.user.id);
+  const data=req.body.data;
+  if (data.address?.addressId) {
+    const addressId = new mongoose.Types.ObjectId(data.address.addressId);
+    const savedAddress= await addressModel.findById(addressId);
+    if (!savedAddress) {
+      return res.status(STATUS_CODES.NOT_FOUND).json({
+        success: false,
+        message: "Address not found"
+      });
+    }
+    console.log(savedAddress.landMark,"it is the landMark")
+    shippingAddress = {
+      addressType: savedAddress.addressType,
+      firstName: savedAddress.firstName,
+      lastName: savedAddress.lastName,
+      phone: savedAddress.phone,
+      streetAddress: savedAddress.streetAddress,
+      landMark: savedAddress.landMark,
+      city: savedAddress.city,
+      state: savedAddress.state,
+      pinCode: savedAddress.pinCode
+    };
+  } else {
+    const {
+      firstName,
+      lastName,
+      phone,
+      streetAddress,
+      landMark,
+      city,
+      state,
+      pinCode
+    } = data.address ;
+
+    shippingAddress = {
+      addressType: "manual",
+      firstName,
+      lastName,
+      phone,
+      streetAddress,
+      landMark,
+      city,
+      state,
+      pinCode
+    };
+  }
+
+  const paymentMethod = data.paymentMethod;
+
+  if (!["cod", "wallet", "razorpay"].includes(paymentMethod)) {
+    return res.status(STATUS_CODES.BAD_REQUEST).json({
+      success: false,
+      message: "Invalid payment method"
+    });
+  }
+ 
+  const cartItems = await cartModel.aggregate([
+    { $match: { userId } },
+
+    {
+      $lookup: {
+        from: "products",
+        localField: "productId",
+        foreignField: "_id",
+        as: "product"
+      }
+    },
+    { $unwind: "$product" },
+
+    {
+      $lookup: {
+        from: "variants",
+        localField: "variantId",
+        foreignField: "_id",
+        as: "variant"
+      }
+    },
+    { $unwind: "$variant" },
+    {
+      $match: {
+        "product.isBlock": false,
+        "variant.isListed": false,
+        "variant.stock": { $gt: 0 }
+      }
+    },
+
+    {
+      $project: {
+        productId: 1,
+        variantId: 1,
+        quantity: 1,
+        "variant.salePrice": 1
+      }
+    }
+  ]);
+console.log('it s the cartitems',cartItems)
+  if (!cartItems.length) {
+     console.log('entered1')
+    return res.status(STATUS_CODES.NOT_FOUND).json({
+      success: false,
+      message: "Cart is empty or items unavailable"
+    });
+  }
+
+  let subtotal = 0;
+  cartItems.forEach(item => {
+    subtotal += item.quantity * item.variant.salePrice;
+  });
+
+  const discount = 0;
+  const finalAmount = subtotal - discount;
+
+  const order = await orderModel.create({
+    userId,
+    paymentMethod,
+    paymentStatus: paymentMethod === "cod" ?"pending": "initiated",
+    shippingAddress,
+    totalPrice: subtotal,
+    discount,
+    finalAmount,
+    orderItems: cartItems.map(item => ({
+      productId: item.productId,
+      variantId: item.variantId,
+      quantity: item.quantity,
+      price: item.variant.salePrice,
+      status: "processing",
+      processingAt: new Date()
+    }))
+  });
+  for (const item of cartItems) {
+  const result = await variantModel.updateOne(
+    {
+      _id: item.variantId,
+      stock: { $gte: item.quantity }   
+    },
+    {
+      $inc: { stock: -item.quantity }  
+    }
+  );
+  if (result.modifiedCount === 0) {
+    throw new Error("Insufficient stock for a product");
+  }
+}
+
+  await cartModel.deleteMany({ userId });
+    console.log('low')
+  return res.status(STATUS_CODES.CREATED).json({
+    success: true,
+    message: "Order placed successfully",
+    orderId: order._id
+  });
+
+} catch (error) {
+  console.error(error);
+  return res.status(STATUS_CODES.INTERNAL_SERVER_ERROR).json({
+    success: false,
+    message: "Internal server error"
+  });
+}
+
+}
+const getOrder=async(req,res)=>{
+    const userId=new mongoose.Types.ObjectId(req.session.user.id)
+    const currentPage=parseInt(req.query.page)||1
+    const status=req.query.status
+    const limit=4;
+    const skip =(currentPage-1)*limit
+
+const result = await orderModel.aggregate([
+    {$match:{userId:userId}},
+    {$sort:{createdAt:-1}},
+    {$facet:{
+        data:[
+            {$unwind:"$orderItems"},
+            {$skip:skip},
+            {$limit:limit}
+            ,
+            {$lookup:{
+                from:"products",
+                localField:"orderItems.productId",
+                foreignField:"_id",
+                as:"product"
+            }},
+            {$unwind:"$product"},
+            ...(status?[{$match:{"orderItems.status":status}}]:[]),
+            {$lookup:{
+                from:"variants",
+                localField:"orderItems.variantId",
+                foreignField:"_id",
+                as:"variant"
+            }},
+            {$unwind:"$variant"}
+        ],
+        totalCount:[
+            {$unwind:'$orderItems'},
+            {$count:"count"}
+        ]
+    }},
+
+]);
+const orders=result[0].data
+const totalItems=result[0].totalCount[0]?.count||0;
+const  totalPages=Math.ceil(totalItems/limit)
+res.render("./user/order-history", { 
+        orders,
+        totalPages,
+        currentPage,
+        totalItems,
+        status
+ });
+
+}
+
+const orderCancel=async(req,res)=>{
+    try {
+        const orderItemId=new mongoose.Types.ObjectId(req.params.id);
+        console.log(orderItemId)
+        const {orderId,reason}=req.body
+        const orderID=new mongoose.Types.ObjectId(orderId);
+        console.log(reason)
+        const order=await orderModel.findOne({_id:orderID},{orderItems:{$elemMatch:{_id:orderItemId}}})
+        if(!order){
+            return res.status(STATUS_CODES.NOT_FOUND).json({
+                success:false,
+                message:'Order not founded'
+            })
+        }
+       let cor= await orderModel.updateOne({_id:orderID,"orderItems._id":orderItemId},
+            {$set:{
+                "orderItems.$.status":"cancelled",
+                "orderItems.$.cancelledAt":new Date(),
+                "orderItems.$.cancellationReason":reason
+
+            }}
+        )
+        return res.status(STATUS_CODES.CREATED).json({
+            success:true,
+            message:`${orderId} order cancelled`
+        })
+    } catch (error) {
+        
+    }
+}
+const invoice=async(req,res)=>{
+    const orderItemsId=new mongoose.Types.ObjectId(req.params.id);
+    const order_id= req.query.odrId
+    const order = await orderModel.aggregate([
+  {
+    $match: { _id: new mongoose.Types.ObjectId(order_id) }
+  },
+  {
+    $unwind:"$orderItems"
+  },
+  {
+    $match:{
+        "orderItems._id":orderItemsId
+    }
+  },
+  {
+    $lookup:{
+        from:"variants",
+        localField:"orderItems.variantId",
+        foreignField:"_id",
+        as:"variant"
+    }
+  },
+  {
+    $unwind:"$variant"
+  },
+  {
+    $lookup:{
+        from:'products',
+        localField:"orderItems.productId",
+        foreignField:"_id",
+        as:"product"
+    }
+  },{
+    $unwind:"$product" 
+  },
+  {
+    $project: {
+      shippingAddress: 1,
+      orderId: 1,
+      paymentMethod: 1,
+      paymentStatus: 1,
+      totalPrice: 1,
+      finalAmount: 1,
+      createdAt: 1,
+      orderItem:"$orderItems",
+      variant:1,
+      product:1
+    }
+  }
+])
+    res.render('./user/invoice',{
+        order:order[0],
+    });
+}
+const returnReq=async(req,res)=>{
+    try {
+        const orderItemId=new mongoose.Types.ObjectId(req.params.id)
+        const {orderId,reason}=req.body
+        const existing=await orderModel.findOne({_id:new mongoose.Types.ObjectId(orderId),"orderItems._id":new mongoose.Types.ObjectId(orderItemId)})
+        if(!existing){
+             console.log('testing  here 1')
+            return res.status(STATUS_CODES.NOT_FOUND).json({
+                success:false,
+                message:"order not founded"
+            })
+        }
+        console.log('testing  here ')
+        const item=existing.orderItems.id(orderItemId)
+        if(item.status!=='delivered'){   
+            return res.status(STATUS_CODES.FORBIDDEN).json({
+                success:false,
+                message:"Return allowed only after delivery"
+            })
+        }
+        item.status='return_req';
+        item.returnReason=reason      
+        item.returnedAt=new Date();
+        await existing.save();
+        return res.status(STATUS_CODES.CREATED).json({
+            success:true,
+            message:'return requasted.'
+        })
+        
+    } catch (error) {
+        console.log(error)
+        res.status(STATUS_CODES.INTERNAL_SERVER_ERROR).json({
+            success:false,
+            message:"Internal server Error!."
+        })
+    }
 }
 
 export default {
@@ -624,6 +1457,26 @@ export default {
     getUserProfil,
     editProfileInfo,
     editProfileImg,
-    getWishlist
+    getWishlist,
+    postWishlist,
+    remWishlist,
+    getCart,
+    addCart,
+    cartQuantityUpdate,
+    getVariantData,
+    remCart,
+    getCheckout,
+    getAddressMngmnt,
+    getAddAddress,
+    geteditAddress,
+    addAddress,
+    editAddress,
+    deleteAddress,
+    getConfirmation,
+    ordConfirmation,
+    getOrder,
+    orderCancel,
+    returnReq,
+    invoice
 
 };

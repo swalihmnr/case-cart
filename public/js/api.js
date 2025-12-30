@@ -149,7 +149,6 @@ const admnLoginAxios=async(data)=>{
 
   }
 }
-let profileEmail=false
 const userProfileAxios=async(data)=>{
   try {
   let res = await api.post('/profile/info/edit',data);
@@ -175,6 +174,125 @@ const userProfileImgUplaoderAxios=async(file)=>{
   }
 }
 
+const addWishlistAxios=async(productId,variant)=>{
+
+    return await api.post('/product/wishlist/add',{
+      productId,variant
+    })
+    
+}
+const remWishlistAxios=async(id)=>{
+  try {
+    return await api.delete(`/product/wishlist/${id}/rem`)
+    
+  } catch (error) {
+    console.log(error.response+"Axios error");
+    return error.response
+  }
+}
+const productDetialAxios=async(productId,variantId)=>{
+  try {
+    return  await api.get(`/product/${productId}`)
+  } catch (error) {
+    return error.response
+  }
+}
+const getVariantDataAxios=async(productId,variantId)=>{
+    try {
+      return  await api.post(`/product/${productId}/getVariant?variantId=${variantId}`);
+
+    } catch (error) {
+      return error.response
+    }
+}
+
+
+
+const addToCartAxios=async(productId,variantId)=>{
+  try {
+  return await api.patch(`/cart/add`,{
+      variantId,
+      productId
+    })
+  } catch (error) {
+    return error.response
+  }
+}
+const quantityUpdateAxios=async(cartId,change)=>{
+  try {
+   return  await api.post(`/cart/quantity/${cartId}`,{
+      change
+    })
+    
+  } catch (error) {
+    return error.response
+  }
+}
+const removeFromCartAxios=async(productId,variantId)=>{
+  return api.patch(`/product/cart/${productId}`)
+}
+
+const addAddressAxios=async(data)=>{
+  try {
+    return await api.post(`/address/add`,{
+      data
+    })
+    
+  } catch (error) {
+    return error.response
+  }
+}
+const editAddressAxios=async(data)=>{
+  try {
+    return await api.post(`/address/edit`,{
+      data
+    })
+  } catch (error) {
+    return error.response
+  }
+}
+const deleteAddressAxios=async(addressId)=>{
+  try {
+
+    return api.patch(`/address/${addressId}/del`);
+  } catch (error) {
+    return error.response
+  }
+}
+const confirmationAxios=async(data)=>{
+  try {
+    return await api.post(`/order/confirm`,{
+      data
+    })
+    
+  } catch (error) {
+    
+  }
+}
+const ordCancelAxios=async(data,orderItemId)=>{
+  try {
+    return await api.patch(`/order/${orderItemId}/cancel`,data)
+  } catch (error) {
+   return  error.response
+  }
+}
+
+  const ordReturnAxios=async(data,orderItemId)=>{
+    try {
+      return api.patch(`/order/${orderItemId}/return`,data)
+    } catch (error) {
+      return error.response
+    }
+  }
+
+const orderInvoice=async(orderId,orderItemId)=>{
+  try {
+    console.log(orderItemId,'it is the order Id')
+    window.location.href=`/order/${orderItemId}/invoice?odrId=${orderId}`
+  } catch (error) {
+    
+  }
+}
 export default {
   userSignupAxios,
   userOtpAxios,
@@ -184,6 +302,20 @@ export default {
   resetPassAxios,
   admnLoginAxios,
   userProfileAxios,
-  userProfileImgUplaoderAxios
+  userProfileImgUplaoderAxios,
+  addWishlistAxios,
+  remWishlistAxios,
+  addToCartAxios,
+  quantityUpdateAxios,
+  productDetialAxios,
+  getVariantDataAxios,
+  removeFromCartAxios,
+  addAddressAxios,
+  editAddressAxios,
+  deleteAddressAxios,
+  confirmationAxios,
+  ordCancelAxios,
+  ordReturnAxios,
+  orderInvoice
 
 };

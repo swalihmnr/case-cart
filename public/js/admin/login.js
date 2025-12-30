@@ -47,6 +47,9 @@ import api from '../api.js'
             Password:password
           }
           let res=await  api.admnLoginAxios(data)
+          if(res.data.success){
+            location.href='/admin/dashboard'
+          }
          
     
         }

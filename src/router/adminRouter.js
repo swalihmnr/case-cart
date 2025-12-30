@@ -2,8 +2,11 @@ import upload from "../middlewares/multer.js";
 import express from "express";
 const router=express.Router()
 import adminController from "../controllers/adminController.js";
+import{requiredAdmin} from '../middlewares/auth.js'
 router.get('/login',adminController.getLogin);
 router.post('/login',adminController.postLogin);
+router.use(requiredAdmin)
+router.get("/logout", adminController.adminLogout);
 router.get('/dashboard',adminController.getDashboard)
 router.get('/customers',adminController.getCustomer)
 router.patch('/customers/block/:id',adminController.blockCustomer)
@@ -27,5 +30,9 @@ router.patch('/product/edit/:id/basic-info',adminController.editProductBasicInfo
 router.patch('/product/edit/:id/variant-data',adminController.passVariantData);
 router.post('/product/edit/:id/variant-save',adminController.postEditVariantSave);
 router.patch('/product/edit/:id/veriant-toggle',adminController.patchListUnlist)
+router.get('/order',adminController.getOrderMngmnt)
+router.patch('/order/:id/status',adminController.orderStatusChanger)
+router.patch('/order/:id/approve',adminController.reqApprove)
+router.patch('/order/:id/reject',adminController.reqReject)
 
 export default router

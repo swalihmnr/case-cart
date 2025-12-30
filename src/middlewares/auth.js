@@ -1,6 +1,7 @@
 import { STATUS_CODES } from "../utils/statusCodes.js"
 import user from "../models/userModel.js"
-import mongoose from "mongoose"
+import wishlistModel from '../models/wishlistModel.js'
+import cartModel from '../models/cartModel.js'
 export const userAuth=(req,res,next)=>{
   
   if(!req.session.user){
@@ -30,6 +31,11 @@ export const attachUser=(req,res,next)=>{
   res.locals.user=req.session.user|| null
   next()
 }
+export const attachAdmin=(req,res,next)=>{
+  res.locals.admin=req.session.admin|| null
+  next()
+}
+
 
 export const blockUser = async(req, res, next) => {
 
@@ -53,4 +59,28 @@ export const keResetPass=(req,res,next)=>{
     res.redirect('/login')
   }
 
+}
+export const wishlistCount=async(req,res,next)=>{
+  if(req.session.user?.id){
+    res.locals.wishlistcount=await wishlistModel.countDocuments({userId:req.session.user.id});
+  }else{
+    res.locals.wishlistcount=0;
+  }
+  next();
+}
+export const cartCount=async(req,res,next)=>{
+  if(req.session.user?.id){
+    res.locals.cartCount=await cartModel.countDocuments({userId:req.session.user.id});
+
+  }else{
+    res.locals.cartCount=0;
+  }
+  next();
+}
+export const requiredAdmin =async(req,res,next)=>{
+  if(req.session.admin){
+    next()
+  }else{
+    return res.redirect('/admin/login')
+  }
 }

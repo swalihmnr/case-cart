@@ -1,0 +1,180 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>My Account - CaseCart</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-gray-50">
+    <!-- Header -->
+    <header class="bg-white shadow-sm">
+        <nav class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex justify-between items-center h-16">
+                <div class="flex items-center space-x-8">
+                    <a href="#" class="text-2xl font-semibold text-purple-600">CaseCart</a>
+                    <div class="hidden md:flex space-x-6">
+                        <a href="#" class="text-gray-700 hover:text-purple-600">Home</a>
+                        <a href="#" class="text-gray-700 hover:text-purple-600">Products</a>
+                        <a href="#" class="text-gray-700 hover:text-purple-600">About</a>
+                        <a href="#" class="text-gray-700 hover:text-purple-600">Contact</a>
+                    </div>
+                </div>
+                <div class="flex items-center space-x-4">
+                    <button class="text-gray-700 hover:text-purple-600">
+                        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
+                        </svg>
+                    </button>
+                    <button class="relative text-gray-700 hover:text-purple-600">
+                        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z"></path>
+                        </svg>
+                        <span class="absolute -top-2 -right-2 bg-red-500 text-white text-xs rounded-full w-5 h-5 flex items-center justify-center">2</span>
+                    </button>
+                </div>
+            </div>
+        </nav>
+    </header>
+
+    <!-- Main Content -->
+    <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        <div class="mb-8">
+            <h1 class="text-3xl font-bold text-gray-900">My Account</h1>
+            <p class="text-gray-600 mt-1">Manage your account settings and preferences</p>
+        </div>
+
+        <div class="flex flex-col lg:flex-row gap-6">
+            <!-- Sidebar -->
+            <aside class="lg:w-64 flex-shrink-0">
+                <div class="bg-white rounded-lg shadow p-6">
+                    <!-- User Profile -->
+                    <div class="flex flex-col items-center mb-6 pb-6 border-b">
+                        <div class="w-20 h-20 bg-purple-600 rounded-full flex items-center justify-center text-white text-2xl font-semibold mb-3">
+                            JD
+                        </div>
+                        <h3 class="font-semibold text-gray-900">John Doe</h3>
+                        <p class="text-sm text-gray-600">john.doe@gmail.com</p>
+                    </div>
+
+                    <!-- Navigation Menu -->
+                    <nav class="space-y-1">
+                        <a href="#" class="flex items-center px-4 py-2 text-gray-700 hover:bg-gray-50 rounded-lg">
+                            <svg class="w-5 h-5 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"></path>
+                            </svg>
+                            Profile
+                        </a>
+                        <a href="#" class="flex items-center px-4 py-2 text-gray-700 hover:bg-gray-50 rounded-lg">
+                            <svg class="w-5 h-5 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z"></path>
+                            </svg>
+                            Orders
+                        </a>
+                        <a href="#" class="flex items-center px-4 py-2 bg-purple-50 text-purple-600 rounded-lg">
+                            <svg class="w-5 h-5 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"></path>
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"></path>
+                            </svg>
+                            Addresses
+                        </a>
+                        <a href="#" class="flex items-center px-4 py-2 text-gray-700 hover:bg-gray-50 rounded-lg">
+                            <svg class="w-5 h-5 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z"></path>
+                            </svg>
+                            Wishlist
+                        </a>
+                        <a href="#" class="flex items-center px-4 py-2 text-gray-700 hover:bg-gray-50 rounded-lg">
+                            <svg class="w-5 h-5 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"></path>
+                            </svg>
+                            Security
+                        </a>
+                        <a href="#" class="flex items-center px-4 py-2 text-red-600 hover:bg-red-50 rounded-lg mt-4">
+                            <svg class="w-5 h-5 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"></path>
+                            </svg>
+                            Logout
+                        </a>
+                    </nav>
+                </div>
+            </aside>
+
+            <!-- Main Content Area -->
+            <div class="flex-1">
+                <div class="bg-white rounded-lg shadow">
+                    <!-- Header -->
+                    <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center p-6 border-b">
+                        <h2 class="text-2xl font-bold text-gray-900 mb-4 sm:mb-0">Saved Addresses</h2>
+                        <a href="address/add">
+                        <button  class="bg-purple-600 hover:bg-purple-700 text-white px-4 py-2 rounded-lg flex items-center">
+                            <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path>
+                            </svg>
+                            Add New Address
+                        </button>
+                        </a>
+                    </div>
+
+                    <!-- Address List View -->
+                     <% addresses.forEach(address => { %>
+                      
+                        <div id="addressList" class="p-6">
+                            <div class="border rounded-lg p-6 hover:shadow-md transition-shadow">
+                                <div class="flex flex-col sm:flex-row justify-between items-start mb-4">
+                                    <div class="flex items-start space-x-2 mb-3 sm:mb-0">
+                                        <span class="inline-block bg-green-100 text-green-800 text-xs px-2 py-1 rounded"><%= address.addressType %></span>
+                                        <span class="inline-block bg-purple-100 text-purple-800 text-xs px-2 py-1 rounded"><%= address.isDefault?"Default":"" %></span>
+                                    </div>
+                                    <div class="flex space-x-2">
+                                        
+                                        <button onclick="editForm( '<%= address._id %>')" class="text-purple-600 hover:text-purple-700 px-3 py-1 border border-purple-600 rounded">Edit</button>
+                                        <button onclick="deleteAddress( '<%= address._id %>')" class="text-red-600 hover:text-red-700 px-3 py-1 border border-red-600 rounded">Delete</button>
+                                    </div>
+                                </div>
+                                <div class="text-gray-900">
+                                    <p class="font-semibold text-lg mb-2"><%= address.firstName %> <%= address.lastName %></p>
+                                    <p class="text-gray-600"><%= address.phone %></p>
+                                    <p class="text-gray-600"><%= address.streetAddress %></p>
+                                    <p class="text-gray-600"><%= address.landMark %></p>
+                                    <p class="text-gray-600"><%= address.city %>, <%= address.state %></p>
+                                    <p class="text-gray-600"><%= address.pinCode %></p>
+                                </div>
+                            </div>
+                        </div>
+                     <% }) %>
+                </div>
+            </div>
+        </div>
+    </main>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <script type="module" src="/js/user/editAddress.js"></script>
+    <script>
+        function showAddForm() {
+            document.getElementById('addressList').classList.add('hidden');
+            document.getElementById('addressForm').classList.remove('hidden');
+            // Clear form fields for new address
+            document.querySelector('#addressForm form').reset();
+        }
+
+        function showEditForm() {
+            document.getElementById('addressList').classList.add('hidden');
+            document.getElementById('addressForm').classList.remove('hidden');
+            // Form already has values for editing
+        }
+
+        function hideForm() {
+            document.getElementById('addressForm').classList.add('hidden');
+            document.getElementById('addressList').classList.remove('hidden');
+        }
+
+        // Handle form submission
+        document.querySelector('#addressForm form').addEventListener('submit', function(e) {
+            e.preventDefault();
+            // Add your form submission logic here
+            alert('Address saved successfully!');
+            hideForm();
+        });
+    </script>
+</body>
+</html>

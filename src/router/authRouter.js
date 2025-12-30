@@ -7,8 +7,8 @@ const router = express.Router();
 router.get("/google", authController.googleAuth);
 
 router.get("/google/callback",authController.googleAuthCallback,(req, res) => {
-    console.log(req.user+'it is the truee')
    req.session.user = {
+            id:req.user._id,
             name: `${req.user.firstName} ${req.user.lastName}`,
             
             email: req.user.email,
