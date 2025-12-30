@@ -293,6 +293,13 @@ const orderInvoice=async(orderId,orderItemId)=>{
     
   }
 }
+const changePasswordAxios=async(data)=>{
+try { 
+  return await api.post('/password/reset',data)
+} catch (error) {
+  return error.response
+}
+}
 export default {
   userSignupAxios,
   userOtpAxios,
@@ -316,6 +323,7 @@ export default {
   confirmationAxios,
   ordCancelAxios,
   ordReturnAxios,
-  orderInvoice
+  orderInvoice,
+  changePasswordAxios
 
 };

@@ -15,6 +15,7 @@ import orderModel from '../models/orderModel.js'
 
 
 
+
 let getLogin=(req,res)=>{
     req.session.isKey=false
     res.render('./user/userLogin')
@@ -1436,7 +1437,44 @@ const returnReq=async(req,res)=>{
         })
     }
 }
+const getSecurity=(req,res)=>{
+    res.render('./user/security')
+}
+const resetPass=async(req,res)=>{
+const {currentPassword,newPassword}=req.body
+const userId=new mongoose.Types.ObjectId(req.session.user.id);
+try {
+    const User=await user.findOne({_id:userId});
+    if(!User){
+        return res.status(STATUS_CODES.NOT_FOUND).json({
+            success:false,
+            message:"user not found"
+        })
+    }
 
+    const isMatch=await bcrypt.compare(currentPassword,User.password);
+    if(!isMatch){
+        return res.status(STATUS_CODES.NOT_FOUND).json({
+            success:false,
+            message:"Current Password not Match"
+        })
+    }
+    const salt_round=Number(process.env.SALT_ROUND)
+    const hashedPassword= await bcrypt.hash(newPassword,salt_round)
+    User.password=hashedPassword;;
+    await User.save()
+    return res.status(STATUS_CODES.OK).json({
+        success:false,
+        message:"Password Updated."
+    })  
+    
+} catch (error) {
+    return status(STATUS_CODES.INTERNAL_SERVER_ERROR).json({
+        success:false,
+        message:"Internal server Error!"
+    })
+}
+}
 export default {
     getLogin,
     postLogin,
@@ -1457,6 +1495,8 @@ export default {
     getUserProfil,
     editProfileInfo,
     editProfileImg,
+    getSecurity,
+    resetPass,
     getWishlist,
     postWishlist,
     remWishlist,

@@ -26,6 +26,8 @@ router.post('/product/:id/getVariant',userController.getVariantData)
 router.get('/user-profile',userAuth,blockUser,userController.getUserProfil);
 router.post('/profile/info/edit',userAuth,userController.editProfileInfo);
 router.patch('/profile/edit/img',upload.single('image'),userController.editProfileImg)
+router.get('/security',userAuth,userController.getSecurity);
+router.post('/password/reset',userAuth,userController.resetPass)
 router.get('/wishlist',userAuth,blockUser,userController.getWishlist)
 router.post('/product/wishlist/add',userAuth,userController.postWishlist);
 router.delete('/product/wishlist/:id/rem',userController.remWishlist)

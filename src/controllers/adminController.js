@@ -17,7 +17,7 @@ const getLogin=(req,res)=>{
 }
  const adminLogout = (req, res) => {
   try {
-    req.session.admin = null;     // remove admin session
+    req.session.admin = null;     
     req.session.destroy(err => {
       if (err) {
         return res.status(500).json({
@@ -26,7 +26,7 @@ const getLogin=(req,res)=>{
         });
       }
 
-      res.clearCookie("connect.sid"); // default session cookie
+      res.clearCookie("connect.sid"); 
       return res.redirect("/admin/login");
     });
   } catch (error) {
