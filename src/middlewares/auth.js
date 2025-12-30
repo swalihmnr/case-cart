@@ -31,6 +31,11 @@ export const attachUser=(req,res,next)=>{
   res.locals.user=req.session.user|| null
   next()
 }
+export const attachAdmin=(req,res,next)=>{
+  res.locals.admin=req.session.admin|| null
+  next()
+}
+
 
 export const blockUser = async(req, res, next) => {
 

@@ -1304,10 +1304,6 @@ const result = await orderModel.aggregate([
 const orders=result[0].data
 const totalItems=result[0].totalCount[0]?.count||0;
 const  totalPages=Math.ceil(totalItems/limit)
-console.log(orders,totalPages,
-    currentPage,
-    totalItems
-)
 res.render("./user/order-history", { 
         orders,
         totalPages,
@@ -1350,7 +1346,6 @@ const orderCancel=async(req,res)=>{
 }
 const invoice=async(req,res)=>{
     const orderItemsId=new mongoose.Types.ObjectId(req.params.id);
-    console.log(req.query)
     const order_id= req.query.odrId
     const order = await orderModel.aggregate([
   {
@@ -1400,17 +1395,48 @@ const invoice=async(req,res)=>{
     }
   }
 ])
-
-console.log(order,"it is working properly")
     res.render('./user/invoice',{
         order:order[0],
     });
 }
-
-
-const example=(req,res)=>{
-    res.render('./user/home')
+const returnReq=async(req,res)=>{
+    try {
+        const orderItemId=new mongoose.Types.ObjectId(req.params.id)
+        const {orderId,reason}=req.body
+        const existing=await orderModel.findOne({_id:new mongoose.Types.ObjectId(orderId),"orderItems._id":new mongoose.Types.ObjectId(orderItemId)})
+        if(!existing){
+             console.log('testing  here 1')
+            return res.status(STATUS_CODES.NOT_FOUND).json({
+                success:false,
+                message:"order not founded"
+            })
+        }
+        console.log('testing  here ')
+        const item=existing.orderItems.id(orderItemId)
+        if(item.status!=='delivered'){   
+            return res.status(STATUS_CODES.FORBIDDEN).json({
+                success:false,
+                message:"Return allowed only after delivery"
+            })
+        }
+        item.status='return_req';
+        item.returnReason=reason      
+        item.returnedAt=new Date();
+        await existing.save();
+        return res.status(STATUS_CODES.CREATED).json({
+            success:true,
+            message:'return requasted.'
+        })
+        
+    } catch (error) {
+        console.log(error)
+        res.status(STATUS_CODES.INTERNAL_SERVER_ERROR).json({
+            success:false,
+            message:"Internal server Error!."
+        })
+    }
 }
+
 export default {
     getLogin,
     postLogin,
@@ -1450,7 +1476,7 @@ export default {
     ordConfirmation,
     getOrder,
     orderCancel,
-    invoice,
-    example
+    returnReq,
+    invoice
 
 };

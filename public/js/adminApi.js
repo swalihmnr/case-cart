@@ -93,8 +93,32 @@ const editVariantSaveAxios=async(id,data)=>{
 const toggleListUnlistAxios=async(id)=>{
   return await api.patch(`/admin/product/edit/${id}/veriant-toggle`)
 };
-const updateStatus=(data)=>{
-  
+const updateStatus=async(selectedValue,orderId,orderItemId)=>{
+  try {
+    return await api.patch(`/admin/order/${orderId}/status`,{
+      orderItemId,selectedValue
+    })
+  } catch (error) {
+    return error.response
+  }
+}
+const reqApproveAxios=async(orderId,itemId)=>{
+  try {
+    return api.patch(`/admin/order/${orderId}/approve`,{
+      itemId
+    })
+  } catch (error) {
+    return error.response
+  }
+}
+const reqRejectAxios=async(orderId,itemId)=>{
+  try {
+    return api.patch(`/admin/order/${orderId}/reject`,{
+      itemId
+    })
+  } catch (error) {
+    return error.response
+  }
 }
 export default {
     addCategoryAxios,
@@ -110,5 +134,8 @@ export default {
     editProductBasicInfoAxios,
     variantDetialsAxios,
     editVariantSaveAxios,
-    toggleListUnlistAxios
+    toggleListUnlistAxios,
+    updateStatus,
+    reqApproveAxios,
+    reqRejectAxios
 } 

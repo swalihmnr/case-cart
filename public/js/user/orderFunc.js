@@ -1,4 +1,12 @@
 import api from "../api.js";
+const  within7Days=(date)=>{
+     const now =new Date();
+     const deliveredDate=new Date(date);
+     const diffInMs = now - deliveredDate;
+     const diffInDays = diffInMs / (1000 * 60 * 60 * 24);
+     return diffInDays <= 7;
+
+}
 window.showOrderDetails = function (orderId,productId,orderItemId,) {
 
         const order = ordersData.find(o => o.orderItems._id === orderItemId);
@@ -20,57 +28,167 @@ window.showOrderDetails = function (orderId,productId,orderItemId,) {
         
         document.getElementById('modalContent').innerHTML = `
             <div class="mb-6">
-                <div class="flex items-center space-x-2 mb-4">
-                    <div class="w-3 h-3 bg-green-500 rounded-full"></div>
-                    <span class="text-green-600 font-medium">${order.orderItems.status}</span>
-                    <span class="text-gray-500 text-sm">Placed on ${placedOn}</span>
-                </div>
-            </div>
+    <div class="flex items-center space-x-2 mb-4">
+        <div class="w-3 h-3 bg-green-500 rounded-full"></div>
+        <span class="text-green-600 font-medium">${order.orderItems.status}</span>
+        <span class="text-gray-500 text-sm">Placed on ${placedOn}</span>
+    </div>
+</div>
 
-            <!-- Track Order Section -->
-            <div class="mb-6 bg-gray-50 p-4 rounded-lg">
-                <h4 class="font-semibold text-gray-800 mb-3">TRACK YOUR ORDER</h4>
-                <div class="flex items-center justify-between mb-3">
-                    <div class="text-center">
-                        <div class="w-8 h-8 rounded-full bg-green-500 flex items-center justify-center mx-auto mb-1">
-                            <svg class="w-4 h-4 text-white" fill="currentColor" viewBox="0 0 20 20">
-                                <path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"/>
-                            </svg>
-                        </div>
-                        <p class="text-xs font-medium text-green-600">Order Placed</p>
-                    </div>
-                    <div class="flex-1 h-1 bg-green-200"></div>
-                    <div class="text-center">
-                        <div class="w-8 h-8 rounded-full ${order.orderItems.status === 'Processing' || order.orderItems.status === 'Shipped' || order.orderItems.status === 'Delivered' ? 'bg-green-500' : 'bg-gray-300'} flex items-center justify-center mx-auto mb-1">
-                            <svg class="w-4 h-4 ${order.orderItems.status === 'Processing' || order.orderItems.status === 'Shipped' || order.orderItems.status === 'Delivered' ? 'text-white' : 'text-gray-400'}" fill="currentColor" viewBox="0 0 20 20">
-                                <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm1-11a1 1 0 10-2 0v3.586L7.707 9.293a1 1 0 00-1.414 1.414l3 3a1 1 0 001.414 0l3-3a1 1 0 00-1.414-1.414L11 10.586V7z" clip-rule="evenodd"/>
-                            </svg>
-                        </div>
-                        <p class="text-xs font-medium ${order.orderItems.status === 'Processing' || order.orderItems.status === 'Shipped' || order.orderItems.status === 'Delivered' ? 'text-green-600' : 'text-gray-500'}">Processing</p>
-                    </div>
-                    <div class="flex-1 h-1 ${order.orderItems.status === 'Shipped' || order.orderItems.status === 'Delivered' ? 'bg-green-200' : 'bg-gray-200'}"></div>
-                    <div class="text-center">
-                        <div class="w-8 h-8 rounded-full ${order.orderItems.status === 'Shipped' || order.orderItems.status === 'Delivered' ? 'bg-green-500' : 'bg-gray-300'} flex items-center justify-center mx-auto mb-1">
-                            <svg class="w-4 h-4 ${order.orderItems.status === 'Shipped' || order.orderItems.status === 'Delivered' ? 'text-white' : 'text-gray-400'}" fill="currentColor" viewBox="0 0 20 20">
-                                <path d="M8 16.5a1.5 1.5 0 11-3 0 1.5 1.5 0 013 0zM15 16.5a1.5 1.5 0 11-3 0 1.5 1.5 0 013 0z"/>
-                                <path d="M3 4a1 1 0 00-1 1v10a1 1 0 001 1h1.05a2.5 2.5 0 014.9 0H10a1 1 0 001-1v-1h4v1a1 1 0 001 1h1.05a2.5 2.5 0 014.9 0H20a1 1 0 001-1V5a1 1 0 00-1-1H3zM14 7h-3v5h3V7zm-6 0v5h3V7H8z"/>
-                            </svg>
-                        </div>
-                        <p class="text-xs font-medium ${order.orderItems.status === 'Shipped' || order.orderItems.status === 'Delivered' ? 'text-green-600' : 'text-gray-500'}">Shipped</p>
-                    </div>
-                    <div class="flex-1 h-1 ${order.orderItems.status === 'Delivered' ? 'bg-green-200' : 'bg-gray-200'}"></div>
-                    <div class="text-center">
-                        <div class="w-8 h-8 rounded-full ${order.orderItems.status === 'Delivered' ? 'bg-green-500' : 'bg-gray-300'} flex items-center justify-center mx-auto mb-1">
-                            <svg class="w-4 h-4 ${order.orderItems.status === 'Delivered' ? 'text-white' : 'text-gray-400'}" fill="currentColor" viewBox="0 0 20 20">
-                                <path d="M10.707 2.293a1 1 0 00-1.414 0l-7 7a1 1 0 001.414 1.414L4 10.414V17a1 1 0 001 1h2a1 1 0 001-1v-2a1 1 0 011-1h2a1 1 0 011 1v2a1 1 0 001 1h2a1 1 0 001-1v-6.586l.293.293a1 1 0 001.414-1.414l-7-7z"/>
-                            </svg>
-                        </div>
-                        <p class="text-xs font-medium ${order.orderItems.status === 'Delivered' ? 'text-green-600' : 'text-gray-500'}">Delivered</p>
-                    </div>
-                </div>
-                
-                
+<!-- Track Order Section -->
+<div class="mb-6 bg-gray-50 p-4 rounded-lg">
+    <h4 class="font-semibold text-gray-800 mb-3">TRACK YOUR ORDER</h4>
+    
+    <div class="flex items-center justify-between mb-3">
+        
+        <!-- Order Placed -->
+        <div class="text-center">
+            <div class="w-8 h-8 rounded-full ${
+                order.orderItems.status === 'cancelled'
+                ? 'bg-gray-300'
+                : 'bg-green-500'
+            } flex items-center justify-center mx-auto mb-1">
+                <svg class="w-4 h-4 ${
+                    order.orderItems.status === 'cancelled'
+                    ? 'text-gray-400'
+                    : 'text-white'
+                }" fill="currentColor" viewBox="0 0 20 20">
+                    <path d="M16.7 5.3l-8 8-4-4"/>
+                </svg>
             </div>
+            <p class="text-xs ${
+                order.orderItems.status === 'cancelled'
+                ? 'text-gray-500'
+                : 'text-green-600'
+            }">Order Placed</p>
+        </div>
+        
+        <div class="flex-1 h-1 ${
+            order.orderItems.status === 'cancelled'
+            ? 'bg-gray-200'
+            : 'bg-green-200'
+        }"></div>
+        
+        <!-- Processing -->
+        <div class="text-center">
+            <div class="w-8 h-8 rounded-full ${
+                ['processing','shipped','out_for_delivery','delivered','return_req'].includes(order.orderItems.status)
+                ? 'bg-green-500'
+                : 'bg-gray-300'
+            } flex items-center justify-center mx-auto mb-1">
+                <svg class="w-4 h-4 ${
+                    ['processing','shipped','out_for_delivery','delivered','return_req'].includes(order.orderItems.status)
+                    ? 'text-white'
+                    : 'text-gray-400'
+                }" fill="currentColor" viewBox="0 0 20 20">
+                    <circle cx="10" cy="10" r="8"/>
+                </svg>
+            </div>
+            <p class="text-xs ${
+                ['processing','shipped','out_for_delivery','delivered','return_req'].includes(order.orderItems.status)
+                ? 'text-green-600'
+                : 'text-gray-500'
+            }">Processing</p>
+        </div>
+        
+        <div class="flex-1 h-1 ${
+            ['shipped','out_for_delivery','delivered','return_req'].includes(order.orderItems.status)
+            ? 'bg-green-200'
+            : 'bg-gray-200'
+        }"></div>
+        
+        <!-- Shipped -->
+        <div class="text-center">
+            <div class="w-8 h-8 rounded-full ${
+                ['shipped','out_for_delivery','delivered','return_req'].includes(order.orderItems.status)
+                ? 'bg-green-500'
+                : 'bg-gray-300'
+            } flex items-center justify-center mx-auto mb-1">
+                <svg class="w-4 h-4 ${
+                    ['shipped','out_for_delivery','delivered','return_req'].includes(order.orderItems.status)
+                    ? 'text-white'
+                    : 'text-gray-400'
+                }" fill="currentColor" viewBox="0 0 20 20">
+                    <rect x="3" y="6" width="14" height="8"/>
+                </svg>
+            </div>
+            <p class="text-xs ${
+                ['shipped','out_for_delivery','delivered','return_req'].includes(order.orderItems.status)
+                ? 'text-green-600'
+                : 'text-gray-500'
+            }">Shipped</p>
+        </div>
+        
+        <div class="flex-1 h-1 ${
+            ['out_for_delivery','delivered','return_req'].includes(order.orderItems.status)
+            ? 'bg-green-200'
+            : 'bg-gray-200'
+        }"></div>
+        
+        <!-- Out for Delivery -->
+        <div class="text-center">
+            <div class="w-8 h-8 rounded-full ${
+                ['out_for_delivery','delivered','return_req','returned'].includes(order.orderItems.status)
+                ? 'bg-green-500'
+                : 'bg-gray-300'
+            } flex items-center justify-center mx-auto mb-1">
+                <svg class="w-4 h-4 ${
+                    ['out_for_delivery','delivered','return_req','returned'].includes(order.orderItems.status)
+                    ? 'text-white'
+                    : 'text-gray-400'
+                }" fill="currentColor" viewBox="0 0 20 20">
+                    <path d="M13 6l3 3-3 3M7 6l-3 3 3 3"/>
+                </svg>
+            </div>
+            <p class="text-xs ${
+                ['out_for_delivery','delivered','return_req','returned'].includes(order.orderItems.status)
+                ? 'text-green-600'
+                : 'text-gray-500'
+            }">Out for Delivery</p>
+        </div>
+        
+        <div class="flex-1 h-1 ${
+            order.orderItems.status === 'delivered' || order.orderItems.status === 'return_req' || order.orderItems.status === 'returned'
+            ? 'bg-green-200'
+            : 'bg-gray-200'
+        }"></div>
+        
+        <!-- Delivered -->
+        <div class="text-center">
+            <div class="w-8 h-8 rounded-full ${
+                ['delivered','return_req','returned'].includes(order.orderItems.status)
+                ? 'bg-green-500'
+                : 'bg-gray-300'
+            } flex items-center justify-center mx-auto mb-1">
+                <svg class="w-4 h-4 ${
+                    ['delivered','return_req','returned'].includes(order.orderItems.status)
+                    ? 'text-white'
+                    : 'text-gray-400'
+                }" fill="currentColor" viewBox="0 0 20 20">
+                    <path d="M2 10l8-8 8 8"/>
+                </svg>
+            </div>
+            <p class="text-xs ${
+                ['delivered','return_req','returned'].includes(order.orderItems.status)
+                ? 'text-green-600'
+                : 'text-gray-500'
+            }">Delivered</p>
+        </div>
+        
+    </div>
+    
+    ${
+        order.orderItems.status === 'cancelled'
+        ? `<p class="text-sm text-red-600 font-semibold text-center mt-2">
+            ❌ Order Cancelled
+           </p>`
+        : order.orderItems.status === 'return_req'
+        ? `<p class="text-sm text-red-600 font-semibold text-center mt-2">
+              Order Return Requested
+           </p>`
+        : ''
+    }
+</div>
 
             <div class="mb-6">
                 <h4 class="font-semibold text-gray-800 mb-4">ORDER ITEM</h4>
@@ -125,23 +243,69 @@ window.showOrderDetails = function (orderId,productId,orderItemId,) {
             </div>
 
            <div class="flex justify-between">
-  ${
-    order.orderItems.status === 'cancelled'
-      ? `
-        <button 
-          disabled
-          class="px-6 py-2 border border-gray-300 text-gray-400 cursor-not-allowed rounded-lg">
-          Cancelled
-        </button>
-      `
-      : `
-        <button 
-          onclick="showCancelModal('${order.orderId}','${order._id}','${order.orderItems._id}')" 
-          class="px-6 py-2 border border-gray-300 rounded-lg text-gray-600 hover:bg-gray-50">
-          Cancel Order
-        </button>
-      `
-  }
+${
+  // ❌ Cancelled / Return Requested / Returned
+  ['cancelled', 'return_req', 'returned'].includes(order.orderItems.status)
+    ? `
+      <button 
+        disabled
+        class="px-6 py-2 border border-gray-300 text-gray-400 cursor-not-allowed rounded-lg">
+        Not Available
+      </button>
+    `
+
+  // ❌ Return rejected by admin
+  : order.orderItems.status === 'delivered'
+    && order.orderItems.isReject === true
+    ? `
+      <button 
+        disabled
+        class="px-6 py-2 border border-red-300 text-red-400 cursor-not-allowed rounded-lg">
+        Return Rejected
+      </button>
+    `
+
+  // 🔄 Delivered + within 7 days → Return allowed
+  : order.orderItems.status === 'delivered'
+    && within7Days(order.orderItems.deliveredAt)
+    ? `
+      <button 
+        onclick="showReturnModal('${order.orderId}','${order._id}','${order.orderItems._id}')"
+        class="px-6 py-2 border border-yellow-400 rounded-lg text-yellow-600 hover:bg-yellow-50">
+        Return Order
+      </button>
+    `
+
+  // ❌ Delivered but return window expired
+  : order.orderItems.status === 'delivered'
+    ? `
+      <button 
+        disabled
+        class="px-6 py-2 border border-gray-300 text-gray-400 cursor-not-allowed rounded-lg">
+        Return Period Expired
+      </button>
+    `
+
+  // ❌ Shipped or Out for Delivery
+  : ['shipped', 'out_for_delivery'].includes(order.orderItems.status)
+    ? `
+      <button 
+        disabled
+        class="px-6 py-2 border border-gray-300 text-gray-400 cursor-not-allowed rounded-lg">
+        Cannot Cancel Now
+      </button>
+    `
+
+  // ✅ Before shipping → Cancel allowed
+  : `
+      <button 
+        onclick="showCancelModal('${order.orderId}','${order._id}','${order.orderItems._id}')"
+        class="px-6 py-2 border border-gray-300 rounded-lg text-gray-600 hover:bg-gray-50">
+        Cancel Order
+      </button>
+    `
+}
+
 
   <button 
     onclick="invoice('${order.orderId}','${order._id}','${order.orderItems._id}')" 
@@ -215,6 +379,61 @@ window.closeAllModals = function () {
         Swal.fire(
             'Something Went wrong!',
             `Order #${orderId} not has been cancelled.`,
+            'success'
+          ).then(()=>{
+              location.reload()
+          })
+      }
+    }
+  });
+};
+
+ window.showReturnModal = function (orderId, orderID, orderItemId) {
+  Swal.fire({
+    title: 'Return Order?',
+    text: `Are you sure you want to return order #${orderId}?`,
+    icon: 'warning',
+
+    input: 'textarea',
+    inputLabel: 'Reason for Return',
+    inputPlaceholder: 'Enter your reason...',
+    inputAttributes: {
+      'aria-label': 'Reason for return '
+    },
+
+    showCancelButton: true,
+    confirmButtonColor: '#dc2626',
+    cancelButtonColor: '#6b7280',
+    confirmButtonText: 'Yes, cancel it!',
+    cancelButtonText: 'No, keep it',
+
+    preConfirm: (reason) => {
+      if (!reason || !reason.trim()) {
+        Swal.showValidationMessage('Please provide a reason for cancellation');
+        return false;
+      }
+      return reason.trim();
+    }
+  }).then(async (result) => {
+    if (result.isConfirmed) {
+      const reason = result.value;
+    const data={
+        orderId: orderID,
+        reason
+      }
+      let res=await api.ordReturnAxios(data,orderItemId);
+      if(res.data.success){
+          Swal.fire(
+            'Returned requast Success!',
+            `Order #${orderId} has been Returned.`,
+            'success'
+          ).then(()=>{
+              location.reload()
+          })
+      }else{
+        Swal.fire(
+            'Something Went wrong!',
+            `Order #${orderId} not has been Returned.`,
             'success'
           ).then(()=>{
               location.reload()

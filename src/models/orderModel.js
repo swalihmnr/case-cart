@@ -82,6 +82,11 @@ const orderSchema = new Schema({
         ref: "variant",
         required: true
       },
+      paymentStatus: {
+      type: String,
+      enum: ["pending", "initiated", "paid", "failed"],
+      required: true
+      },
       quantity: {
         type: Number,
         required: true
@@ -91,18 +96,20 @@ const orderSchema = new Schema({
         required: true
       },
 
-      status: {
-        type: String,
-        enum: ["processing", "shipped", "delivered", "cancelled", "returned"],
-        default: "processing"
-      },
-      invoiceNumber:String,
-      invoiceCreatedAt:Date,
+    status: {
+  type: String,
+  enum: ["placed","confirmed","processing","shipped","out_for_delivery","delivered","cancelled","returned","return_req"],
+  default: "placed"},
       invoiceGenerated:{
         type:Boolean,
         default:false
 
       },
+      isReject:{
+        type:Boolean,
+        default:false
+      }
+      ,
       shippedAt: Date,
       deliveredAt: Date,
       cancelledAt: Date,

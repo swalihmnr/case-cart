@@ -276,6 +276,15 @@ const ordCancelAxios=async(data,orderItemId)=>{
    return  error.response
   }
 }
+
+  const ordReturnAxios=async(data,orderItemId)=>{
+    try {
+      return api.patch(`/order/${orderItemId}/return`,data)
+    } catch (error) {
+      return error.response
+    }
+  }
+
 const orderInvoice=async(orderId,orderItemId)=>{
   try {
     console.log(orderItemId,'it is the order Id')
@@ -306,6 +315,7 @@ export default {
   deleteAddressAxios,
   confirmationAxios,
   ordCancelAxios,
+  ordReturnAxios,
   orderInvoice
 
 };
