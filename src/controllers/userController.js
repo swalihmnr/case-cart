@@ -1406,13 +1406,11 @@ const returnReq=async(req,res)=>{
         const {orderId,reason}=req.body
         const existing=await orderModel.findOne({_id:new mongoose.Types.ObjectId(orderId),"orderItems._id":new mongoose.Types.ObjectId(orderItemId)})
         if(!existing){
-             console.log('testing  here 1')
             return res.status(STATUS_CODES.NOT_FOUND).json({
                 success:false,
                 message:"order not founded"
             })
         }
-        console.log('testing  here ')
         const item=existing.orderItems.id(orderItemId)
         if(item.status!=='delivered'){   
             return res.status(STATUS_CODES.FORBIDDEN).json({
@@ -1466,7 +1464,7 @@ try {
     return res.status(STATUS_CODES.OK).json({
         success:false,
         message:"Password Updated."
-    })  
+    })      
     
 } catch (error) {
     return status(STATUS_CODES.INTERNAL_SERVER_ERROR).json({

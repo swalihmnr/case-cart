@@ -2,6 +2,13 @@ import { STATUS_CODES } from "../utils/statusCodes.js"
 import user from "../models/userModel.js"
 import wishlistModel from '../models/wishlistModel.js'
 import cartModel from '../models/cartModel.js'
+export const notUser=(req,res,next)=>{
+  
+  if(!req.session.user){
+    return next()
+  }
+  return res.status(STATUS_CODES.UNAUTHORIZED).redirect('/login')
+}
 export const userAuth=(req,res,next)=>{
   
   if(!req.session.user){
