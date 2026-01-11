@@ -119,7 +119,7 @@
                            Processing
                          </p>
                          <p class="text-sm text-gray-400">
-                           <%= formatDateTime(order.orderItems[0].processingAt) %>
+                           <%= formatDateTime(order.orderItems.createdAt) %>
                          </p>
                        </div>
                      </div>
@@ -140,7 +140,7 @@
                               Shipped
                             </p>
                             <p class="text-sm text-gray-400">
-                              <%= formatDateTime(order.orderItems[0].shippedAt) %>
+                              <%= formatDateTime(order.orderItems.shippedAt) %>
                             </p>
                           </div>
                         </div>
@@ -161,7 +161,7 @@
                            Delivered
                          </p>
                          <p class="text-sm text-gray-400">
-                           <%= formatDateTime(order.orderItems[0].deliveredAt) %>
+                           <%= formatDateTime(order.orderItems.deliveredAt) %>
                          </p>
                        </div>
                      </div>

@@ -15,7 +15,9 @@ import api from "../api.js";
                      title: 'added to cart',
                      text: res.data.message,
                      confirmButtonColor: '#667eea'
-      });
+                    }).then(()=>{
+                        location.reload()
+                    })
             }else{
                  Swal.fire({
                      icon: 'warning',
@@ -82,12 +84,6 @@ import api from "../api.js";
         }
     }
 
-    function proceedToCheckout() {
-        showToast('Redirecting to checkout...');
-        setTimeout(() => {
-            window.location.href = 'checkout.html';
-        }, 1000);
-    }
 
     function showToast(message) {
         const toast = document.getElementById('toast');
@@ -122,7 +118,6 @@ async function removeFromCart(productId,variantId) {
     window.updateQuantity = updateQuantity;
     window.removeItem = removeItem;
     window.applyPromo = applyPromo;
-    window.proceedToCheckout = proceedToCheckout;
     window.showToast = showToast;
 
     // Initialize

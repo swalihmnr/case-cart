@@ -300,15 +300,26 @@
   <!-- Product Details -->
                             <div class="flex-1">
                                 <h4 class="font-semibold text-gray-800 text-sm">Tropical Leaf</h4>
-                                <p class="text-xs text-gray-500">Qty: <%= item.quantity %> </p>
-                                 <p class="text-xs text-gray-500">Per:<%= item.variant.salePrice %></p>
+                                <p class="text-xs text-gray-500">
+                                  Qty: <%= item.quantity || 1 %>
+                                </p>
+                                
+                               <p class="text-xs text-gray-500">
+                                 Per:
+                                 <%= item.variant ? item.variant.salePrice : item.salePrice %>
+                               </p>
+                               
                             </div>
                         
                         <!-- Price -->
-                        <span class="font-semibold text-gray-800">
-                            ₹ <%= item.quantity *item.variant.salePrice %>
-                        </span>
+                      <span class="font-semibold text-gray-800">
+                        ₹ <%= (item.quantity || 1) * (item.variant ? item.variant.salePrice : item.salePrice) %>
+                      </span>
+                      
+                        
+                        
                     </div>
+                    
                     <% }) %>
 
 

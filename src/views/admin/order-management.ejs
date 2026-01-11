@@ -265,8 +265,8 @@
                                                  alt="Product" 
                                                  class="w-20 h-20 object-cover rounded-xl">
                                             <div class="flex-1">
-                                                <h5 class="text-sm font-medium text-gray-900 mb-1"><%= order.product.productName %></h5>
-                                                <p class="text-xs text-gray-500 mb-2"><%= order.product.brand || 'Brand' %></p>
+                                                <h5 class="text-sm font-medium text-gray-900 mb-1"><%= order.product.name %></h5>
+                                                <p class="text-xs text-gray-500 mb-2"><%= order.variant.deviceModel %></p>
                                                 <div class="flex items-center justify-between">
                                                     <span class="text-xs text-gray-500">Qty: <%= order.orderItems.quantity %></span>
                                                     <span class="text-sm font-semibold text-gray-900">₹<%= order.orderItems.price %></span>

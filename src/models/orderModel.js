@@ -8,7 +8,7 @@ function generateOrderId() {
 const orderSchema = new Schema({
  orderId:{
   type:String,
-  default:generateOrderId(),
+  default:generateOrderId,
   unique:true
  },
   userId: {

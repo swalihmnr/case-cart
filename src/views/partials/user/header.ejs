@@ -208,22 +208,19 @@
                                             <%= user && user.lastName ? user.lastName : '' %>
                                         </h3>
                                         <p class="text-sm text-gray-500"><%= user && user.email ? user.email : '' %></p>
-                                        <p class="text-xs text-purple-600 font-medium mt-1">
-                                            <i class="fas fa-crown mr-1"></i>
-                                            Premium Member
-                                        </p>
+                                        
                                     </div>
                                 </div>
                                 
                                 <!-- Menu Links -->
                                 <div class="space-y-2 mb-4">
-                                    <a href="/profile" class="flex items-center space-x-3 p-2 rounded-lg hover:bg-gray-50 transition">
+                                    <a href="/user-profile" class="flex items-center space-x-3 p-2 rounded-lg hover:bg-gray-50 transition">
                                         <div class="w-8 h-8 bg-purple-100 rounded-lg flex items-center justify-center text-purple-600">
                                             <i class="fas fa-user text-sm"></i>
                                         </div>
                                         <span class="text-gray-700 font-medium">My Profile</span>
                                     </a>
-                                    <a href="/orders" class="flex items-center space-x-3 p-2 rounded-lg hover:bg-gray-50 transition">
+                                    <a href="/order" class="flex items-center space-x-3 p-2 rounded-lg hover:bg-gray-50 transition">
                                         <div class="w-8 h-8 bg-blue-100 rounded-lg flex items-center justify-center text-blue-600">
                                             <i class="fas fa-shopping-bag text-sm"></i>
                                         </div>
@@ -247,7 +244,7 @@
                                 </div>
                                 
                                 <!-- Stats -->
-                                <div class="grid grid-cols-2 gap-3 mb-4 pb-4 border-b border-gray-100">
+                                <!-- <div class="grid grid-cols-2 gap-3 mb-4 pb-4 border-b border-gray-100">
                                     <div class="text-center p-2 bg-gray-50 rounded-lg">
                                         <div class="text-lg font-bold text-purple-600">12</div>
                                         <div class="text-xs text-gray-500">Orders</div>
@@ -256,7 +253,7 @@
                                         <div class="text-lg font-bold text-purple-600">₹8,450</div>
                                         <div class="text-xs text-gray-500">Spent</div>
                                     </div>
-                                </div>
+                                </div> -->
                                 
                                 <!-- Logout -->
                                 <a href="/logout" class="flex items-center justify-center space-x-2 w-full bg-red-50 text-red-600 px-4 py-3 rounded-lg hover:bg-red-100 transition font-medium">

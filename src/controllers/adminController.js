@@ -289,7 +289,6 @@ const postEditCategory=async(req,res)=>{
         const {categoryName,categoryDescription}=req.body
         let id=req.params.id
         console.log(id)
-        const objectId=new mongoose.Types.ObjectId(id)
         const existing=await Category.findOne({_id:id})
         if(existing){
             const isDuplecate=await Category.findOne({_id:{$ne:id},name:categoryName})
@@ -352,7 +351,7 @@ if (filter !== "Select Category") {
 
     const currentPage=page
     const totalItems= await productModel.find(searchFilter).countDocuments()
-    const products= await productModel.find(searchFilter).populate('variants').populate('catgId').skip((page-1)*limit).limit(limit)
+    const products= await productModel.find(searchFilter).populate('variants').populate('catgId').sort({createdAt:-1}).skip((page-1)*limit).limit(limit)
     console.log(page,"it page number")
     let totalStock;
    products.forEach(product => {
@@ -400,32 +399,34 @@ try {
         isMain: Number(mainImageIndex) === index,
     }));
 
-        const parsedDevices=JSON.parse(devices);
-        console.log(parsedDevices)
-
+    
+    const newProduct=await productModel.create({
+        name:productName,
+        description:description,
+        productStatus:status==="active"?true:false,
+        catgId: new mongoose.Types.ObjectId(category),
+        productImages:productImgUrls
+        
+    })
+    const parsedDevices=JSON.parse(devices);
         const variants = await variantModel.insertMany(
             parsedDevices.map(v => ({
+                productId:newProduct._id,
                 deviceModel: v.name,
                 orgPrice: v.originalPrice,
                 salePrice: v.salePrice,
                 stock: v.stock,
                 discount: v.discount
+                
             }))
         );
-      const vairantsID=variants.map((v)=>{
-         return v._id
-      })
+        newProduct.variants=variants.map((v)=>{
+            return v._id
+        })
+        await newProduct.save()
      
       
-        const newProduct=await productModel.create({
-            name:productName,
-            description:description,
-            productStatus:status==="active"?true:false,
-            catgId: new mongoose.Types.ObjectId(category),
-            variants:vairantsID,
-            productImages:productImgUrls
-            
-        })
+        
     return  res.status(200).json({
            success:true,
            message:"Product uploading  Successfully",

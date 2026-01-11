@@ -18,7 +18,6 @@ const api = axios.create({
     if (res.data.success && res.data.redirectUrl) {
       // Save email globally for OTP
       sessionStorage.setItem("email", data.email);
-
       window.location.href = res.data.redirectUrl;
     }
     return res;

@@ -226,10 +226,14 @@ import api from "../api.js";
            }
         }
 
-        // Make all required functions global for HTML access
+async function buyNow(){
+    window.location.href=`/checkout?type=buyNow&productId=${productID}&variantId=${variantID}`
+}
+// Make all required functions global for HTML access
 // Make all required functions global for HTML access
 window.selectVariant=selectVariant;
 window.addToCart=addToCart
+window.buyNow=buyNow
 window.handleImageHover = handleImageHover;
 window.showZoomPreview = showZoomPreview;
 window.hideZoomPreview = hideZoomPreview;
