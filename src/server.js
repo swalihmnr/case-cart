@@ -3,6 +3,7 @@ const app =express();
 import env from 'dotenv';
 env.config();
 import session from 'express-session';
+import flash from 'connect-flash'
 import {fileURLToPath} from 'url'
 import {dirname} from 'path'
 import path from 'path'
@@ -26,6 +27,12 @@ let __filename=fileURLToPath(import.meta.url)
 let __dirname=dirname(__filename);
 app.set('view engine','ejs')
 app.set('views',path.join(__dirname,'views'));
+app.use(flash());
+
+app.use((req, res, next) => {
+  res.locals.messages = req.flash();
+  next();
+});
 app.use(express.json())
 app.use(express.urlencoded({extended:true}));
 app.use(nocache())

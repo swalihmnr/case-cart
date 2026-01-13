@@ -216,7 +216,9 @@ import api from "../api.js";
              title: 'added',
              text: res.data.message,
              confirmButtonColor: '#667eea'
-           });
+           }).then(()=>{
+            location.reload()
+           })
            }else{
              Swal.fire({
              icon: 'warning',

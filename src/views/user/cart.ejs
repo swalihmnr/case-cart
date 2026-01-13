@@ -78,7 +78,7 @@
                              </button>
                            </div>
                            
-                           <% if (!product.variantId.isListed||product.productId.isBlock) { %>
+                           <% if (!product.variantId.isListed||product.productId.isBlock||product.productId.catgId.isActive === false) { %>
                              <div class="bg-red-50 border border-red-200 text-red-600 text-sm px-3 py-2 rounded-lg inline-flex items-center gap-2 mt-2">
                                <svg class="w-4 h-4 text-red-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
@@ -175,6 +175,9 @@
                       isCheck=true;
                     }
                     if(product.productId.isBlock===true){
+                      isCheck=true
+                    }
+                    if( product.productId.catgId.isActive === false){
                       isCheck=true
                     }
                    });

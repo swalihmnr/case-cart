@@ -437,7 +437,7 @@ try {
     console.log('already exist')
     return res.status(409).json({
         success:false,
-        message:"Category already existing"
+        message:"Product already existing"
 
     })
    }  
@@ -815,6 +815,7 @@ const result= await orderModel.aggregate([
     {$match:filter},
     { 
         $facet:{data:[
+            {$sort:{createdAt:-1}},
         {$lookup:{
             from:"users",
             localField:"userId",

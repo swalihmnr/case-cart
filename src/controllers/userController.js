@@ -342,7 +342,19 @@ const getProduct = async (req, res) => {
                     as: "variants"
                 }
             },
-
+           {
+             $addFields: {
+               variants: {
+                 $filter: {
+                   input: "$variants",
+                   as: "v",
+                   cond: { $gt: ["$$v.stock", 0] }
+                 }
+               }
+             }
+           },
+           { $match: { "variants.0": { $exists: true } } },
+           
             // JOIN CATEGORY
             {
                 $lookup: {
@@ -1024,6 +1036,7 @@ const getCheckout=async(req,res)=>{
             }},
             {$project:{
                 quantity:1,
+                stock:1,
                 "product.name":1,
                 deviceModel:1,
                 salePrice:1,
@@ -1163,6 +1176,7 @@ const getConfirmation=async(req,res)=>{
     const userId=req.session.user.id
         const orderId=req.params.id;
         const order=await orderModel.findOne({_id:orderId}).populate('orderItems.productId').populate('orderItems.variantId');
+
      res.render('./user/ord-confirmation',{
         order
 
@@ -1183,7 +1197,6 @@ const ordConfirmation=async(req,res)=>{
         message: "Address not found"
       });
     }
-    console.log(savedAddress.landMark,"it is the landMark")
     shippingAddress = {
       addressType: savedAddress.addressType,
       firstName: savedAddress.firstName,
@@ -1260,6 +1273,65 @@ const ordConfirmation=async(req,res)=>{
         message:"variant not founded!"
     })
   }
+  const item = items[0];
+
+if (!item) {
+  return res.status(404).json({
+    success: false,
+    message: "Item no longer available",
+    redirect: "/products"
+  });
+}
+
+if (!item.product) {
+  return res.status(404).json({
+    success: false,
+    message: "Product removed",
+    redirect: "/products"
+  });
+}
+
+if (!item._id) {
+  return res.status(404).json({
+    success: false,
+    message: "Variant removed",
+    redirect: "/products"
+  });
+}
+
+if (item.product.isBlock === true) {
+  return res.status(403).json({
+    success: false,
+    message: "Product is currently unavailable",
+    redirect: "/products"
+  });
+}
+
+if (item.isListed === false) {
+  return res.status(403).json({
+    success: false,
+    message: "Variant is unavailable",
+    redirect: "/products"
+  });
+}
+
+if (item.stock < 1) {
+  return res.status(409).json({
+    success: false,
+    message: "Insufficient stock",
+    redirect: "/products"
+  });
+}
+
+
+if (item.product.catgId?.isActive === false) {
+  return res.status(403).json({
+    success: false,
+    message: "Category is inactive",
+    redirect: "/products"
+  });
+}
+
  }else{
     const result = await cartModel.aggregate([
     { $match: { userId } },
@@ -1273,6 +1345,15 @@ const ordConfirmation=async(req,res)=>{
       }
     },
     { $unwind: "$product" },
+    {
+        $lookup:{
+            from:"categories",
+            localField:"product.catgId",
+            foreignField:"_id",
+            as:"category"
+        }
+    },
+    {$unwind:"$category"},
 
     {
       $lookup: {
@@ -1284,24 +1365,29 @@ const ordConfirmation=async(req,res)=>{
     },
     { $unwind: "$variant" },
     {
-      $match: {
-        "product.isBlock": false,
-        "variant.isListed": false,
-        "variant.stock": { $gt: 0 }
-      }
-    },
-
-    {
       $project: {
         productId: 1,
         variantId: 1,
         quantity: 1,
-        "variant.salePrice": 1
+        "variant.salePrice": 1,
+        "product.isBlock": 1,
+        "variant.isListed": 1,
+        "variant.stock": 1,
+        "category.isActive":1
       }
     }
   ]);
   items=result
-
+for(let item of items){
+    console.log('i am here ')
+   if(item.product.isBlock||item.variant.isListed!==true||item.variant.stock<1||item.category.isActive===false){
+    return res.status(STATUS_CODES.FORBIDDEN).json({
+        success:false,
+        redirect:"/cart"
+        
+    })
+   }
+}
   if (!items.length) {
     
      console.log('entered1')

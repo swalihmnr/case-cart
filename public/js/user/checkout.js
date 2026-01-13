@@ -81,10 +81,21 @@ async function placeOrder() {
     couponCode
   };
     const res=await api.confirmationAxios(payload);
+    console.log(res)
     if(res.data.success){
         if(res.data.orderId){
             location.href=`/order/confirm/${res.data.orderId}`
         }
+    }
+    else if(res.data.success===false&&res.data.redirect==="/cart"){
+      location.href=res.data.redirect
+     
+    }else{
+       Swal.fire({
+        icon: "error",
+        text: res.data.message,
+        confirmButtonColor: "#667eea"
+      });
     }
   
 

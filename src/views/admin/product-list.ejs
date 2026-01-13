@@ -1,4 +1,15 @@
 <%- include('../partials/header') %>
+<% if (messages.error) { %>
+<script>
+  document.addEventListener('DOMContentLoaded', () => {
+    Swal.fire({
+      icon: 'error',
+      title: 'Oops!',
+      text: '<%= messages.error[0] %>'
+    });
+  });
+</script>
+<% } %>
 
     <div class="flex">
 <%- include('../partials/sidebar') %>

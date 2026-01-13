@@ -307,6 +307,7 @@
                                                 </div>
                                                 <h5 class="text-lg font-semibold text-gray-900 mb-2">Order Cancelled</h5>
                                                 <p class="text-sm text-gray-500">This order has been cancelled</p>
+                                                 <p class="text-sm text-gray-500">Reason:</p>
                                             </div>
                                         <% } else if (isReturned) { %>
                                             <div class="text-center py-8">
@@ -327,6 +328,7 @@
                                                 </div>
                                                 <h5 class="text-lg font-semibold text-gray-900 mb-2">Return Requested</h5>
                                                 <p class="text-sm text-gray-500 mb-6">Customer has requested a return</p>
+                                                <p class="text-sm text-gray-500 mb-6">reason: <%= order.orderItems.returnReason %> </p>
                                                 
                                                 <div class="flex gap-3 justify-center">
                                                     <button
