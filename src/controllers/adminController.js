@@ -11,33 +11,30 @@ import { STATUS_CODES } from '../utils/statusCodes.js';
 import flowChecker from '../utils/order-flow-checker.js'
 
 
-
+// Render admin login page
+// Used to show login UI for admin
 const getLogin=(req,res)=>{
     res.render('./admin/adminLogin')
 }
+
+// Logout admin safely
  const adminLogout = (req, res) => {
   try {
-    req.session.admin = null;     
-    req.session.destroy(err => {
-      if (err) {
-        return res.status(500).json({
-          success: false,
-          message: "Logout failed"
-        });
-      }
-
-      res.clearCookie("connect.sid"); 
-      return res.redirect("/admin/login");
-    });
+    req.session.admin = null;  
+    return res.redirect("/admin/login");
   } catch (error) {
     console.error(error);
-    return res.status(500).json({
+    return res.status(STATUS_CODES.INTERNAL_SERVER_ERROR).json({
       success: false,
       message: "Internal server error"
     });
   }
 };
 
+// Handle admin login
+// 1. Check admin exists by email
+// 2. Compare password using bcrypt
+// 3. Store admin data in session on success
 const postLogin=async(req,res)=>{
 const {Email,Password}=req.body
 let existing= await adminModel.findOne({email:Email})
@@ -65,9 +62,17 @@ if(!existing){
 
 
 }
+
+// Render admin dashboard page
 const getDashboard=(req,res)=>{
     res.render('./admin/admin-dashboard')
 }
+
+// Fetch customers with:
+// - Pagination
+// - Search
+// - Active / Blocked filter
+// - Monthly joined users count
 const getCustomer=async(req,res)=>{
     const page=parseInt(req.query.page)||1;
     const search=(req.query.search)||""
@@ -128,6 +133,9 @@ const getCustomer=async(req,res)=>{
     
     })
 }
+
+// Block or unblock a customer
+// Toggle isBlock status
 const blockCustomer=async(req,res)=>{
     try {
         let id=req.params.id
@@ -162,6 +170,8 @@ const blockCustomer=async(req,res)=>{
         
     }
 }
+
+// List categories with pagination and search
 const getCategory=async(req,res)=>{
     const search=(req.query.search)||""
     const page=parseInt(req.query.page)||1;
@@ -192,12 +202,24 @@ const getCategory=async(req,res)=>{
         search
     })
 }
+
+// Create new category
+// Prevent duplicate category names
 const postCategory=async(req,res)=>{
     res.render('./admin/list-category')
 }
+
+//Render add category
 const getAddCategory=(req,res)=>{
     res.render('./admin/add-category')
 }
+
+// ==============================
+// ADD CATEGORY (POST)
+// ==============================
+// Creates a new category
+// - Prevents duplicate category names
+// - Supports "Save" and "Save & Add Another" actions
 const postAddCategory=async(req,res)=>{
 try{
 
@@ -242,6 +264,11 @@ try{
 
 }
 
+// ==============================
+// BLOCK / UNBLOCK CATEGORY
+// ==============================
+// Toggles category active status
+// Used to hide or show category in user side
 const blockCategory=async(req,res)=>{
     try {
         console.log('hiilow')
@@ -276,12 +303,23 @@ const blockCategory=async(req,res)=>{
         console.log(error)
     }
 }
+
+// ==============================
+// GET EDIT CATEGORY PAGE
+// ==============================
+// Fetch category by ID and render edit page
 const editCategory=async(req,res)=>{
      let id=req.params.id
     const objectId= new  mongoose.Types.ObjectId(id)
      let category=await Category.findOne({_id:objectId})
     res.render('admin/admin-edit-category',{category})
 }
+
+// ==============================
+// UPDATE CATEGORY
+// ==============================
+// - Prevents duplicate names
+// - Avoids unnecessary updates
 const postEditCategory=async(req,res)=>{
     
     try {
@@ -328,6 +366,13 @@ const postEditCategory=async(req,res)=>{
         
     }
 }
+
+// ==============================
+// PRODUCT LIST WITH FILTER & SEARCH
+// ==============================
+// - Pagination
+// - Category filter
+// - Search by product name
 const getProductList=async(req,res)=>{
   const limit = 6;
 const filter = (req.query.filter || "Select Category").trim();
@@ -372,12 +417,24 @@ if (filter !== "Select Category") {
         totalStock
     })
 }
+
+// ==============================
+// ADD PRODUCT PAGE
+// ==============================
+// Fetch categories and render product creation page
 const getAddproduct=async(req,res)=>{
     const categories=await Category.find()
     res.render('./admin/add-product-&-variant',{
         categories
     })
 }
+
+// ==============================
+// ADD PRODUCT WITH VARIANTS & IMAGES
+// ==============================
+// - Minimum 3 images validation
+// - Upload images to Cloudinary
+// - Create product & variants
 const postAddproduct=async(req,res)=>{
    
 try {
@@ -447,6 +504,12 @@ try {
 }
    
 }
+
+// ==============================
+// GET PRODUCT EDIT PAGE
+// ==============================
+// Fetch product details along with category & variants
+// Used to render edit-product page
 const getProductEdit=async(req,res)=>{
     const id=req.params.id;
     const objectId= new mongoose.Types.ObjectId(id)
@@ -457,6 +520,12 @@ const getProductEdit=async(req,res)=>{
         categories
     })
 }
+
+// ==============================
+// BLOCK / UNBLOCK PRODUCT
+// ==============================
+// Toggles product visibility
+// Used to hide or show product in user side
 const blockProduct=async(req,res)=>{
     try {
         let id=req.params.id
@@ -489,6 +558,12 @@ const blockProduct=async(req,res)=>{
         console.log(error)
     }
 }
+
+// ==============================
+// ADD PRODUCT IMAGE
+// ==============================
+// Upload additional product images (max limit: 5)
+// Image stored in Cloudinary
 const productImageUpload=async(req,res)=>{
     try {
         const id=req.params.id
@@ -532,6 +607,11 @@ const productImageUpload=async(req,res)=>{
     }
 }
 
+
+// ==============================
+// EDIT PRODUCT IMAGE
+// ==============================
+// Replace an existing product image
 const productImageEdit=async(req,res)=>{
    try {
     const {imageId}=req.body
@@ -574,6 +654,12 @@ const productImageEdit=async(req,res)=>{
     console.log(error)
    }
 }
+
+// ==============================
+// SET MAIN PRODUCT IMAGE
+// ==============================
+// Marks selected image as main image
+// Only one main image allowed
 const imgSetMain=async(req,res)=>{
     try {
         const proudctId=req.params.id
@@ -611,6 +697,11 @@ const imgSetMain=async(req,res)=>{
         error
     }
 }
+
+// ==============================
+// DELETE PRODUCT IMAGE
+// ==============================
+// Deletes image except main image
 const  editImgDelete=async(req,res)=>{
     try {
         const Id=req.params.id
@@ -650,6 +741,11 @@ const  editImgDelete=async(req,res)=>{
     }
 }
 
+
+// ==============================
+// UPDATE PRODUCT BASIC INFO
+// ==============================
+// Update product name, category, and description
 const editProductBasicInformation=async(req,res)=>{
     try {
         const id=req.params.id
@@ -694,6 +790,11 @@ const editProductBasicInformation=async(req,res)=>{
     }
 }
 
+
+// ==============================
+// FETCH VARIANT DATA
+// ==============================
+// Used for editing variant via modal
 const passVariantData=async(req,res)=>{
     try {
         const id=req.params.id
@@ -708,6 +809,12 @@ const passVariantData=async(req,res)=>{
         console.log(error)
     }
 }
+
+
+// ==============================
+// UPDATE VARIANT DETAILS
+// ==============================
+// Validates price logic and updates variant
 const postEditVariantSave=async(req,res)=>{
     try {
        const {deviceModel,stock,orgPrice,salePrice}=req.body;
@@ -762,6 +869,11 @@ const postEditVariantSave=async(req,res)=>{
         })
     }
 }
+
+// ==============================
+// LIST / UNLIST VARIANT
+// ==============================
+// Controls variant availability in user side
 const patchListUnlist=async(req,res)=>{
    try {
      const id=req.params.id;
@@ -795,6 +907,15 @@ const patchListUnlist=async(req,res)=>{
         })
    }
 }
+
+// ==============================
+// GET ORDER MANAGEMENT PAGE
+// ==============================
+// Fetch orders with:
+// - Pagination
+// - Search by Order ID
+// - Filter by order item status
+// Uses aggregation to flatten orderItems and join user, product & variant data
 const getOrderMngmnt=async (req,res)=>{
     const limit=8;
     const page=parseInt(req.query.page)||1;
@@ -859,6 +980,12 @@ console.log(totalItems,totalPages)
         search
     })
 }
+
+// ==============================
+// CHANGE ORDER ITEM STATUS
+// ==============================
+// Validates order status flow before updating
+// Uses flowChecker to prevent invalid status jumps
 const orderStatusChanger=async(req,res)=>{
     try {
         const {orderItemId,selectedValue}=req.body
@@ -899,6 +1026,12 @@ const orderStatusChanger=async(req,res)=>{
         })
     }
 }
+
+// ==============================
+// APPROVE RETURN REQUEST
+// ==============================
+// Admin approves product return
+// Order item status changed to "returned"
 const reqApprove=async(req,res)=>{
     try {
         
@@ -928,6 +1061,12 @@ const reqApprove=async(req,res)=>{
     }
 }
 
+
+// ==============================
+// REJECT RETURN REQUEST
+// ==============================
+// Admin rejects return request
+// Status reverted to delivered and marked as rejected
 const reqReject=async(req,res)=>{
     try {
         

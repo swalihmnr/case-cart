@@ -15,11 +15,23 @@ import orderModel from '../models/orderModel.js'
 
 
 
-
+// ==============================
+// GET LOGIN PAGE
+// ==============================
+// Renders user login page
 let getLogin=(req,res)=>{
     req.session.isKey=false
     res.render('./user/userLogin')
 }
+
+
+
+// ==============================
+// POST LOGIN
+// ==============================
+// Validates user credentials
+// Checks: existence, block status, verification, password
+// Creates user session on success 
 let postLogin=async(req,res)=>{
     const {Email,Password}=req.body
     try{
@@ -69,12 +81,23 @@ let postLogin=async(req,res)=>{
 
     }
 }
+
+// ==============================
+// GET SIGNUP PAGE
+// ==============================
+// Renders the user signup (registration) page
+// This route is used when a new user wants to create an account
 let getSignup=(req,res)=>{
     res.render('./user/userSignup')
 }
 
 
-
+// ==============================
+// USER REGISTRATION
+// ==============================
+// Creates user
+// Hashes password
+// Generates OTP for email verification
 let register=async(req,res)=>{
     try{
         const{firstname,lastname,number,email,password}=req.body
@@ -113,9 +136,27 @@ let register=async(req,res)=>{
     
 }
 
+
+// ==============================
+// GET OTP VERIFICATION PAGE
+// ==============================
+// Renders the OTP verification page
+// Used during:
+// - User registration verification
+// - Password reset verification
+// - Email update verification
 let getOtpVerify= async(req,res)=>{
     res.render("./user/otp-verification")
 }
+
+// ==============================
+// OTP VERIFICATION
+// ==============================
+// Verifies OTP
+// Handles multiple flows:
+// - Signup
+// - Email update
+// - Password reset
 let OtpVerify= async(req,res)=>{
     try{
          req.session.requre_sign=false;
@@ -183,6 +224,12 @@ let OtpVerify= async(req,res)=>{
     }
 
 }
+
+// ==============================
+// RESEND OTP
+// ==============================
+// Generates and sends a new OTP to the user's email
+// Used when OTP expires or user requests resend
 let resendOtpVerify = async (req, res) => {
     
   const {  userEmail } = req.body;
@@ -202,9 +249,20 @@ let resendOtpVerify = async (req, res) => {
   });
 };
 
+
+// ==============================
+// GET RESET PASSWORD PAGE
+// ==============================
+// Renders reset password page after OTP verification
 let getResetPass=(req,res)=>{
     res.render('./user/resetPassword')
 }
+
+// ==============================
+// POST RESET PASSWORD
+// ==============================
+// Updates user password after OTP verification
+// Hashes new password before saving
 let postResetPass=async(req,res)=>{
     console.log(req.body)
     const {password,userEmail}=req.body
@@ -239,9 +297,20 @@ let postResetPass=async(req,res)=>{
 
     }
 }
+
+// ==============================
+// GET FORGOT PASSWORD PAGE
+// ==============================
+// Renders forgot password page
 let getForgetPassword=(req,res)=>{
     res.render('./user/forgetPassword');
 }
+
+// ==============================
+// POST FORGOT PASSWORD
+// ==============================
+// Initiates forgot password flow
+// Sends OTP if user exists and is not blocked
 let PostForgetPassword=async(req,res)=>{
     const {email}=req.body
     const existing= await user.findOne({email:email})
@@ -266,25 +335,41 @@ let PostForgetPassword=async(req,res)=>{
     }
 }
 
-let getLandingPage=(req,res)=>{
-    res.render("./user/landingPage")
-}
+
+// ==============================
+// GET HOME PAGE
+// ==============================
+// Renders user home page
 let getHome=(req,res)=>{
     console.log(req)
     res.render('./user/home')
 }
-let logOut=(req,res)=>{
-    req.session.destroy((err)=>{
-        if(err){
-            console.log('logout error');
-          return  res.redirect('/home')
-        }else{
-            res.clearCookie('connect.sid');
-            return  res.redirect('/landingPage')
-        }
-    })
-}
+
+// ==============================
+// USER LOGOUT
+// ==============================
+// Destroys session and clears cookie
+const logOut = (req, res) => {
+    try {
+        req.session.user = null;   
+        res.redirect('/home');
+    } catch (error) {
+        console.error('Logout error:', error);
+        res.redirect('/home');
+    }
+};
  
+
+// ==============================
+// GET PRODUCT LIST
+// ==============================
+// Handles:
+// - Search
+// - Category filter
+// - Price filter
+// - Sorting
+// - Pagination
+// - Wishlist marking
 const getProduct = async (req, res) => {
     try {
         let { page = 1, search = "", price = "all", Categories = "", sort = "" } = req.query;
@@ -417,12 +502,17 @@ const getProduct = async (req, res) => {
 
         const result = await productModel.aggregate(pipeline);
          let wishlistItems=[]
+         let user=false
         const products = result[0].data;
         const totalItems = result[0].totalCount[0]?.count || 0;
         const totalPages = Math.ceil(totalItems / limit);
-
+        if(req.session.user?.id){
+           user= true
+        }
         const categories = await Category.find({isActive:true});
-         wishlistItems = await wishlistModel.find({ userId: req.session.user.id });
+        if(req.session.user?.id){
+            wishlistItems = await wishlistModel.find({ userId: req.session.user.id });  
+        }
         res.render("user/product-list", {
             products,
             categories,
@@ -433,7 +523,9 @@ const getProduct = async (req, res) => {
             totalItems,
             currentPage: page,
             totalPages,
-            wishlistItems
+            wishlistItems,
+            user
+    
         });
 
     } catch (err) {
@@ -443,7 +535,11 @@ const getProduct = async (req, res) => {
 };
 
 
-
+// ==============================
+// GET PRODUCT DETAIL PAGE
+// ==============================
+// Fetches a single product with category & variants
+// Also loads up to 4 related products
 const getDetialProduct= async(req,res)=>{
     try {
         const id=req.params.id;
@@ -467,6 +563,12 @@ const getDetialProduct= async(req,res)=>{
         console.log(error)
     }
 }
+
+// ==============================
+// GET VARIANT PRICE DATA (AJAX)
+// ==============================
+// Used when user switches variant (color / model)
+// Returns updated prices dynamically
 const getVariantData=async(req,res)=>{
     try {
        const productId=req.params.id
@@ -497,12 +599,22 @@ const getVariantData=async(req,res)=>{
         
     }
 }
+
+// ==============================
+// GET USER PROFILE PAGE
+// ==============================
 const getUserProfil=async(req,res)=>{
     req.session.isKey=false
     let User=await user.findOne({email:req.session.user.email});
 
     res.render('./user/user-profile',{User});
 }
+
+// ==============================
+// EDIT PROFILE INFORMATION
+// ==============================
+// Handles both normal & Google users
+// Email change requires OTP verification
 const editProfileInfo=async(req,res)=>{
     try {
         req.session.isKey=false
@@ -625,6 +737,10 @@ const editProfileInfo=async(req,res)=>{
        console.log(error)
     }
 }
+
+// ==============================
+// UPDATE PROFILE IMAGE
+// ==============================
 const editProfileImg=async(req,res)=>{
     try {
         console.log(req.file)
@@ -654,6 +770,10 @@ const editProfileImg=async(req,res)=>{
         })
     }
 }
+
+// ==============================
+// GET WISHLIST
+// ==============================
 const getWishlist=async(req,res)=>{
    const userId= req.session.user.id;
    console.log(userId)
@@ -664,6 +784,10 @@ const getWishlist=async(req,res)=>{
         
     })
 }
+
+// ==============================
+// ADD TO WISHLIST
+// ==============================
 const postWishlist=async(req,res)=>{
     try {
         const {productId,variant}=req.body;
@@ -726,6 +850,12 @@ const postWishlist=async(req,res)=>{
         
     }
 }
+
+// ==============================
+// REMOVE ITEM FROM WISHLIST
+// ==============================
+// Deletes a wishlist item for the logged-in user
+// Ensures user can remove only their own wishlist items
 const remWishlist=async(req,res)=>{
     try {
         const id=req.params.id
@@ -756,6 +886,12 @@ const remWishlist=async(req,res)=>{
     }
 }
 
+
+// ==============================
+// GET CART PAGE
+// ==============================
+// Fetches cart items for the logged-in user
+// Calculates subtotal and total cart items
 const getCart=async(req,res)=>{
     try {
     const userId=new mongoose.Types.ObjectId(req.session.user.id)
@@ -784,6 +920,13 @@ const getCart=async(req,res)=>{
     }
     
 }
+
+// ==============================
+// ADD ITEM TO CART
+// ==============================
+// Adds selected variant to cart
+// Prevents duplicates
+// Removes item from wishlist if exists
 const addCart=async(req,res)=>{
     try {
         const userId=new mongoose.Types.ObjectId(req.session.user.id)
@@ -839,6 +982,13 @@ const addCart=async(req,res)=>{
     }
 }
 
+
+// ==============================
+// UPDATE CART QUANTITY
+// ==============================
+// Increases or decreases quantity
+// Enforces stock limit, listing status, category status
+// Recalculates subtotal dynamically
 const cartQuantityUpdate=async(req,res)=>{
    try {
     const cartId = req.params.id;
@@ -925,6 +1075,13 @@ const cartQuantityUpdate=async(req,res)=>{
 }
 
 }
+
+
+// ==============================
+// REMOVE ITEM FROM CART
+// ==============================
+// Deletes a cart item by cartId
+// Ensures the item exists before deletion
 const remCart=async(req,res)=>{
     try {
     const existing= await cartModel.findOne({_id:req.params.id})
@@ -946,11 +1103,23 @@ const remCart=async(req,res)=>{
     })
 }
 }
+
+
+// ==============================
+// GET CHECKOUT PAGE
+// ==============================
+// Handles both Cart checkout and Buy Now checkout
+// Validates product availability before proceeding
 const getCheckout=async(req,res)=>{
     let cartItems;
     let subtotal=0;
     const userId=new mongoose.Types.ObjectId(req.session.user.id)
     const {type,productId,variantId}=req.query;
+
+
+  // ======================
+  // CART CHECKOUT FLOW
+  // ======================
     if(type!=='buyNow'){
         req.session.buyNow=false;
         console.log(type,variantId,userId)
@@ -1012,6 +1181,10 @@ const getCheckout=async(req,res)=>{
         if(cartItem.length===0){
             return res.status(STATUS_CODES.FORBIDDEN)
         }
+
+          // ======================
+  // BUY NOW FLOW
+  // ======================
     }else{
         req.session.variantId=variantId
         req.session.buyNow=true
@@ -1063,6 +1236,11 @@ const getCheckout=async(req,res)=>{
         subtotal
     })
 }
+
+// ==============================
+// GET ADDRESS MANAGEMENT
+// ==============================
+// Lists all saved addresses of the logged-in user
 const getAddressMngmnt=async(req,res)=>{
     const userID=new mongoose.Types.ObjectId(req.session.user.id)
     const addresses=await addressModel.aggregate([{$match:{userId:userID}}]);
@@ -1070,6 +1248,11 @@ const getAddressMngmnt=async(req,res)=>{
         addresses
     })
 }
+
+// ==============================
+// ADD NEW ADDRESS
+// ==============================
+// Prevents duplicate addresses
 const addAddress=async(req,res)=>{
     try {
         
@@ -1109,6 +1292,10 @@ const addAddress=async(req,res)=>{
     }
 }
 
+
+// ==============================
+// GET EDIT ADDRESS PAGE
+// ==============================
 const geteditAddress=async(req,res)=>{
     const addressId=req.params.id;
     delete req.session.adrsId
@@ -1119,6 +1306,11 @@ const geteditAddress=async(req,res)=>{
         address
     })
 }
+
+// ==============================
+// UPDATE ADDRESS
+// ==============================
+// Updates only changed fields dynamically
 const editAddress=async(req,res)=>{
     try {
        
@@ -1149,10 +1341,18 @@ const editAddress=async(req,res)=>{
         console.log(error)
     }
 }
+
+// ==============================
+//get ADDRESS
+// ==============================
 const getAddAddress=async(req,res)=>{
     console.log('add page')
     res.render('./user/add-address')
 }
+
+// ==============================
+// DELETE ADDRESS
+// ==============================
 const deleteAddress=async(req,res)=>{
     try {
         const addressId=new mongoose.Types.ObjectId(req.params.id)
@@ -1173,6 +1373,11 @@ const deleteAddress=async(req,res)=>{
         console.log(error)
     }
 }
+
+// ==============================
+// ORDER CONFIRMATION PAGE
+// ==============================
+// Shows order details after successful checkout
 const getConfirmation=async(req,res)=>{ 
 
     const userId=req.session.user.id
@@ -1184,13 +1389,26 @@ const getConfirmation=async(req,res)=>{
 
      })
 }
+
+// ==============================
+// PLACE ORDER (FINAL CONFIRMATION)
+// ==============================
+// Handles order placement for:
+// 1. Cart checkout
+// 2. Buy Now checkout
+// Performs full validation before creating order
 const ordConfirmation=async(req,res)=>{
  try {
    let items=[] 
   let shippingAddress;
   const userId= new mongoose.Types.ObjectId(req.session.user.id);
   const data=req.body.data;
+
+  // ==============================
+// SHIPPING ADDRESS HANDLING
+// ==============================
   if (data.address?.addressId) {
+      // Use saved address
     const addressId = new mongoose.Types.ObjectId(data.address.addressId);
     const savedAddress= await addressModel.findById(addressId);
     if (!savedAddress) {
@@ -1211,6 +1429,7 @@ const ordConfirmation=async(req,res)=>{
       pinCode: savedAddress.pinCode
     };
   } else {
+     // Manual address entry
     const {
       firstName,
       lastName,
@@ -1472,6 +1691,14 @@ const orderItems = items.map(i => {
 }
 
 }
+
+// ==============================
+// GET USER ORDERS (ORDER HISTORY)
+// ==============================
+// Fetches user orders with:
+// - Pagination
+// - Status filtering
+// - Product & variant details
 const getOrder=async(req,res)=>{
     const userId=new mongoose.Types.ObjectId(req.session.user.id)
     const currentPage=parseInt(req.query.page)||1
@@ -1524,6 +1751,11 @@ res.render("./user/order-history", {
 
 }
 
+
+// ==============================
+// CANCEL ORDER ITEM
+// ==============================
+// Cancels a specific order item (not entire order)
 const orderCancel=async(req,res)=>{
     try {
         const orderItemId=new mongoose.Types.ObjectId(req.params.id);
@@ -1554,6 +1786,11 @@ const orderCancel=async(req,res)=>{
         
     }
 }
+
+// ==============================
+// GENERATE INVOICE
+// ==============================
+// Fetches invoice details for a specific order item
 const invoice=async(req,res)=>{
     const orderItemsId=new mongoose.Types.ObjectId(req.params.id);
     const order_id= req.query.odrId
@@ -1609,6 +1846,10 @@ const invoice=async(req,res)=>{
         order:order[0],
     });
 }
+
+// ==============================
+// REQUEST RETURN
+// ==============================
 const returnReq=async(req,res)=>{
     try {
         const orderItemId=new mongoose.Types.ObjectId(req.params.id)
@@ -1644,9 +1885,17 @@ const returnReq=async(req,res)=>{
         })
     }
 }
+
+// ==============================
+// GET SECURITY PAGE
+// ==============================
 const getSecurity=(req,res)=>{
     res.render('./user/security')
 }
+
+// ==============================
+// RESET PASSWORD
+// ==============================
 const resetPass=async(req,res)=>{
 const {currentPassword,newPassword}=req.body
 const userId=new mongoose.Types.ObjectId(req.session.user.id);
@@ -1692,7 +1941,6 @@ export default {
     getSignup,
     getResetPass,
     postResetPass,
-    getLandingPage,
     getHome,
     register,
     OtpVerify,

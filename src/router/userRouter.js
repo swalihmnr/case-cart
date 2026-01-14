@@ -14,13 +14,12 @@ router.get('/otpVerfication',otpAccess,userController.getOtpVerify);
 router.post('/otpVerfication',userController.OtpVerify);
 router.get('/resetPassword',keResetPass,userController.getResetPass);
 router.post('/resetPassword',userController.postResetPass);
-router.get('/landingPage',userController.getLandingPage)
-router.get('/home',userAuth,blockUser,userController.getHome)
+router.get('/home',userController.getHome)
 router.get('/forgotPassword',notUser,userController.getForgetPassword)
 router.post('/forgotPassword',blockUser,userController.PostForgetPassword)    
 router.post('/resendOtpVerification',userController.resendOtpVerify)
 router.get('/logout',userController.logOut)
-router.get('/product',userAuth,blockUser,userController.getProduct)
+router.get('/product',userController.getProduct)
 router.get('/product/:id/detials',userAuth,blockUser,userController.getDetialProduct);
 router.post('/product/:id/getVariant',userController.getVariantData)
 router.get('/user-profile',userAuth,blockUser,userController.getUserProfil);
