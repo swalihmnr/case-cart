@@ -498,12 +498,14 @@ const getVariantData=async(req,res)=>{
     }
 }
 const getUserProfil=async(req,res)=>{
+    req.session.isKey=false
     let User=await user.findOne({email:req.session.user.email});
 
     res.render('./user/user-profile',{User});
 }
 const editProfileInfo=async(req,res)=>{
     try {
+        req.session.isKey=false
        const {firstName,lastName,email,number}=req.body
        const existing=await user.findOne({email:req.session.user.email});
       if(!existing){
