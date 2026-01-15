@@ -344,11 +344,11 @@ let getHome=(req,res)=>{
     console.log(req)
     res.render('./user/home')
 }
-
+3
 // ==============================
 // USER LOGOUT
 // ==============================
-// Destroys session and clears cookie
+//  session and clears cookie
 const logOut = (req, res) => {
     try {
         req.session.user = null;   
