@@ -104,7 +104,7 @@ const updateStatus=async(selectedValue,orderId,orderItemId)=>{
 }
 const reqApproveAxios=async(orderId,itemId)=>{
   try {
-    return api.patch(`/admin/order/${orderId}/approve`,{
+    return await api.patch(`/admin/order/${orderId}/approve`,{
       itemId
     })
   } catch (error) {
@@ -113,11 +113,37 @@ const reqApproveAxios=async(orderId,itemId)=>{
 }
 const reqRejectAxios=async(orderId,itemId)=>{
   try {
-    return api.patch(`/admin/order/${orderId}/reject`,{
+    return await api.patch(`/admin/order/${orderId}/reject`,{
       itemId
     })
   } catch (error) {
     return error.response
+  }
+}
+
+const createOfferAxios=async(data)=>{
+  try {
+    console.log('hlow')
+    console.log(data)
+    return api.post('/admin/offer/add',data)
+  } catch (error) {
+    return error.response
+  }
+}
+const offerEditAxios=async(payload)=>{
+  console.log(payload)
+  try {
+    return await api.post('/admin/offer/edit',payload);
+    
+  } catch (error) {
+    return error.response
+  }
+}
+const  deleteOfferAxios=async(offerId)=>{
+  try {
+    return await api.patch(`/admin/offer/delete/${offerId}`);
+  } catch (error) {
+    error.response
   }
 }
 export default {
@@ -137,5 +163,8 @@ export default {
     toggleListUnlistAxios,
     updateStatus,
     reqApproveAxios,
-    reqRejectAxios
+    reqRejectAxios,
+    createOfferAxios,
+    offerEditAxios,
+    deleteOfferAxios
 } 

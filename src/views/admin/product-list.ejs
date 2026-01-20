@@ -1,16 +1,4 @@
 <%- include('../partials/header') %>
-<% if (messages.error) { %>
-<script>
-  document.addEventListener('DOMContentLoaded', () => {
-    Swal.fire({
-      icon: 'error',
-      title: 'Oops!',
-      text: '<%= messages.error[0] %>'
-    });
-  });
-</script>
-<% } %>
-
     <div class="flex">
 <%- include('../partials/sidebar') %>
           <main class="flex-1 p-4 md:p-6 lg:p-8 lg:ml-0">
@@ -80,9 +68,11 @@
                                             </div>
                                         </td>
                                         <td class="px-6 py-4">
+                                            <a href="/admin/offers?productId=<%= product._id %>">
                                             <button class="inline-flex items-center px-3 py-1 rounded-full text-xs font-medium bg-purple-100 text-purple-700">
                                                 add Offer
                                             </button>
+                                            </a>
                                         </td>
                                         <td class="px-6 py-4">
                                             <span class="text-sm text-gray-900"><%= product.catgId.name %></span>
