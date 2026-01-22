@@ -146,6 +146,30 @@ const  deleteOfferAxios=async(offerId)=>{
     error.response
   }
 }
+const createCouponAxios=async(payload)=>{
+  try {
+    console.log(payload,'it si the palya')
+    return await api.post('/admin/coupen/add',payload)
+    
+  } catch (error) {
+    
+  }
+}
+const editCouponAxios=async(payload)=>{
+  try {
+    return await api.patch('/admin/coupen/edit',payload)
+    
+  } catch (error) {
+    return error.response
+  }
+}
+const deleteCouponAxios=(id)=>{
+  try {
+    return api.patch(`/admin/coupen/del/${id}`)
+  } catch (error) {
+    return error.response
+  }
+}
 export default {
     addCategoryAxios,
     blockCategoryAxios,
@@ -166,5 +190,8 @@ export default {
     reqRejectAxios,
     createOfferAxios,
     offerEditAxios,
-    deleteOfferAxios
+    deleteOfferAxios,
+    createCouponAxios,
+    editCouponAxios,
+    deleteCouponAxios
 } 

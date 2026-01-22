@@ -1,0 +1,226 @@
+<%- include('../partials/header') %>
+
+<div class="flex min-h-screen bg-gray-100">
+  <%- include('../partials/sidebar') %>
+
+  <main class="flex-1 p-4 md:p-6 lg:p-8">
+    <div class="max-w-7xl mx-auto">
+
+      <!-- HEADER -->
+      <div class="mb-6">
+        <h1 class="text-xl md:text-2xl font-bold text-gray-900">Coupon Management</h1>
+        <p class="text-sm md:text-base text-gray-600">Create and manage discount coupons for your customers.</p>
+      </div>
+
+      <!-- STATS CARDS -->
+      <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
+        <div class="bg-white rounded-xl shadow-sm p-4 md:p-6">
+          <div class="flex items-center justify-between mb-2">
+            <p class="text-sm text-gray-600">Active Coupons</p>
+            <div class="w-8 h-8 bg-green-100 rounded-full flex items-center justify-center">
+              <i class="fas fa-check text-green-600 text-sm"></i>
+            </div>
+          </div>
+          <p class="text-2xl font-bold text-gray-900"><%= activeCount %></p>
+        </div>
+
+        <div class="bg-white rounded-xl shadow-sm p-4 md:p-6">
+          <div class="flex items-center justify-between mb-2">
+            <p class="text-sm text-gray-600">Total Usage</p>
+            <div class="w-8 h-8 bg-blue-100 rounded-full flex items-center justify-center">
+              <i class="fas fa-chart-bar text-blue-600 text-sm"></i>
+            </div>
+          </div>
+          <p class="text-2xl font-bold text-gray-900"><%= totalUsage %></p>
+        </div>
+
+        <div class="bg-white rounded-xl shadow-sm p-4 md:p-6">
+          <div class="flex items-center justify-between mb-2">
+            <p class="text-sm text-gray-600">Used Coupons</p>
+            <div class="w-8 h-8 bg-purple-100 rounded-full flex items-center justify-center">
+              <i class="fas fa-ticket-alt text-purple-600 text-sm"></i>
+            </div>
+          </div>
+          <p class="text-2xl font-bold text-gray-900"><%= used %></p>
+        </div>
+
+        <div class="bg-white rounded-xl shadow-sm p-4 md:p-6">
+          <div class="flex items-center justify-between mb-2">
+            <p class="text-sm text-gray-600">Unused Coupons</p>
+            <div class="w-8 h-8 bg-orange-100 rounded-full flex items-center justify-center">
+              <i class="fas fa-tag text-orange-600 text-sm"></i>
+            </div>
+          </div>
+          <p class="text-2xl font-bold text-gray-900"><%= unused %></p>
+        </div>
+      </div>
+
+      <!-- COUPONS TABLE CARD -->
+      <div class="bg-white rounded-xl shadow-sm">
+        <!-- Card Header -->
+        <div class="p-4 md:p-6 border-b flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+          <h2 class="text-lg font-semibold text-gray-900">All Coupons</h2>
+          <div class="flex flex-col sm:flex-row gap-3 w-full sm:w-auto">
+            <div class="relative flex-1 sm:flex-none">
+              <i class="fas fa-search absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 text-sm"></i>
+              <input type="text" id="search-coupon" placeholder="Search coupons..." 
+                class="w-full sm:w-64 pl-10 pr-4 py-2 border rounded-lg text-sm focus:ring-2 focus:ring-purple-500 focus:border-transparent">
+            </div>
+            <a href="/admin/coupen/add" 
+              class="inline-flex items-center justify-center gap-2 bg-purple-600 text-white px-4 py-2 rounded-lg hover:bg-purple-700 transition text-sm whitespace-nowrap">
+              <i class="fas fa-plus"></i>
+              <span>Create Coupon</span>
+            </a>
+          </div>
+        </div>
+
+        <!-- Desktop Table -->
+        <div class="hidden md:block overflow-x-auto">
+          <table class="w-full">
+            <thead class="bg-gray-50 border-b">
+              <tr>
+                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Code</th>
+                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Description</th>
+                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Discount</th>
+                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Usage</th>
+                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Expiry</th>
+                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
+                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
+              </tr>
+            </thead>
+            <tbody class="divide-y divide-gray-200">
+              <% coupens.forEach(coupen => { %>
+              <tr class="hover:bg-gray-50 transition">
+                <td class="px-6 py-4">
+                  <div class="flex items-center gap-3">
+                    <div class="w-10 h-10 bg-purple-100 rounded-lg flex items-center justify-center">
+                      <i class="fas fa-ticket-alt text-purple-600"></i>
+                    </div>
+                    <div>
+                      <p class="font-medium text-gray-900"><%= coupen.title %></p>
+                      <p class="text-xs text-gray-500">One-time use</p>
+                    </div>
+                  </div>
+                </td>
+                <td class="px-6 py-4 text-sm text-gray-600 max-w-xs truncate"><%= coupen.description %></td>
+                <td class="px-6 py-4 text-sm font-medium text-gray-900"><%= coupen.discountValue %></td>
+                <td class="px-6 py-4 text-sm text-gray-600"><%= coupen.usageLimit %></td>
+                <td class="px-6 py-4 text-sm text-gray-600">
+                  <%= new Date(coupen.endDate).toLocaleDateString("en-US", { year: "numeric", month: "short", day: "2-digit" }) %>
+                </td>
+                <td class="px-6 py-4">
+                  <span class="inline-flex px-2 py-1 text-xs font-medium rounded-full
+                    <%= coupen.status === 'active' ? 'bg-green-100 text-green-700' : 
+                        coupen.status === 'expired' ? 'bg-red-100 text-red-700' : 
+                        coupen.status === 'inactive' ? 'bg-gray-100 text-gray-700' : 'bg-gray-100 text-gray-700' %>">
+                    <%= coupen.status === 'active' ? 'Active' : coupen.status === 'expired' ? 'Expired' : coupen.status === 'inactive' ? 'Inactive' : coupen.status === 'scheduled'?"Scheduled":'unknown' %>
+                  </span>
+                </td>
+                <td class="px-6 py-4">
+                  <div class="flex items-center gap-2">
+                    <a href="/admin/coupen/edit/<%= coupen._id %>" class="p-2 text-gray-500 hover:text-purple-600 hover:bg-purple-50 rounded-lg transition">
+                      <i class="fas fa-edit"></i>
+                    </a>
+                    <button onclick="deleteCoupon('<%= coupen._id %>')" class="p-2 text-gray-500 hover:text-red-600 hover:bg-red-50 rounded-lg transition">
+                      <i class="fas fa-trash"></i>
+                    </button>
+                  </div>
+                </td>
+              </tr>
+              <% }) %>
+            </tbody>
+          </table>
+        </div>
+
+        <!-- Mobile Cards -->
+        <div class="md:hidden divide-y divide-gray-200">
+          <% coupens.forEach(coupen => { %>
+          <div class="p-4 space-y-3">
+            <div class="flex items-start justify-between">
+              <div class="flex items-center gap-3">
+                <div class="w-10 h-10 bg-purple-100 rounded-lg flex items-center justify-center flex-shrink-0">
+                  <i class="fas fa-ticket-alt text-purple-600"></i>
+                </div>
+                <div>
+                  <p class="font-medium text-gray-900"><%= coupen.title %></p>
+                  <p class="text-xs text-gray-500">One-time use</p>
+                </div>
+              </div>
+              <span class="inline-flex px-2 py-1 text-xs font-medium rounded-full
+                <%= coupen.status === 'active' ? 'bg-green-100 text-green-700' : 
+                    coupen.status === 'expired' ? 'bg-red-100 text-red-700' : 
+                    coupen.status === 'inactive' ? 'bg-gray-100 text-gray-700' : 'bg-gray-100 text-gray-700' %>">
+                <%= coupen.status === 'active' ? 'Active' : coupen.status === 'expired' ? 'Expired' : coupen.status === 'inactive' ? 'Inactive' : 'Unknown' %>
+              </span>
+            </div>
+            
+            <p class="text-sm text-gray-600 line-clamp-2"><%= coupen.description %></p>
+            
+            <div class="grid grid-cols-3 gap-2 text-sm">
+              <div>
+                <p class="text-gray-500 text-xs">Discount</p>
+                <p class="font-medium text-gray-900"><%= coupen.discountValue %></p>
+              </div>
+              <div>
+                <p class="text-gray-500 text-xs">Usage</p>
+                <p class="font-medium text-gray-900"><%= coupen.usageLimit %></p>
+              </div>
+              <div>
+                <p class="text-gray-500 text-xs">Expiry</p>
+                <p class="font-medium text-gray-900">
+                  <%= new Date(coupen.endDate).toLocaleDateString("en-US", { month: "short", day: "2-digit" }) %>
+                </p>
+              </div>
+            </div>
+            
+            <div class="flex items-center gap-2 pt-2 border-t">
+              <a href="/admin/coupen/edit/<%= coupen._id %>" class="flex-1 flex items-center justify-center gap-2 py-2 text-sm text-purple-600 hover:bg-purple-50 rounded-lg transition">
+                <i class="fas fa-edit"></i> Edit
+              </a>
+              <button onclick="deleteCoupon('<%= coupen._id %>')" class="flex-1 flex items-center justify-center gap-2 py-2 text-sm text-red-600 hover:bg-red-50 rounded-lg transition">
+                <i class="fas fa-trash"></i> Delete
+              </button>
+            </div>
+          </div>
+          <% }) %>
+        </div>
+
+        <!-- Pagination -->
+        <% if (totalPages > 1) { %>
+        <div class="p-4 border-t flex flex-col sm:flex-row items-center justify-between gap-4">
+          <p class="text-sm text-gray-600">Page <%= currentPage %> of <%= totalPages %></p>
+          
+          <div class="flex items-center gap-1">
+            <% if (currentPage === 1) { %>
+              <span class="px-3 py-2 text-sm text-gray-400 cursor-not-allowed">Previous</span>
+            <% } else { %>
+              <a href="/admin/coupen?page=<%= currentPage - 1 %>&search=<%= search %>" class="px-3 py-2 text-sm text-gray-700 hover:bg-gray-100 rounded-lg transition">Previous</a>
+            <% } %>
+
+            <div class="hidden sm:flex items-center gap-1">
+              <% for (let i = 1; i <= totalPages; i++) { %>
+                <% if (currentPage === i) { %>
+                  <span class="w-10 h-10 flex items-center justify-center text-sm font-medium text-white bg-purple-600 rounded-lg"><%= i %></span>
+                <% } else { %>
+                  <a href="/admin/coupen?page=<%= i %>&search=<%= search %>" class="w-10 h-10 flex items-center justify-center text-sm text-gray-700 hover:bg-gray-100 rounded-lg transition"><%= i %></a>
+                <% } %>
+              <% } %>
+            </div>
+
+            <% if (currentPage === totalPages) { %>
+              <span class="px-3 py-2 text-sm text-gray-400 cursor-not-allowed">Next</span>
+            <% } else { %>
+              <a href="/admin/coupen?page=<%= currentPage + 1 %>&search=<%= search %>" class="px-3 py-2 text-sm text-gray-700 hover:bg-gray-100 rounded-lg transition">Next</a>
+            <% } %>
+          </div>
+        </div>
+        <% } %>
+      </div>
+
+    </div>
+  </main>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+<script type="module" src="/js/admin/coupen.js"></script>
+<%- include('../partials/footer') %>

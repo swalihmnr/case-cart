@@ -12,7 +12,7 @@ let produtSchema=new  mongoose.Schema({
         type:String,
         default:true,
     },
-    decount:{
+    descount:{
         type:Number,
         default:0
     },

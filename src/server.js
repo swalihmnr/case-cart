@@ -11,6 +11,7 @@ import adminRouter from '../src/router/adminRouter.js'
 import userRouter from '../src/router/userRouter.js'
 import authRouter from '../src/router/authRouter.js'
 import adminOfferRouter from '../src/router/admin/offerRouter.js'
+import adminCoupenRouter from '../src/router/admin/coupenRouter.js'
 import connectDB from './config/db.js';
 import passport from 'passport';
 import './config/passport.js'
@@ -42,6 +43,7 @@ app.use(attachAdmin)
 // admin Routers here
 app.use('/admin',adminRouter)
 app.use('/admin',adminOfferRouter)
+app.use('/admin',adminCoupenRouter)
 
 app.use(express.static(path.join(__dirname,'../public')));
 app.use((req,res)=>{
