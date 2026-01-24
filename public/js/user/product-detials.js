@@ -193,11 +193,23 @@ import api from "../api.js";
         });
         let productID=null
         let variantID=null
+        const badge = document.getElementById("special-offer-badge");
+        const nameEl = document.getElementById("offer-name");
+        const discountEl = document.getElementById("offer-discount");
+        const typeEl = document.getElementById("offer-type");
+
+      
        async function selectVariant(productId,variantId){
            productID=productId;
            variantID=variantId;
            console.log(variantID,productID)
           const resVariant= await api.getVariantDataAxios(productID,variantID)
+          console.log(resVariant)
+          if(resVariant.data.disObject.isOffer){
+            badge.classList.remove('hidden')
+            nameEl.innerText=resVariant.data.disObject.name;
+            discountEl.innerText=`${resVariant.data.disObject.discountTypeValue} ${resVariant.data.disObject.disType==="fixedAmount"?"₹":"%"} OFF`
+          }
            await api.productDetialAxios(productID)
           
             const salePriceField=document.getElementById('sale-span')

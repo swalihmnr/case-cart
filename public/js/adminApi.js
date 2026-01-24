@@ -131,7 +131,7 @@ const createOfferAxios=async(data)=>{
   }
 }
 const offerEditAxios=async(payload)=>{
-  console.log(payload)
+  console.log('it is payload',payload)
   try {
     return await api.post('/admin/offer/edit',payload);
     

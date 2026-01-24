@@ -12,6 +12,8 @@ import wishlistModel from '../models/wishlistModel.js'
 import cartModel from '../models/cartModel.js'
 import addressModel from '../models/addressModel.js';
 import orderModel from '../models/orderModel.js'
+import offerModel from '../../src/models/admin/offerModel.js'
+import discountChecker from '../../src/utils/calculateDiscount.js'
 
 
 
@@ -571,6 +573,8 @@ const getDetialProduct= async(req,res)=>{
 // Returns updated prices dynamically
 const getVariantData=async(req,res)=>{
     try {
+        console.log('hlow')
+        const today=new Date()
        const productId=req.params.id
        const variantId=req.query.variantId
        if(!productId||!variantId){
@@ -586,17 +590,71 @@ const getVariantData=async(req,res)=>{
             message:"variant not founded"
         })
        }
-       const salePrice=variant.salePrice
+
+       //offer showining in product detial page 
+       const product=await productModel.findById(productId).populate('catgId').populate("variants");
+       const offers = await offerModel.aggregate([
+          
+            {
+              $match: {
+                status: "active",
+                startDate: { $lte: today },
+                endDate: { $gte: today }
+              }
+            },
+            {
+              $match: {
+                $or: [
+                  { applicableOn: "global" },
+                  {
+                    applicableOn: "product",
+                    productIds: product._id
+                  },
+                  {
+                    applicableOn: "category",
+                    categoryIds: product.catgId?._id
+                  }
+                ]
+              }
+            }
+            ,{
+            $project:{
+                applicableOn:1,
+                categoryIds:1,
+                productIds:1
+            }
+            }
+          ]);
+          let disObject={}
+          let salePrice
+          disObject.isOffer=false
+          if(offers.length!==0){
+              let combinedOffers = offers.filter(v =>
+                ["global", "product", "category"].includes(v.applicableOn)  
+              );
+            
+              let offerType='offerType'
+              //  passing argugemnts are mentioned inside of the of the discountChecker
+               disObject=await discountChecker(combinedOffers,offerModel,variant.salePrice,offerType)
+               disObject.isOffer=true
+
+          }
+          salePrice=variant.salePrice
+         if(offers.length!==0){
+            salePrice=Math.floor((variant.salePrice)-disObject.bestDiscount)
+         }
        const orgPrice=variant.orgPrice
        return res.status(STATUS_CODES.OK).json({
         success:false,
         message:"success",
         salePrice,
-        orgPrice
+        orgPrice,
+        disObject
        })
        
     } catch (error) {
-        
+        console.log(error)
+        return res.status(STATUS_CODES.INTERNAL_SERVER_ERROR)
     }
 }
 

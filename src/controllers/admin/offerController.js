@@ -253,24 +253,37 @@ const postOfferAdd=async(req,res)=>{
 const renderOfferEdit = async (req, res) => {
     try {
       const response={};
+      console.log(req.query)
     console.log("body",req.query)
     const offerId = new mongoose.Types.ObjectId(req.query.id);
-    let schemaModel;
-    if(req.query.item==="Product"){
-        response.type="product";
-        schemaModel=Product
-    }else{
-        schemaModel=Category
-        response.type="category"
-    }
-    response.data=await idFinder(schemaModel,req.query.itemId)
+response.type = null;
+response.data = null;
+
+if (req.query.item && req.query.itemId) {
+  let schemaModel;
+
+  if (req.query.item === "Product") {
+    response.type = "product";
+    schemaModel = Product;
+  } else if (req.query.item === "Category") {
+    response.type = "category";
+    schemaModel = Category;
+  }
+
+  if (schemaModel) {
+    response.data = await idFinder(schemaModel, req.query.itemId);
+  }
+}
+
 
     const offer = await offerModel
       .findById(offerId)
       .populate("productIds")
       .populate("categoryIds");
-
+      console.log(req.query.id)
+console.log(offer)
     const products = await Product.find({ isBlock: false });
+    console.log('it  is the product',products)
     const categories = await Category.find();
 
     return res.render("./admin/offer-edit", {
@@ -288,7 +301,9 @@ const renderOfferEdit = async (req, res) => {
 const postEditOffer=async(req,res)=>{
     try {
     console.log(req.body)
+  
     const {offerId, title, description, offerType, offerValue, applicableOn, minOrderValue, startDate, endDate, productIds,categoryIds,status} = req.body;
+    console.log(offerId)
     if (!offerId || !title || !description || !offerType || !offerValue || !applicableOn || !startDate || !endDate) {
         return res.status(STATUS_CODES.NOT_FOUND).json({ success: false, message: "Missing required fields" });
     }
@@ -313,6 +328,10 @@ const postEditOffer=async(req,res)=>{
         offerDataToUpdate.productIds=productIds.map((id)=>{
            return new mongoose.Types.ObjectId(id)
         })
+    }
+    if(applicableOn==='global'){
+      offerDataToUpdate.productIds=[]
+      offerDataToUpdate.categoryIds=[]
     }
     const updatedData=await offerModel.findByIdAndUpdate(new mongoose.Types.ObjectId(offerId),offerDataToUpdate,{new:true,runValidators:true})
     return res.status(STATUS_CODES.OK).json({
