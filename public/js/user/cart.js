@@ -39,6 +39,7 @@ import api from "../api.js";
                     document.getElementById('subtotal').textContent =res.data.subtotal;
                     document.getElementById('total').textContent = res.data.subtotal
                     const cartItem = btn.closest('.cart-item');
+                    window.location.reload()
                   
                     const qtyEl = cartItem.querySelector('.quantity-text');
                     const priceEl = cartItem.querySelector('.price-field');

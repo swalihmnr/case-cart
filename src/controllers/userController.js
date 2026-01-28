@@ -1026,30 +1026,105 @@ const remWishlist=async(req,res)=>{
 // Calculates subtotal and total cart items
 const getCart=async(req,res)=>{
     try {
-    const userId=new mongoose.Types.ObjectId(req.session.user.id)
-    const products=await cartModel.find({userId:userId}).populate('variantId').populate({
-        path:'productId',
-        populate:{
-            path:'catgId',
-            model:'Category'
-        }
+  const userId = new mongoose.Types.ObjectId(req.session.user.id);
+  const totalDocs = await cartModel.countDocuments({ userId });
+
+  const cartItems = await cartModel
+    .find({ userId })
+    .populate("variantId")
+    .populate({
+      path: "productId",
+      populate: {
+        path: "catgId",
+        model: "Category",
+      },
     });
-    let subtotal=0; 
-    const cartItems=await cartModel.find({userId:userId}).populate('variantId').populate('productId');
-     cartItems.forEach((item)=>{
-         subtotal+=item.quantity*item.variantId.salePrice
-     })
-     const totalDocs=await cartModel.countDocuments({userId:userId})
-    console.log('finished')
-   
-   res.render('./user/cart',{
-    products,
-    subtotal,
-    totalDocs
-   })
-    } catch (error) {
-        console.log(error.message)
+  let shipping=0;
+  let totalDiscount = 0;
+  let subtotal = 0;
+  let finalAmount = 0;
+
+  for (let item of cartItems) {
+    const price = item.variantId.orgPrice;
+    const quantity = item.quantity;
+    const itemTotal = price * quantity;
+
+    // subtotal BEFORE discount
+    subtotal += itemTotal;
+
+    //  find applicable offers (FIXED MATCHING)
+    const offers = await offerModel.find({
+      status: "active",
+      startDate: { $lte: new Date() },
+      endDate: { $gte: new Date() },
+      $or: [
+        { applicableOn: "global" },
+        { applicableOn: "product", productIds: { $in: [item.productId._id] } },
+        {
+          applicableOn: "category",
+          categoryIds: { $in: [item.productId.catgId._id] },
+        },
+      ],
+    });
+
+    //  find best percentage offer
+    let bestOffer = null;
+    let bestDiscount = 0;
+
+    for (let offer of offers) {
+      if (offer.offerType === "percentage") {
+          if (itemTotal < offer.minimumOrderValue) continue;
+        const discount = (itemTotal * offer.discountValue) / 100;
+        if (discount > bestDiscount) {
+          bestDiscount = discount;
+          bestOffer = offer;
+        }
+      }
     }
+
+    // round money
+    bestDiscount = Math.round(bestDiscount);
+
+    // totals
+    totalDiscount += bestDiscount;
+
+    // per-item final
+    item.finalPrice = itemTotal - bestDiscount;
+
+    // cart final
+    finalAmount += item.finalPrice;
+
+    // attach offer info
+    item.appliedOffer = bestOffer
+      ? {
+          title: bestOffer.title,
+          type: bestOffer.offerType,
+          value: bestOffer.discountValue,
+          discount: bestDiscount,
+        }
+      : null;
+
+    console.log("Best discount for item:", bestDiscount);
+  }
+  if(finalAmount>1500){
+    shipping=50;
+  }
+  console.log("Subtotal:", subtotal);
+  console.log("Total Discount:", totalDiscount);
+  console.log("Final Amount:", finalAmount);
+
+  res.render("./user/cart", {
+    products: cartItems,
+    subtotal,
+    totalDiscount,
+    finalAmount,
+    totalDocs,
+    shipping
+  });
+} catch (error) {
+  console.log(error.message);
+}
+
     
 }
 
