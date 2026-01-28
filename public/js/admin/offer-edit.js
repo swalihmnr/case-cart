@@ -11,10 +11,15 @@ document.addEventListener("DOMContentLoaded", () => {
   const selectedBox = document.getElementById("selectedProducts");
   const offerStatus = document.getElementById("offerStatus");
 
-const specificItem = window.SPECIFIC_ITEM;
-console.log(specificItem)
-const offerId = window.OFFER_ID;
+  const specificItem = window.SPECIFIC_ITEM;
+  const offerId = window.OFFER_ID;
   const ALL_PRODUCTS = window.ALL_PRODUCTS || [];
+
+  // =====================
+  // CONFIG
+  // =====================
+  const MAX_PERCENT = 70;
+  const MAX_FLAT = 500;
 
   // =====================
   // UI TOGGLE
@@ -71,12 +76,11 @@ const offerId = window.OFFER_ID;
   selectedBox.addEventListener("click", e => {
     const btn = e.target.closest(".remove-product");
     if (!btn) return;
-
     btn.closest(".selected-product-item").remove();
   });
 
   // =====================
-  // AUTO SELECT FROM PRODUCT PAGE
+  // AUTO SELECT FROM CONTEXT
   // =====================
   if (specificItem?.type === "product") {
     applicableOn.value = "product";
@@ -92,16 +96,15 @@ const offerId = window.OFFER_ID;
   }
 
   if (specificItem?.type === "category") {
-  applicableOn.value = "category";
-  refreshUI();
+    applicableOn.value = "category";
+    refreshUI();
 
-  const checkbox = document.querySelector(
-    `.category-checkbox[value="${specificItem.data._id}"]`
-  );
+    const checkbox = document.querySelector(
+      `.category-checkbox[value="${specificItem.data._id}"]`
+    );
 
-  if (checkbox) checkbox.checked = true;
-}
-
+    if (checkbox) checkbox.checked = true;
+  }
 
   // =====================
   // PRODUCT SEARCH
@@ -140,13 +143,61 @@ const offerId = window.OFFER_ID;
   });
 
   // =====================
+  // VALIDATION ENGINE
+  // =====================
+  function validate(payload) {
+    // Title
+    if (!payload.title || payload.title.length < 3) {
+      return "Title must be at least 3 characters";
+    }
+
+    // Description
+    if (!payload.description || payload.description.length < 10) {
+      return "Description must be at least 10 characters";
+    }
+
+    // Offer Type
+    if (!payload.offerType) {
+      return "Select offer type";
+    }
+
+    // Discount Rules
+    if (payload.offerType === "percentage") {
+      if (payload.offerValue < 1 || payload.offerValue > MAX_PERCENT) {
+        return `Percentage must be between 1 and ${MAX_PERCENT}`;
+      }
+    }
+
+
+    // Dates
+    if (!payload.startDate || !payload.endDate) {
+      return "Start and End dates are required";
+    }
+
+    if (new Date(payload.endDate) <= new Date(payload.startDate)) {
+      return "End date must be after start date";
+    }
+
+    // Selection Rules
+    if (payload.applicableOn === "product" && (!payload.productIds || payload.productIds.length === 0)) {
+      return "Select at least one product";
+    }
+
+    if (payload.applicableOn === "category" && (!payload.categoryIds || payload.categoryIds.length === 0)) {
+      return "Select at least one category";
+    }
+
+    return null;
+  }
+
+  // =====================
   // SUBMIT
   // =====================
   form.addEventListener("submit", async e => {
     e.preventDefault();
 
     const payload = {
-      offerId:offerId._id,
+      offerId: offerId._id,
       title: offerTitle.value.trim(),
       description: offerDesc.value.trim(),
       offerType: offerType.value,
@@ -155,7 +206,7 @@ const offerId = window.OFFER_ID;
       minOrderValue: Number(minOrderValue.value),
       startDate: startDate.value,
       endDate: endDate.value,
-       status: offerStatus.value
+      status: offerStatus.value
     };
 
     if (payload.applicableOn === "product") {
@@ -170,38 +221,45 @@ const offerId = window.OFFER_ID;
       ].map(cb => cb.value);
     }
 
-    
+    // 🔥 VALIDATE BEFORE API CALL
+    const error = validate(payload);
+    if (error) {
+      Swal.fire({
+        icon: "error",
+        title: "Validation Error",
+        text: error
+      });
+      return;
+    }
 
     try {
-  const res = await api.offerEditAxios(payload);
-  console.log(res)
+      const res = await api.offerEditAxios(payload);
 
-  if (res.data.success) {
-    Swal.fire({
-      icon: "success",
-      title: "Offer Updated",
-      text: res.data.message,
-      showConfirmButton: false,
-      timer: 1500
-    }).then(() => {
-      location.href = "/admin/offers";
-    });
-  } else {
-    Swal.fire({
-      icon: "error",
-      title: "Update Failed",
-      text: res.data.message || "Something went wrong"
-    });
-  }
+      if (res.data.success) {
+        Swal.fire({
+          icon: "success",
+          title: "Offer Updated",
+          text: res.data.message,
+          showConfirmButton: false,
+          timer: 1500
+        }).then(() => {
+          location.href = "/admin/offers";
+        });
+      } else {
+        Swal.fire({
+          icon: "error",
+          title: "Update Failed",
+          text: res.data.message || "Something went wrong"
+        });
+      }
+    } catch (err) {
+      console.error("Update failed:", err);
 
-} catch (err) {
-  console.error("Update failed:", err);
-
-  Swal.fire({
-    icon: "error",
-    title: "Server Error",
-    text: "Could not update the offer. Try again later."
-  });
-}
+      Swal.fire({
+        icon: "error",
+        title: "Server Error",
+        text: "Could not update the offer. Try again later."
+      });
+    }
   });
 });

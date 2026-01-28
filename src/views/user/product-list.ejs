@@ -225,7 +225,7 @@
                     </div>
                 </div>
 
-                <!-- Products Grid -->
+                <!-- Products Grid - SINGLE SECTION (removed duplicates) -->
                 <% if (products.length > 0) { %>
                     <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-6">
                         <% products.forEach(product => { %>
@@ -245,28 +245,34 @@
                                         />
                                     </a>
                                     
+                                    <!-- Offer Badges -->
+                                    <% if (product.offerValue > 0) { %>
+                                        <div class="absolute top-4 left-4 flex flex-col gap-2">
+                                            <div class="bg-gradient-to-r from-red-500 to-pink-600 text-white text-xs font-bold px-3 py-1.5 rounded-full shadow-lg animate-pulse">
+                                                <%= product.offerType === 'percentage'
+                                                    ? product.offerValue + '% OFF'
+                                                    : '₹' + product.offerValue + ' OFF' %>
+                                            </div>
+                                        </div>
+                                    <% } %>   
+
                                     <!-- Wishlist Button -->
-                                     <% if (user) { %>
-                                      
+                                    <% if (user) { %>
                                         <button 
-                                   onclick="addWishlist('<%= product._id %>', '<%= product.minVariant._id %>')" 
-                                   class="absolute top-4 right-4 bg-white rounded-full p-2 hover:bg-gray-100 transition"
-                               >
-                                 <svg
-                                  id="wish-icon-"
-                                  class="w-5 h-5 <%= isInWishlist ? 'text-red-500' : 'text-gray-400' %>"
-                                  viewBox="0 0 24 24"
-                                  fill="currentColor"
-                                  xmlns="http://www.w3.org/2000/svg"
-                                >
-                                  <!-- filled heart path -->
-                                  <path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"/>
-                                </svg>
-                               </button>
-                                     <% } %>
-                                    
-                                    <!-- Stock Badge -->
-                                   
+                                            onclick="addWishlist('<%= product._id %>', '<%= product.minVariant._id %>')" 
+                                            class="absolute top-4 right-4 bg-white rounded-full p-2 hover:bg-gray-100 transition z-10"
+                                        >
+                                            <svg
+                                                id="wish-icon-<%= product._id %>-<%= product.minVariant._id %>"
+                                                class="w-5 h-5 <%= isInWishlist ? 'text-red-500' : 'text-gray-400' %>"
+                                                viewBox="0 0 24 24"
+                                                fill="currentColor"
+                                                xmlns="http://www.w3.org/2000/svg"
+                                            >
+                                                <path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"/>
+                                            </svg>
+                                        </button>
+                                    <% } %>
                                 </div>
 
                                 <!-- Content -->
@@ -291,16 +297,21 @@
                                         </div>
                                     </a>
                                     
-                                    <!-- Price -->
+                                    <!-- Price Section -->
                                     <div class="flex items-center justify-between">
                                         <div class="flex flex-col">
                                             <span class="text-lg md:text-xl font-bold text-purple-600">
                                                 ₹<%= product.minPrice %>
                                             </span>
                                             <% if (product.originalPrice && product.originalPrice > product.minPrice) { %>
-                                                <span class="text-xs text-gray-400 line-through">
-                                                    ₹<%= product.originalPrice %>
-                                                </span>
+                                                <div class="flex items-center space-x-2 mt-1">
+                                                    <span class="text-xs text-gray-400 line-through">
+                                                        ₹<%= product.originalPrice %>
+                                                    </span>
+                                                    <span class="text-xs font-semibold text-red-600 bg-red-50 px-2 py-0.5 rounded">
+                                                        Save ₹<%= (product.originalPrice - product.minPrice).toFixed(0) %>
+                                                    </span>
+                                                </div>
                                             <% } %>
                                         </div>
                                         
@@ -331,7 +342,7 @@
                         </button>
                     </div>
                 <% } %>
-                
+
                 <% if (totalPages > 1) { %>
                     <div class="flex justify-center mt-8 md:mt-10 space-x-2">
                         <!-- Previous Button -->

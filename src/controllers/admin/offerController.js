@@ -185,6 +185,7 @@ const postOfferAdd=async(req,res)=>{
                 })
                 
             }else{
+              
                 const start=new Date(startDate)
                 const end=new Date(endDate);
                 if(isNaN(end.getTime())){
@@ -219,11 +220,23 @@ const postOfferAdd=async(req,res)=>{
         endDate
     }
     if(applicableOn==='category'){
+       if(categoryIds.length===0){
+        return res.status(STATUS_CODES.NOT_FOUND).json({
+          success:false,
+          message:`You must add items belong to ${applicableOn}`
+        })
+      }
         offerData.categoryIds=categoryIds.map((id)=>{
            return  new mongoose.Types.ObjectId(id);
         })
     }
     if(applicableOn==="product"){
+       if(productIds.length===0){
+        return res.status(STATUS_CODES.NOT_FOUND).json({
+          success:false,
+          message:`You must add items belong to ${applicableOn}`
+        })
+      }
         offerData.productIds=productIds.map((id)=>{
            return new mongoose.Types.ObjectId(id)
         })
@@ -320,11 +333,23 @@ const postEditOffer=async(req,res)=>{
         status 
     }
     if(applicableOn==='category'){
+      if(categoryIds.length===0){
+        return res.status(STATUS_CODES.NOT_FOUND).json({
+          success:false,
+          message:`You must add items belong to ${applicableOn}`
+        })
+      }
         offerDataToUpdate.categoryIds=categoryIds.map((id)=>{
            return  new mongoose.Types.ObjectId(id);
         })
     }
     if(applicableOn==="product"){
+      if(productIds.length===0){
+        return res.status(STATUS_CODES.NOT_FOUND).json({
+          success:false,
+          message:`You must add items belong to ${applicableOn}`
+        })
+      }
         offerDataToUpdate.productIds=productIds.map((id)=>{
            return new mongoose.Types.ObjectId(id)
         })

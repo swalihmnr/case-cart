@@ -1,154 +1,133 @@
-import api from '../adminApi.js';
+import api from "../adminApi.js";
 
 // ===============================
-// CONFIG & PATTERNS
+// CONFIG
 // ===============================
-window.patterns = {
-  title: /^.{3,}$/,
-  description: /^.{10,}$/,
-  percentage: /^(?:[1-9][0-9]?|90)$/,
-  amount: /^[1-9]\d*$/
-};
+const MAX_PERCENT = 70;
+const MAX_FLAT = 500;
 
 // ===============================
 // CONTEXT DETECTION
 // ===============================
-window.urlParams = new URLSearchParams(window.location.search);
-window.productIdFromUrl = window.urlParams.get('id');
-window.isProductContext = !!window.productIdFromUrl;
+const urlParams = new URLSearchParams(window.location.search);
+const productIdFromUrl = urlParams.get("id");
+const isProductContext = !!productIdFromUrl;
 
 // ===============================
 // DOM READY
 // ===============================
-document.addEventListener('DOMContentLoaded', () => {
-  window.initOfferPage();
+document.addEventListener("DOMContentLoaded", () => {
+  initOfferPage();
 });
 
 // ===============================
 // INIT
 // ===============================
-window.initOfferPage = function () {
+function initOfferPage() {
   const form = document.querySelector("form");
-  const applicableOnSelect = document.getElementById('applicableOn');
-  const cancelBtn = document.getElementById('cancelBtn');
+  const applicableOn = document.getElementById("applicableOn");
+  const cancelBtn = document.getElementById("cancelBtn");
+  const search = document.getElementById("productSearch");
 
-  if (!form || !applicableOnSelect) return;
+  if (!form || !applicableOn) return;
 
-  // Context mode
-  if (window.isProductContext) {
-    window.enableProductContextMode();
+  if (isProductContext) {
+    enableProductContextMode();
   } else {
-    window.enableNormalMode();
+    enableNormalMode();
   }
 
-  // Submit handler
-  form.addEventListener("submit", window.handleOfferSubmit);
+  form.addEventListener("submit", handleOfferSubmit);
 
-  // Cancel button
-  cancelBtn?.addEventListener('click', () => {
-    window.history.back();
-  });
+  cancelBtn?.addEventListener("click", () => window.history.back());
 
-  // Search
-  const productSearch = document.getElementById('productSearch');
-  if (productSearch) {
-    productSearch.addEventListener(
-      'input',
-      window.debounce(window.handleProductSearch, 300)
-    );
-  }
-};
+  search?.addEventListener("input", debounce(handleProductSearch, 300));
+}
 
 // ===============================
 // CONTEXT MODES
 // ===============================
-window.enableProductContextMode = function () {
-  const applicableOnSelect = document.getElementById('applicableOn');
-  const productContextMessage = document.getElementById('productContextMessage');
-  const productSelectorContainer = document.getElementById('productSelectorContainer');
-  const productDisplayContainer = document.getElementById('productDisplayContainer');
-  const categorySelectorContainer = document.getElementById('categorySelectorContainer');
-  const productIdInput = document.getElementById('productIdFromUrl');
+function enableProductContextMode() {
+  const applicableOn = document.getElementById("applicableOn");
+  const productContextMessage = document.getElementById("productContextMessage");
+  const productSelectorContainer = document.getElementById("productSelectorContainer");
+  const productDisplayContainer = document.getElementById("productDisplayContainer");
+  const categorySelectorContainer = document.getElementById("categorySelectorContainer");
+  const productIdInput = document.getElementById("productIdFromUrl");
 
-  productContextMessage?.classList.remove('hidden');
+  productContextMessage?.classList.remove("hidden");
 
-  applicableOnSelect.value = 'product';
-  applicableOnSelect.disabled = true;
-  applicableOnSelect.classList.add('bg-gray-100', 'cursor-not-allowed');
+  applicableOn.value = "product";
+  applicableOn.disabled = true;
+  applicableOn.classList.add("bg-gray-100", "cursor-not-allowed");
 
-  productDisplayContainer?.classList.remove('hidden');
-  productSelectorContainer?.classList.add('hidden');
-  categorySelectorContainer?.classList.add('hidden');
+  productDisplayContainer?.classList.remove("hidden");
+  productSelectorContainer?.classList.add("hidden");
+  categorySelectorContainer?.classList.add("hidden");
 
-  if (productIdInput) {
-    productIdInput.value = window.productIdFromUrl;
-  }
+  if (productIdInput) productIdInput.value = productIdFromUrl;
 
-  window.loadProductDetails(window.productIdFromUrl);
-};
+  loadProductDetails(productIdFromUrl);
+}
 
-window.enableNormalMode = function () {
-  const applicableOnSelect = document.getElementById('applicableOn');
-  const productContextMessage = document.getElementById('productContextMessage');
+function enableNormalMode() {
+  const applicableOn = document.getElementById("applicableOn");
+  const productContextMessage = document.getElementById("productContextMessage");
 
-  productContextMessage?.classList.add('hidden');
+  productContextMessage?.classList.add("hidden");
 
-  applicableOnSelect.disabled = false;
-  applicableOnSelect.classList.remove('bg-gray-100', 'cursor-not-allowed');
+  applicableOn.disabled = false;
+  applicableOn.classList.remove("bg-gray-100", "cursor-not-allowed");
 
-  applicableOnSelect.addEventListener(
-    'change',
-    window.handleApplicableOnChange
-  );
-
-  window.handleApplicableOnChange();
-  window.loadCategories();
-};
+  applicableOn.addEventListener("change", handleApplicableOnChange);
+  handleApplicableOnChange();
+  loadCategories();
+}
 
 // ===============================
 // UI HANDLER
 // ===============================
-window.handleApplicableOnChange = function () {
-  const applicableOn = document.getElementById('applicableOn')?.value;
-  const productSelectorContainer = document.getElementById('productSelectorContainer');
-  const categorySelectorContainer = document.getElementById('categorySelectorContainer');
-  const productDisplayContainer = document.getElementById('productDisplayContainer');
+function handleApplicableOnChange() {
+  const applicableOn = document.getElementById("applicableOn")?.value;
+  const productBox = document.getElementById("productSelectorContainer");
+  const categoryBox = document.getElementById("categorySelectorContainer");
+  const productDisplayBox = document.getElementById("productDisplayContainer");
 
-  productSelectorContainer?.classList.add('hidden');
-  categorySelectorContainer?.classList.add('hidden');
-  productDisplayContainer?.classList.add('hidden');
+  productBox?.classList.add("hidden");
+  categoryBox?.classList.add("hidden");
+  productDisplayBox?.classList.add("hidden");
 
-  if (applicableOn === 'product') {
-    productSelectorContainer?.classList.remove('hidden');
-  } else if (applicableOn === 'category') {
-    categorySelectorContainer?.classList.remove('hidden');
-  }
-};
+  if (applicableOn === "product") productBox?.classList.remove("hidden");
+  if (applicableOn === "category") categoryBox?.classList.remove("hidden");
+}
 
 // ===============================
 // FORM SUBMIT
 // ===============================
-window.handleOfferSubmit = async function (e) {
+async function handleOfferSubmit(e) {
   e.preventDefault();
 
-  const formData = window.getFormData();
-  const errors = window.validateOfferForm(formData);
+  const data = getFormData();
+  const error = validateOfferForm(data);
 
-  window.renderErrors(errors);
-  if (!errors.valid) return;
+  if (error) {
+    Swal.fire({
+      icon: "error",
+      title: "Validation Error",
+      text: error
+    });
+    return;
+  }
 
-  // ✅ BUILD PAYLOAD HERE
-  const payload = window.buildPayload(formData);
-
-  console.log("SENDING PAYLOAD:", payload); // Debug — remove later
+  const payload = buildPayload(data);
 
   try {
-    const res = await api.createOfferAxios(payload); // ✅ Send payload
+    const res = await api.createOfferAxios(payload);
 
     if (res?.data?.success) {
       Swal.fire({
-        icon: 'success',
-        title: 'Offer Created',
+        icon: "success",
+        title: "Offer Created",
         text: res.data.message,
         timer: 1500,
         showConfirmButton: false
@@ -161,19 +140,17 @@ window.handleOfferSubmit = async function (e) {
   } catch (err) {
     console.error("Create offer error:", err);
     Swal.fire({
-      icon: 'error',
-      title: 'Error',
-      text: err.message || 'Something went wrong',
-      timer: 1500,
-      showConfirmButton: false
+      icon: "error",
+      title: "Server Error",
+      text: err.message || "Something went wrong"
     });
   }
-};
+}
 
 // ===============================
 // DATA EXTRACTOR
 // ===============================
-window.getFormData = function () {
+function getFormData() {
   return {
     title: document.getElementById("offerTitle")?.value.trim(),
     desc: document.getElementById("offerDesc")?.value.trim(),
@@ -184,119 +161,65 @@ window.getFormData = function () {
     endDate: document.getElementById("endDate")?.value,
     minOrderValue: document.getElementById("minOrderValue")?.value.trim()
   };
-};
+}
 
 // ===============================
 // VALIDATION ENGINE
 // ===============================
-window.validateOfferForm = function (data) {
-  const errors = {
-    offerTitleErr: "",
-    offerDescErr: "",
-    offerTypeErr: "",
-    offerValueErr: "",
-    applicableOnErr: "",
-    startDateErr: "",
-    endDateErr: "",
-    minOrderValueErr: "",
-    productSelectorErr: "",
-    categorySelectorErr: "",
-    valid: true
-  };
+function validateOfferForm(data) {
+  const discountVal = Number(data.offerValue);
+  const minOrderVal = Number(data.minOrderValue);
 
   // Title
-  if (!window.patterns.title.test(data.title)) {
-    errors.offerTitleErr = "Title must be at least 3 characters";
-    errors.valid = false;
-  }
+  if (!data.title || data.title.length < 3)
+    return "Title must be at least 3 characters";
 
   // Description
-  if (!window.patterns.description.test(data.desc)) {
-    errors.offerDescErr = "Description must be at least 10 characters";
-    errors.valid = false;
-  }
+  if (!data.desc || data.desc.length < 10)
+    return "Description must be at least 10 characters";
 
   // Offer Type
-  if (!data.offerType) {
-    errors.offerTypeErr = "Select offer type";
-    errors.valid = false;
-  }
+  if (!data.offerType) return "Select offer type";
 
-  // Offer Value
+  // Numeric safety
+  if (isNaN(discountVal)) return "Discount must be a valid number";
+  if (isNaN(minOrderVal)) return "Minimum order must be a valid number";
+
+  // Discount rules
   if (data.offerType === "percentage") {
-    if (!window.patterns.percentage.test(data.offerValue)) {
-      errors.offerValueErr = "Percentage must be between 1–90";
-      errors.valid = false;
-    }
-  } else if (data.offerType === "fixedamount") {
-    if (!window.patterns.amount.test(data.offerValue)) {
-      errors.offerValueErr = "Amount must be greater than 0";
-      errors.valid = false;
-    }
-  }
-
-  // Applicable On
-  if (!data.applicableOn) {
-    errors.applicableOnErr = "Select applicable type";
-    errors.valid = false;
-  }
-
-  if (window.isProductContext && data.applicableOn !== "product") {
-    errors.applicableOnErr = "This offer must apply to a product";
-    errors.valid = false;
-  }
-
-  // Min Order
-  if (data.minOrderValue === "" || Number(data.minOrderValue) < 0) {
-    errors.minOrderValueErr = "Enter valid minimum order value";
-    errors.valid = false;
+    if (discountVal < 1 || discountVal > MAX_PERCENT)
+      return `Percentage must be between 1 and ${MAX_PERCENT}`;
   }
 
   // Dates
-  if (!data.startDate) {
-    errors.startDateErr = "Start date required";
-    errors.valid = false;
+  if (!data.startDate || !data.endDate)
+    return "Start and End dates are required";
+
+  const start = new Date(data.startDate);
+  const end = new Date(data.endDate);
+
+  const today = new Date();
+  today.setHours(0, 0, 0, 0);
+
+  if (start < today) return "Start date cannot be in the past";
+  if (end <= start) return "End date must be after start date";
+
+  // Selection rules
+  if (!isProductContext) {
+    if (data.applicableOn === "product" && getSelectedProductIds().length === 0)
+      return "Select at least one product";
+
+    if (data.applicableOn === "category" && getSelectedCategoryIds().length === 0)
+      return "Select at least one category";
   }
 
-  if (!data.endDate) {
-    errors.endDateErr = "End date required";
-    errors.valid = false;
-  }
-
-  if (data.startDate && data.endDate) {
-    if (new Date(data.endDate) <= new Date(data.startDate)) {
-      errors.endDateErr = "End date must be after start date";
-      errors.valid = false;
-    }
-  }
-
-  // Selection Validation
-  if (!window.isProductContext) {
-    if (data.applicableOn === "product") {
-      if (window.getSelectedProductIds().length === 0) {
-        errors.productSelectorErr = "Select at least one product";
-        errors.valid = false;
-      }
-    }
-
-    if (data.applicableOn === "category") {
-      if (window.getSelectedCategoryIds().length === 0) {
-        errors.categorySelectorErr = "Select at least one category";
-        errors.valid = false;
-      }
-    }
-  }
-
-  // Build Payload
-  errors.payload = window.buildPayload(data);
-
-  return errors;
-};
+  return null;
+}
 
 // ===============================
 // PAYLOAD BUILDER
 // ===============================
-window.buildPayload = function (data) {
+function buildPayload(data) {
   const payload = {
     title: data.title,
     description: data.desc,
@@ -308,196 +231,151 @@ window.buildPayload = function (data) {
     endDate: data.endDate
   };
 
-  if (window.isProductContext) {
+  if (isProductContext) {
     payload.applicableOn = "product";
-    payload.productIds = [window.productIdFromUrl];
+    payload.productIds = [productIdFromUrl];
   } else {
     if (data.applicableOn === "product") {
-      payload.productIds = window.getSelectedProductIds();
+      payload.productIds = getSelectedProductIds();
     }
     if (data.applicableOn === "category") {
-      payload.categoryIds = window.getSelectedCategoryIds();
+      payload.categoryIds = getSelectedCategoryIds();
     }
   }
 
   return payload;
-};
-
-// ===============================
-// ERROR RENDERER
-// ===============================
-window.renderErrors = function (errors) {
-  Object.keys(errors).forEach(key => {
-    if (key === "valid" || key === "payload") return;
-    const el = document.getElementById(key);
-    if (el) el.innerText = errors[key];
-  });
-};
+}
 
 // ===============================
 // HELPERS
 // ===============================
-window.getSelectedProductIds = function () {
-  return [...document.querySelectorAll('.selected-product-item')]
-    .map(el => el.getAttribute('data-product-id'))
+function getSelectedProductIds() {
+  return [...document.querySelectorAll(".selected-product-item")]
+    .map(el => el.getAttribute("data-product-id"))
     .filter(Boolean);
-};
+}
 
-window.getSelectedCategoryIds = function () {
-  return [...document.querySelectorAll('.category-checkbox:checked')]
+function getSelectedCategoryIds() {
+  return [...document.querySelectorAll(".category-checkbox:checked")]
     .map(cb => cb.value);
-};
+}
 
 // ===============================
-// PRODUCT SEARCH (MODIFIED - NO API CALL)
+// PRODUCT SEARCH
 // ===============================
-window.handleProductSearch = function (e) {
+function handleProductSearch(e) {
   const term = e.target.value.trim().toLowerCase();
-  const container = document.getElementById('productSearchResults');
-  
+  const container = document.getElementById("productSearchResults");
+
   if (!container || term.length < 2) {
-    container?.classList.add('hidden');
+    container?.classList.add("hidden");
     return;
   }
-  
-  // Filter from pre-loaded products instead of API call
-  const filteredProducts = (window.ALL_PRODUCTS || []).filter(product => {
-    if (!product || !product._id) return false;
-    
-    const productName = product.name?.toLowerCase() || '';
-    const productSku = product.sku?.toLowerCase() || '';
-    return productName.includes(term) || productSku.includes(term);
-  }).slice(0, 10); // Limit results for performance
-  
-  if (filteredProducts.length === 0) {
-    container.innerHTML = '<div class="p-3 text-gray-500 text-center">No products found</div>';
-  } else {
-    container.innerHTML = filteredProducts.map(p => `
-      <div class="p-3 hover:bg-gray-100 cursor-pointer border-b border-gray-100 product-result-item"
-        data-product-id="${p._id}"
-        data-product-name="${p.name}">
-        <p class="font-medium text-gray-900">${p.name}</p>
-        <p class="text-sm text-gray-600">${p.sku || ''}</p>
-      </div>
-    `).join("");
-  }
-  
-  container.classList.remove('hidden');
-  
-  // Add click handlers to results
-  document.querySelectorAll('.product-result-item').forEach(item => {
-    item.addEventListener('click', () => window.addSelectedProduct(item));
+
+  const ALL_PRODUCTS = window.ALL_PRODUCTS || [];
+
+  const filtered = ALL_PRODUCTS.filter(p =>
+    p.name?.toLowerCase().includes(term)
+  ).slice(0, 8);
+
+  container.innerHTML = filtered.length
+    ? filtered.map(p => `
+        <div class="product-result-item p-2 hover:bg-gray-100 cursor-pointer"
+          data-product-id="${p._id}"
+          data-product-name="${p.name}">
+          ${p.name}
+        </div>
+      `).join("")
+    : `<div class="p-2 text-gray-500 text-sm">No products found</div>`;
+
+  container.classList.remove("hidden");
+
+  document.querySelectorAll(".product-result-item").forEach(item => {
+    item.onclick = () => {
+      addSelectedProduct(item.dataset.productId, item.dataset.productName);
+      container.classList.add("hidden");
+      e.target.value = "";
+    };
   });
-};
+}
 
-window.addSelectedProduct = function (el) {
-  const id = el.getAttribute('data-product-id');
-  const name = el.getAttribute('data-product-name');
+function addSelectedProduct(id, name) {
+  const container = document.getElementById("selectedProducts");
 
-  // Check if already selected
-  if (document.querySelector(`.selected-product-item[data-product-id="${id}"]`)) return;
+  if (
+    document.querySelector(
+      `.selected-product-item[data-product-id="${id}"]`
+    )
+  ) return;
 
-  const container = document.getElementById('selectedProducts');
-  if (!container) return;
-
-  const div = document.createElement('div');
-  div.className = 'selected-product-item flex items-center justify-between bg-gray-50 p-2 rounded mb-2';
-  div.setAttribute('data-product-id', id);
+  const div = document.createElement("div");
+  div.className =
+    "selected-product-item flex justify-between items-center bg-gray-50 p-2 rounded mb-2";
+  div.dataset.productId = id;
 
   div.innerHTML = `
-    <span class="text-sm text-gray-900">${name}</span>
-    <button type="button" class="remove-product text-red-500 hover:text-red-700">
-      <i class="fas fa-times"></i>
-    </button>
+    <span class="text-sm">${name}</span>
+    <button type="button" class="remove-product text-red-500">✕</button>
   `;
 
-  // Add remove handler
-  div.querySelector('.remove-product').addEventListener('click', () => {
-    div.remove();
-  });
-
+  div.querySelector(".remove-product").onclick = () => div.remove();
   container.appendChild(div);
-
-  // Clear search and hide results
-  document.getElementById('productSearch').value = '';
-  document.getElementById('productSearchResults').classList.add('hidden');
-};
+}
 
 // ===============================
-// API LOADERS (UPDATED - uses pre-loaded data for categories too)
+// LOADERS
 // ===============================
-window.loadProductDetails = async function (productId) {
+async function loadProductDetails(productId) {
   try {
-    // Try to find product in pre-loaded data first
-    const preloadedProduct = (window.ALL_PRODUCTS || []).find(p => p._id === productId);
-    
-    if (preloadedProduct) {
-      const box = document.getElementById('selectedProductDisplay');
-      if (!box) return;
+    const product =
+      (window.ALL_PRODUCTS || []).find(p => p._id === productId) ||
+      (await (await fetch(`/api/products/${productId}`)).json());
 
-      box.innerHTML = `
-        <div class="flex justify-between items-center">
-          <div>
-            <p class="font-medium text-gray-900">${preloadedProduct.name}</p>
-            <p class="text-sm text-gray-600">${preloadedProduct.sku || ''}</p>
-          </div>
-          <span class="text-gray-400 text-sm">Selected</span>
+    const box = document.getElementById("selectedProductDisplay");
+    if (!box || !product) return;
+
+    box.innerHTML = `
+      <div class="flex justify-between items-center">
+        <div>
+          <p class="font-medium text-gray-900">${product.name}</p>
+          <p class="text-sm text-gray-600">${product.sku || ""}</p>
         </div>
-      `;
-    } else {
-      // Fallback to API if not in pre-loaded data
-      const res = await fetch(`/api/products/${productId}`);
-      const product = await res.json();
-
-      const box = document.getElementById('selectedProductDisplay');
-      if (!box) return;
-
-      box.innerHTML = `
-        <div class="flex justify-between items-center">
-          <div>
-            <p class="font-medium text-gray-900">${product.name}</p>
-            <p class="text-sm text-gray-600">${product.sku || ''}</p>
-          </div>
-          <span class="text-gray-400 text-sm">Selected</span>
-        </div>
-      `;
-    }
+        <span class="text-gray-400 text-sm">Selected</span>
+      </div>
+    `;
   } catch (err) {
     console.error("Load product error:", err);
   }
-};
+}
 
-window.loadCategories = function () {
-  // Use pre-loaded categories from EJS
+function loadCategories() {
   const categories = window.ALL_CATEGORIES || [];
-  
-  const container = document.getElementById('categorySelector');
+  const container = document.getElementById("categorySelector");
+
   if (!container) return;
 
-  if (categories.length === 0) {
-    container.innerHTML = '<div class="text-gray-500 text-center p-2">No categories available</div>';
-    return;
-  }
-
-  container.innerHTML = categories.map(cat => `
-    <div class="flex items-center mb-2">
-      <input type="checkbox"
-        class="category-checkbox mr-2"
-        value="${cat._id}"
-        id="cat-${cat._id}"
-      >
-      <label for="cat-${cat._id}" class="text-sm text-gray-700">${cat.name}</label>
-    </div>
-  `).join("");
-};
+  container.innerHTML = categories.length
+    ? categories.map(cat => `
+        <div class="flex items-center mb-2">
+          <input type="checkbox"
+            class="category-checkbox mr-2"
+            value="${cat._id}"
+            id="cat-${cat._id}">
+          <label for="cat-${cat._id}" class="text-sm text-gray-700">
+            ${cat.name}
+          </label>
+        </div>
+      `).join("")
+    : `<div class="text-gray-500 text-center p-2">No categories available</div>`;
+}
 
 // ===============================
 // UTIL
 // ===============================
-window.debounce = function (fn, delay) {
+function debounce(fn, delay) {
   let t;
   return (...args) => {
     clearTimeout(t);
     t = setTimeout(() => fn(...args), delay);
   };
-};
+}

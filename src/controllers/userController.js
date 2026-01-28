@@ -505,7 +505,82 @@ const getProduct = async (req, res) => {
         const result = await productModel.aggregate(pipeline);
          let wishlistItems=[]
          let user=false
-        const products = result[0].data;
+         const today=new Date()
+
+const products = await Promise.all(
+  result[0].data.map(async (p) => {
+
+    const offers = await offerModel.aggregate([
+  {
+    $match: {
+      status: "active",
+      startDate: { $lte: today },
+      endDate: { $gte: today }
+    }
+  },
+  {
+    $match: {
+      $or: [
+        { applicableOn: "global" },
+        {
+          applicableOn: "product",
+          productIds: { $in: [p._id] }
+        },
+        {
+          applicableOn: "category",
+          categoryIds: { $in: [p.catgId._id] }
+        }
+      ]
+    }
+  },
+  {
+    $project: {
+      discountValue: 1,
+      offerType: 1,
+      title: 1,
+      categoryIds: 1,
+      productIds: 1,
+      applicableOn: 1,          
+      minimumOrderValue: 1     
+    }
+  }
+]);
+
+const price = p.minVariant.orgPrice;
+
+let bestDiscount = 0;
+let bestOffer = null;
+
+for (let offer of offers) {
+     if (offer.discountValue >= price) continue;
+  let discountAmount = 0;
+  if (offer.offerType === "percentage") {
+    discountAmount = price * (offer.discountValue / 100);
+  } else {
+    discountAmount = Math.min(offer.discountValue,price);
+  }
+
+  if (discountAmount > bestDiscount) {
+    bestDiscount = discountAmount;
+    bestOffer = offer;
+  }
+}
+
+   return {
+  ...p,
+  offerType: bestOffer?.offerType || null,
+  offerValue: bestOffer?.discountValue || 0,
+  offerName: bestOffer?.title || null,
+  bestDiscount,
+  salePrice: price - bestDiscount
+};
+
+  })
+);
+console.log(products)
+
+
+
         const totalItems = result[0].totalCount[0]?.count || 0;
         const totalPages = Math.ceil(totalItems / limit);
         if(req.session.user?.id){
@@ -573,7 +648,6 @@ const getDetialProduct= async(req,res)=>{
 // Returns updated prices dynamically
 const getVariantData=async(req,res)=>{
     try {
-        console.log('hlow')
         const today=new Date()
        const productId=req.params.id
        const variantId=req.query.variantId
@@ -635,13 +709,13 @@ const getVariantData=async(req,res)=>{
             
               let offerType='offerType'
               //  passing argugemnts are mentioned inside of the of the discountChecker
-               disObject=await discountChecker(combinedOffers,offerModel,variant.salePrice,offerType)
+               disObject=await discountChecker(combinedOffers,offerModel,variant.orgPrice,offerType)
                disObject.isOffer=true
 
           }
           salePrice=variant.salePrice
          if(offers.length!==0){
-            salePrice=Math.floor((variant.salePrice)-disObject.bestDiscount)
+            salePrice=Math.floor((variant.orgPrice)-disObject.bestDiscount)
          }
        const orgPrice=variant.orgPrice
        return res.status(STATUS_CODES.OK).json({

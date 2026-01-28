@@ -14,8 +14,6 @@ export default async function discountChecker(discIds,modelName,variantPrice,typ
         const discValue=Number(promotion.discountValue)||0;
         if(promotion[type]==="percentage"){
             discount=(discValue*variantPrice)/100
-        }else{
-            discount=Math.min(discValue,variantPrice)
         }
         if(discount>bestDiscount){
             bestDiscount=discount
@@ -24,12 +22,7 @@ export default async function discountChecker(discIds,modelName,variantPrice,typ
                 disType="percentage"
                 discountTypeValue=promotion.discountValue
 
-            }else{
-                disType='fixedAmount'
-                discountTypeValue=promotion.discountValue
-
             }
-
         }
     }
 
