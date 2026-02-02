@@ -207,27 +207,88 @@
                                     <div class="bg-white rounded-xl p-5 shadow-sm">
                                         <h4 class="text-sm font-semibold text-gray-900 mb-4">Order Information</h4>
                                         <div class="space-y-3">
-                                            <div class="flex justify-between text-sm">
-                                                <span class="text-gray-600">Order ID</span>
-                                                <span class="font-medium text-gray-900">#<%= order.orderId %></span>
-                                            </div>
-                                            <div class="flex justify-between text-sm">
-                                                <span class="text-gray-600">Order Date</span>
-                                                <span class="font-medium text-gray-900"><%= new Date(order.createdAt).toLocaleDateString('en-IN') %></span>
-                                            </div>
-                                            <div class="flex justify-between text-sm">
-                                                <span class="text-gray-600">Delivery Date</span>
-                                                <span class="font-medium text-gray-900"><%= order.orderItems.deliveredAt ? new Date(order.orderItems.deliveredAt).toLocaleDateString('en-IN') : 'Pending' %></span>
-                                            </div>
-                                            <div class="flex justify-between text-sm">
-                                                <span class="text-gray-600">Payment Status</span>
-                                                <span class="font-medium text-gray-900"><%= order.orderItems.paymentStatus?"Paid":"Pending" %></span>
-                                            </div>
-                                            <div class="flex justify-between text-sm">
-                                                <span class="text-gray-600">Payment Method</span>
-                                                <span class="font-medium text-gray-900 uppercase"><%= order.paymentMethod %></span>
-                                            </div>
-                                        </div>
+  <div class="flex justify-between text-sm">
+    <span class="text-gray-600">Order ID</span>
+    <span class="font-medium text-gray-900">
+      #<%= order.orderId %>
+    </span>
+  </div>
+
+  <div class="flex justify-between text-sm">
+    <span class="text-gray-600">Order Date</span>
+    <span class="font-medium text-gray-900">
+      <%= new Date(order.createdAt).toLocaleDateString('en-IN') %>
+    </span>
+  </div>
+
+  <div class="flex justify-between text-sm">
+    <span class="text-gray-600">Delivery Date</span>
+    <span class="font-medium text-gray-900">
+      <%= order.orderItems.deliveredAt 
+        ? new Date(order.orderItems.deliveredAt).toLocaleDateString('en-IN') 
+        : 'Pending' %>
+    </span>
+  </div>
+
+  <div class="flex justify-between text-sm">
+    <span class="text-gray-600">Payment Status</span>
+    <span class="font-medium text-gray-900">
+      <%= order.orderItems.paymentStatus ? "Paid" : "Pending" %>
+    </span>
+  </div>
+
+  <div class="flex justify-between text-sm">
+    <span class="text-gray-600">Payment Method</span>
+    <span class="font-medium text-gray-900 uppercase">
+      <%= order.paymentMethod %>
+    </span>
+  </div>
+
+  <!-- OFFER DETAILS -->
+  <%
+    const items = Array.isArray(order.orderItems)
+      ? order.orderItems
+      : [order.orderItems];
+
+    let totalSaved = 0;
+    let offerLabel = null;
+
+    items.forEach(item => {
+      if (item && item.offer && item.offer.discountAmount > 0) {
+        totalSaved += item.offer.discountAmount;
+        offerLabel = item.offer.type === "percentage"
+          ? item.offer.value + "% OFF"
+          : "₹" + item.offer.value + " OFF";
+      }
+    });
+  %>
+
+  <div class="border-t pt-3 mt-3">
+    <% if (totalSaved > 0) { %>
+      <div class="flex justify-between text-sm">
+        <span class="text-gray-600">Offer Applied</span>
+        <span class="font-medium text-green-700">
+          <%= offerLabel %>
+        </span>
+      </div>
+
+      <div class="flex justify-between text-sm">
+        <span class="text-gray-600">You Saved</span>
+        <span class="font-medium text-green-700">
+          ₹<%= totalSaved %>
+        </span>
+      </div>
+    <% } else { %>
+      <div class="flex justify-between text-sm">
+        <span class="text-gray-600">Offer</span>
+        <span class="font-medium text-gray-500">
+          No offer applied
+        </span>
+      </div>
+    <% } %>
+  </div>
+</div>
+
                                     </div>
 
                                     <!-- Customer Card -->
@@ -259,21 +320,53 @@
 
                                     <!-- Product Card -->
                                     <div class="bg-white rounded-xl p-5 shadow-sm">
-                                        <h4 class="text-sm font-semibold text-gray-900 mb-4">Product Details</h4>
-                                        <div class="flex items-center space-x-4">
-                                            <img src="<%= order.product.productImages.find(img=>img.isMain).url %>" 
-                                                 alt="Product" 
-                                                 class="w-20 h-20 object-cover rounded-xl">
-                                            <div class="flex-1">
-                                                <h5 class="text-sm font-medium text-gray-900 mb-1"><%= order.product.name %></h5>
-                                                <p class="text-xs text-gray-500 mb-2"><%= order.variant.deviceModel %></p>
-                                                <div class="flex items-center justify-between">
-                                                    <span class="text-xs text-gray-500">Qty: <%= order.orderItems.quantity %></span>
-                                                    <span class="text-sm font-semibold text-gray-900">₹<%= order.orderItems.price %></span>
-                                                </div>
-                                            </div>
-                                        </div>
-                                    </div>
+  <h4 class="text-sm font-semibold text-gray-900 mb-4">Product Details</h4>
+
+  <div class="flex items-center space-x-4">
+    <img 
+      src="<%= order.product.productImages.find(img => img.isMain).url %>" 
+      alt="Product" 
+      class="w-20 h-20 object-cover rounded-xl"
+    />
+
+    <div class="flex-1">
+      <h5 class="text-sm font-medium text-gray-900 mb-1">
+        <%= order.product.name %>
+      </h5>
+
+      <p class="text-xs text-gray-500 mb-2">
+        <%= order.variant.deviceModel %>
+      </p>
+
+      <div class="flex items-center justify-between">
+
+        <!-- Quantity -->
+        <span class="text-xs text-gray-500">
+          Qty: <%= order.orderItems.quantity %>
+        </span>
+
+        <!-- PRICE DISPLAY -->
+        <div class="flex items-center space-x-2">
+
+          <!-- Final Price -->
+          <span class="text-sm font-semibold text-green-700">
+            ₹<%= order.orderItems.finalPrice %>
+          </span>
+
+          <!-- Original Price (Strikethrough) -->
+          <span class="text-xs text-gray-400 line-through">
+            ₹<%= order.orderItems.price %>
+          </span>
+
+
+        </div>
+      </div>
+    </div>
+  </div>
+
+
+</div>
+
                                 </div>
 
                                 <!-- Right Column - Timeline -->

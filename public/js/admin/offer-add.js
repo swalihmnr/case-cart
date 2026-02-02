@@ -4,7 +4,6 @@ import api from "../adminApi.js";
 // CONFIG
 // ===============================
 const MAX_PERCENT = 70;
-const MAX_FLAT = 500;
 
 // ===============================
 // CONTEXT DETECTION
@@ -42,6 +41,24 @@ function initOfferPage() {
   cancelBtn?.addEventListener("click", () => window.history.back());
 
   search?.addEventListener("input", debounce(handleProductSearch, 300));
+
+  // Initialize date inputs (only set min dates, not values)
+  initDateInputs();
+}
+
+function initDateInputs() {
+  const today = new Date().toISOString().split('T')[0];
+  const startDateInput = document.getElementById('startDate');
+  const endDateInput = document.getElementById('endDate');
+  
+  // Only set minimum dates, not values
+  if (startDateInput) {
+    startDateInput.min = today;
+  }
+  
+  if (endDateInput) {
+    endDateInput.min = today;
+  }
 }
 
 // ===============================
@@ -97,8 +114,15 @@ function handleApplicableOnChange() {
   categoryBox?.classList.add("hidden");
   productDisplayBox?.classList.add("hidden");
 
-  if (applicableOn === "product") productBox?.classList.remove("hidden");
-  if (applicableOn === "category") categoryBox?.classList.remove("hidden");
+  // Clear errors when changing selection
+  clearFieldError('productSelectorErr');
+  clearFieldError('categorySelectorErr');
+
+  if (applicableOn === "product") {
+    productBox?.classList.remove("hidden");
+  } else if (applicableOn === "category") {
+    categoryBox?.classList.remove("hidden");
+  }
 }
 
 // ===============================
@@ -106,15 +130,19 @@ function handleApplicableOnChange() {
 // ===============================
 async function handleOfferSubmit(e) {
   e.preventDefault();
+  e.stopPropagation();
+
+  clearAllErrors();
 
   const data = getFormData();
-  const error = validateOfferForm(data);
+  const isValid = validateOfferForm(data);
 
-  if (error) {
+  if (!isValid) {
     Swal.fire({
       icon: "error",
       title: "Validation Error",
-      text: error
+      text: "Please fix the errors in the form before submitting.",
+      confirmButtonColor: "#7c3aed"
     });
     return;
   }
@@ -130,7 +158,8 @@ async function handleOfferSubmit(e) {
         title: "Offer Created",
         text: res.data.message,
         timer: 1500,
-        showConfirmButton: false
+        showConfirmButton: false,
+        timerProgressBar: true
       }).then(() => {
         location.href = "/admin/offers";
       });
@@ -142,7 +171,8 @@ async function handleOfferSubmit(e) {
     Swal.fire({
       icon: "error",
       title: "Server Error",
-      text: err.message || "Something went wrong"
+      text: err.message || "Something went wrong. Please try again.",
+      confirmButtonColor: "#7c3aed"
     });
   }
 }
@@ -159,7 +189,7 @@ function getFormData() {
     applicableOn: document.getElementById("applicableOn")?.value,
     startDate: document.getElementById("startDate")?.value,
     endDate: document.getElementById("endDate")?.value,
-    minOrderValue: document.getElementById("minOrderValue")?.value.trim()
+    status: document.getElementById("offerStatus")?.value
   };
 }
 
@@ -167,53 +197,99 @@ function getFormData() {
 // VALIDATION ENGINE
 // ===============================
 function validateOfferForm(data) {
-  const discountVal = Number(data.offerValue);
-  const minOrderVal = Number(data.minOrderValue);
+  let isValid = true;
 
-  // Title
-  if (!data.title || data.title.length < 3)
-    return "Title must be at least 3 characters";
-
-  // Description
-  if (!data.desc || data.desc.length < 10)
-    return "Description must be at least 10 characters";
-
-  // Offer Type
-  if (!data.offerType) return "Select offer type";
-
-  // Numeric safety
-  if (isNaN(discountVal)) return "Discount must be a valid number";
-  if (isNaN(minOrderVal)) return "Minimum order must be a valid number";
-
-  // Discount rules
-  if (data.offerType === "percentage") {
-    if (discountVal < 1 || discountVal > MAX_PERCENT)
-      return `Percentage must be between 1 and ${MAX_PERCENT}`;
+  // Title Validation
+  if (!data.title) {
+    showError('offerTitleErr', 'Title is required');
+    isValid = false;
+  } else if (data.title.length < 3) {
+    showError('offerTitleErr', 'Title must be at least 3 characters');
+    isValid = false;
   }
 
-  // Dates
-  if (!data.startDate || !data.endDate)
-    return "Start and End dates are required";
-
-  const start = new Date(data.startDate);
-  const end = new Date(data.endDate);
-
-  const today = new Date();
-  today.setHours(0, 0, 0, 0);
-
-  if (start < today) return "Start date cannot be in the past";
-  if (end <= start) return "End date must be after start date";
-
-  // Selection rules
-  if (!isProductContext) {
-    if (data.applicableOn === "product" && getSelectedProductIds().length === 0)
-      return "Select at least one product";
-
-    if (data.applicableOn === "category" && getSelectedCategoryIds().length === 0)
-      return "Select at least one category";
+  // Description Validation
+  if (!data.desc) {
+    showError('offerDescErr', 'Description is required');
+    isValid = false;
+  } else if (data.desc.length < 10) {
+    showError('offerDescErr', 'Description must be at least 10 characters');
+    isValid = false;
   }
 
-  return null;
+  // Offer Type Validation
+  if (!data.offerType) {
+    showError('offerTypeErr', 'Please select an offer type');
+    isValid = false;
+  }
+
+  // Offer Value Validation
+  const discountVal = parseFloat(data.offerValue);
+  if (!data.offerValue) {
+    showError('offerValueErr', 'Offer value is required');
+    isValid = false;
+  } else if (isNaN(discountVal)) {
+    showError('offerValueErr', 'Offer value must be a valid number');
+    isValid = false;
+  } else if (data.offerType === 'percentage') {
+    if (discountVal <= 0 || discountVal > MAX_PERCENT) {
+      showError('offerValueErr', `Percentage must be between 1 and ${MAX_PERCENT}`);
+      isValid = false;
+    }
+  }
+
+  // Applicable On Validation
+  if (!data.applicableOn) {
+    showError('applicableOnErr', 'Please select where the offer applies');
+    isValid = false;
+  } else {
+    if (!isProductContext) {
+      if (data.applicableOn === 'product') {
+        const selectedProducts = getSelectedProductIds();
+        if (selectedProducts.length === 0) {
+          showError('productSelectorErr', 'Please select at least one product');
+          isValid = false;
+        }
+      } else if (data.applicableOn === 'category') {
+        const selectedCategories = getSelectedCategoryIds();
+        if (selectedCategories.length === 0) {
+          showError('categorySelectorErr', 'Please select at least one category');
+          isValid = false;
+        }
+      }
+    }
+  }
+
+  // Start Date Validation
+  if (!data.startDate) {
+    showError('startDateErr', 'Start date is required');
+    isValid = false;
+  } else {
+    const startDate = new Date(data.startDate);
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    
+    if (startDate < today) {
+      showError('startDateErr', 'Start date cannot be in the past');
+      isValid = false;
+    }
+  }
+
+  // End Date Validation
+  if (!data.endDate) {
+    showError('endDateErr', 'End date is required');
+    isValid = false;
+  } else if (data.startDate) {
+    const startDate = new Date(data.startDate);
+    const endDate = new Date(data.endDate);
+    
+    if (endDate <= startDate) {
+      showError('endDateErr', 'End date must be after start date');
+      isValid = false;
+    }
+  }
+
+  return isValid;
 }
 
 // ===============================
@@ -226,9 +302,9 @@ function buildPayload(data) {
     offerType: data.offerType,
     offerValue: Number(data.offerValue),
     applicableOn: data.applicableOn,
-    minOrderValue: Number(data.minOrderValue),
     startDate: data.startDate,
-    endDate: data.endDate
+    endDate: data.endDate,
+    status: data.status || 'scheduled'
   };
 
   if (isProductContext) {
@@ -237,8 +313,7 @@ function buildPayload(data) {
   } else {
     if (data.applicableOn === "product") {
       payload.productIds = getSelectedProductIds();
-    }
-    if (data.applicableOn === "category") {
+    } else if (data.applicableOn === "category") {
       payload.categoryIds = getSelectedCategoryIds();
     }
   }
@@ -257,7 +332,55 @@ function getSelectedProductIds() {
 
 function getSelectedCategoryIds() {
   return [...document.querySelectorAll(".category-checkbox:checked")]
-    .map(cb => cb.value);
+    .map(cb => cb.value)
+    .filter(Boolean);
+}
+
+// ===============================
+// ERROR HANDLING FUNCTIONS
+// ===============================
+function showError(fieldId, message) {
+  const errorElement = document.getElementById(fieldId);
+  if (errorElement) {
+    errorElement.textContent = message;
+    errorElement.classList.remove('hidden');
+    
+    // Add red border to the corresponding input
+    const inputField = document.getElementById(fieldId.replace('Err', ''));
+    if (inputField) {
+      inputField.classList.add('border-red-500', 'border-2');
+      inputField.classList.remove('border-gray-300');
+    }
+  }
+}
+
+function clearFieldError(fieldId) {
+  const errorElement = document.getElementById(fieldId);
+  if (errorElement) {
+    errorElement.textContent = '';
+    errorElement.classList.add('hidden');
+    
+    // Remove red border from the corresponding input
+    const inputField = document.getElementById(fieldId.replace('Err', ''));
+    if (inputField) {
+      inputField.classList.remove('border-red-500', 'border-2');
+      inputField.classList.add('border-gray-300');
+    }
+  }
+}
+
+function clearAllErrors() {
+  // Clear all error messages
+  document.querySelectorAll('[id$="Err"]').forEach(el => {
+    el.textContent = '';
+    el.classList.add('hidden');
+  });
+  
+  // Remove all red borders
+  document.querySelectorAll('.border-red-500').forEach(el => {
+    el.classList.remove('border-red-500', 'border-2');
+    el.classList.add('border-gray-300');
+  });
 }
 
 // ===============================
@@ -267,8 +390,10 @@ function handleProductSearch(e) {
   const term = e.target.value.trim().toLowerCase();
   const container = document.getElementById("productSearchResults");
 
-  if (!container || term.length < 2) {
-    container?.classList.add("hidden");
+  if (!container) return;
+
+  if (term.length < 2) {
+    container.classList.add("hidden");
     return;
   }
 
@@ -278,47 +403,66 @@ function handleProductSearch(e) {
     p.name?.toLowerCase().includes(term)
   ).slice(0, 8);
 
-  container.innerHTML = filtered.length
-    ? filtered.map(p => `
-        <div class="product-result-item p-2 hover:bg-gray-100 cursor-pointer"
-          data-product-id="${p._id}"
-          data-product-name="${p.name}">
-          ${p.name}
-        </div>
-      `).join("")
-    : `<div class="p-2 text-gray-500 text-sm">No products found</div>`;
+  if (filtered.length === 0) {
+    container.innerHTML = '<div class="p-3 text-gray-500 text-sm">No products found</div>';
+  } else {
+    container.innerHTML = filtered.map(p => `
+      <div class="product-result-item p-3 hover:bg-gray-100 cursor-pointer border-b last:border-b-0"
+        data-product-id="${p._id}"
+        data-product-name="${p.name}">
+        <div class="font-medium text-gray-900">${p.name}</div>
+        <div class="text-xs text-gray-500">${p.sku || 'No SKU'}</div>
+      </div>
+    `).join('');
+  }
 
   container.classList.remove("hidden");
 
+  // Add click handlers to result items
   document.querySelectorAll(".product-result-item").forEach(item => {
     item.onclick = () => {
       addSelectedProduct(item.dataset.productId, item.dataset.productName);
       container.classList.add("hidden");
       e.target.value = "";
+      clearFieldError('productSelectorErr');
     };
   });
+
+  // Close dropdown when clicking outside
+  setTimeout(() => {
+    document.addEventListener('click', function closeDropdown(event) {
+      if (!container.contains(event.target) && event.target !== e.target) {
+        container.classList.add("hidden");
+        document.removeEventListener('click', closeDropdown);
+      }
+    });
+  }, 100);
 }
 
 function addSelectedProduct(id, name) {
   const container = document.getElementById("selectedProducts");
 
-  if (
-    document.querySelector(
-      `.selected-product-item[data-product-id="${id}"]`
-    )
-  ) return;
+  // Check if product already selected
+  if (document.querySelector(`.selected-product-item[data-product-id="${id}"]`)) {
+    return;
+  }
 
   const div = document.createElement("div");
-  div.className =
-    "selected-product-item flex justify-between items-center bg-gray-50 p-2 rounded mb-2";
+  div.className = "selected-product-item flex justify-between items-center bg-gray-50 p-3 rounded-lg mb-2 border";
   div.dataset.productId = id;
 
   div.innerHTML = `
-    <span class="text-sm">${name}</span>
-    <button type="button" class="remove-product text-red-500">✕</button>
+    <div>
+      <span class="text-sm font-medium text-gray-900">${name}</span>
+    </div>
+    <button type="button" class="remove-product text-red-500 hover:text-red-700 text-lg font-bold" title="Remove">×</button>
   `;
 
-  div.querySelector(".remove-product").onclick = () => div.remove();
+  div.querySelector(".remove-product").onclick = (e) => {
+    e.preventDefault();
+    div.remove();
+  };
+  
   container.appendChild(div);
 }
 
@@ -327,24 +471,39 @@ function addSelectedProduct(id, name) {
 // ===============================
 async function loadProductDetails(productId) {
   try {
-    const product =
-      (window.ALL_PRODUCTS || []).find(p => p._id === productId) ||
-      (await (await fetch(`/api/products/${productId}`)).json());
+    const product = (window.ALL_PRODUCTS || []).find(p => p._id === productId);
+    
+    // If not in ALL_PRODUCTS, fetch from API
+    let productData = product;
+    if (!productData) {
+      const response = await fetch(`/api/products/${productId}`);
+      if (response.ok) {
+        productData = await response.json();
+      }
+    }
 
     const box = document.getElementById("selectedProductDisplay");
-    if (!box || !product) return;
+    if (!box || !productData) {
+      box.innerHTML = '<div class="text-red-500 text-sm">Product not found</div>';
+      return;
+    }
 
     box.innerHTML = `
       <div class="flex justify-between items-center">
         <div>
-          <p class="font-medium text-gray-900">${product.name}</p>
-          <p class="text-sm text-gray-600">${product.sku || ""}</p>
+          <p class="font-medium text-gray-900">${productData.name}</p>
+          <p class="text-sm text-gray-600">SKU: ${productData.sku || 'N/A'}</p>
+          <p class="text-sm text-gray-600">Price: $${productData.price || '0.00'}</p>
         </div>
-        <span class="text-gray-400 text-sm">Selected</span>
+        <span class="bg-green-100 text-green-800 text-xs font-medium px-2.5 py-0.5 rounded">Selected</span>
       </div>
     `;
   } catch (err) {
     console.error("Load product error:", err);
+    const box = document.getElementById("selectedProductDisplay");
+    if (box) {
+      box.innerHTML = '<div class="text-red-500 text-sm">Error loading product details</div>';
+    }
   }
 }
 
@@ -354,28 +513,35 @@ function loadCategories() {
 
   if (!container) return;
 
-  container.innerHTML = categories.length
-    ? categories.map(cat => `
-        <div class="flex items-center mb-2">
-          <input type="checkbox"
-            class="category-checkbox mr-2"
-            value="${cat._id}"
-            id="cat-${cat._id}">
-          <label for="cat-${cat._id}" class="text-sm text-gray-700">
-            ${cat.name}
-          </label>
-        </div>
-      `).join("")
-    : `<div class="text-gray-500 text-center p-2">No categories available</div>`;
+  if (categories.length === 0) {
+    container.innerHTML = '<div class="text-gray-500 text-center p-4 border rounded-lg">No categories available</div>';
+    return;
+  }
+
+  container.innerHTML = categories.map(cat => `
+    <div class="flex items-center mb-3 p-2 hover:bg-gray-50 rounded">
+      <input type="checkbox"
+        class="category-checkbox mr-3 h-4 w-4 text-purple-600 focus:ring-purple-500 border-gray-300 rounded"
+        value="${cat._id}"
+        id="cat-${cat._id}"
+        onchange="clearFieldError('categorySelectorErr')">
+      <label for="cat-${cat._id}" class="text-sm text-gray-700 cursor-pointer flex-1">
+        ${cat.name}
+      </label>
+    </div>
+  `).join('');
 }
 
 // ===============================
 // UTIL
 // ===============================
 function debounce(fn, delay) {
-  let t;
+  let timeoutId;
   return (...args) => {
-    clearTimeout(t);
-    t = setTimeout(() => fn(...args), delay);
+    clearTimeout(timeoutId);
+    timeoutId = setTimeout(() => fn(...args), delay);
   };
 }
+
+// Make function globally available for inline event handlers
+window.clearFieldError = clearFieldError;

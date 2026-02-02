@@ -1,9 +1,4 @@
 import api from "../api.js";
-    const cartItems = {
-        1: { name: 'Gradient Dreams', price: 29.99, quantity: 1 },
-        2: { name: 'Ocean Wave', price: 27.99, quantity: 2 },
-        3: { name: 'Forest Green', price: 25.99, quantity: 1 }
-    };
 
     async function addToCart(productId,variantId){
         console.log(productId,variantId)

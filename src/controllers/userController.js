@@ -14,6 +14,7 @@ import addressModel from '../models/addressModel.js';
 import orderModel from '../models/orderModel.js'
 import offerModel from '../../src/models/admin/offerModel.js'
 import discountChecker from '../../src/utils/calculateDiscount.js'
+import calculateBestItemOffer from '../utils/calculateBestOfferItem.js'
 
 
 
@@ -1045,7 +1046,7 @@ const getCart=async(req,res)=>{
   let finalAmount = 0;
 
   for (let item of cartItems) {
-    const price = item.variantId.orgPrice;
+    const price = item.variantId.salePrice;
     const quantity = item.quantity;
     const itemTotal = price * quantity;
 
@@ -1073,7 +1074,6 @@ const getCart=async(req,res)=>{
 
     for (let offer of offers) {
       if (offer.offerType === "percentage") {
-          if (itemTotal < offer.minimumOrderValue) continue;
         const discount = (itemTotal * offer.discountValue) / 100;
         if (discount > bestDiscount) {
           bestDiscount = discount;
@@ -1106,8 +1106,9 @@ const getCart=async(req,res)=>{
 
     console.log("Best discount for item:", bestDiscount);
   }
-  if(finalAmount>1500){
+  if(finalAmount<1500){
     shipping=50;
+    finalAmount+=shipping
   }
   console.log("Subtotal:", subtotal);
   console.log("Total Discount:", totalDiscount);
@@ -1117,7 +1118,7 @@ const getCart=async(req,res)=>{
     products: cartItems,
     subtotal,
     totalDiscount,
-    finalAmount,
+    finalAmount,    
     totalDocs,
     shipping
   });
@@ -1317,132 +1318,246 @@ const remCart=async(req,res)=>{
 // ==============================
 // Handles both Cart checkout and Buy Now checkout
 // Validates product availability before proceeding
-const getCheckout=async(req,res)=>{
-    let cartItems;
-    let subtotal=0;
-    const userId=new mongoose.Types.ObjectId(req.session.user.id)
-    const {type,productId,variantId}=req.query;
+const getCheckout = async (req, res) => {
+  try {
+    let cartItems = [];
+    let subtotal = 0;
+    let totalDiscount = 0;
+    let finalAmount = 0;
+    let shipping = 0;
 
+    const FREE_SHIPPING_LIMIT = 1500;
+    const userId = new mongoose.Types.ObjectId(req.session.user.id);
+    const { type, variantId } = req.query;
 
-  // ======================
-  // CART CHECKOUT FLOW
-  // ======================
-    if(type!=='buyNow'){
-        req.session.buyNow=false;
-        console.log(type,variantId,userId)
-        const cartItem=await cartModel.aggregate([{$match:{userId:userId}},
-            {$lookup:{
-                from:'products',
-                localField:'productId',
-                foreignField:'_id',
-                as:"product"
-            }},
-            {$unwind:'$product'},
-            {$lookup:{
-                from:'variants',
-                localField:'variantId',
-                foreignField:'_id',
-                as:'variant'
-            }},
-            {$addFields:{
-                mainImage:{
-                  $first:{
-                      $filter:{
-                          input:"$product.productImages",
-                          as:'img',
-                          cond:"$$img.isMain"
-                      }
-                  }  
+    // ======================
+    // CART CHECKOUT FLOW
+    // ======================
+    if (type !== "buyNow") {
+      req.session.buyNow = false;
+
+      cartItems = await cartModel.aggregate([
+        { $match: { userId } },
+        {
+          $lookup: {
+            from: "products",
+            localField: "productId",
+            foreignField: "_id",
+            as: "product"
+          }
+        },
+        { $unwind: "$product" },
+        {
+          $lookup: {
+            from: "variants",
+            localField: "variantId",
+            foreignField: "_id",
+            as: "variant"
+          }
+        },
+        { $unwind: "$variant" },
+        {
+          $addFields: {
+            mainImage: {
+              $first: {
+                $filter: {
+                  input: "$product.productImages",
+                  as: "img",
+                  cond: { $eq: ["$$img.isMain", true] }
                 }
-            }},
-            {$unwind:"$variant"},
-            {$project:{
-                "variant.stock":1,
-                "product.isBlock":1,
-                "variant.isListed":1,
-                quantity:1,
-                "product.name":1,
-                "variant.deviceModel":1,
-                "variant.salePrice":1,
-                "mainImage.url":1
-    
-            }}
-    
-        ])
-        for(let item of cartItem){
-            if(item.variant.isListed!==true){
-               return res.redirect('/cart')
+              }
             }
-            if(item.product.isBlock!==false){
-               return res,redirect('/cart');
-            }
-            if(item.variant.stock<1){
-               return res.redirect('/cart')
-            }
+          }
+        },
+        {
+          $project: {
+            quantity: 1,
+            "product._id": 1,
+            "product.name": 1,
+            "product.isBlock": 1,
+            "product.catgId": 1,
+            "variant._id": 1,
+            "variant.deviceModel": 1,
+            "variant.salePrice": 1,
+            "variant.orgPrice":1,
+            "variant.stock": 1,
+            "variant.isListed": 1,
+            "mainImage.url": 1
+          }
         }
-       
-        cartItem.forEach((item)=>{
-            subtotal+= item.quantity*item.variant.salePrice
-        })
-        cartItems=cartItem;
-        if(cartItem.length===0){
-            return res.status(STATUS_CODES.FORBIDDEN)
+      ]);
+
+      if (!cartItems.length) return res.redirect("/cart");
+
+      for (let item of cartItems) {
+        // -----------------
+        // VALIDATIONS
+        // -----------------
+        if (!item.variant.isListed) return res.redirect("/cart");
+        if (item.product.isBlock) return res.redirect("/cart");
+        if (item.variant.stock < 1) return res.redirect("/cart");
+
+        const itemTotal = item.variant.salePrice * item.quantity;
+        subtotal += itemTotal;
+
+        // -----------------
+        // FETCH PRODUCT + CATEGORY OFFERS ONLY
+        // -----------------
+        const offers = await offerModel.find({
+          status: "active",
+          startDate: { $lte: new Date() },
+          endDate: { $gte: new Date() },
+          $or: [
+            { applicableOn: "product", productIds: item.product._id },
+            { applicableOn: "category", categoryIds: item.product.catgId }
+          ]
+        });
+
+        let bestDiscount = 0;
+        let bestOffer = null;
+
+        for (let offer of offers) {
+          if (offer.offerType !== "percentage") continue;
+
+          const discount = (itemTotal * offer.discountValue) / 100;
+
+          if (discount > bestDiscount) {
+            bestDiscount = discount;
+            bestOffer = offer;
+          }
         }
 
-          // ======================
-  // BUY NOW FLOW
-  // ======================
-    }else{
-        req.session.variantId=variantId
-        req.session.buyNow=true
-        console.log('entered')
-        const result=await variantModel.aggregate([{$match:{_id:new mongoose.Types.ObjectId(variantId)}},
-            {$lookup:{
-                from:"products",
-                localField:"productId",
-                foreignField:"_id",
-                as:"product"
-            }},
-            {$unwind:"$product"},
-            {$addFields:{
-                quantity:1,
-                mainImage:{
-                  $first:{
-                      $filter:{
-                          input:"$product.productImages",
-                          as:'img',
-                          cond:"$$img.isMain"
-                      }
-                  }  
+        bestDiscount = Math.round(bestDiscount);
+        totalDiscount += bestDiscount;
+
+        item.finalPrice = Math.max(0, itemTotal - bestDiscount);
+
+        item.appliedOffer = bestOffer
+          ? {
+              value: bestOffer.discountValue,
+              discount: bestDiscount
+            }
+          : null;
+
+        finalAmount += item.finalPrice;
+      }
+
+      // -----------------
+      // SHIPPING RULE
+      // -----------------
+      if (finalAmount < FREE_SHIPPING_LIMIT) {
+        shipping = 50;
+        finalAmount += shipping;
+      }
+
+    // ======================
+    // BUY NOW FLOW
+    // ======================
+    } else {
+      req.session.variantId = variantId;
+      req.session.buyNow = true;
+
+      const result = await variantModel.aggregate([
+        { $match: { _id: new mongoose.Types.ObjectId(variantId) } },
+        {
+          $lookup: {
+            from: "products",
+            localField: "productId",
+            foreignField: "_id",
+            as: "product"
+          }
+        },
+        { $unwind: "$product" },
+        {
+          $addFields: {
+            quantity: 1,
+            mainImage: {
+              $first: {
+                $filter: {
+                  input: "$product.productImages",
+                  as: "img",
+                  cond: { $eq: ["$$img.isMain", true] }
                 }
-            }},
-            {$project:{
-                quantity:1,
-                stock:1,
-                "product.name":1,
-                deviceModel:1,
-                salePrice:1,
-                "mainImage.url":1
-
-
-            }}
-        ])
-        cartItems = result;
-         if (!cartItems.length) {
-           return res.status(STATUS_CODES.NOT_FOUND).send("Variant not found");
-         }
-         
-        cartItems=result;
-        subtotal += cartItems[0].quantity * cartItems[0].salePrice;
-        console.log(result)
+              }
+            }
+          }
+        },
+        {
+          $project: {
+            quantity: 1,
+            stock: 1,
+            "product._id": 1,
+            "product.name": 1,
+            "product.isBlock": 1,
+            "product.catgId": 1,
+            salePrice: 1,
+            isListed: 1,
+            orgPrice:1,
+            "mainImage.url": 1
+          }
         }
-        const addresses=await addressModel.find()
-    res.render('./user/checkout',{
-        addresses,
-        cartItems,
-        subtotal
-    })
-}
+      ]);
+
+      if (!result.length) return res.status(404).send("Variant not found");
+
+      const item = result[0];
+
+      if (!item.isListed) return res.redirect("/products");
+      if (item.product.isBlock) return res.redirect("/products");
+      if (item.stock < 1) return res.redirect("/products");
+
+      const itemTotal = item.salePrice * item.quantity;
+      subtotal = itemTotal;
+
+      const offers = await offerModel.find({
+        status: "active",
+        startDate: { $lte: new Date() },
+        endDate: { $gte: new Date() },
+        $or: [
+          { applicableOn: "product", productIds: item.product._id },
+          { applicableOn: "category", categoryIds: item.product.catgId }
+        ]
+      });
+
+      let bestDiscount = 0;
+
+      for (let offer of offers) {
+        if (offer.offerType !== "percentage") continue;
+
+        const discount = (itemTotal * offer.discountValue) / 100;
+        bestDiscount = Math.max(bestDiscount, discount);
+      }
+
+      bestDiscount = Math.round(bestDiscount);
+
+      item.finalPrice = Math.max(0, subtotal - bestDiscount);
+
+      finalAmount = item.finalPrice;
+
+      if (finalAmount < FREE_SHIPPING_LIMIT) {
+        shipping = 50;
+        finalAmount += shipping;
+      }
+
+      cartItems = result;
+    }
+
+    const addresses = await addressModel.find();
+    console.log(cartItems)
+    res.render("./user/checkout", {
+      addresses,
+      cartItems,
+      subtotal,
+      shipping,
+      finalAmount
+    });
+
+  } catch (err) {
+    console.error(err);
+    res.status(500).send("Checkout error");
+  }
+};
+
 
 // ==============================
 // GET ADDRESS MANAGEMENT
@@ -1590,7 +1705,7 @@ const getConfirmation=async(req,res)=>{
     const userId=req.session.user.id
         const orderId=req.params.id;
         const order=await orderModel.findOne({_id:orderId}).populate('orderItems.productId').populate('orderItems.variantId');
-
+    console.log(order)
      res.render('./user/ord-confirmation',{
         order
 
@@ -1604,300 +1719,274 @@ const getConfirmation=async(req,res)=>{
 // 1. Cart checkout
 // 2. Buy Now checkout
 // Performs full validation before creating order
-const ordConfirmation=async(req,res)=>{
- try {
-   let items=[] 
-  let shippingAddress;
-  const userId= new mongoose.Types.ObjectId(req.session.user.id);
-  const data=req.body.data;
+const ordConfirmation = async (req, res) => {
+  try {
+let bestOffer_id=null;
+const FREE_SHIPPING_LIMIT = 1500;
+    let items = [];
+    let shippingAddress;
 
-  // ==============================
-// SHIPPING ADDRESS HANDLING
-// ==============================
-  if (data.address?.addressId) {
-      // Use saved address
-    const addressId = new mongoose.Types.ObjectId(data.address.addressId);
-    const savedAddress= await addressModel.findById(addressId);
-    if (!savedAddress) {
-      return res.status(STATUS_CODES.NOT_FOUND).json({
+    const userId = new mongoose.Types.ObjectId(req.session.user.id);
+    const data = req.body.data;
+
+    // ==============================
+    // SHIPPING ADDRESS
+    // ==============================
+    if (data.address?.addressId) {
+      const savedAddress = await addressModel.findById(
+        new mongoose.Types.ObjectId(data.address.addressId)
+      );
+
+      if (!savedAddress) {
+        return res.status(404).json({
+          success: false,
+          message: "Address not found"
+        });
+      }
+
+      shippingAddress = {
+        addressType: savedAddress.addressType,
+        firstName: savedAddress.firstName,
+        lastName: savedAddress.lastName,
+        phone: savedAddress.phone,
+        streetAddress: savedAddress.streetAddress,
+        landMark: savedAddress.landMark,
+        city: savedAddress.city,
+        state: savedAddress.state,
+        pinCode: savedAddress.pinCode
+      };
+    } else {
+      shippingAddress = {
+        addressType: "manual",
+        firstName: data.address.firstName,
+        lastName: data.address.lastName,
+        phone: data.address.phone,
+        streetAddress: data.address.streetAddress,
+        landMark: data.address.landMark,
+        city: data.address.city,
+        state: data.address.state,
+        pinCode: data.address.pinCode
+      };
+    }
+
+    // ==============================
+    // PAYMENT VALIDATION
+    // ==============================
+    const paymentMethod = data.paymentMethod;
+
+    if (!["cod", "wallet", "razorpay"].includes(paymentMethod)) {
+      return res.status(400).json({
         success: false,
-        message: "Address not found"
+        message: "Invalid payment method"
       });
     }
-    shippingAddress = {
-      addressType: savedAddress.addressType,
-      firstName: savedAddress.firstName,
-      lastName: savedAddress.lastName,
-      phone: savedAddress.phone,
-      streetAddress: savedAddress.streetAddress,
-      landMark: savedAddress.landMark,
-      city: savedAddress.city,
-      state: savedAddress.state,
-      pinCode: savedAddress.pinCode
-    };
-  } else {
-     // Manual address entry
-    const {
-      firstName,
-      lastName,
-      phone,
-      streetAddress,
-      landMark,
-      city,
-      state,
-      pinCode
-    } = data.address ;
 
-    shippingAddress = {
-      addressType: "manual",
-      firstName,
-      lastName,
-      phone,
-      streetAddress,
-      landMark,
-      city,
-      state,
-      pinCode
-    };
-  }
+    // ==============================
+    // FETCH ITEMS
+    // ==============================
+    if (req.session.buyNow) {
+      items = await variantModel.aggregate([
+        {
+          $match: {
+            _id: new mongoose.Types.ObjectId(req.session.variantId),
+            isListed: true,
+            stock: { $gt: 0 }
+          }
+        },
+        {
+          $lookup: {
+            from: "products",
+            localField: "productId",
+            foreignField: "_id",
+            as: "product"
+          }
+        },
+        { $unwind: "$product" },
+        { $addFields: { quantity: 1 } }
+      ]);
+    } else {
+      items = await cartModel.aggregate([
+        { $match: { userId } },
+        {
+          $lookup: {
+            from: "products",
+            localField: "productId",
+            foreignField: "_id",
+            as: "product"
+          }
+        },
+        { $unwind: "$product" },
+        {
+          $lookup: {
+            from: "variants",
+            localField: "variantId",
+            foreignField: "_id",
+            as: "variant"
+          }
+        },
+        { $unwind: "$variant" }
+      ]);
+    }
 
-  const paymentMethod = data.paymentMethod;
+    if (!items.length) {
+      return res.status(404).json({
+        success: false,
+        message: "No valid items found"
+      });
+    }
 
-  if (!["cod", "wallet", "razorpay"].includes(paymentMethod)) {
-    return res.status(STATUS_CODES.BAD_REQUEST).json({
-      success: false,
-      message: "Invalid payment method"
+    // ==============================
+    // VALIDATION
+    // ==============================
+    for (const item of items) {
+      if (item.product?.isBlock) {
+        return res.status(403).json({
+          success: false,
+          message: "Product blocked",
+          redirect: "/cart"
+        });
+      }
+
+      if (!item.variant?.isListed || item.variant.stock < item.quantity) {
+        return res.status(409).json({
+          success: false,
+          message: "Item out of stock",
+          redirect: "/cart"
+        });
+      }
+    }
+
+    // ==============================
+    // CALCULATIONS
+    // ==============================
+    let subtotal = 0;
+    let totalDiscount = 0;
+    const orderItems = [];
+
+    // First pass — subtotal
+    for (const item of items) {
+      const price = item.variant.salePrice;
+      subtotal += price * item.quantity;
+    }
+
+    // Second pass — offers + snapshot
+    for (const item of items) {
+      const price = item.variant.salePrice;
+      const itemTotal = price * item.quantity;
+
+      const { bestOffer, discountAmount } =
+        await calculateBestItemOffer({
+          quantity: item.quantity,
+          variant: { salePrice: price },
+          product: item.product
+        });
+        console.log('it is the best offer',bestOffer)
+        bestOffer_id=bestOffer?._id
+
+      totalDiscount += discountAmount;
+        console.log(discountAmount)
+      orderItems.push({
+        productId: item.product._id,
+        variantId: item.variant._id,
+
+        name: item.product.name,
+        quantity: item.quantity,
+
+        // REQUIRED BY SCHEMA
+        price: price,
+        paymentStatus:
+          paymentMethod === "cod" ? "pending" : "initiated",
+
+        itemTotal,
+
+        offer: bestOffer
+          ? {
+              offerId: bestOffer._id,
+              title: bestOffer.title,
+              type: bestOffer.offerType,
+              value: bestOffer.discountValue,
+              appliedOn: bestOffer.applicableOn,
+              discountAmount
+            }
+          : null,
+
+        finalPrice: itemTotal - discountAmount,
+        status: "processing"
+      });
+
+    }
+
+    // ==============================
+    // SHIPPING + TOTAL
+    // ==============================
+    const shipping =
+      subtotal >= FREE_SHIPPING_LIMIT ? 0 : 50;
+
+    const finalAmount =
+      subtotal - totalDiscount + shipping;
+      console.log(totalDiscount,'is it the total discount')
+
+    // ==============================
+    // CREATE ORDER
+    // ==============================
+
+
+    const order = await orderModel.create({
+      userId,
+      paymentMethod,
+      paymentStatus:
+      paymentMethod === "cod" ? "pending" : "initiated",
+      shippingAddress,
+      totalPrice: subtotal,
+       totalDiscount,
+      shipping,
+      finalAmount,
+      orderItems
     });
-  }
-  
- if(req.session.buyNow){
-    items = await variantModel.aggregate([
-    {
-      $match: {
-        _id: new mongoose.Types.ObjectId(req.session.variantId),
-        isListed: true,
-        stock: { $gt: 0 }
-      }
-    },
-    {
-      $lookup: {
-        from: "products",
-        localField: "productId",
-        foreignField: "_id",
-        as: "product"
-      }
-    },
-    { $unwind: "$product" },
-    {
-      $addFields: {
-        quantity: 1
-      }
-    }
-  ]);
-  console.log(items)
-  if(items.length===0){
-    return res.status(STATUS_CODES.NOT_FOUND).json({
-        success:false,
-        message:"variant not founded!"
-    })
-  }
-  const item = items[0];
-
-if (!item) {
-  return res.status(404).json({
-    success: false,
-    message: "Item no longer available",
-    redirect: "/products"
-  });
-}
-
-if (!item.product) {
-  return res.status(404).json({
-    success: false,
-    message: "Product removed",
-    redirect: "/products"
-  });
-}
-
-if (!item._id) {
-  return res.status(404).json({
-    success: false,
-    message: "Variant removed",
-    redirect: "/products"
-  });
-}
-
-if (item.product.isBlock === true) {
-  return res.status(403).json({
-    success: false,
-    message: "Product is currently unavailable",
-    redirect: "/products"
-  });
-}
-
-if (item.isListed === false) {
-  return res.status(403).json({
-    success: false,
-    message: "Variant is unavailable",
-    redirect: "/products"
-  });
-}
-
-if (item.stock < 1) {
-  return res.status(409).json({
-    success: false,
-    message: "Insufficient stock",
-    redirect: "/products"
-  });
-}
-
-
-if (item.product.catgId?.isActive === false) {
-  return res.status(403).json({
-    success: false,
-    message: "Category is inactive",
-    redirect: "/products"
-  });
-}
-
- }else{
-    const result = await cartModel.aggregate([
-    { $match: { userId } },
-
-    {
-      $lookup: {
-        from: "products",
-        localField: "productId",
-        foreignField: "_id",
-        as: "product"
-      }
-    },
-    { $unwind: "$product" },
-    {
-        $lookup:{
-            from:"categories",
-            localField:"product.catgId",
-            foreignField:"_id",
-            as:"category"
-        }
-    },
-    {$unwind:"$category"},
-
-    {
-      $lookup: {
-        from: "variants",
-        localField: "variantId",
-        foreignField: "_id",
-        as: "variant"
-      }
-    },
-    { $unwind: "$variant" },
-    {
-      $project: {
-        productId: 1,
-        variantId: 1,
-        quantity: 1,
-        "variant.salePrice": 1,
-        "product.isBlock": 1,
-        "variant.isListed": 1,
-        "variant.stock": 1,
-        "category.isActive":1
-      }
-    }
-  ]);
-  items=result
-for(let item of items){
-    console.log('i am here ')
-   if(item.product.isBlock||item.variant.isListed!==true||item.variant.stock<1||item.category.isActive===false){
-    return res.status(STATUS_CODES.FORBIDDEN).json({
-        success:false,
-        redirect:"/cart"
-        
-    })
-   }
-}
-  if (!items.length) {
     
-     console.log('entered1')
-    return res.status(STATUS_CODES.NOT_FOUND).json({
+    console.log(order.discount,'it is the super one')
+
+    // ==============================
+    // STOCK UPDATE
+    // ==============================
+    for (const item of items) {
+      const result = await variantModel.updateOne(
+        {
+          _id: item.variant._id,
+          stock: { $gte: item.quantity }
+        },
+        {
+          $inc: { stock: -item.quantity }
+        }
+      );
+
+      if (!result.modifiedCount) {
+        throw new Error("Stock update failed");
+      }
+    }
+
+    // ==============================
+    // CLEAR CART
+    // ==============================
+    if (!req.session.buyNow) {
+      await cartModel.deleteMany({ userId });
+    }
+
+    return res.status(201).json({
+      success: true,
+      message: "Order placed successfully",
+      orderId: order._id
+    });
+  } catch (err) {
+    console.error(err);
+    return res.status(500).json({
       success: false,
-      message: "Cart is empty or items unavailable"
+      message: "Internal server error"
     });
   }
- }
-  
-let subtotal = 0;
-
-items.forEach(item => {
-  const price = item.salePrice || item.variant.salePrice;
-  subtotal += item.quantity * price;
-});
+};
 
 
-  const discount = 0;
-  const finalAmount = subtotal - discount;
-const orderItems = items.map(i => {
-  const unitPrice = i.salePrice || i.variant.salePrice;
-
-  return {
-  productId: i.productId || i.product._id,
-  variantId: i.variantId || i._id,
-  quantity: i.quantity,
-   price: unitPrice,  
-  status: "processing",
-  paymentStatus: paymentMethod === "cod" ?"pending": "initiated",
-  processingAt: new Date()
-  };
-});
-
-  const order = await orderModel.create({
-    userId,
-    paymentMethod,
-    paymentStatus: paymentMethod === "cod" ?"pending": "initiated",
-    shippingAddress,
-    totalPrice: subtotal,
-    discount,
-    finalAmount,
-    orderItems
-  });
-  for (const item of items) {
-  const variantId = item.variantId || item._id;
-  const quantity = item.quantity;
-
-  const result = await variantModel.updateOne(
-    {
-      _id: variantId,
-      stock: { $gte: quantity }
-    },
-    {
-      $inc: { stock: -quantity }
-    }
-  );
-
-  if (result.modifiedCount === 0) {
-    throw new Error("Insufficient stock for a product");
-  }
-}
-
-
-  await cartModel.deleteMany({ userId });
-    console.log('low')
-  return res.status(STATUS_CODES.CREATED).json({
-    success: true,
-    message: "Order placed successfully",
-    orderId: order._id
-  });
-
-} catch (error) {
-    console.log('error is here ')
-  console.error(error);
-  return res.status(STATUS_CODES.INTERNAL_SERVER_ERROR).json({
-    success: false,
-    message: "Internal server error"
-  });
-}
-
-}
 
 // ==============================
 // GET USER ORDERS (ORDER HISTORY)

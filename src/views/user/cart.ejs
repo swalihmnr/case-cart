@@ -133,7 +133,7 @@
   <div class="text-right">
     <% if (product.appliedOffer) { %>
       <span class="block text-sm text-gray-400 line-through">
-        ₹ <%= product.variantId.orgPrice * product.quantity %>
+        ₹ <%= product.variantId.salePrice*product.quantity %>
       </span>
     <% } %>
 

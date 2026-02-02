@@ -8,13 +8,13 @@ const offerSchema=new mongoose.Schema({
 
     offerType: {
       type: String,
-      enum: ['percentage', 'fixedamount'],
+      enum: ['percentage'],
       required: true
     },
 
     applicableOn: {
       type: String,
-      enum: ['global', 'category', 'product'],
+      enum: [ 'category', 'product'],
       required: true
     },
 
@@ -36,12 +36,6 @@ const offerSchema=new mongoose.Schema({
       type: Number,
       required: true
     },
-
-    minimumOrderValue: {
-      type: Number,
-      default: 0
-    },
-
     startDate: {
       type: Date,
       required: true

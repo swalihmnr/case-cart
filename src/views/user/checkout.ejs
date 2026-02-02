@@ -154,7 +154,7 @@
                             <div>
                                 <label class="block text-sm font-medium text-gray-700 mb-1 sm:mb-2">
                                     Street Address *
-                                </label>
+                                    </label>
                                 <input
                                     type="text"
                                     id="line1"
@@ -279,41 +279,83 @@
                 <div class="lg:col-span-1">
                     <div class="bg-white rounded-lg shadow-sm sm:shadow-md p-4 sm:p-6 sticky top-4">
                         <h2 class="text-lg sm:text-xl font-bold text-gray-800 mb-4 sm:mb-6">Order Summary</h2>
-
-                        <!-- Order Items -->
-                        <div class="space-y-3 sm:space-y-4 mb-4 sm:mb-6 pb-4 sm:pb-6 border-b">
-                            <% cartItems.forEach(item => { %>
-                            <div class="flex items-center space-x-3">
-                                <!-- Product Image -->
-                                <div class="w-12 h-12 sm:w-16 sm:h-16 flex items-center justify-center flex-shrink-0">
-                                    <img
-                                        src="<%= item.mainImage?.url %>"
-                                        alt=""
-                                        class="w-full h-full object-contain rounded-md"
-                                    />
+                        
+                        <!-- Order Items with Offers -->
+                        <div class="space-y-4 sm:space-y-5 mb-4 sm:mb-6 pb-4 sm:pb-6 border-b">
+                            <% 
+                            let totalSavings = 0;
+                            cartItems.forEach((item, index) => { 
+                                const originalPrice = item.variant ? item.variant.salePrice : item.salePrice;
+                                const savingsPerItem = item.finalPrice ? ((originalPrice * (item.quantity || 1)) - item.finalPrice) : 0;
+                                totalSavings += savingsPerItem;
+                            %>
+                            <div class="bg-white rounded-lg border border-gray-200 p-3 sm:p-4">
+                                <div class="flex items-center space-x-3 mb-2">
+                                    <!-- Product Image -->
+                                    <div class="w-12 h-12 sm:w-16 sm:h-16 flex items-center justify-center flex-shrink-0">
+                                        <% if (item.mainImage?.url) { %>
+                                        <img
+                                            src="<%= item.mainImage.url %>"
+                                            alt="<%= item.product.name %>"
+                                            class="w-full h-full object-contain rounded-md"
+                                        />
+                                        <% } else { %>
+                                        <div class="w-full h-full bg-gray-200 rounded-md flex items-center justify-center">
+                                            <svg class="w-6 h-6 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"></path>
+                                            </svg>
+                                        </div>
+                                        <% } %>
+                                    </div>
+                                    
+                                    <!-- Product Details -->
+                                    <div class="flex-1 min-w-0">
+                                        <h4 class="font-semibold text-gray-800 text-xs sm:text-sm truncate"><%= item.product.name %></h4>
+                                        <p class="text-xs text-gray-500 mt-1">
+                                            Qty: <%= item.quantity || 1 %>
+                                        </p>
+                                    </div>
+                                    
+                                    <!-- Price with Original Price Striked -->
+                                    <div class="text-right whitespace-nowrap">
+                                        <div class="font-semibold text-gray-800 text-sm sm:text-base">
+                                            ₹ <%= item.finalPrice || (originalPrice * (item.quantity || 1)).toFixed(2) %>
+                                        </div>
+                                        <% if (item.finalPrice && savingsPerItem > 0) { %>
+                                        <div class="text-xs text-gray-400 line-through">
+                                            ₹ <%= item.variant?.salePrice||item.salePrice %>
+                                        </div>
+                                        <% } %>
+                                    </div>
                                 </div>
                                 
-                                <!-- Product Details -->
-                                <div class="flex-1 min-w-0">
-                                    <h4 class="font-semibold text-gray-800 text-xs sm:text-sm truncate">Tropical Leaf</h4>
-                                    <p class="text-xs text-gray-500 mt-1">
-                                        Qty: <%= item.quantity || 1 %>
-                                    </p>
-                                    <p class="text-xs text-gray-500">
-                                        Per: ₹<%= item.variant ? item.variant.salePrice : item.salePrice %>
-                                    </p>
+                                <!-- Offer Badge -->
+                                <% if (item.appliedOffer && item.appliedOffer !== null) { %>
+                                <div class="mt-2 flex items-center justify-between">
+                                    <div class="flex items-center gap-2">
+                                        <span class="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-purple-100 text-purple-700">
+                                            <svg class="w-3 h-3 mr-1" fill="currentColor" viewBox="0 0 20 20">
+                                                <path fill-rule="evenodd" d="M5 2a1 1 0 011 1v1h1a1 1 0 010 2H6v1a1 1 0 01-2 0V6H3a1 1 0 010-2h1V3a1 1 0 011-1zm0 10a1 1 0 011 1v1h1a1 1 0 110 2H6v1a1 1 0 11-2 0v-1H3a1 1 0 110-2h1v-1a1 1 0 011-1zM12 2a1 1 0 01.967.744L14.146 7.2 17.5 9.134a1 1 0 010 1.732l-3.354 1.935-1.18 4.455a1 1 0 01-1.933 0L9.854 12.2 6.5 10.266a1 1 0 010-1.732l3.354-1.935 1.18-4.455A1 1 0 0112 2z" clip-rule="evenodd"/>
+                                            </svg>
+                                            Offer
+                                        </span>
+                                        <span class="text-xs font-medium text-blue-600">
+                                            <%= item.appliedOffer.value || '' %>%Applied
+                                        </span>
+                                    </div>
+                                    <% if (savingsPerItem > 0) { %>
+                                    <span class="text-xs font-semibold text-green-600">
+                                        Save ₹<%= savingsPerItem.toFixed(2) %>
+                                    </span>
+                                    <% } %>
                                 </div>
-                                
-                                <!-- Price -->
-                                <span class="font-semibold text-gray-800 text-sm sm:text-base whitespace-nowrap">
-                                    ₹ <%= (item.quantity || 1) * (item.variant ? item.variant.salePrice : item.salePrice) %>
-                                </span>
+                                <% } %>
                             </div>
                             <% }) %>
                         </div>
 
                         <!-- Promo Code Section -->
-                        <div class="bg-white rounded-lg p-4 mb-4 sm:mb-6">
+                        <div class="bg-white rounded-lg p-4 mb-4 sm:mb-6 border border-gray-200">
                             <div class="mb-3">
                                 <button id="toggleCoupon" class="flex items-center justify-between w-full text-left">
                                     <div class="flex items-center gap-2">
@@ -350,16 +392,48 @@
                                     <div class="space-y-2">
                                         <p class="text-xs font-medium text-gray-500 uppercase tracking-wide mb-2">Available Coupons</p>
                                         
-                                        <div class="border border-dashed border-indigo-200 rounded-lg p-2 sm:p-3 hover:border-indigo-400 hover:bg-indigo-50 cursor-pointer group" onclick="applyCoupon('SAVE10', '10% off')">
+                                        <!-- Flat Discount Coupon -->
+                                        <div class="border border-dashed border-green-200 rounded-lg p-3 hover:border-green-400 hover:bg-green-50 cursor-pointer group" onclick="applyCoupon('FLAT500', 'Get ₹500 off on orders above ₹2000')">
                                             <div class="flex items-center justify-between">
                                                 <div class="flex-1 min-w-0">
                                                     <div class="flex items-center gap-2 mb-1">
-                                                        <span class="text-xs sm:text-sm font-bold text-indigo-600 font-mono truncate">SAVE10</span>
-                                                        <span class="text-xs bg-green-100 text-green-700 px-2 py-0.5 rounded-full whitespace-nowrap">Active</span>
+                                                        <span class="text-sm font-bold text-green-600 font-mono truncate">FLAT500</span>
+                                                        <span class="text-xs bg-green-100 text-green-700 px-2 py-0.5 rounded-full whitespace-nowrap">Most Popular</span>
                                                     </div>
-                                                    <p class="text-xs text-gray-600 truncate">Get 10% off on your order</p>
+                                                    <p class="text-xs text-gray-600">Get ₹500 off on orders above ₹2000</p>
+                                                    <p class="text-xs text-gray-400 mt-1">Valid till: 31 Dec 2024</p>
                                                 </div>
-                                                <button class="text-xs text-indigo-600 font-medium group-hover:underline whitespace-nowrap ml-2">Apply</button>
+                                                <button class="text-xs text-green-600 font-medium group-hover:underline whitespace-nowrap ml-2">Apply</button>
+                                            </div>
+                                        </div>
+
+                                        <!-- Percentage Coupon -->
+                                        <div class="border border-dashed border-blue-200 rounded-lg p-3 hover:border-blue-400 hover:bg-blue-50 cursor-pointer group" onclick="applyCoupon('SAVE20', 'Get 20% off on all orders')">
+                                            <div class="flex items-center justify-between">
+                                                <div class="flex-1 min-w-0">
+                                                    <div class="flex items-center gap-2 mb-1">
+                                                        <span class="text-sm font-bold text-blue-600 font-mono truncate">SAVE20</span>
+                                                        <span class="text-xs bg-blue-100 text-blue-700 px-2 py-0.5 rounded-full whitespace-nowrap">Best Value</span>
+                                                    </div>
+                                                    <p class="text-xs text-gray-600">Get 20% off on all orders</p>
+                                                    <p class="text-xs text-gray-400 mt-1">Max discount: ₹1000</p>
+                                                </div>
+                                                <button class="text-xs text-blue-600 font-medium group-hover:underline whitespace-nowrap ml-2">Apply</button>
+                                            </div>
+                                        </div>
+
+                                        <!-- Free Shipping Coupon -->
+                                        <div class="border border-dashed border-purple-200 rounded-lg p-3 hover:border-purple-400 hover:bg-purple-50 cursor-pointer group" onclick="applyCoupon('FREESHIP', 'Free shipping on all orders')">
+                                            <div class="flex items-center justify-between">
+                                                <div class="flex-1 min-w-0">
+                                                    <div class="flex items-center gap-2 mb-1">
+                                                        <span class="text-sm font-bold text-purple-600 font-mono truncate">FREESHIP</span>
+                                                        <span class="text-xs bg-purple-100 text-purple-700 px-2 py-0.5 rounded-full whitespace-nowrap">Free Shipping</span>
+                                                    </div>
+                                                    <p class="text-xs text-gray-600">Free shipping on all orders</p>
+                                                    <p class="text-xs text-gray-400 mt-1">No minimum order</p>
+                                                </div>
+                                                <button class="text-xs text-purple-600 font-medium group-hover:underline whitespace-nowrap ml-2">Apply</button>
                                             </div>
                                         </div>
                                     </div>
@@ -391,17 +465,38 @@
                         <div class="space-y-2 sm:space-y-3 mb-4 sm:mb-6">
                             <div class="flex justify-between text-gray-600 text-sm">
                                 <span>Subtotal</span>
-                                <span><%= subtotal %></span>
+                                <span>₹<%= subtotal %></span>
                             </div>
+                            
+                            <!-- Product Savings -->
+                            <% if (totalSavings > 0) { %>
+                            <div class="flex justify-between text-green-600 text-sm">
+                                <span>Product Savings</span>
+                                <span>₹<%= totalSavings.toFixed(2) %></span>
+                            </div>
+                            <% } %>
+                            
+                            <!-- Coupon Discount (if any) -->
+                            <div class="flex justify-between text-green-600 text-sm" id="couponDiscount" style="display: none;">
+                                <span>Coupon Discount</span>
+                                <span id="couponDiscountValue">-₹0</span>
+                            </div>
+                            
                             <div class="flex justify-between text-gray-600 text-sm">
                                 <span>Shipping</span>
-                                <span class="text-green-600 font-semibold">Free</span>
+                                <span class="text-green-600 font-semibold"><%= shipping===0?"Free":shipping %></span>
                             </div>
+                            
                             <div class="border-t pt-2 sm:pt-3">
                                 <div class="flex justify-between items-center">
                                     <span class="text-base sm:text-lg font-bold text-gray-800">Total</span>
-                                    <span class="text-xl sm:text-2xl font-bold text-purple-600"><%= subtotal %></span>
+                                    <span class="text-xl sm:text-2xl font-bold text-purple-600" id="finalTotal">₹<%= finalAmount %></span>
                                 </div>
+                                <% if (totalSavings > 0) { %>
+                                <p class="text-xs text-green-600 mt-1 font-medium">
+                                    You saved ₹<%= totalSavings.toFixed(2) %> on this order!
+                                </p>
+                                <% } %>
                             </div>
                         </div>
 
@@ -446,4 +541,111 @@
 
 <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 <script type="module" src="/js/user/checkout.js"></script>
+
+<script>
+// Coupon functions
+function applyCoupon(code, description) {
+    document.getElementById('appliedCode').textContent = code;
+    document.getElementById('appliedDescription').textContent = description;
+    document.getElementById('appliedCoupon').classList.remove('hidden');
+    document.getElementById('couponForm').classList.add('hidden');
+    document.getElementById('toggleCoupon').style.display = 'none';
+    
+    // Show coupon discount in price breakdown
+    document.getElementById('couponDiscount').style.display = 'flex';
+    
+    // Calculate discount based on coupon
+    let discount = 0;
+    if (code === 'FLAT500') {
+        discount = 500;
+    } else if (code === 'SAVE20') {
+        discount = Math.min(Math.round(<%= subtotal %> * 0.20), 1000);
+    } else if (code === 'FREESHIP') {
+        discount = <%= shipping %>;
+    }
+    
+    document.getElementById('couponDiscountValue').textContent = '-₹' + discount;
+    
+    // Update final total
+    const originalTotal = <%= finalAmount %>;
+    const productSavings = <%= totalSavings.toFixed(2) %>;
+    const newTotal = originalTotal - discount;
+    document.getElementById('finalTotal').textContent = '₹' + newTotal.toFixed(2);
+    
+    // Update savings message
+    const totalSavings = productSavings + discount;
+    const savingsElement = document.querySelector('.text-xs.text-green-600.mt-1');
+    if (savingsElement) {
+        savingsElement.textContent = `You saved ₹${totalSavings.toFixed(2)} on this order!`;
+    }
+    
+    // Show success message
+    Swal.fire({
+        icon: 'success',
+        title: 'Coupon Applied!',
+        text: description,
+        timer: 1500,
+        showConfirmButton: false
+    });
+}
+
+function removeCoupon() {
+    document.getElementById('appliedCoupon').classList.add('hidden');
+    document.getElementById('couponDiscount').style.display = 'none';
+    document.getElementById('toggleCoupon').style.display = 'flex';
+    
+    // Reset final total
+    document.getElementById('finalTotal').textContent = '₹<%= finalAmount %>';
+    
+    // Reset savings message
+    const savingsElement = document.querySelector('.text-xs.text-green-600.mt-1');
+    if (savingsElement) {
+        savingsElement.textContent = `You saved ₹<%= totalSavings.toFixed(2) %> on this order!`;
+    }
+}
+
+// Toggle coupon form
+document.addEventListener('DOMContentLoaded', function() {
+    const toggleBtn = document.getElementById('toggleCoupon');
+    const couponForm = document.getElementById('couponForm');
+    const chevron = document.getElementById('chevron');
+    
+    if (toggleBtn) {
+        toggleBtn.addEventListener('click', function() {
+            couponForm.classList.toggle('hidden');
+            chevron.classList.toggle('rotate-180');
+        });
+    }
+});
+</script>
+
+<style>
+.slide-down {
+    animation: slideDown 0.3s ease-out;
+}
+
+@keyframes slideDown {
+    from {
+        opacity: 0;
+        transform: translateY(-10px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.rotate-180 {
+    transform: rotate(180deg);
+}
+
+.gradient-bg {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+}
+
+.line-through {
+    text-decoration: line-through;
+}
+</style>
+
 <%- include('../partials/user/footer') %>

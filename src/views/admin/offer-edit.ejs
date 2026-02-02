@@ -76,15 +76,7 @@
               </h3>
 
               <!-- Min Order -->
-              <div>
-                <label class="block text-sm font-medium mb-1">Minimum Order Value *</label>
-                <input
-                  id="minOrderValue"
-                  type="number"
-                  class="w-full px-3 py-2 text-sm sm:text-base border rounded-lg focus:ring-2 focus:ring-purple-500 focus:outline-none"
-                  value="<%= offer.minimumOrderValue %>">
-                <p id="minOrderValueErr" class="text-red-500 text-xs sm:text-sm mt-1"></p>
-              </div>
+              
 
               <!-- Applicable On -->
               <div>
@@ -98,10 +90,6 @@
                   <option value="category"
                     <%= offer.applicableOn === 'category' ? 'selected' : '' %>>
                     Categories
-                  </option>
-                  <option value="global"
-                    <%= offer.applicableOn === 'global' ? 'selected' : '' %>>
-                    Global
                   </option>
                 </select>
                 <p id="applicableOnErr" class="text-red-500 text-xs sm:text-sm mt-1"></p>

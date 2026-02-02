@@ -19,7 +19,6 @@ document.addEventListener("DOMContentLoaded", () => {
   // CONFIG
   // =====================
   const MAX_PERCENT = 70;
-  const MAX_FLAT = 500;
 
   // =====================
   // UI TOGGLE
@@ -203,7 +202,6 @@ document.addEventListener("DOMContentLoaded", () => {
       offerType: offerType.value,
       offerValue: Number(offerValue.value),
       applicableOn: applicableOn.value,
-      minOrderValue: Number(minOrderValue.value),
       startDate: startDate.value,
       endDate: endDate.value,
       status: offerStatus.value
