@@ -58,6 +58,11 @@ const orderSchema = new Schema(
       ref: "coupon",
       default: null,
     },
+    couponDiscount:{
+      type:Number,
+      required:false,
+      default:0
+    },
     shippingAddress: {
       addressType: {
         type: String,

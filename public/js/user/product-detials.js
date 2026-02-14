@@ -209,6 +209,8 @@ import api from "../api.js";
             badge.classList.remove('hidden')
             nameEl.innerText=resVariant.data.disObject.name;
             discountEl.innerText=`${resVariant.data.disObject.discountTypeValue} ${resVariant.data.disObject.disType==="fixedAmount"?"₹":"%"} OFF`
+          }else{
+            badge.classList.add('hidden')
           }
            await api.productDetialAxios(productID)
           

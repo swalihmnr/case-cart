@@ -1,15 +1,18 @@
 <%- include('../partials/user/header') %>
 
-<div class="flex">
+<!-- Add CSS link in head section -->
+<!-- Removed problematic CSS link -->
+
+<div class="checkout-container">
     <main class="w-full">
-        <!-- Progress Steps - Made responsive -->
+        <!-- Progress Steps -->
         <div class="bg-white border-b">
             <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 sm:py-6">
                 <div class="flex items-center justify-between max-w-3xl mx-auto">
                     <!-- Step 1: Cart -->
                     <div class="flex flex-col items-center flex-1">
-                        <div class="step w-8 h-8 sm:w-10 sm:h-10 bg-green-300 rounded-full flex items-center justify-center font-semibold mb-1 sm:mb-2">
-                            <svg class="w-4 h-4 sm:w-6 sm:h-6 text-green-700" fill="currentColor" viewBox="0 0 20 20">
+                        <div class="progress-step w-8 h-8 sm:w-10 sm:h-10 bg-green-500 rounded-full flex items-center justify-center font-semibold mb-1 sm:mb-2 completed">
+                            <svg class="w-4 h-4 sm:w-6 sm:h-6 text-white" fill="currentColor" viewBox="0 0 20 20">
                                 <path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"/>
                             </svg>
                         </div>
@@ -21,7 +24,7 @@
                     
                     <!-- Step 2: Shipping -->
                     <div class="flex flex-col items-center flex-1">
-                        <div class="step w-8 h-8 sm:w-10 sm:h-10 bg-blue-500 rounded-full flex items-center text-white justify-center font-semibold mb-1 sm:mb-2">2</div>
+                        <div class="progress-step w-8 h-8 sm:w-10 sm:h-10 bg-blue-500 rounded-full flex items-center text-white justify-center font-semibold mb-1 sm:mb-2 active">2</div>
                         <span class="text-xs text-gray-600 font-medium text-center">Shipping</span>
                     </div>
                     
@@ -30,7 +33,7 @@
                     
                     <!-- Step 3: Payment -->
                     <div class="flex flex-col items-center flex-1">
-                        <div class="step w-8 h-8 sm:w-10 sm:h-10 bg-gray-300 rounded-full flex items-center justify-center font-semibold mb-1 sm:mb-2">3</div>
+                        <div class="progress-step w-8 h-8 sm:w-10 sm:h-10 bg-gray-300 rounded-full flex items-center justify-center font-semibold mb-1 sm:mb-2">3</div>
                         <span class="text-xs text-gray-600 font-medium text-center">Payment</span>
                     </div>
                 </div>
@@ -46,11 +49,11 @@
                     <div class="bg-white rounded-lg shadow-sm sm:shadow-md p-4 sm:p-6">
                         <div class="flex flex-col sm:flex-row sm:items-center justify-between mb-4 sm:mb-6 relative">
                             <h2 class="text-xl sm:text-2xl font-bold text-gray-800 mb-2 sm:mb-0">Shipping Information</h2>
-                            
+                                
                             <div class="relative self-end sm:self-auto">
                                 <button 
                                     id="addressDropdownBtn"
-                                    class="text-sm text-purple-600 font-medium cursor-pointer hover:text-purple-700 focus:outline-none"
+                                    class="text-sm text-purple-600 font-medium cursor-pointer hover:text-purple-700 focus:outline-none px-3 py-2 rounded-lg hover:bg-purple-50 transition-colors"
                                 >
                                     Use saved address
                                 </button>
@@ -58,122 +61,153 @@
                                 <!-- Dropdown Menu -->
                                 <div 
                                     id="addressDropdown"
-                                    class="absolute right-0 mt-2 w-56 sm:w-64 bg-white rounded-lg shadow-lg border border-gray-200 py-2 z-10 hidden"
+                                    class="absolute right-0 mt-2 w-56 sm:w-64 bg-white rounded-lg shadow-lg border border-gray-200 py-2 z-50 address-dropdown hidden"
                                 >
-                                    <div class="px-4 py-2 border-b border-gray-100">
+                                    <div class="px-4 py-2 border-b border-gray-100 bg-gray-50">
                                         <h3 class="font-medium text-gray-800 text-sm">Select an address</h3>
                                     </div>
                                     
                                     <div class="max-h-48 sm:max-h-60 overflow-y-auto">
-                                        <% addresses.forEach((address, index) => { %>
-                                        <div class="px-4 py-3 hover:bg-gray-50 cursor-pointer">
-                                            <div class="flex items-start">
-                                                <input
-                                                    type="radio"
-                                                    id="address_<%= index %>"
-                                                    name="savedAddress"
-                                                    value="<%= address._id %>"
-                                                    class="mt-1 mr-3"
-                                                    <%= address.isDefault ? 'checked' : '' %>
-                                                    data-first-name="<%= address.firstName || '' %>"
-                                                    data-last-name="<%= address.lastName || '' %>"
-                                                    data-phone="<%= address.phone || '' %>"
-                                                    data-line1="<%= address.streetAddress || '' %>"
-                                                    data-landmark="<%= address.landMark || '' %>"
-                                                    data-city="<%= address.city || '' %>"
-                                                    data-state="<%= address.state || '' %>"
-                                                    data-pincode="<%= address.pinCode || '' %>"
-                                                    data-address-type="<%= address.addressType || '' %>"
-                                                >
-                                                <div class="flex-1 min-w-0">
-                                                    <label for="address_<%= index %>" class="font-medium text-gray-800 block text-sm truncate">
-                                                        <%= address.addressType || 'Address' %>
-                                                    </label>
-                                                    <p class="text-xs text-gray-600 mt-1 truncate">
-                                                        <%= address.streetAddress || '' %>,
-                                                        <%= address.landMark || '' %>,
-                                                        <%= address.city || '' %>,
-                                                        <%= address.state || '' %>
-                                                    </p>
+                                        <% if (addresses && addresses.length > 0) { %>
+                                            <% addresses.forEach((address, index) => { %>
+                                            <div class="px-4 py-3 hover:bg-gray-50 cursor-pointer transition-colors border-b border-gray-100 last:border-b-0"
+                                                 onclick="document.getElementById('address_<%= index %>').click()">
+                                                <div class="flex items-start">
+                                                    <input
+                                                        type="radio"
+                                                        id="address_<%= index %>"
+                                                        name="savedAddress"
+                                                        value="<%= address._id %>"
+                                                        class="mt-1 mr-3 cursor-pointer"
+                                                        <%= address.isDefault ? 'checked' : '' %>
+                                                        data-first-name="<%= address.firstName || '' %>"
+                                                        data-last-name="<%= address.lastName || '' %>"
+                                                        data-phone="<%= address.phone || '' %>"
+                                                        data-line1="<%= address.streetAddress || '' %>"
+                                                        data-landmark="<%= address.landMark || '' %>"
+                                                        data-city="<%= address.city || '' %>"
+                                                        data-state="<%= address.state || '' %>"
+                                                        data-pincode="<%= address.pinCode || '' %>"
+                                                        data-address-type="<%= address.addressType || '' %>"
+                                                    >
+                                                    <div class="flex-1 min-w-0">
+                                                        <div class="flex items-center justify-between mb-1">
+                                                            <label for="address_<%= index %>" class="font-medium text-gray-800 block text-sm truncate cursor-pointer">
+                                                                <%= address.addressType || 'Address' %>
+                                                            </label>
+                                                            <% if (address.isDefault) { %>
+                                                            <span class="text-xs bg-blue-100 text-blue-800 px-2 py-0.5 rounded-full">Default</span>
+                                                            <% } %>
+                                                        </div>
+                                                        <p class="text-xs text-gray-600 mt-1 line-clamp-2">
+                                                            <%= address.streetAddress || '' %>,
+                                                            <%= address.landMark || '' %>,
+                                                            <%= address.city || '' %>,
+                                                            <%= address.state || '' %> -
+                                                            <%= address.pinCode || '' %>
+                                                        </p>
+                                                        <p class="text-xs text-gray-500 mt-1">
+                                                            <%= address.firstName || '' %> <%= address.lastName || '' %> | 
+                                                            <%= address.phone || '' %>
+                                                        </p>
+                                                    </div>
                                                 </div>
                                             </div>
-                                        </div>
-                                        <% }) %>
+                                            <% }) %>
+                                        <% } else { %>
+                                            <div class="px-4 py-6 text-center">
+                                                <svg class="w-12 h-12 text-gray-400 mx-auto mb-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"></path>
+                                                </svg>
+                                                <p class="text-sm text-gray-500">No saved addresses found</p>
+                                            </div>
+                                        <% } %>
                                     </div>
                                 </div>
                             </div>
                         </div>
                         
-                        <form class="space-y-4" id="form">
+                        <form class="space-y-4" id="shippingForm" novalidate>
                             <!-- First Name & Last Name -->
                             <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
                                 <!-- First Name -->
                                 <div>
-                                    <label class="block text-sm font-medium text-gray-700 mb-1 sm:mb-2">
+                                    <label for="first-name" class="block text-sm font-medium text-gray-700 mb-1 sm:mb-2">
                                         First Name *
                                     </label>
                                     <input
                                         type="text"
                                         id="first-name"
-                                        class="w-full px-3 sm:px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-600 text-sm sm:text-base"
+                                        name="firstName"
+                                        class="w-full px-3 sm:px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-600 focus:border-transparent text-sm sm:text-base transition-colors shipping-input"
                                         placeholder="Enter first name"
+                                        required
                                     >
-                                    <p class="text-xs sm:text-sm text-red-500 mt-1" id="firstNameError"></p>
+                                    <p class="text-xs sm:text-sm text-red-500 mt-1" id="first-nameError"></p>
                                 </div>
 
                                 <!-- Last Name -->
                                 <div>
-                                    <label class="block text-sm font-medium text-gray-700 mb-1 sm:mb-2">
+                                    <label for="last-name" class="block text-sm font-medium text-gray-700 mb-1 sm:mb-2">
                                         Last Name *
                                     </label>
                                     <input
                                         type="text"
                                         id="last-name"
-                                        class="w-full px-3 sm:px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-600 text-sm sm:text-base"
+                                        name="lastName"
+                                        class="w-full px-3 sm:px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-600 focus:border-transparent text-sm sm:text-base transition-colors shipping-input"
                                         placeholder="Enter last name"
+                                        required
                                     >
-                                    <p class="text-xs sm:text-sm text-red-500 mt-1" id="lastNameError"></p>
+                                    <p class="text-xs sm:text-sm text-red-500 mt-1" id="last-nameError"></p>
                                 </div>
                             </div>
 
                             <!-- Phone Number -->
                             <div>
-                                <label class="block text-sm font-medium text-gray-700 mb-1 sm:mb-2">
+                                <label for="phone" class="block text-sm font-medium text-gray-700 mb-1 sm:mb-2">
                                     Phone Number *
                                 </label>
                                 <input
                                     type="tel"
                                     id="phone"
-                                    class="w-full px-3 sm:px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-600 text-sm sm:text-base"
+                                    name="phone"
+                                    class="w-full px-3 sm:px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-600 focus:border-transparent text-sm sm:text-base transition-colors shipping-input"
                                     placeholder="Enter phone number"
+                                    pattern="[0-9]{10}"
+                                    maxlength="10"
+                                    required
                                 >
                                 <p class="text-xs sm:text-sm text-red-500 mt-1" id="phoneError"></p>
                             </div>
 
                             <!-- Address Line 1 -->
                             <div>
-                                <label class="block text-sm font-medium text-gray-700 mb-1 sm:mb-2">
+                                <label for="line1" class="block text-sm font-medium text-gray-700 mb-1 sm:mb-2">
                                     Street Address *
-                                    </label>
+                                </label>
                                 <input
                                     type="text"
                                     id="line1"
-                                    class="w-full px-3 sm:px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-600 text-sm sm:text-base"
-                                    placeholder="House No, Building Name"
+                                    name="line1"
+                                    class="w-full px-3 sm:px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-600 focus:border-transparent text-sm sm:text-base transition-colors shipping-input"
+                                    placeholder="House No, Building Name, Street"
+                                    required
                                 >
                                 <p class="text-xs sm:text-sm text-red-500 mt-1" id="line1Error"></p>
                             </div>
 
                             <!-- Landmark -->
                             <div>
-                                <label class="block text-sm font-medium text-gray-700 mb-1 sm:mb-2">
+                                <label for="landmark" class="block text-sm font-medium text-gray-700 mb-1 sm:mb-2">
                                     Landmark (Optional)
                                 </label>
                                 <input
                                     type="text"
                                     id="landmark"
-                                    class="w-full px-3 sm:px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-600 text-sm sm:text-base"
-                                    placeholder="Near school, hospital etc."
+                                    name="landmark"
+                                    class="w-full px-3 sm:px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-600 focus:border-transparent text-sm sm:text-base transition-colors"
+                                    placeholder="Near school, hospital, etc."
                                 >
                             </div>
 
@@ -181,55 +215,64 @@
                             <div class="grid grid-cols-1 sm:grid-cols-3 gap-3 sm:gap-4">
                                 <!-- City -->
                                 <div>
-                                    <label class="block text-sm font-medium text-gray-700 mb-1 sm:mb-2">
+                                    <label for="city" class="block text-sm font-medium text-gray-700 mb-1 sm:mb-2">
                                         City *
                                     </label>
                                     <input
                                         type="text"
                                         id="city"
-                                        class="w-full px-3 sm:px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-600 text-sm sm:text-base"
+                                        name="city"
+                                        class="w-full px-3 sm:px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-600 focus:border-transparent text-sm sm:text-base transition-colors shipping-input"
                                         placeholder="City"
+                                        required
                                     >
                                     <p class="text-xs sm:text-sm text-red-500 mt-1" id="cityError"></p>
                                 </div>
 
                                 <!-- State -->
                                 <div>
-                                    <label class="block text-sm font-medium text-gray-700 mb-1 sm:mb-2">
+                                    <label for="state" class="block text-sm font-medium text-gray-700 mb-1 sm:mb-2">
                                         State *
                                     </label>
                                     <select
                                         id="state"
-                                        class="w-full px-3 sm:px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-600 text-sm sm:text-base"
+                                        name="state"
+                                        class="w-full px-3 sm:px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-600 focus:border-transparent text-sm sm:text-base transition-colors cursor-pointer shipping-input"
+                                        required
                                     >
                                         <option value="">Select State</option>
                                         <option value="Kerala">Kerala</option>
                                         <option value="Tamil Nadu">Tamil Nadu</option>
                                         <option value="Karnataka">Karnataka</option>
                                         <option value="Maharashtra">Maharashtra</option>
+                                        <option value="Delhi">Delhi</option>
+                                        <option value="West Bengal">West Bengal</option>
+                                        <option value="Uttar Pradesh">Uttar Pradesh</option>
+                                        <option value="Gujarat">Gujarat</option>
+                                        <option value="Rajasthan">Rajasthan</option>
+                                        <option value="Punjab">Punjab</option>
                                     </select>
                                     <p class="text-xs sm:text-sm text-red-500 mt-1" id="stateError"></p>
                                 </div>
 
                                 <!-- PIN -->
                                 <div>
-                                    <label class="block text-sm font-medium text-gray-700 mb-1 sm:mb-2">
+                                    <label for="pincode" class="block text-sm font-medium text-gray-700 mb-1 sm:mb-2">
                                         PIN Code *
                                     </label>
                                     <input
                                         type="text"
                                         id="pincode"
-                                        class="w-full px-3 sm:px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-600 text-sm sm:text-base"
+                                        name="pincode"
+                                        class="w-full px-3 sm:px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-600 focus:border-transparent text-sm sm:text-base transition-colors shipping-input"
                                         placeholder="PIN Code"
+                                        pattern="[0-9]{6}"
+                                        maxlength="6"
+                                        required
                                     >
                                     <p class="text-xs sm:text-sm text-red-500 mt-1" id="pincodeError"></p>
                                 </div>
                             </div>
-
-                            <!-- Address Type -->
-                            
-                            <!-- Buttons -->
-                            
                         </form>
                     </div>
 
@@ -239,35 +282,66 @@
 
                         <div class="space-y-3 sm:space-y-4">
                             <!-- Razorpay -->
-                            <div class="border-2 border-gray-300 rounded-lg p-3 sm:p-4 hover:border-purple-400 cursor-pointer">
-                                <label class="flex items-center justify-between cursor-pointer">
+                            <div class="border-2 border-gray-300 rounded-lg p-3 sm:p-4 hover:border-purple-400 cursor-pointer transition-all payment-option" data-payment="razorpay">
+                                <label class="flex items-center justify-between cursor-pointer w-full">
                                     <div class="flex items-center">
-                                        <input type="radio" name="payment" value="Razorpay" class="w-4 h-4 text-purple-600">
+                                        <input type="radio" name="payment" value="razorpay" class="w-4 h-4 text-purple-600 focus:ring-purple-500 cursor-pointer">
                                         <span class="ml-3 font-semibold text-gray-800 text-sm sm:text-base">Razorpay</span>
                                     </div>
-                                    <svg viewBox="0 0 200 50" class="h-5 sm:h-6">
-                                        <text x="0" y="35" font-family="Arial, sans-serif" font-size="30" font-weight="bold" fill="#072654">Razorpay</text>
-                                    </svg>
+                                    <div class="flex items-center space-x-2">
+                                        <div class="flex items-center space-x-1">
+                                            <img src="https://cdn.razorpay.com/static/assets/logo/payment.svg" alt="Razorpay" class="h-6">
+                                        </div>
+                                        <svg class="w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path>
+                                        </svg>
+                                    </div>
                                 </label>
                                 <p class="text-xs sm:text-sm text-gray-500 mt-2 ml-7">UPI, Cards, Wallets, NetBanking and more</p>
                             </div>
 
                             <!-- Wallet -->
-                            <div class="border-2 border-gray-300 rounded-lg p-3 sm:p-4 hover:border-purple-400 cursor-pointer">
-                                <label class="flex items-center justify-between cursor-pointer">
+                            <div class="border-2 border-gray-300 rounded-lg p-3 sm:p-4 hover:border-purple-400 cursor-pointer transition-all payment-option" data-payment="wallet">
+                                <label class="flex items-center justify-between cursor-pointer w-full">
                                     <div class="flex items-center">
-                                        <input type="radio" name="payment" value="wallet" class="w-4 h-4 text-purple-600">
+                                        <input type="radio" name="payment" value="wallet" class="w-4 h-4 text-purple-600 focus:ring-purple-500 cursor-pointer">
                                         <span class="ml-3 font-semibold text-gray-800 text-sm sm:text-base">Wallet</span>
                                     </div>
+                                    <div class="flex items-center space-x-2">
+                                        <div class="flex items-center space-x-1">
+                                            <div class="w-6 h-6 bg-yellow-100 rounded-full flex items-center justify-center">
+                                                <svg class="w-4 h-4 text-yellow-600" fill="currentColor" viewBox="0 0 20 20">
+                                                    <path fill-rule="evenodd" d="M4 4a2 2 0 00-2 2v4a2 2 0 002 2h12a2 2 0 002-2V6a2 2 0 00-2-2H4z" clip-rule="evenodd"></path>
+                                                </svg>
+                                            </div>
+                                        </div>
+                                        <svg class="w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path>
+                                        </svg>
+                                    </div>
                                 </label>
-                                <p class="text-xs sm:text-sm text-gray-500 mt-2 ml-7">Pay securely with your PayPal account</p>
+                                <p class="text-xs sm:text-sm text-gray-500 mt-2 ml-7">Pay using your wallet balance</p>
                             </div>
 
                             <!-- Cash on Delivery -->
-                            <div class="border-2 border-gray-300 rounded-lg p-3 sm:p-4 hover:border-purple-400 cursor-pointer">
-                                <label class="flex items-center cursor-pointer">
-                                    <input type="radio" name="payment" value="cod" class="w-4 h-4 text-purple-600">
-                                    <span class="ml-3 font-semibold text-gray-800 text-sm sm:text-base">Cash on Delivery</span>
+                            <div class="border-2 border-gray-300 rounded-lg p-3 sm:p-4 hover:border-purple-400 cursor-pointer transition-all payment-option" data-payment="cod">
+                                <label class="flex items-center justify-between cursor-pointer w-full">
+                                    <div class="flex items-center">
+                                        <input type="radio" name="payment" value="cod" class="w-4 h-4 text-purple-600 focus:ring-purple-500 cursor-pointer">
+                                        <span class="ml-3 font-semibold text-gray-800 text-sm sm:text-base">Cash on Delivery</span>
+                                    </div>
+                                    <div class="flex items-center space-x-2">
+                                        <div class="flex items-center space-x-1">
+                                            <div class="w-6 h-6 bg-green-100 rounded-full flex items-center justify-center">
+                                                <svg class="w-4 h-4 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 9V7a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2m2 4h10a2 2 0 002-2v-6a2 2 0 00-2-2H9a2 2 0 00-2 2v6a2 2 0 002 2zm7-5a2 2 0 11-4 0 2 2 0 014 0z"></path>
+                                                </svg>
+                                            </div>
+                                        </div>
+                                        <svg class="w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path>
+                                        </svg>
+                                    </div>
                                 </label>
                                 <p class="text-xs sm:text-sm text-gray-500 mt-2 ml-7">Pay when you receive your order</p>
                             </div>
@@ -280,37 +354,76 @@
                     <div class="bg-white rounded-lg shadow-sm sm:shadow-md p-4 sm:p-6 sticky top-4">
                         <h2 class="text-lg sm:text-xl font-bold text-gray-800 mb-4 sm:mb-6">Order Summary</h2>
                         
+                        <!-- Selected Coupon Details -->
+                        <div id="selectedCouponDetails" class="hidden mb-4 p-3 bg-gradient-to-r from-yellow-50 to-orange-50 border border-yellow-200 rounded-lg slide-down" data-coupon-id="">
+                            <div class="flex justify-between items-start">
+                                <div class="flex-1">
+                                    <div class="flex items-center gap-2 mb-2">
+                                        <!-- Copyable Coupon Code -->
+                                        <div class="relative group">
+                                            <div class="flex items-center gap-1 px-3 py-1.5 bg-white border border-yellow-300 rounded-lg cursor-pointer hover:bg-yellow-50 transition-all duration-200 shadow-sm" onclick="copyCouponCode()">
+                                                <span class="text-sm font-bold text-yellow-800 font-mono" id="selectedCouponCode"></span>
+                                                <svg class="w-4 h-4 text-yellow-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z"></path>
+                                                </svg>
+                                            </div>
+                                            <!-- Tooltip -->
+                                            <div class="absolute bottom-full left-1/2 transform -translate-x-1/2 mb-2 px-2 py-1 bg-gray-800 text-white text-xs rounded opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none whitespace-nowrap z-50">
+                                                Click to copy
+                                                <div class="absolute top-full left-1/2 transform -translate-x-1/2 border-4 border-transparent border-t-gray-800"></div>
+                                            </div>
+                                        </div>
+                                        <span id="selectedCouponBadge" class="text-xs bg-yellow-200 text-yellow-800 px-2 py-1 rounded-full font-semibold"></span>
+                                    </div>
+                                    <p class="text-xs text-yellow-700 mb-1" id="selectedCouponDesc"></p>
+                                    <p class="text-xs text-gray-600">
+                                        Min. purchase: ₹<span id="selectedCouponMin"></span> | 
+                                        Valid till: <span id="selectedCouponDate"></span>
+                                    </p>
+                                </div>
+                                <button onclick="removeSelectedCoupon()"
+                                        class="ml-2 px-3 py-1 bg-red-600 text-white text-xs rounded-lg hover:bg-red-700 whitespace-nowrap transition-colors shadow-sm">
+                                    Remove
+                                </button>
+                            </div>
+                        </div>
+                        
                         <!-- Order Items with Offers -->
-                        <div class="space-y-4 sm:space-y-5 mb-4 sm:mb-6 pb-4 sm:pb-6 border-b">
+                        <div class="space-y-4 sm:space-y-5 mb-4 sm:mb-6 pb-4 sm:pb-6 border-b border-gray-200">
                             <% 
-                            let totalSavings = 0;
+                            
                             cartItems.forEach((item, index) => { 
                                 const originalPrice = item.variant ? item.variant.salePrice : item.salePrice;
-                                const savingsPerItem = item.finalPrice ? ((originalPrice * (item.quantity || 1)) - item.finalPrice) : 0;
-                                totalSavings += savingsPerItem;
+                                const savingsPerItem = Math.floor((item.variant?.orgPrice*item.appliedOffer?.value)/100);
+                                
                             %>
-                            <div class="bg-white rounded-lg border border-gray-200 p-3 sm:p-4">
+                            <div class="bg-white rounded-lg border border-gray-200 p-3 sm:p-4 hover:shadow-sm transition-shadow">
                                 <div class="flex items-center space-x-3 mb-2">
                                     <!-- Product Image -->
-                                    <div class="w-12 h-12 sm:w-16 sm:h-16 flex items-center justify-center flex-shrink-0">
-                                        <% if (item.mainImage?.url) { %>
-                                        <img
-                                            src="<%= item.mainImage.url %>"
-                                            alt="<%= item.product.name %>"
-                                            class="w-full h-full object-contain rounded-md"
-                                        />
-                                        <% } else { %>
-                                        <div class="w-full h-full bg-gray-200 rounded-md flex items-center justify-center">
-                                            <svg class="w-6 h-6 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"></path>
-                                            </svg>
-                                        </div>
-                                        <% } %>
+                                    <div class="w-12 h-12 sm:w-16 sm:h-16 flex items-center justify-center flex-shrink-0 bg-gray-100 rounded-md overflow-hidden">
+                                    <% if (item.mainImage?.url) { %>
+                                    <img
+                                        src="<%= item.mainImage.url %>"
+                                        alt="<%= item.product.name %>"
+                                        class="w-full h-full object-contain"
+                                        onerror="this.src='https://via.placeholder.com/150?text=No+Image'"
+                                    />
+                                    <% } else { %>
+                                    <div class="w-full h-full bg-gray-200 flex items-center justify-center">
+                                        <svg class="w-6 h-6 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"></path>
+                                        </svg>
                                     </div>
+                                    <% } %>
+                                </div>
+                                
                                     
                                     <!-- Product Details -->
                                     <div class="flex-1 min-w-0">
                                         <h4 class="font-semibold text-gray-800 text-xs sm:text-sm truncate"><%= item.product.name %></h4>
+                                        <% if (item.variant && item.variant.deviceModel) { %>
+                                        <p class="text-xs text-gray-500 mt-0.5 truncate"><%= item.variant.deviceModel %></p>
+                                        <% } %>
                                         <p class="text-xs text-gray-500 mt-1">
                                             Qty: <%= item.quantity || 1 %>
                                         </p>
@@ -319,28 +432,27 @@
                                     <!-- Price with Original Price Striked -->
                                     <div class="text-right whitespace-nowrap">
                                         <div class="font-semibold text-gray-800 text-sm sm:text-base">
-                                            ₹ <%= item.finalPrice || (originalPrice * (item.quantity || 1)).toFixed(2) %>
+                                            ₹<%= item.finalPrice %>
                                         </div>
-                                        <% if (item.finalPrice && savingsPerItem > 0) { %>
+                                       
                                         <div class="text-xs text-gray-400 line-through">
-                                            ₹ <%= item.variant?.salePrice||item.salePrice %>
+                                            ₹<%= (item.orgPrice * (item.quantity || 1)).toFixed(2) %>
                                         </div>
-                                        <% } %>
+                                      
                                     </div>
                                 </div>
-                                
                                 <!-- Offer Badge -->
                                 <% if (item.appliedOffer && item.appliedOffer !== null) { %>
-                                <div class="mt-2 flex items-center justify-between">
+                                <div class="mt-2 flex items-center justify-between pt-2 border-t border-gray-100">
                                     <div class="flex items-center gap-2">
-                                        <span class="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-purple-100 text-purple-700">
+                                        <span class="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-gradient-to-r from-purple-100 to-pink-100 text-purple-700 border border-purple-200">
                                             <svg class="w-3 h-3 mr-1" fill="currentColor" viewBox="0 0 20 20">
                                                 <path fill-rule="evenodd" d="M5 2a1 1 0 011 1v1h1a1 1 0 010 2H6v1a1 1 0 01-2 0V6H3a1 1 0 010-2h1V3a1 1 0 011-1zm0 10a1 1 0 011 1v1h1a1 1 0 110 2H6v1a1 1 0 11-2 0v-1H3a1 1 0 110-2h1v-1a1 1 0 011-1zM12 2a1 1 0 01.967.744L14.146 7.2 17.5 9.134a1 1 0 010 1.732l-3.354 1.935-1.18 4.455a1 1 0 01-1.933 0L9.854 12.2 6.5 10.266a1 1 0 010-1.732l3.354-1.935 1.18-4.455A1 1 0 0112 2z" clip-rule="evenodd"/>
                                             </svg>
-                                            Offer
+                                            Offer Applied
                                         </span>
                                         <span class="text-xs font-medium text-blue-600">
-                                            <%= item.appliedOffer.value || '' %>%Applied
+                                            <%= item.appliedOffer.value || '' %>% Off
                                         </span>
                                     </div>
                                     <% if (savingsPerItem > 0) { %>
@@ -354,181 +466,231 @@
                             <% }) %>
                         </div>
 
-                        <!-- Promo Code Section -->
+                        <!-- Enhanced Responsive Promo Code Section -->
                         <div class="bg-white rounded-lg p-4 mb-4 sm:mb-6 border border-gray-200">
-                            <div class="mb-3">
-                                <button id="toggleCoupon" class="flex items-center justify-between w-full text-left">
-                                    <div class="flex items-center gap-2">
-                                        <svg class="w-4 h-4 sm:w-5 sm:h-5 text-indigo-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 5v2m0 4v2m0 4v2M5 5a2 2 0 00-2 2v3a2 2 0 110 4v3a2 2 0 002 2h14a2 2 0 002-2v-3a2 2 0 110-4V7a2 2 0 00-2-2H5z"></path>
-                                        </svg>
-                                        <span class="text-xs sm:text-sm font-medium text-gray-700">Have a coupon code?</span>
+                            <!-- Coupon Header -->
+                            <div class="mb-3 sm:mb-4">
+                                <button id="toggleCoupon" class="flex items-center justify-between w-full text-left focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 rounded-lg p-1 hover:bg-gray-50 transition-colors">
+                                    <div class="flex items-center gap-2 sm:gap-3">
+                                        <div class="w-8 h-8 sm:w-10 sm:h-10 bg-gradient-to-br from-indigo-100 to-purple-100 rounded-lg flex items-center justify-center flex-shrink-0">
+                                            <svg class="w-4 h-4 sm:w-5 sm:h-5 text-indigo-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 5v2m0 4v2m0 4v2M5 5a2 2 0 00-2 2v3a2 2 0 110 4v3a2 2 0 002 2h14a2 2 0 002-2v-3a2 2 0 110-4V7a2 2 0 00-2-2H5z"></path>
+                                            </svg>
+                                        </div>
+                                        <div class="text-left">
+                                            <span class="text-xs sm:text-sm font-medium text-gray-700 block">Have a coupon code?</span>
+                                            <span class="text-xs text-gray-500 hidden sm:block">Apply coupon to save more</span>
+                                        </div>
                                     </div>
-                                    <svg id="chevron" class="w-4 h-4 sm:w-5 sm:h-5 text-gray-400 transition-transform duration-200" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <svg id="chevron" class="w-4 h-4 sm:w-5 sm:h-5 text-gray-400 transition-transform duration-200 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
                                     </svg>
                                 </button>
                             </div>
 
-                            <!-- Coupon Input (Initially Hidden) -->
-                            <div id="couponForm" class="hidden mb-3">
-                                <div class="slide-down">
-                                    <div class="flex gap-2 mb-3">
-                                        <input 
-                                            type="text" 
-                                            id="couponInput"
-                                            placeholder="Enter coupon code"
-                                            class="flex-1 px-3 sm:px-4 py-2 border border-gray-300 rounded-lg text-xs sm:text-sm focus:ring-2 focus:ring-indigo-500"
-                                        >
+                            <!-- Coupon Input Form (Initially Hidden) -->
+                            <div id="couponForm" class="hidden mb-3 sm:mb-4">
+                                <div class="space-y-3 sm:space-y-4 slide-down">
+                                    <!-- Input Section -->
+                                    <div class="flex flex-col sm:flex-row gap-2 sm:gap-3">
+                                        <div class="flex-1 relative">
+                                            <svg class="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 5v2m0 4v2m0 4v2M5 5a2 2 0 00-2 2v3a2 2 0 110 4v3a2 2 0 002 2h14a2 2 0 002-2v-3a2 2 0 110-4V7a2 2 0 00-2-2H5z"></path>
+                                            </svg>
+                                            <input 
+                                                type="text" 
+                                                id="couponInput"
+                                                placeholder="Enter coupon code"
+                                                class="w-full pl-10 pr-3 sm:pr-4 py-2.5 sm:py-3 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-colors"
+                                            >
+                                        </div>
                                         <button 
                                             id="applyBtn"
-                                            class="px-4 sm:px-6 py-2 bg-indigo-600 text-white text-xs sm:text-sm font-medium rounded-lg hover:bg-indigo-700"
+                                            class="px-4 sm:px-6 py-2.5 sm:py-3 bg-gradient-to-r from-indigo-600 to-purple-600 text-white text-xs sm:text-sm font-medium rounded-lg hover:from-indigo-700 hover:to-purple-700 transition-all shadow-sm hover:shadow-md"
                                         >
                                             Apply
                                         </button>
                                     </div>
-                                    
+
                                     <!-- Available Coupons List -->
-                                    <div class="space-y-2">
-                                        <p class="text-xs font-medium text-gray-500 uppercase tracking-wide mb-2">Available Coupons</p>
+                                    <div class="space-y-2 sm:space-y-3 pt-3 sm:pt-4 border-t border-gray-200">
+                                        <div class="flex items-center justify-between">
+                                            <p class="text-xs font-medium text-gray-500 uppercase tracking-wide">Available Coupons</p>
+                                            <span class="text-xs bg-indigo-100 text-indigo-800 px-2 py-1 rounded-full">
+                                                <%= coupons ? coupons.length : 0 %> available
+                                            </span>
+                                        </div>
                                         
-                                        <!-- Flat Discount Coupon -->
-                                        <div class="border border-dashed border-green-200 rounded-lg p-3 hover:border-green-400 hover:bg-green-50 cursor-pointer group" onclick="applyCoupon('FLAT500', 'Get ₹500 off on orders above ₹2000')">
-                                            <div class="flex items-center justify-between">
-                                                <div class="flex-1 min-w-0">
-                                                    <div class="flex items-center gap-2 mb-1">
-                                                        <span class="text-sm font-bold text-green-600 font-mono truncate">FLAT500</span>
-                                                        <span class="text-xs bg-green-100 text-green-700 px-2 py-0.5 rounded-full whitespace-nowrap">Most Popular</span>
+                                        <div class="space-y-2 sm:space-y-3 max-h-48 sm:max-h-60 overflow-y-auto pr-1 sm:pr-2">
+                                            <% if (coupons && coupons.length > 0) { %>
+                                                <% coupons.forEach(coupon => { %>
+                                                    <% 
+                                                    const endDate = new Date(coupon.endDate || '2024-12-31');
+                                                    const formattedDate = endDate.toLocaleDateString('en-IN', {
+                                                        day: 'numeric',
+                                                        month: 'short',
+                                                        year: 'numeric'
+                                                    });
+                                                    %>
+                                                    <div class="coupon-card border border-dashed border-green-200 rounded-lg p-3 sm:p-4 hover:border-green-400 hover:bg-green-50 cursor-pointer transition-all duration-200"
+                                                         onclick="showSelectedCoupon(
+                                                            '<%= coupon.couponCode %>',
+                                                            '<%= coupon.title %>',
+                                                            '<%= coupon.description || "Get discount on your order" %>',
+                                                            '<%= coupon.discountValue %>',
+                                                            '<%= coupon.discountType %>',
+                                                            '<%= coupon.MinimumPurchaseValue %>',
+                                                            '<%= coupon.endDate %>',
+                                                            '<%= coupon._id %>'
+                                                         )">
+                                                        <div class="flex flex-col sm:flex-row sm:items-start justify-between gap-2 sm:gap-0">
+                                                            <div class="flex-1 min-w-0">
+                                                                <div class="flex flex-wrap items-center gap-1.5 sm:gap-2 mb-1.5">
+                                                                    <!-- Copyable Coupon Code -->
+                                                                    <div class="relative group">
+                                                                        <div class="flex items-center gap-1 px-2 py-1 bg-white border border-green-300 rounded-md cursor-pointer hover:bg-green-50 transition-colors" onclick="event.stopPropagation(); copyCouponCodeInline('<%= coupon.couponCode %>')">
+                                                                            <span class="text-xs font-bold text-green-700 font-mono">
+                                                                                <%= coupon.couponCode %>
+                                                                            </span>
+                                                                            <svg class="w-3 h-3 text-green-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z"></path>
+                                                                            </svg>
+                                                                        </div>
+                                                                        <!-- Tooltip -->
+                                                                        <div class="absolute bottom-full left-1/2 transform -translate-x-1/2 mb-1 px-2 py-1 bg-gray-800 text-white text-xs rounded opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none whitespace-nowrap">
+                                                                            Click to copy
+                                                                            <div class="absolute top-full left-1/2 transform -translate-x-1/2 border-4 border-transparent border-t-gray-800"></div>
+                                                                        </div>
+                                                                    </div>
+                                                                    <span class="text-xs bg-green-100 text-green-700 px-2 py-0.5 sm:py-1 rounded-full whitespace-nowrap">
+                                                                        <% if (coupon.discountType === 'percentage') { %>
+                                                                            <%= coupon.discountValue %>% OFF
+                                                                        <% } else { %>
+                                                                            <%= coupon.title %>
+                                                                        <% } %>
+                                                                    </span>
+                                                                </div>
+                                                                <p class="text-xs sm:text-sm font-semibold text-gray-800 mb-1">
+                                                                    <%= coupon.title %>
+                                                                </p>
+                                                                <p class="text-xs text-gray-600 mb-1.5 line-clamp-2">
+                                                                    <%= coupon.description || "Get discount on your order" %>
+                                                                </p>
+                                                                <div class="flex flex-wrap items-center gap-2 sm:gap-3 text-xs text-gray-400">
+                                                                    <span class="flex items-center gap-1 whitespace-nowrap">
+                                                                        <svg class="w-3 h-3 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
+                                                                            <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm1-12a1 1 0 10-2 0v4a1 1 0 00.293.707l2.828 2.829a1 1 0 101.415-1.415L11 9.586V6z" clip-rule="evenodd"/>
+                                                                        </svg>
+                                                                        Valid till: <%= formattedDate %>
+                                                                    </span>
+                                                                    <span class="flex items-center gap-1 whitespace-nowrap">
+                                                                        <svg class="w-3 h-3 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
+                                                                            <path fill-rule="evenodd" d="M10 2a4 4 0 00-4 4v1H5a1 1 0 00-.994.89l-1 9A1 1 0 004 18h12a1 1 0 00.994-1.11l-1-9A1 1 0 0015 7h-1V6a4 4 0 00-4-4zm2 5V6a2 2 0 10-4 0v1h4zm-6 3a1 1 0 112 0 1 1 0 01-2 0zm7-1a1 1 0 100 2 1 1 0 000-2z" clip-rule="evenodd"/>
+                                                                        </svg>
+                                                                        Min: ₹<%= coupon.MinimumPurchaseValue %>
+                                                                    </span>
+                                                                </div>
+                                                            </div>
+                                                            <button class="text-xs sm:text-sm text-green-600 font-medium hover:text-green-700 whitespace-nowrap mt-1 sm:mt-0 sm:ml-2 px-2 sm:px-3 py-1.5 rounded-md bg-green-50 hover:bg-green-100 transition-colors self-start">
+                                                                View Details
+                                                            </button>
+                                                        </div>
                                                     </div>
-                                                    <p class="text-xs text-gray-600">Get ₹500 off on orders above ₹2000</p>
-                                                    <p class="text-xs text-gray-400 mt-1">Valid till: 31 Dec 2024</p>
+                                                <% }) %>
+                                            <% } else { %>
+                                                <div class="text-center py-4">
+                                                    <svg class="w-12 h-12 text-gray-400 mx-auto mb-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                                                    </svg>
+                                                    <p class="text-sm text-gray-500">No coupons available at the moment</p>
                                                 </div>
-                                                <button class="text-xs text-green-600 font-medium group-hover:underline whitespace-nowrap ml-2">Apply</button>
-                                            </div>
-                                        </div>
-
-                                        <!-- Percentage Coupon -->
-                                        <div class="border border-dashed border-blue-200 rounded-lg p-3 hover:border-blue-400 hover:bg-blue-50 cursor-pointer group" onclick="applyCoupon('SAVE20', 'Get 20% off on all orders')">
-                                            <div class="flex items-center justify-between">
-                                                <div class="flex-1 min-w-0">
-                                                    <div class="flex items-center gap-2 mb-1">
-                                                        <span class="text-sm font-bold text-blue-600 font-mono truncate">SAVE20</span>
-                                                        <span class="text-xs bg-blue-100 text-blue-700 px-2 py-0.5 rounded-full whitespace-nowrap">Best Value</span>
-                                                    </div>
-                                                    <p class="text-xs text-gray-600">Get 20% off on all orders</p>
-                                                    <p class="text-xs text-gray-400 mt-1">Max discount: ₹1000</p>
-                                                </div>
-                                                <button class="text-xs text-blue-600 font-medium group-hover:underline whitespace-nowrap ml-2">Apply</button>
-                                            </div>
-                                        </div>
-
-                                        <!-- Free Shipping Coupon -->
-                                        <div class="border border-dashed border-purple-200 rounded-lg p-3 hover:border-purple-400 hover:bg-purple-50 cursor-pointer group" onclick="applyCoupon('FREESHIP', 'Free shipping on all orders')">
-                                            <div class="flex items-center justify-between">
-                                                <div class="flex-1 min-w-0">
-                                                    <div class="flex items-center gap-2 mb-1">
-                                                        <span class="text-sm font-bold text-purple-600 font-mono truncate">FREESHIP</span>
-                                                        <span class="text-xs bg-purple-100 text-purple-700 px-2 py-0.5 rounded-full whitespace-nowrap">Free Shipping</span>
-                                                    </div>
-                                                    <p class="text-xs text-gray-600">Free shipping on all orders</p>
-                                                    <p class="text-xs text-gray-400 mt-1">No minimum order</p>
-                                                </div>
-                                                <button class="text-xs text-purple-600 font-medium group-hover:underline whitespace-nowrap ml-2">Apply</button>
-                                            </div>
+                                            <% } %>
                                         </div>
                                     </div>
-                                </div>
-                            </div>
-
-                            <!-- Applied Coupon Display -->
-                            <div id="appliedCoupon" class="hidden mb-3">
-                                <div class="bg-green-50 border border-green-200 rounded-lg p-2 sm:p-3 flex items-center justify-between slide-down">
-                                    <div class="flex items-center gap-2">
-                                        <svg class="w-4 h-4 sm:w-5 sm:h-5 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
-                                        </svg>
-                                        <div class="min-w-0">
-                                            <p class="text-xs sm:text-sm font-medium text-green-800 truncate" id="appliedCode"></p>
-                                            <p class="text-xs text-green-600 truncate" id="appliedDescription"></p>
-                                        </div>
-                                    </div>
-                                    <button onclick="removeCoupon()" class="text-red-600 hover:text-red-700 ml-2">
-                                        <svg class="w-4 h-4 sm:w-5 sm:h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
-                                        </svg>
-                                    </button>
                                 </div>
                             </div>
                         </div>
 
-                        <!-- Price Breakdown -->
+                        <!-- Price Breakdown - FIXED to show subtotal - savings -->
                         <div class="space-y-2 sm:space-y-3 mb-4 sm:mb-6">
                             <div class="flex justify-between text-gray-600 text-sm">
                                 <span>Subtotal</span>
-                                <span>₹<%= subtotal %></span>
+                                <span class="font-medium">₹<%= subtotal.toFixed(2) %></span>
                             </div>
                             
                             <!-- Product Savings -->
-                            <% if (totalSavings > 0) { %>
+                       
                             <div class="flex justify-between text-green-600 text-sm">
                                 <span>Product Savings</span>
-                                <span>₹<%= totalSavings.toFixed(2) %></span>
+                                <span class="font-medium">-₹<%= subtotal-finalAmount %></span>
                             </div>
-                            <% } %>
+                       
                             
-                            <!-- Coupon Discount (if any) -->
-                            <div class="flex justify-between text-green-600 text-sm" id="couponDiscount" style="display: none;">
+                            <!-- Coupon Discount (Hidden by default) -->
+                            <div class="flex justify-between text-green-600 text-sm hidden" id="couponDiscount">
                                 <span>Coupon Discount</span>
-                                <span id="couponDiscountValue">-₹0</span>
+                                <span class="font-medium" id="couponDiscountValue">-₹0.00</span>
                             </div>
                             
                             <div class="flex justify-between text-gray-600 text-sm">
                                 <span>Shipping</span>
-                                <span class="text-green-600 font-semibold"><%= shipping===0?"Free":shipping %></span>
+                                <span class="<%= shipping===0?'text-green-600 font-semibold':'font-medium' %>">
+                                    <%= shipping===0?"Free":`₹${shipping.toFixed(2)}` %>
+                                </span>
                             </div>
                             
-                            <div class="border-t pt-2 sm:pt-3">
+                            <div class="border-t border-gray-300 pt-3 sm:pt-4 mt-2 sm:mt-3">
                                 <div class="flex justify-between items-center">
-                                    <span class="text-base sm:text-lg font-bold text-gray-800">Total</span>
-                                    <span class="text-xl sm:text-2xl font-bold text-purple-600" id="finalTotal">₹<%= finalAmount %></span>
+                                    <span class="text-base sm:text-lg font-bold text-gray-800">Total Amount</span>
+                                    <span class="text-xl sm:text-2xl font-bold text-purple-600" id="finalTotal">₹<%= finalAmount.toFixed(2) %></span>
                                 </div>
-                                <% if (totalSavings > 0) { %>
-                                <p class="text-xs text-green-600 mt-1 font-medium">
-                                    You saved ₹<%= totalSavings.toFixed(2) %> on this order!
+                               
+                                <p class="text-xs text-green-600 mt-2 font-medium flex items-center gap-1">
+                                    <svg class="w-3 h-3 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
+                                        <path fill-rule="evenodd" d="M12 7a1 1 0 110-2h5a1 1 0 011 1v5a1 1 0 11-2 0V8.414l-4.293 4.293a1 1 0 01-1.414 0L8 10.414l-4.293 4.293a1 1 0 01-1.414-1.414l5-5a1 1 0 011.414 0L11 10.586 14.586 7H12z" clip-rule="evenodd"/>
+                                    </svg>
+                                    You saved ₹<%= subtotal-finalAmount %> on this order!
                                 </p>
-                                <% } %>
+                              
                             </div>
                         </div>
 
                         <!-- Place Order Button -->
-                        <button onclick="placeOrder()" class="w-full gradient-bg text-white py-3 sm:py-4 rounded-lg font-semibold hover:opacity-90 transition mb-3 sm:mb-4 text-sm sm:text-base">
+                        <button onclick="placeOrder()" 
+                                class="w-full gradient-bg text-white py-3 sm:py-4 rounded-lg font-semibold hover:opacity-90 transition-all duration-200 mb-3 sm:mb-4 text-sm sm:text-base shadow-lg hover:shadow-xl focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-purple-500 transform hover:-translate-y-0.5">
                             Place Order
                         </button>
 
                         <!-- Terms and Conditions -->
-                        <div class="text-center text-xs text-gray-500">
+                        <div class="text-center text-xs text-gray-500 px-1 sm:px-2">
                             <p>By placing your order, you agree to our</p>
                             <p>
-                                <a href="#" class="text-purple-600 hover:underline">Terms & Conditions</a> 
+                                <a href="/terms" class="text-purple-600 hover:underline font-medium hover:text-purple-700 transition-colors">Terms & Conditions</a> 
                                 and 
-                                <a href="#" class="text-purple-600 hover:underline">Privacy Policy</a>
+                                <a href="/privacy" class="text-purple-600 hover:underline font-medium hover:text-purple-700 transition-colors">Privacy Policy</a>
                             </p>
                         </div>
 
                         <!-- Security Badges -->
-                        <div class="mt-4 sm:mt-6 pt-4 sm:pt-6 border-t">
-                            <div class="flex items-center justify-center space-x-3 sm:space-x-4 text-xs sm:text-sm text-gray-600">
-                                <div class="flex items-center space-x-1">
-                                    <svg class="w-4 h-4 sm:w-5 sm:h-5 text-green-600" fill="currentColor" viewBox="0 0 20 20">
+                        <div class="mt-4 sm:mt-6 pt-4 sm:pt-6 border-t border-gray-300">
+                            <div class="flex items-center justify-center gap-4 sm:gap-6 text-xs sm:text-sm text-gray-600">
+                                <div class="flex items-center gap-1.5">
+                                    <svg class="w-4 h-4 sm:w-5 sm:h-5 text-green-600 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
                                         <path fill-rule="evenodd" d="M5 9V7a5 5 0 0110 0v2a2 2 0 012 2v5a2 2 0 01-2 2H5a2 2 0 01-2-2v-5a2 2 0 012-2zm8-2v2H7V7a3 3 0 016 0z" clip-rule="evenodd"/>
                                     </svg>
-                                    <span class="text-xs">Secure</span>
+                                    <span class="text-xs whitespace-nowrap">Secure</span>
                                 </div>
-                                <div class="flex items-center space-x-1">
-                                    <svg class="w-4 h-4 sm:w-5 sm:h-5 text-green-600" fill="currentColor" viewBox="0 0 20 20">
+                                <div class="flex items-center gap-1.5">
+                                    <svg class="w-4 h-4 sm:w-5 sm:h-5 text-green-600 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
                                         <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"/>
                                     </svg>
-                                    <span class="text-xs">SSL Encrypted</span>
+                                    <span class="text-xs whitespace-nowrap">SSL Encrypted</span>
+                                </div>
+                                <div class="flex items-center gap-1.5">
+                                    <svg class="w-4 h-4 sm:w-5 sm:h-5 text-green-600 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
+                                        <path fill-rule="evenodd" d="M12.395 2.553a1 1 0 00-1.45-.385c-.345.23-.614.558-.822.88-.214.33-.403.713-.57 1.116-.334.804-.614 1.768-.84 2.734a31.365 31.365 0 00-.613 3.58 2.64 2.64 0 01-.945-1.067c-.328-.68-.398-1.534-.398-2.654A1 1 0 005.05 6.05 6.981 6.981 0 003 11a7 7 0 1011.95-4.95c-.592-.591-.98-.985-1.348-1.467-.363-.476-.724-1.063-1.207-2.03zM12.12 15.12A3 3 0 017 13s.879.5 2.5.5c0-1 .5-4 1.25-4.5.5 1 .786 1.293 1.371 1.879A2.99 2.99 0 0113 13a2.99 2.99 0 01-.879 2.121z" clip-rule="evenodd"/>
+                                    </svg>
+                                    <span class="text-xs whitespace-nowrap">Trusted</span>
                                 </div>
                             </div>
                         </div>
@@ -539,113 +701,29 @@
     </main>
 </div>
 
+<!-- Scripts -->
+<!-- Commented out problematic scripts for debugging -->
+<!-- <script src="https://checkout.razorpay.com/v1/checkout.js"></script> -->
 <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 <script type="module" src="/js/user/checkout.js"></script>
 
+<!-- Pass data to JavaScript - FIXED to include saleSubtotal -->
 <script>
-// Coupon functions
-function applyCoupon(code, description) {
-    document.getElementById('appliedCode').textContent = code;
-    document.getElementById('appliedDescription').textContent = description;
-    document.getElementById('appliedCoupon').classList.remove('hidden');
-    document.getElementById('couponForm').classList.add('hidden');
-    document.getElementById('toggleCoupon').style.display = 'none';
-    
-    // Show coupon discount in price breakdown
-    document.getElementById('couponDiscount').style.display = 'flex';
-    
-    // Calculate discount based on coupon
-    let discount = 0;
-    if (code === 'FLAT500') {
-        discount = 500;
-    } else if (code === 'SAVE20') {
-        discount = Math.min(Math.round(<%= subtotal %> * 0.20), 1000);
-    } else if (code === 'FREESHIP') {
-        discount = <%= shipping %>;
-    }
-    
-    document.getElementById('couponDiscountValue').textContent = '-₹' + discount;
-    
-    // Update final total
-    const originalTotal = <%= finalAmount %>;
-    const productSavings = <%= totalSavings.toFixed(2) %>;
-    const newTotal = originalTotal - discount;
-    document.getElementById('finalTotal').textContent = '₹' + newTotal.toFixed(2);
-    
-    // Update savings message
-    const totalSavings = productSavings + discount;
-    const savingsElement = document.querySelector('.text-xs.text-green-600.mt-1');
-    if (savingsElement) {
-        savingsElement.textContent = `You saved ₹${totalSavings.toFixed(2)} on this order!`;
-    }
-    
-    // Show success message
-    Swal.fire({
-        icon: 'success',
-        title: 'Coupon Applied!',
-        text: description,
-        timer: 1500,
-        showConfirmButton: false
-    });
-}
+// Ensure all values are defined and numbers
+const subtotal = <%= subtotal %> || 0;
+console.log(subtotal,'inside of the ejs')
+const shipping = <%= shipping %> || 0;
+const finalAmount = <%= finalAmount %> || 0;
 
-function removeCoupon() {
-    document.getElementById('appliedCoupon').classList.add('hidden');
-    document.getElementById('couponDiscount').style.display = 'none';
-    document.getElementById('toggleCoupon').style.display = 'flex';
-    
-    // Reset final total
-    document.getElementById('finalTotal').textContent = '₹<%= finalAmount %>';
-    
-    // Reset savings message
-    const savingsElement = document.querySelector('.text-xs.text-green-600.mt-1');
-    if (savingsElement) {
-        savingsElement.textContent = `You saved ₹<%= totalSavings.toFixed(2) %> on this order!`;
-    }
-}
+// Calculate sale subtotal (after product discounts)
 
-// Toggle coupon form
-document.addEventListener('DOMContentLoaded', function() {
-    const toggleBtn = document.getElementById('toggleCoupon');
-    const couponForm = document.getElementById('couponForm');
-    const chevron = document.getElementById('chevron');
-    
-    if (toggleBtn) {
-        toggleBtn.addEventListener('click', function() {
-            couponForm.classList.toggle('hidden');
-            chevron.classList.toggle('rotate-180');
-        });
-    }
-});
+window.checkoutData = {
+    subtotal: subtotal,
+    shipping: shipping,
+    finalAmount: finalAmount
+};
+
+console.log('Checkout Data Initialized from EJS:', window.checkoutData);
 </script>
-
-<style>
-.slide-down {
-    animation: slideDown 0.3s ease-out;
-}
-
-@keyframes slideDown {
-    from {
-        opacity: 0;
-        transform: translateY(-10px);
-    }
-    to {
-        opacity: 1;
-        transform: translateY(0);
-    }
-}
-
-.rotate-180 {
-    transform: rotate(180deg);
-}
-
-.gradient-bg {
-    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-}
-
-.line-through {
-    text-decoration: line-through;
-}
-</style>
 
 <%- include('../partials/user/footer') %>

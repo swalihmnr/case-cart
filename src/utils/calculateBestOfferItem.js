@@ -1,51 +1,93 @@
 import offerModel from "../models/admin/offerModel.js";
+
+const MAX_DISCOUNT = 250;
+
 const calculateBestItemOffer = async (item) => {
-  const itemTotal = item.quantity * item.variant.salePrice;
 
-  const offers = await offerModel.find({
-    status: "active",
-    startDate: { $lte: new Date() },
-    endDate: { $gte: new Date() },
-    $or: [
-      {
-        applicableOn: "product",
-        productIds: { $in: [item.product._id] }
-      },
-      {
-        applicableOn: "category",
-        categoryIds: { $in: [item.product.catgId] }
-      }
-    ]
-  });
+  const orgPrice = item.variant.orgPrice;
+  const salePrice = item.variant.salePrice;
+  const quantity = item.quantity;
+  
+  // Calculate current discount from sale price
+  const currentDiscountPerUnit = orgPrice - salePrice;
+  
+  console.log('Original Price:', orgPrice);
+  console.log('Sale Price:', salePrice);
+  console.log('Current Discount per unit:', currentDiscountPerUnit);
 
+  // First check: If sale price already gives better discount than any offer could
+  // We need to find the maximum possible offer discount first
+  let bestOfferDiscountPerUnit = 0;
   let bestOffer = null;
-  let bestDiscount = 0;
 
-  for (const offer of offers) {
-    // Safe minimum order check
-    if (
-      offer.minimumOrderValue &&
-      itemTotal < offer.minimumOrderValue
-    ) {
-      continue;
-    }
+  // Only check offers if current discount is less than MAX_DISCOUNT
+  // (because offers are capped at MAX_DISCOUNT anyway)
+  if (currentDiscountPerUnit < MAX_DISCOUNT) {
+    const offers = await offerModel.find({
+      status: "active",
+      startDate: { $lte: new Date() },
+      endDate: { $gte: new Date() },
+      $or: [
+        { applicableOn: "product", productIds: { $in: [item.product._id] } },
+        { applicableOn: "category", categoryIds: { $in: [item.product.catgId] } }
+      ]
+    });
 
-    if (offer.offerType === "percentage") {
-      const discount = Math.round(
-        (itemTotal * offer.discountValue) / 100
-      );
+    console.log('Found offers:', offers.length);
 
-      if (discount > bestDiscount) {
-        bestDiscount = discount;
-        bestOffer = offer;
+    for (const offer of offers) {
+      if (offer.offerType === "percentage") {
+        // Calculate percentage discount on orgPrice
+        let discount = (orgPrice * offer.discountValue) / 100;
+        console.log(`Offer ${offer.title}: ${discount} discount`);
+
+        // Apply max cap per unit
+        if (discount > MAX_DISCOUNT) {
+          discount = MAX_DISCOUNT;
+        }
+
+        if (discount > bestOfferDiscountPerUnit) {
+          bestOfferDiscountPerUnit = discount;
+          bestOffer = offer;
+        }
       }
+      // Add other offer types if needed (fixed amount, etc.)
     }
   }
 
+  // Compare current discount vs best offer discount
+  let finalDiscountPerUnit;
+  let appliedOffer = null;
+
+  if (currentDiscountPerUnit >= bestOfferDiscountPerUnit) {
+    // Current sale price is better or equal
+    finalDiscountPerUnit = currentDiscountPerUnit;
+    appliedOffer = null; // No offer applied, using sale price
+    console.log('Using sale price discount:', currentDiscountPerUnit);
+  } else {
+    // Offer is better
+    finalDiscountPerUnit = bestOfferDiscountPerUnit;
+    appliedOffer = bestOffer;
+    console.log('Using offer discount:', bestOfferDiscountPerUnit);
+  }
+
+  // Calculate final price
+  const finalUnitPrice = Math.floor(orgPrice - finalDiscountPerUnit);
+  
+  // Calculate total discount amount for quantity
+  const totalDiscountAmount = finalDiscountPerUnit * quantity;
+  const totalFinalPrice = finalUnitPrice * quantity;
+
+  console.log('Final Discount per unit:', finalDiscountPerUnit);
+  console.log('Final Unit Price:', finalUnitPrice);
+  console.log('Total for', quantity, 'items:', totalFinalPrice);
+  console.log('Total Discount:', totalDiscountAmount);
+  console.log('Applied Offer:', appliedOffer ? appliedOffer.title : 'None (using sale price)');
+
   return {
-    bestOffer,
-    discountAmount: bestDiscount,
-    finalPrice: itemTotal - bestDiscount
+    bestOffer: appliedOffer,
+    discountAmount: finalDiscountPerUnit,  // per unit discount
+    finalPrice: finalUnitPrice             // per unit final price
   };
 };
 

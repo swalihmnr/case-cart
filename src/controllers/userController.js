@@ -1,99 +1,108 @@
-import user from '../models/userModel.js'
-import modelOtp from '../models/otpModel.js'
-import bcrypt from 'bcrypt'
-import otpGeneratorTodb from '../utils/otpGeneratorToDb.js'
-import productModel from '../models/admin/productModel.js'
-import Category from '../models/admin/categoryModel.js'
-import variantModel from '../models/admin/variantModel.js'
-import mongoose from 'mongoose'
-import { STATUS_CODES } from '../utils/statusCodes.js'
-import { uploadBufferTocloudnery } from '../utils/cloudneryUpload.js'
-import wishlistModel from '../models/wishlistModel.js'
-import cartModel from '../models/cartModel.js'
-import addressModel from '../models/addressModel.js';
-import orderModel from '../models/orderModel.js'
-import offerModel from '../../src/models/admin/offerModel.js'
-import discountChecker from '../../src/utils/calculateDiscount.js'
-import calculateBestItemOffer from '../utils/calculateBestOfferItem.js'
-
-
+import user from "../models/userModel.js";
+import modelOtp from "../models/otpModel.js";
+import bcrypt from "bcrypt";
+import otpGeneratorTodb from "../utils/otpGeneratorToDb.js";
+import productModel from "../models/admin/productModel.js";
+import Category from "../models/admin/categoryModel.js";
+import variantModel from "../models/admin/variantModel.js";
+import mongoose from "mongoose";
+import { STATUS_CODES } from "../utils/statusCodes.js";
+import { uploadBufferTocloudnery } from "../utils/cloudneryUpload.js";
+import wishlistModel from "../models/wishlistModel.js";
+import cartModel from "../models/cartModel.js";
+import addressModel from "../models/addressModel.js";
+import orderModel from "../models/orderModel.js";
+import offerModel from "../../src/models/admin/offerModel.js";
+import discountChecker from "../../src/utils/calculateDiscount.js";
+import calculateBestItemOffer from "../utils/calculateBestOfferItem.js";
+import couponModel from "../../src/models/admin/coupenModel.js";
 
 // ==============================
 // GET LOGIN PAGE
 // ==============================
 // Renders user login page
-let getLogin=(req,res)=>{
-    req.session.isKey=false
-    res.render('./user/userLogin')
-}
-
-
+let getLogin = (req, res) => {
+  req.session.isKey = false;
+  res.render("./user/userLogin");
+};
 
 // ==============================
 // POST LOGIN
 // ==============================
 // Validates user credentials
 // Checks: existence, block status, verification, password
-// Creates user session on success 
-let postLogin=async(req,res)=>{
-    const {Email,Password}=req.body
-    try{
-        let existing=await user.findOne({email:Email})
-        if(existing){
-            if(existing.isBlock!==true){
+// Creates user session on success
+let postLogin = async (req, res) => {
+  const { Email, Password } = req.body;
+  try {
+    let existing = await user.findOne({ email: Email });
+    if (existing) {
+      if (existing.isBlock !== true) {
+        if (existing.isVerified === true) {
+          console.log("user verified....");
+          if (existing.email !== Email) {
+            console.log("user email not match");
+            return res.json({
+              success: false,
+              message: "user email not match",
+              emailErr: true,
+            });
+          }
+          let isValidPass = await bcrypt.compare(Password, existing.password);
+          if (!isValidPass) {
+            console.log("incorrect password");
+            return res.json({
+              success: false,
+              message: "incorrect password",
+              passErr: true,
+              redirectUrl: "/login",
+            });
+          } else {
+            console.log("login successfully");
 
-                if(existing.isVerified===true){
-                    console.log('user verified....')
-                    if(existing.email!==Email){
-                        console.log('user email not match')
-                        return res.json({success:false,message:"user email not match",emailErr:true})
-                    }
-                    let isValidPass= await bcrypt.compare(Password,existing.password);
-                    if(!isValidPass){
-                        console.log('incorrect password')
-                        return res.json({success:false,message:"incorrect password",passErr:true,redirectUrl:'/login'});
-                        
-                    }else{
-                        
-                        console.log('login successfully')
-                        
-                        req.session.user={
-                            id:existing._id,
-                            name:`${existing.firstName} ${existing.lastName}`,
-                            email:existing.email,
-                            profileUrl:existing.profileImg
-                        }
-                        console.log(req.session.user.profileUrl)
-                        return res.status(200).json({success:true,message:"login successfully..",redirectUrl:'/home'})
-                        
-                    }
-                }else{
-                    return res.status(403).json({isVerified:false,message:"user not verified"})
-                }
-            }else{
-                return res.status(403).json({
-                    success:false,
-                    message:"admin blocked you "
-                })
-            }
-        }else{
-            console.log('signup first')
-            return res.status(404).json({success:false,message:"user hasn't signup yet"})
+            req.session.user = {
+              id: existing._id,
+              name: `${existing.firstName} ${existing.lastName}`,
+              email: existing.email,
+              profileUrl: existing.profileImg,
+            };
+            console.log(req.session.user.profileUrl);
+            return res
+              .status(200)
+              .json({
+                success: true,
+                message: "login successfully..",
+                redirectUrl: "/home",
+              });
+          }
+        } else {
+          return res
+            .status(403)
+            .json({ isVerified: false, message: "user not verified" });
         }
-    }catch(err){
-
+      } else {
+        return res.status(403).json({
+          success: false,
+          message: "admin blocked you ",
+        });
+      }
+    } else {
+      console.log("signup first");
+      return res
+        .status(404)
+        .json({ success: false, message: "user hasn't signup yet" });
     }
-}
+  } catch (err) {}
+};
 
 // ==============================
 // GET SIGNUP PAGE
 // ==============================
 // Renders the user signup (registration) page
 // This route is used when a new user wants to create an account
-let getSignup=(req,res)=>{
-    res.render('./user/userSignup')
-}
-
+let getSignup = (req, res) => {
+  res.render("./user/userSignup");
+};
 
 // ==============================
 // USER REGISTRATION
@@ -101,44 +110,45 @@ let getSignup=(req,res)=>{
 // Creates user
 // Hashes password
 // Generates OTP for email verification
-let register=async(req,res)=>{
-    try{
-        const{firstname,lastname,number,email,password}=req.body
-       
-        const existing =await user.findOne({email});
-        if(existing){
-            console.log(`user already exists on this email ${email}`)
-            return res.json({success:false,message:"user already exists"})
-        }else{
-            const salt_round=Number(process.env.SALT_ROUND)
-            const hashedPassword= await bcrypt.hash(password,salt_round)
+let register = async (req, res) => {
+  try {
+    const { firstname, lastname, number, email, password } = req.body;
 
-            const newUser=new user({
-                firstName:firstname,
-                lastName:lastname,
-                number,
-                email,
-                password:hashedPassword
-                
-            })
-            console.log(hashedPassword)
-            await newUser.save()
-            req.session.requre_sign=true
-            let newOtp=await otpGeneratorTodb(newUser,email)
-            if(newOtp){ 
-                console.log('user registration successfully')
-                return res.json({success:true,message:"user account created",redirectUrl:'/otpVerfication',Email:email})
-            }else{
-                console.log('something went wrong...')
-            }
-        }
-        
-    }catch(err){
-        console.log(`it is the error ${err}`)
+    const existing = await user.findOne({ email });
+    if (existing) {
+      console.log(`user already exists on this email ${email}`);
+      return res.json({ success: false, message: "user already exists" });
+    } else {
+      const salt_round = Number(process.env.SALT_ROUND);
+      const hashedPassword = await bcrypt.hash(password, salt_round);
+
+      const newUser = new user({
+        firstName: firstname,
+        lastName: lastname,
+        number,
+        email,
+        password: hashedPassword,
+      });
+      console.log(hashedPassword);
+      await newUser.save();
+      req.session.requre_sign = true;
+      let newOtp = await otpGeneratorTodb(newUser, email);
+      if (newOtp) {
+        console.log("user registration successfully");
+        return res.json({
+          success: true,
+          message: "user account created",
+          redirectUrl: "/otpVerfication",
+          Email: email,
+        });
+      } else {
+        console.log("something went wrong...");
+      }
     }
-    
-}
-
+  } catch (err) {
+    console.log(`it is the error ${err}`);
+  }
+};
 
 // ==============================
 // GET OTP VERIFICATION PAGE
@@ -148,9 +158,9 @@ let register=async(req,res)=>{
 // - User registration verification
 // - Password reset verification
 // - Email update verification
-let getOtpVerify= async(req,res)=>{
-    res.render("./user/otp-verification")
-}
+let getOtpVerify = async (req, res) => {
+  res.render("./user/otp-verification");
+};
 
 // ==============================
 // OTP VERIFICATION
@@ -160,73 +170,69 @@ let getOtpVerify= async(req,res)=>{
 // - Signup
 // - Email update
 // - Password reset
-let OtpVerify= async(req,res)=>{
-    try{
-         req.session.requre_sign=false;
-        const {data,userEmail}=req.body
-        const User=await user.findOne({email:userEmail})
-        const userId=User._id
-        console.log(userId)
-        const userOtp=await modelOtp.findOne({userId:userId})
-        if(userOtp){
-            console.log('valid otp')
-            let dbOtp=userOtp.otp
-            console.log(dbOtp+"it is from db")
-            console.log(data+'data here')  
-    
-            if (!data) {
-           return res.json({ success: false, message: 'No OTP provided' });
-           }
+let OtpVerify = async (req, res) => {
+  try {
+    req.session.requre_sign = false;
+    const { data, userEmail } = req.body;
+    const User = await user.findOne({ email: userEmail });
+    const userId = User._id;
+    console.log(userId);
+    const userOtp = await modelOtp.findOne({ userId: userId });
+    if (userOtp) {
+      console.log("valid otp");
+      let dbOtp = userOtp.otp;
+      console.log(dbOtp + "it is from db");
+      console.log(data + "data here");
 
-         if (dbOtp === data) {
-            await user.updateOne({email:userEmail},{$set:{isVerified:true}})
-            console.log(`otp verified successfully: ${data}`);
-            req.session.isKey=true
-            req.session.requre_sign=false;
-            if(req.session.user?.redirect=='/user-profile'){
-                const result=await user.findById(req.session.user.userForUdpateId)
-                result.email=req.session.user.newEmail;
-                req.session.user.email=result.email
-                await result.save()
-                req.session.user.newEmail=null
-                req.session.user.redirect='';
-                return res.status(STATUS_CODES.OK).json({
-                    success:true,
-                    message:"OTP verified & Email changed",
-                    redirectUrl:'/user-profile'
-                })
-            }
-          if(req.session.redirect=="resetPassword"){
-            req.session.redirect='';
-            return res.status(STATUS_CODES.OK).json({
-                success:true,
-                message:"OTP verified ",
-                redirectUrl:'/resetPassword'
-            })
-          }
-           return res.json({
-           success: true,
-           message: 'OTP verified ',
-           redirectUrl:'/login'  
-            });
-             
-          }else{
-            res.json({success:false,message:'otp not matched'})
-          }
-        
+      if (!data) {
+        return res.json({ success: false, message: "No OTP provided" });
+      }
 
-            
-   
-        }else{
-            console.log('expired')
-            return res.json({success:false,message:'otp expired'})
+      if (dbOtp === data) {
+        await user.updateOne(
+          { email: userEmail },
+          { $set: { isVerified: true } },
+        );
+        console.log(`otp verified successfully: ${data}`);
+        req.session.isKey = true;
+        req.session.requre_sign = false;
+        if (req.session.user?.redirect == "/user-profile") {
+          const result = await user.findById(req.session.user.userForUdpateId);
+          result.email = req.session.user.newEmail;
+          req.session.user.email = result.email;
+          await result.save();
+          req.session.user.newEmail = null;
+          req.session.user.redirect = "";
+          return res.status(STATUS_CODES.OK).json({
+            success: true,
+            message: "OTP verified & Email changed",
+            redirectUrl: "/user-profile",
+          });
         }
-   
-    }catch(err){
-        console.log(err,"it is the eoror")
+        if (req.session.redirect == "resetPassword") {
+          req.session.redirect = "";
+          return res.status(STATUS_CODES.OK).json({
+            success: true,
+            message: "OTP verified ",
+            redirectUrl: "/resetPassword",
+          });
+        }
+        return res.json({
+          success: true,
+          message: "OTP verified ",
+          redirectUrl: "/login",
+        });
+      } else {
+        res.json({ success: false, message: "otp not matched" });
+      }
+    } else {
+      console.log("expired");
+      return res.json({ success: false, message: "otp expired" });
     }
-
-}
+  } catch (err) {
+    console.log(err, "it is the eoror");
+  }
+};
 
 // ==============================
 // RESEND OTP
@@ -234,134 +240,127 @@ let OtpVerify= async(req,res)=>{
 // Generates and sends a new OTP to the user's email
 // Used when OTP expires or user requests resend
 let resendOtpVerify = async (req, res) => {
-    
-  const {  userEmail } = req.body;
+  const { userEmail } = req.body;
   const User = await user.findOne({ email: userEmail });
   if (!User) {
-      return res.json({ success: false, message: 'User not found' });
+    return res.json({ success: false, message: "User not found" });
   }
 
   const newOtp = await otpGeneratorTodb(User, userEmail);
   console.log(`New OTP generated: ${newOtp}`);
 
-
   return res.json({
     success: true,
-    message: 'New OTP sent',
-   
+    message: "New OTP sent",
   });
 };
-
 
 // ==============================
 // GET RESET PASSWORD PAGE
 // ==============================
 // Renders reset password page after OTP verification
-let getResetPass=(req,res)=>{
-    res.render('./user/resetPassword')
-}
+let getResetPass = (req, res) => {
+  res.render("./user/resetPassword");
+};
 
 // ==============================
 // POST RESET PASSWORD
 // ==============================
 // Updates user password after OTP verification
 // Hashes new password before saving
-let postResetPass=async(req,res)=>{
-    console.log(req.body)
-    const {password,userEmail}=req.body
-    if(!userEmail){
-        return  res.json({
-            success:false,
-            message:"user Email has missed!"
-            
-        })
-    }else{
-        req.session.isKey=false
-        let User=await user.findOne({email:userEmail})
-        console.log(User)
-        if(!User){
-            return res.status(STATUS_CODES.NOT_FOUND).json({
-                success:false,
-                message:'User not exist'
-            })
-        }
-        let salt_round=Number(process.env.SALT_ROUND)
-        let hashedPassword=await bcrypt.hash(password,salt_round)
-        console.log(hashedPassword)
-        User.password=hashedPassword;
-        await User.save()
-        res.json({
-            success:true,
-            message:"Password updated successfully",
-            redirectUrl:"/home"
-
-        })
-        
-
+let postResetPass = async (req, res) => {
+  console.log(req.body);
+  const { password, userEmail } = req.body;
+  if (!userEmail) {
+    return res.json({
+      success: false,
+      message: "user Email has missed!",
+    });
+  } else {
+    req.session.isKey = false;
+    let User = await user.findOne({ email: userEmail });
+    console.log(User);
+    if (!User) {
+      return res.status(STATUS_CODES.NOT_FOUND).json({
+        success: false,
+        message: "User not exist",
+      });
     }
-}
+    let salt_round = Number(process.env.SALT_ROUND);
+    let hashedPassword = await bcrypt.hash(password, salt_round);
+    console.log(hashedPassword);
+    User.password = hashedPassword;
+    await User.save();
+    res.json({
+      success: true,
+      message: "Password updated successfully",
+      redirectUrl: "/home",
+    });
+  }
+};
 
 // ==============================
 // GET FORGOT PASSWORD PAGE
 // ==============================
 // Renders forgot password page
-let getForgetPassword=(req,res)=>{
-    res.render('./user/forgetPassword');
-}
+let getForgetPassword = (req, res) => {
+  res.render("./user/forgetPassword");
+};
 
 // ==============================
 // POST FORGOT PASSWORD
 // ==============================
 // Initiates forgot password flow
 // Sends OTP if user exists and is not blocked
-let PostForgetPassword=async(req,res)=>{
-    const {email}=req.body
-    const existing= await user.findOne({email:email})
-    if(!existing){
-        return res.json({success:false,message:"User not exist"})
-    }else{
-        if(existing.isBlock){
-           return res.json({success:false,message:"Your are blocked by admin"})
-        }
-        if (existing.password!=='google-auth'){
-           req.session.redirect='resetPassword'
-         req.session.requre_sign=true
-            const User = await user.findOne({ email: email });
-             await modelOtp.findOne({ userId: User._id });
-             let otp= await otpGeneratorTodb(User,email)
-             console.log('it is the Otp'+otp)
-             return res.json({success:true,redirectUrl:'/otpVerfication',successUrl:'/resetPassword'})
-            
-       }else{
-        return res.json({success:false,message:"it's Google User"})
-       }
+let PostForgetPassword = async (req, res) => {
+  const { email } = req.body;
+  const existing = await user.findOne({ email: email });
+  if (!existing) {
+    return res.json({ success: false, message: "User not exist" });
+  } else {
+    if (existing.isBlock) {
+      return res.json({ success: false, message: "Your are blocked by admin" });
     }
-}
-
+    if (existing.password !== "google-auth") {
+      req.session.redirect = "resetPassword";
+      req.session.requre_sign = true;
+      const User = await user.findOne({ email: email });
+      await modelOtp.findOne({ userId: User._id });
+      let otp = await otpGeneratorTodb(User, email);
+      console.log("it is the Otp" + otp);
+      return res.json({
+        success: true,
+        redirectUrl: "/otpVerfication",
+        successUrl: "/resetPassword",
+      });
+    } else {
+      return res.json({ success: false, message: "it's Google User" });
+    }
+  }
+};
 
 // ==============================
 // GET HOME PAGE
 // ==============================
 // Renders user home page
-let getHome=(req,res)=>{
-    console.log(req)
-    res.render('./user/home')
-}
-3
+let getHome = (req, res) => {
+  console.log(req);
+  res.render("./user/home");
+};
+3;
 // ==============================
 // USER LOGOUT
 // ==============================
 //  session and clears cookie
 const logOut = (req, res) => {
-    try {
-        req.session.user = null;   
-        res.redirect('/home');
-    } catch (error) {
-        console.error('Logout error:', error);
-        res.redirect('/home');
-    }
+  try {
+    req.session.user = null;
+    res.redirect("/home");
+  } catch (error) {
+    console.error("Logout error:", error);
+    res.redirect("/home");
+  }
 };
- 
 
 // ==============================
 // GET PRODUCT LIST
@@ -374,760 +373,786 @@ const logOut = (req, res) => {
 // - Pagination
 // - Wishlist marking
 const getProduct = async (req, res) => {
-    try {
-        let { page = 1, search = "", price = "all", Categories = "", sort = "" } = req.query;
-        page = Number(page);
+  try {
+    let {
+      page = 1,
+      search = "",
+      price = "all",
+      Categories = "",
+      sort = "",
+    } = req.query;
+    page = Number(page);
 
-        const limit = 6;
-        const skip = (page - 1) * limit;
+    const limit = 6;
+    const skip = (page - 1) * limit;
 
-    
-        const selectedCategories = Categories ? Categories.split(",") : [];
+    const selectedCategories = Categories ? Categories.split(",") : [];
 
-        let matchStage = { isBlock: false };
-        
-    
-        if (search.trim()) {
-            matchStage.name = { $regex: search, $options: "i" };
-        }
+    let matchStage = { isBlock: false };
 
-
-        if (selectedCategories.length > 0) {
-          matchStage.catgId = { 
-        $in: selectedCategories.map(id => new mongoose.Types.ObjectId(id)) 
-    };
-}
-
-        // PRICE FILTER
-        let priceFilter = {};
-        if (price === "under-150") {
-            priceFilter = { "variants.salePrice": { $lte: 150 } };
-        }
-        if (price === "500-700") {
-            priceFilter = { "variants.salePrice": { $gte: 500, $lte: 700 } };
-        }
-        if (price === "above-1000") {
-            priceFilter = { "variants.salePrice": { $gte: 1000 } };
-        }
-
-        // SORT LOGIC
-        let sortStage = {createdAt:-1};
-        if (sort === "priceLowHigh") sortStage = { minPrice: 1 };
-        if (sort === "priceHighLow") sortStage = { minPrice: -1 };
-        if (sort === "aToZ") sortStage = { name: 1 };
-        if (sort === "zToA") sortStage = { name: -1 };
-
-        
-        const pipeline = [
-            { $match: matchStage },
-
-       
-            {
-                $lookup: {
-                    from: "variants",
-                    localField: "variants",
-                    foreignField: "_id",
-                    as: "variants"
-                }
-            },
-           {
-             $addFields: {
-               variants: {
-                 $filter: {
-                   input: "$variants",
-                   as: "v",
-                   cond: { $gt: ["$$v.stock", 0] }
-                 }
-               }
-             }
-           },
-           { $match: { "variants.0": { $exists: true } } },
-           
-            // JOIN CATEGORY
-            {
-                $lookup: {
-                    from: "categories",
-                    localField: "catgId",
-                    foreignField: "_id",
-                    as: "catgId"
-                }
-            },
-            { $unwind: "$catgId" },
-            {$match:{'catgId.isActive':true}},
-
-            // ADD MIN PRICE & MAIN IMAGE
-               {
-                $addFields: {
-                    minPrice: { $min: "$variants.salePrice" },
-                    minVariant: {
-                    $first: {
-                      $sortArray: {
-                        input: "$variants",
-                        sortBy: { salePrice: 1 }
-                      }
-                    }
-                  },
-                    mainImage: {
-                        $first: {
-                            $filter: {
-                                input: "$productImages",
-                                as: "img",
-                                cond: { $eq: ["$$img.isMain", true] }
-                            }
-                        }
-                    }
-                }
-            },
-
-            // PRICE FILTER
-            { $match: priceFilter },
-        ];
-
-        // APPLY SORT ONLY IF NOT EMPTY
-        if (Object.keys(sortStage).length > 0) {
-            pipeline.push({ $sort: sortStage });
-        }
-
-        // PAGINATION + COUNT IN SINGLE CALL
-        pipeline.push(
-            {
-                $facet: {
-                    data: [
-                        { $skip: skip },
-                        { $limit: limit }
-                    ],
-                    totalCount: [
-                        { $count: "count" }
-                    ]
-                }
-            }
-        );
-
-        const result = await productModel.aggregate(pipeline);
-         let wishlistItems=[]
-         let user=false
-         const today=new Date()
-
-const products = await Promise.all(
-  result[0].data.map(async (p) => {
-
-    const offers = await offerModel.aggregate([
-  {
-    $match: {
-      status: "active",
-      startDate: { $lte: today },
-      endDate: { $gte: today }
+    if (search.trim()) {
+      matchStage.name = { $regex: search, $options: "i" };
     }
-  },
-  {
-    $match: {
-      $or: [
-        { applicableOn: "global" },
-        {
-          applicableOn: "product",
-          productIds: { $in: [p._id] }
+
+    if (selectedCategories.length > 0) {
+      matchStage.catgId = {
+        $in: selectedCategories.map((id) => new mongoose.Types.ObjectId(id)),
+      };
+    }
+
+    // PRICE FILTER
+    let priceFilter = {};
+    if (price === "under-150") {
+      priceFilter = { "variants.salePrice": { $lte: 150 } };
+    }
+    if (price === "500-700") {
+      priceFilter = { "variants.salePrice": { $gte: 500, $lte: 700 } };
+    }
+    if (price === "above-1000") {
+      priceFilter = { "variants.salePrice": { $gte: 1000 } };
+    }
+
+    // SORT LOGIC
+    let sortStage = { createdAt: -1 };
+    if (sort === "priceLowHigh") sortStage = { minPrice: 1 };
+    if (sort === "priceHighLow") sortStage = { minPrice: -1 };
+    if (sort === "aToZ") sortStage = { name: 1 };
+    if (sort === "zToA") sortStage = { name: -1 };
+
+    const pipeline = [
+      { $match: matchStage },
+
+      {
+        $lookup: {
+          from: "variants",
+          localField: "variants",
+          foreignField: "_id",
+          as: "variants",
         },
-        {
-          applicableOn: "category",
-          categoryIds: { $in: [p.catgId._id] }
+      },
+      {
+        $addFields: {
+          variants: {
+            $filter: {
+              input: "$variants",
+              as: "v",
+              cond: { $gt: ["$$v.stock", 0] },
+            },
+          },
+        },
+      },
+      { $match: { "variants.0": { $exists: true } } },
+
+      // JOIN CATEGORY
+      {
+        $lookup: {
+          from: "categories",
+          localField: "catgId",
+          foreignField: "_id",
+          as: "catgId",
+        },
+      },
+      { $unwind: "$catgId" },
+      { $match: { "catgId.isActive": true } },
+
+      // ADD MIN PRICE & MAIN IMAGE
+      {
+        $addFields: {
+          minPrice: { $min: "$variants.salePrice" },
+          minVariant: {
+            $first: {
+              $sortArray: {
+                input: "$variants",
+                sortBy: { salePrice: 1 },
+              },
+            },
+          },
+          mainImage: {
+            $first: {
+              $filter: {
+                input: "$productImages",
+                as: "img",
+                cond: { $eq: ["$$img.isMain", true] },
+              },
+            },
+          },
+        },
+      },
+
+      // PRICE FILTER
+      { $match: priceFilter },
+    ];
+
+    // APPLY SORT ONLY IF NOT EMPTY
+    if (Object.keys(sortStage).length > 0) {
+      pipeline.push({ $sort: sortStage });
+    }
+
+    // PAGINATION + COUNT IN SINGLE CALL
+    pipeline.push({
+      $facet: {
+        data: [{ $skip: skip }, { $limit: limit }],
+        totalCount: [{ $count: "count" }],
+      },
+    });
+
+    const result = await productModel.aggregate(pipeline);
+    let wishlistItems = [];
+    let user = false;
+    const today = new Date();
+
+    const products = await Promise.all(
+      result[0].data.map(async (p) => {
+        const offers = await offerModel.aggregate([
+          {
+            $match: {
+              status: "active",
+              startDate: { $lte: today },
+              endDate: { $gte: today },
+            },
+          },
+          {
+            $match: {
+              $or: [
+                { applicableOn: "global" },
+                {
+                  applicableOn: "product",
+                  productIds: { $in: [p._id] },
+                },
+                {
+                  applicableOn: "category",
+                  categoryIds: { $in: [p.catgId._id] },
+                },
+              ],
+            },
+          },
+          {
+            $project: {
+              discountValue: 1,
+              offerType: 1,
+              title: 1,
+              categoryIds: 1,
+              productIds: 1,
+              applicableOn: 1,
+              minimumOrderValue: 1,
+            },
+          },
+        ]);
+
+        const price = p.minVariant.orgPrice;
+
+        let bestDiscount = 0;
+        let bestOffer = null;
+
+        for (let offer of offers) {
+          if (offer.discountValue >= price) continue;
+          let discountAmount = 0;
+          if (offer.offerType === "percentage") {
+            discountAmount = price * (offer.discountValue / 100);
+          } else {
+            discountAmount = Math.min(offer.discountValue, price);
+          }
+
+          if (discountAmount > bestDiscount) {
+            bestDiscount = discountAmount;
+            bestOffer = offer;
+          }
         }
-      ]
+
+        return {
+          ...p,
+          offerType: bestOffer?.offerType || null,
+          offerValue: bestOffer?.discountValue || 0,
+          offerName: bestOffer?.title || null,
+          bestDiscount,
+          salePrice: price - bestDiscount,
+        };
+      }),
+    );
+    console.log(products);
+
+    const totalItems = result[0].totalCount[0]?.count || 0;
+    const totalPages = Math.ceil(totalItems / limit);
+    if (req.session.user?.id) {
+      user = true;
     }
-  },
-  {
-    $project: {
-      discountValue: 1,
-      offerType: 1,
-      title: 1,
-      categoryIds: 1,
-      productIds: 1,
-      applicableOn: 1,          
-      minimumOrderValue: 1     
+    const categories = await Category.find({ isActive: true });
+    if (req.session.user?.id) {
+      wishlistItems = await wishlistModel.find({ userId: req.session.user.id });
     }
+    res.render("user/product-list", {
+      products,
+      categories,
+      selectedCategories,
+      search,
+      price,
+      sort,
+      totalItems,
+      currentPage: page,
+      totalPages,
+      wishlistItems,
+      user,
+    });
+  } catch (err) {
+    console.log(err);
+    res.status(500).send("Internal Server Error");
   }
-]);
-
-const price = p.minVariant.orgPrice;
-
-let bestDiscount = 0;
-let bestOffer = null;
-
-for (let offer of offers) {
-     if (offer.discountValue >= price) continue;
-  let discountAmount = 0;
-  if (offer.offerType === "percentage") {
-    discountAmount = price * (offer.discountValue / 100);
-  } else {
-    discountAmount = Math.min(offer.discountValue,price);
-  }
-
-  if (discountAmount > bestDiscount) {
-    bestDiscount = discountAmount;
-    bestOffer = offer;
-  }
-}
-
-   return {
-  ...p,
-  offerType: bestOffer?.offerType || null,
-  offerValue: bestOffer?.discountValue || 0,
-  offerName: bestOffer?.title || null,
-  bestDiscount,
-  salePrice: price - bestDiscount
 };
-
-  })
-);
-console.log(products)
-
-
-
-        const totalItems = result[0].totalCount[0]?.count || 0;
-        const totalPages = Math.ceil(totalItems / limit);
-        if(req.session.user?.id){
-           user= true
-        }
-        const categories = await Category.find({isActive:true});
-        if(req.session.user?.id){
-            wishlistItems = await wishlistModel.find({ userId: req.session.user.id });  
-        }
-        res.render("user/product-list", {
-            products,
-            categories,
-            selectedCategories,
-            search,
-            price,
-            sort,
-            totalItems,
-            currentPage: page,
-            totalPages,
-            wishlistItems,
-            user
-    
-        });
-
-    } catch (err) {
-        console.log(err);
-        res.status(500).send("Internal Server Error");
-    }
-};
-
 
 // ==============================
 // GET PRODUCT DETAIL PAGE
 // ==============================
 // Fetches a single product with category & variants
 // Also loads up to 4 related products
-const getDetialProduct= async(req,res)=>{
-    try {
-        const id=req.params.id;
-        const objectId=new mongoose.Types.ObjectId(id);
-        const product= await productModel.findById(objectId).populate('catgId').populate("variants");
-        
-        let relatedProducts=await productModel.find({catgId:product.catgId,_id:{$ne:product._id}}).limit(4)
-        if(relatedProducts.length<4){
-            const remains=4-relatedProducts.length
-            const excludeCatgIds=[product._id,...relatedProducts.map(id=>id.catgId._id)]
-            const defCatgProduct=await productModel.find({catgId:{$ne:product.catgId},_id:{$nin:excludeCatgIds}}).limit(remains)
-            relatedProducts=[...relatedProducts,...defCatgProduct]
-        }
+const getDetialProduct = async (req, res) => {
+  try {
+    const id = req.params.id;
+    const objectId = new mongoose.Types.ObjectId(id);
+    const product = await productModel
+      .findById(objectId)
+      .populate("catgId")
+      .populate("variants");
 
-        console.log('last')
-        res.render('./user/product-detial',{
-            product,
-            relatedProducts
+    let relatedProducts = await productModel
+      .find({ catgId: product.catgId, _id: { $ne: product._id } })
+      .limit(4);
+    if (relatedProducts.length < 4) {
+      const remains = 4 - relatedProducts.length;
+      const excludeCatgIds = [
+        product._id,
+        ...relatedProducts.map((id) => id.catgId._id),
+      ];
+      const defCatgProduct = await productModel
+        .find({
+          catgId: { $ne: product.catgId },
+          _id: { $nin: excludeCatgIds },
         })
-    } catch (error) {
-        console.log(error)
+        .limit(remains);
+      relatedProducts = [...relatedProducts, ...defCatgProduct];
     }
-}
+
+    console.log("last");
+    res.render("./user/product-detial", {
+      product,
+      relatedProducts,
+    });
+  } catch (error) {
+    console.log(error);
+  }
+};
 
 // ==============================
 // GET VARIANT PRICE DATA (AJAX)
 // ==============================
 // Used when user switches variant (color / model)
 // Returns updated prices dynamically
-const getVariantData=async(req,res)=>{
-    try {
-        const today=new Date()
-       const productId=req.params.id
-       const variantId=req.query.variantId
-       if(!productId||!variantId){
-        return res.status(STATUS_CODES.NOT_FOUND).json({
-            success:false,
-            message:"productId or variantId not provided"
-        })
-       }
-       const variant=await variantModel.findOne({_id:variantId});
-       if(!variant){
-        return res.status(STATUS_CODES.NOT_FOUND).json({
-            success:false,
-            message:"variant not founded"
-        })
-       }
+const getVariantData = async (req, res) => {
+  try {
+    const today = new Date();
+    const productId = req.params.id;
+    const variantId = req.query.variantId;
+    let currentDiscount=0;
+    if (!productId || !variantId) {
+      return res.status(STATUS_CODES.NOT_FOUND).json({
+        success: false,
+        message: "productId or variantId not provided",
+      });
+    }
+    const variant = await variantModel.findOne({ _id: variantId });
+    if (!variant) {
+      return res.status(STATUS_CODES.NOT_FOUND).json({
+        success: false,
+        message: "variant not founded",
+      });
+    }
 
-       //offer showining in product detial page 
-       const product=await productModel.findById(productId).populate('catgId').populate("variants");
-       const offers = await offerModel.aggregate([
-          
+    //offer showining in product detial page
+    const product = await productModel
+      .findById(productId)
+      .populate("catgId")
+      .populate("variants");
+    const offers = await offerModel.aggregate([
+      {
+        $match: {
+          status: "active",
+          startDate: { $lte: today },
+          endDate: { $gte: today },
+        },
+      },
+      {
+        $match: {
+          $or: [
+            { applicableOn: "global" },
             {
-              $match: {
-                status: "active",
-                startDate: { $lte: today },
-                endDate: { $gte: today }
-              }
+              applicableOn: "product",
+              productIds: product._id,
             },
             {
-              $match: {
-                $or: [
-                  { applicableOn: "global" },
-                  {
-                    applicableOn: "product",
-                    productIds: product._id
-                  },
-                  {
-                    applicableOn: "category",
-                    categoryIds: product.catgId?._id
-                  }
-                ]
-              }
-            }
-            ,{
-            $project:{
-                applicableOn:1,
-                categoryIds:1,
-                productIds:1
-            }
-            }
-          ]);
-          let disObject={}
-          let salePrice
-          disObject.isOffer=false
-          if(offers.length!==0){
-              let combinedOffers = offers.filter(v =>
-                ["global", "product", "category"].includes(v.applicableOn)  
-              );
-            
-              let offerType='offerType'
-              //  passing argugemnts are mentioned inside of the of the discountChecker
-               disObject=await discountChecker(combinedOffers,offerModel,variant.orgPrice,offerType)
-               disObject.isOffer=true
+              applicableOn: "category",
+              categoryIds: product.catgId?._id,
+            },
+          ],
+        },
+      },
+      {
+        $project: {
+          applicableOn: 1,
+          categoryIds: 1,
+          productIds: 1,
+        },
+      },
+    ]);
 
-          }
-          salePrice=variant.salePrice
-         if(offers.length!==0){
-            salePrice=Math.floor((variant.orgPrice)-disObject.bestDiscount)
-         }
-       const orgPrice=variant.orgPrice
-       return res.status(STATUS_CODES.OK).json({
-        success:false,
-        message:"success",
-        salePrice,
-        orgPrice,
-        disObject
-       })
-       
-    } catch (error) {
-        console.log(error)
-        return res.status(STATUS_CODES.INTERNAL_SERVER_ERROR)
+
+    
+    currentDiscount=variant.orgPrice-variant.salePrice
+    let disObject = {};
+    let salePrice;
+    disObject.isOffer = false;
+    if (offers.length !== 0) {
+      let combinedOffers = offers.filter((v) =>
+        ["product", "category"].includes(v.applicableOn),
+      );
+
+      let offerType = "offerType";
+      //  passing argugemnts are mentioned inside of the of the discountChecker
+      disObject = await discountChecker(
+        combinedOffers,
+        offerModel,
+        variant.orgPrice,
+        offerType,
+      );
+      
     }
-}
+    salePrice = variant.salePrice;
+    console.log('current discount'+currentDiscount+" it's from offer "+disObject.bestDiscount)
+    if (offers.length !== 0&&currentDiscount<disObject.bestDiscount) {
+        salePrice = Math.floor(variant.orgPrice - disObject.bestDiscount);
+    }
+    if (currentDiscount < disObject.bestDiscount) {
+      salePrice = Math.floor(variant.orgPrice - disObject.bestDiscount);
+      disObject.isOffer = true;   
+    } else {
+      salePrice = variant.salePrice;
+      disObject.isOffer = false;  
+    }
+    const orgPrice = variant.orgPrice;
+    return res.status(STATUS_CODES.OK).json({
+      success: true,
+      message: "success",
+      salePrice,
+      orgPrice,
+      disObject,
+    });
+  } catch (error) {
+    console.log(error);
+    return res.status(STATUS_CODES.INTERNAL_SERVER_ERROR);
+  }
+};
 
 // ==============================
 // GET USER PROFILE PAGE
 // ==============================
-const getUserProfil=async(req,res)=>{
-    req.session.isKey=false
-    let User=await user.findOne({email:req.session.user.email});
+const getUserProfil = async (req, res) => {
+  req.session.isKey = false;
+  let User = await user.findOne({ email: req.session.user.email });
 
-    res.render('./user/user-profile',{User});
-}
+  res.render("./user/user-profile", { User });
+};
 
 // ==============================
 // EDIT PROFILE INFORMATION
 // ==============================
 // Handles both normal & Google users
 // Email change requires OTP verification
-const editProfileInfo=async(req,res)=>{
-    try {
-        req.session.isKey=false
-       const {firstName,lastName,email,number}=req.body
-       const existing=await user.findOne({email:req.session.user.email});
-      if(!existing){
-        console.log('user not exist')
-        return res.status(STATUS_CODES.NOT_FOUND).json({
-            success:false,
-            message:"user does not exist"
-        })
-      }else{
-        let isChanged=false;
-        if(existing.password!=="google-auth"){
-            if(firstName!==existing.firstName){
-                isChanged=true
-            }
-            if(lastName!==existing.lastName){
-                isChanged=true
-            }
-            if (email !== existing.email) {
-                 req.session.requre_sign=true
-                 req.session.user.redirect='/user-profile'
-              const emailExists = await user.findOne({ email:email });
-              if (emailExists) {
-                  return res.status(409).json({
-                      success: false,
-                      message: "This email is already taken",
-                  });
-              }
-             req.session.user.prevousEmail=existing.email;
-              req.session.user.userForUdpateId=existing._id;
-              req.session.user.newEmail=email
-              req.session.user.email=existing.email
-             let result= await otpGeneratorTodb(existing._id,existing.email);
-             if(result){
-                return res.status(STATUS_CODES.OK).json({
-                    success:true,
-                    otpVerify:true,
-                    email:existing.email,
-                    redirect:'/otpVerfication',
-                    message:"verify your Email"
-                })
-             }
-}
+const editProfileInfo = async (req, res) => {
+  try {
+    req.session.isKey = false;
+    const { firstName, lastName, email, number } = req.body;
+    const existing = await user.findOne({ email: req.session.user.email });
+    if (!existing) {
+      console.log("user not exist");
+      return res.status(STATUS_CODES.NOT_FOUND).json({
+        success: false,
+        message: "user does not exist",
+      });
+    } else {
+      let isChanged = false;
+      if (existing.password !== "google-auth") {
+        if (firstName !== existing.firstName) {
+          isChanged = true;
+        }
+        if (lastName !== existing.lastName) {
+          isChanged = true;
+        }
+        if (email !== existing.email) {
+          req.session.requre_sign = true;
+          req.session.user.redirect = "/user-profile";
+          const emailExists = await user.findOne({ email: email });
+          if (emailExists) {
+            return res.status(409).json({
+              success: false,
+              message: "This email is already taken",
+            });
+          }
+          req.session.user.prevousEmail = existing.email;
+          req.session.user.userForUdpateId = existing._id;
+          req.session.user.newEmail = email;
+          req.session.user.email = existing.email;
+          let result = await otpGeneratorTodb(existing._id, existing.email);
+          if (result) {
+            return res.status(STATUS_CODES.OK).json({
+              success: true,
+              otpVerify: true,
+              email: existing.email,
+              redirect: "/otpVerfication",
+              message: "verify your Email",
+            });
+          }
+        }
 
-            if(number!==existing.number){
-                isChanged=true
-            }
-            
-            if(isChanged){
-                    const updatedUser=await user.findByIdAndUpdate(existing._id,{
-                        firstName:firstName,
-                        lastName:lastName,
-                        number:number,
-                        email:email
+        if (number !== existing.number) {
+          isChanged = true;
+        }
 
-                    },{new:true})
-                    req.session.user.name = `${updatedUser.firstName} ${updatedUser.lastName}`;
-                    req.session.user.email = updatedUser.email;
+        if (isChanged) {
+          const updatedUser = await user.findByIdAndUpdate(
+            existing._id,
+            {
+              firstName: firstName,
+              lastName: lastName,
+              number: number,
+              email: email,
+            },
+            { new: true },
+          );
+          req.session.user.name = `${updatedUser.firstName} ${updatedUser.lastName}`;
+          req.session.user.email = updatedUser.email;
 
-                return res.status(STATUS_CODES.OK).json({
-                    isGoogle:false,
-                    isChanged:true,
-                    success:true,
-                    message:'profile info updated successfully...'
-                })
-            }else{
-                return res.status(STATUS_CODES.OK).json({
-                    isGoogle:false,
-                    isChanged:false,
-                    success:false,
-                    message:'Nothing to update'
-                })
-            }
-        }else{
-             if(firstName!==existing.firstName){
-                isChanged=true
-            }
-            if(lastName!==existing.lastName){
-                isChanged=true
-            }
-            if(number!==existing.number){
-                isChanged=true
-            }
-            if(email!==existing.email){
-                return res.status(STATUS_CODES.FORBIDDEN).json({
-                    isGoogle:true,
-                    isChanged:false,
-                    success:false,
-                    message:'you are Google user ,you could not change your email'
-                })
-            }
-            if(isChanged){
-                    const updatedUser=await user.findByIdAndUpdate(existing._id,{
-                        firstName:firstName,
-                        lastName:lastName,
-                        number:number
-                    },{new:true})
-                     req.session.user.name = `${updatedUser.firstName} ${updatedUser.lastName}`;
+          return res.status(STATUS_CODES.OK).json({
+            isGoogle: false,
+            isChanged: true,
+            success: true,
+            message: "profile info updated successfully...",
+          });
+        } else {
+          return res.status(STATUS_CODES.OK).json({
+            isGoogle: false,
+            isChanged: false,
+            success: false,
+            message: "Nothing to update",
+          });
+        }
+      } else {
+        if (firstName !== existing.firstName) {
+          isChanged = true;
+        }
+        if (lastName !== existing.lastName) {
+          isChanged = true;
+        }
+        if (number !== existing.number) {
+          isChanged = true;
+        }
+        if (email !== existing.email) {
+          return res.status(STATUS_CODES.FORBIDDEN).json({
+            isGoogle: true,
+            isChanged: false,
+            success: false,
+            message: "you are Google user ,you could not change your email",
+          });
+        }
+        if (isChanged) {
+          const updatedUser = await user.findByIdAndUpdate(
+            existing._id,
+            {
+              firstName: firstName,
+              lastName: lastName,
+              number: number,
+            },
+            { new: true },
+          );
+          req.session.user.name = `${updatedUser.firstName} ${updatedUser.lastName}`;
 
-                    return res.status(STATUS_CODES.OK).json({
-                        isChanged:true,
-                        success:true,
-                        isGoogle:true,
-                        message:'profile info updated'
-                    })
-            }else{
-                return res.status(STATUS_CODES.OK).json({
-                    isGoogle:true,
-                    success:false,
-                    isChanged:false,
-                    message:"Nothing to update"
-                })
-            }
-
+          return res.status(STATUS_CODES.OK).json({
+            isChanged: true,
+            success: true,
+            isGoogle: true,
+            message: "profile info updated",
+          });
+        } else {
+          return res.status(STATUS_CODES.OK).json({
+            isGoogle: true,
+            success: false,
+            isChanged: false,
+            message: "Nothing to update",
+          });
         }
       }
-    } catch (error) {
-       console.log(error)
     }
-}
+  } catch (error) {
+    console.log(error);
+  }
+};
 
 // ==============================
 // UPDATE PROFILE IMAGE
 // ==============================
-const editProfileImg=async(req,res)=>{
-    try {
-        console.log(req.file)
-        const uploadResult=await uploadBufferTocloudnery(req.file.buffer);
-        const existing= await user.findOne({email:req.session.user.email})
-        console.log(existing)
-        if(!existing){
-            return res.status(STATUS_CODES.NOT_FOUND).json({
-                success:false,
-                message:"User not founded"
-            })
-        }else{
-            existing.profileImg= await uploadResult.secure_url;
-            existing.profileImgId=await uploadResult.public_id;
-            await existing.save()
-            req.session.user.profileUrl= existing.profileImg
-            return res.status(STATUS_CODES.OK).json({
-                success:true,
-                message:"Profile Image updated"
-            })
-        }
-
-    } catch (error) {
-        return res.status(STATUS_CODES.INTERNAL_SERVER_ERROR).json({
-            success:false,
-            message:"Internal Server Error !"
-        })
+const editProfileImg = async (req, res) => {
+  try {
+    console.log(req.file);
+    const uploadResult = await uploadBufferTocloudnery(req.file.buffer);
+    const existing = await user.findOne({ email: req.session.user.email });
+    console.log(existing);
+    if (!existing) {
+      return res.status(STATUS_CODES.NOT_FOUND).json({
+        success: false,
+        message: "User not founded",
+      });
+    } else {
+      existing.profileImg = await uploadResult.secure_url;
+      existing.profileImgId = await uploadResult.public_id;
+      await existing.save();
+      req.session.user.profileUrl = existing.profileImg;
+      return res.status(STATUS_CODES.OK).json({
+        success: true,
+        message: "Profile Image updated",
+      });
     }
-}
+  } catch (error) {
+    return res.status(STATUS_CODES.INTERNAL_SERVER_ERROR).json({
+      success: false,
+      message: "Internal Server Error !",
+    });
+  }
+};
 
 // ==============================
 // GET WISHLIST
 // ==============================
-const getWishlist=async(req,res)=>{
-   const userId= req.session.user.id;
-   console.log(userId)
-   const userID=new mongoose.Types.ObjectId(userId)
-    const products= await wishlistModel.find({userId:userID}).populate('variantId').populate('productId')
-    res.render('./user/wishlist',{
-        products
-        
-    })
-}
+const getWishlist = async (req, res) => {
+  const userId = req.session.user.id;
+  console.log(userId);
+  const userID = new mongoose.Types.ObjectId(userId);
+  const products = await wishlistModel
+    .find({ userId: userID })
+    .populate("variantId")
+    .populate("productId");
+  res.render("./user/wishlist", {
+    products,
+  });
+};
 
 // ==============================
 // ADD TO WISHLIST
 // ==============================
-const postWishlist=async(req,res)=>{
-    try {
-        const {productId,variant}=req.body;
-        const variantId=new mongoose.Types.ObjectId(variant);
-        const Variant=await variantModel.findById(variantId);
-        const userId=new mongoose.Types.ObjectId(req.session.user.id)
-        if(!productId){
-            return res.status(STATUS_CODES.NOT_FOUND).json({
-                success:false,
-                message:"product not provided"
-            })
-        }
-        if(!Variant){
-            return res.status(STATUS_CODES.NOT_FOUND).json({
-                success:false,
-                message:"variant not provided"
-            })
-        }
-        const existing=await wishlistModel.findOne({
-            variantId:Variant._id,
-            userId:userId,
-            productId:productId
-        })
-        const existingCart=await cartModel.findOne({
-            variantId:Variant._id,
-            userId:userId,
-            productId:productId
-        })
-
-        if(existing){
-            return res.status(STATUS_CODES.CONFLICT).json({
-                success:false,
-                message:"already exists in wishlist"
-            })
-        }
-
-        if(existingCart){
-            return res.status(STATUS_CODES.CONFLICT).json({
-                success:false,
-                message:"already exist in cart"
-            })
-        }
-        if(!userId){
-            return res.status(STATUS_CODES.NOT_FOUND).json({
-                success:false,
-                message:"user not founded"
-            })
-        }
-       let result= await wishlistModel.create({
-            userId:userId,
-            productId:productId,
-            variantId:Variant._id
-        })
-        return res.status(STATUS_CODES.CREATED).json({
-            success:true,
-            message:'added to wishlist'
-        })
-        
-    } catch (error) {
-        
+const postWishlist = async (req, res) => {
+  try {
+    const { productId, variant } = req.body;
+    const variantId = new mongoose.Types.ObjectId(variant);
+    const Variant = await variantModel.findById(variantId);
+    const userId = new mongoose.Types.ObjectId(req.session.user.id);
+    if (!productId) {
+      return res.status(STATUS_CODES.NOT_FOUND).json({
+        success: false,
+        message: "product not provided",
+      });
     }
-}
+    if (!Variant) {
+      return res.status(STATUS_CODES.NOT_FOUND).json({
+        success: false,
+        message: "variant not provided",
+      });
+    }
+    const existing = await wishlistModel.findOne({
+      variantId: Variant._id,
+      userId: userId,
+      productId: productId,
+    });
+    const existingCart = await cartModel.findOne({
+      variantId: Variant._id,
+      userId: userId,
+      productId: productId,
+    });
+
+    if (existing) {
+      return res.status(STATUS_CODES.CONFLICT).json({
+        success: false,
+        message: "already exists in wishlist",
+      });
+    }
+
+    if (existingCart) {
+      return res.status(STATUS_CODES.CONFLICT).json({
+        success: false,
+        message: "already exist in cart",
+      });
+    }
+    if (!userId) {
+      return res.status(STATUS_CODES.NOT_FOUND).json({
+        success: false,
+        message: "user not founded",
+      });
+    }
+    let result = await wishlistModel.create({
+      userId: userId,
+      productId: productId,
+      variantId: Variant._id,
+    });
+    return res.status(STATUS_CODES.CREATED).json({
+      success: true,
+      message: "added to wishlist",
+    });
+  } catch (error) {}
+};
 
 // ==============================
 // REMOVE ITEM FROM WISHLIST
 // ==============================
 // Deletes a wishlist item for the logged-in user
 // Ensures user can remove only their own wishlist items
-const remWishlist=async(req,res)=>{
-    try {
-        const id=req.params.id
-        const wishlistId=new mongoose.Types.ObjectId(id)
-        const userId=req.session.user.id
-        if(!wishlistId){
-            return res.status(STATUS_CODES.NOT_FOUND).json({
-                success:false,
-                message:"wishlist item not provided"
-            })
-        }
-      await wishlistModel.findOneAndDelete({
-       _id: wishlistId,
-       userId: req.session.user.id
-       });
-       return res.status(STATUS_CODES.OK).json({
-        success:true,
-        message:'Removed from wishlist'
-       })
-
-        
-    } catch (error) {
-        
-        return res.status(STATUS_CODES.INTERNAL_SERVER_ERROR).json({
-            success:false,
-            message:"indernal server error"
-        })
+const remWishlist = async (req, res) => {
+  try {
+    const id = req.params.id;
+    const wishlistId = new mongoose.Types.ObjectId(id);
+    const userId = req.session.user.id;
+    if (!wishlistId) {
+      return res.status(STATUS_CODES.NOT_FOUND).json({
+        success: false,
+        message: "wishlist item not provided",
+      });
     }
-}
-
+    await wishlistModel.findOneAndDelete({
+      _id: wishlistId,
+      userId: req.session.user.id,
+    });
+    return res.status(STATUS_CODES.OK).json({
+      success: true,
+      message: "Removed from wishlist",
+    });
+  } catch (error) {
+    return res.status(STATUS_CODES.INTERNAL_SERVER_ERROR).json({
+      success: false,
+      message: "indernal server error",
+    });
+  }
+};
 
 // ==============================
 // GET CART PAGE
 // ==============================
 // Fetches cart items for the logged-in user
 // Calculates subtotal and total cart items
-const getCart=async(req,res)=>{
-    try {
-  const userId = new mongoose.Types.ObjectId(req.session.user.id);
-  const totalDocs = await cartModel.countDocuments({ userId });
+const getCart = async (req, res) => {
+  try {
+    const maxDiscount = 250;
+    const userId = new mongoose.Types.ObjectId(req.session.user.id);
+    const totalDocs = await cartModel.countDocuments({ userId });
 
-  const cartItems = await cartModel
-    .find({ userId })
-    .populate("variantId")
-    .populate({
-      path: "productId",
-      populate: {
-        path: "catgId",
-        model: "Category",
-      },
-    });
-  let shipping=0;
-  let totalDiscount = 0;
-  let subtotal = 0;
-  let finalAmount = 0;
+    const cartItems = await cartModel
+      .find({ userId })
+      .populate("variantId")
+      .populate({
+        path: "productId",
+        populate: { path: "catgId", model: "Category" }
+      });
 
-  for (let item of cartItems) {
-    const price = item.variantId.salePrice;
-    const quantity = item.quantity;
-    const itemTotal = price * quantity;
+    let subtotal = 0;
+    let totalDiscount = 0;
+    let finalAmount = 0;
+    let shipping = 0;
 
-    // subtotal BEFORE discount
-    subtotal += itemTotal;
+    for (let item of cartItems) {
 
-    //  find applicable offers (FIXED MATCHING)
-    const offers = await offerModel.find({
-      status: "active",
-      startDate: { $lte: new Date() },
-      endDate: { $gte: new Date() },
-      $or: [
-        { applicableOn: "global" },
-        { applicableOn: "product", productIds: { $in: [item.productId._id] } },
-        {
-          applicableOn: "category",
-          categoryIds: { $in: [item.productId.catgId._id] },
-        },
-      ],
-    });
+      const variant = item.variantId;
+      const orgPrice = variant.orgPrice;
+      const quantity = item.quantity;
 
-    //  find best percentage offer
-    let bestOffer = null;
-    let bestDiscount = 0;
+      // sale price discount
+      const currentDiscountPerUnit = orgPrice - variant.salePrice;
 
-    for (let offer of offers) {
-      if (offer.offerType === "percentage") {
-        const discount = (itemTotal * offer.discountValue) / 100;
-        if (discount > bestDiscount) {
-          bestDiscount = discount;
-          bestOffer = offer;
+      // ---------- FIND BEST OFFER ----------
+      const offers = await offerModel.find({
+        status: "active",
+        startDate: { $lte: new Date() },
+        endDate: { $gte: new Date() },
+        $or: [
+          { applicableOn: "product", productIds: { $in: [item.productId._id] } },
+          { applicableOn: "category", categoryIds: { $in: [item.productId.catgId._id] } }
+        ]
+      });
+
+      let bestOffer = null;
+      let bestOfferDiscountPerUnit = 0;
+
+      for (let offer of offers) {
+        if (offer.offerType === "percentage") {
+
+          let discount = (orgPrice * offer.discountValue) / 100;
+
+          // ---------- APPLY MAX CAP ----------
+          if (discount > maxDiscount) {
+            discount = maxDiscount;
+          }
+
+          if (discount > bestOfferDiscountPerUnit) {
+            bestOfferDiscountPerUnit = discount;
+            bestOffer = offer;
+          }
         }
       }
+
+      // ---------- COMPARE SALE VS OFFER ----------
+      let finalUnitPrice;
+      let usedDiscountPerUnit;
+
+      if (bestOfferDiscountPerUnit > currentDiscountPerUnit) {
+
+        finalUnitPrice = Math.floor(orgPrice - bestOfferDiscountPerUnit);
+        usedDiscountPerUnit = Math.floor(bestOfferDiscountPerUnit);
+
+        item.appliedOffer = {
+          title: bestOffer.title,
+          discount: usedDiscountPerUnit * quantity,
+          discountValue: bestOffer.discountValue
+        };
+
+      } else {
+
+        finalUnitPrice = Math.floor(variant.salePrice);
+        usedDiscountPerUnit = Math.floor(currentDiscountPerUnit);
+
+        item.appliedOffer = null;
+      }
+
+      const itemTotalOrg = orgPrice * quantity;
+      const itemFinalTotal = finalUnitPrice * quantity;
+      const itemDiscountTotal = usedDiscountPerUnit * quantity;
+
+      subtotal += itemTotalOrg;
+      totalDiscount += itemDiscountTotal;
+      finalAmount += itemFinalTotal;
+
+      item.finalPrice = itemFinalTotal;
     }
 
-    // round money
-    bestDiscount = Math.round(bestDiscount);
+    if (finalAmount < 1500) {
+      shipping = 50;
+      finalAmount += shipping;
+    }
 
-    // totals
-    totalDiscount += bestDiscount;
+    res.render("./user/cart", {
+      products: cartItems,
+      subtotal,
+      totalDiscount,
+      finalAmount,
+      totalDocs,
+      shipping,
+    });
 
-    // per-item final
-    item.finalPrice = itemTotal - bestDiscount;
-
-    // cart final
-    finalAmount += item.finalPrice;
-
-    // attach offer info
-    item.appliedOffer = bestOffer
-      ? {
-          title: bestOffer.title,
-          type: bestOffer.offerType,
-          value: bestOffer.discountValue,
-          discount: bestDiscount,
-        }
-      : null;
-
-    console.log("Best discount for item:", bestDiscount);
+  } catch (error) {
+    console.log(error.message);
   }
-  if(finalAmount<1500){
-    shipping=50;
-    finalAmount+=shipping
-  }
-  console.log("Subtotal:", subtotal);
-  console.log("Total Discount:", totalDiscount);
-  console.log("Final Amount:", finalAmount);
-
-  res.render("./user/cart", {
-    products: cartItems,
-    subtotal,
-    totalDiscount,
-    finalAmount,    
-    totalDocs,
-    shipping
-  });
-} catch (error) {
-  console.log(error.message);
-}
-
-    
-}
+};
 
 // ==============================
 // ADD ITEM TO CART
@@ -1135,61 +1160,69 @@ const getCart=async(req,res)=>{
 // Adds selected variant to cart
 // Prevents duplicates
 // Removes item from wishlist if exists
-const addCart=async(req,res)=>{
-    try {
-        const userId=new mongoose.Types.ObjectId(req.session.user.id)
-        const {variantId,productId}=req.body
-        const varinatID=new mongoose.Types.ObjectId(variantId);
-        const productID=new mongoose.Types.ObjectId(productId)
+const addCart = async (req, res) => {
+  try {
+    const userId = new mongoose.Types.ObjectId(req.session.user.id);
+    const { variantId, productId } = req.body;
+    const varinatID = new mongoose.Types.ObjectId(variantId);
+    const productID = new mongoose.Types.ObjectId(productId);
 
-        if(!userId){
-            return res.status(STATUS_CODES.NOT_FOUND).json({
-                success:false,
-                message:"User not founded"
-            })
-        }
-        if(!varinatID){
-            return res.status(STATUS_CODES.NOT_FOUND).json({
-                success:false,
-                message:"variantId not provided"
-            })
-        }
-        if(!productID){
-            return res.status(STATUS_CODES.NOT_FOUND).json({
-                success:false,
-                message:"productId not provided"
-            })
-        }
-        const existing=await cartModel.findOne({userId:userId._id,productId:productID,variantId:varinatID}).populate('variantId');
-        if(existing){
-            console.log('already exist ')
-            return res.status(STATUS_CODES.CONFLICT).json({
-                success:false,
-                message:"already added to cart"
-            })
-        }else{
-
-                 await cartModel.create({
-                userId:userId._id,
-                productId:productID,
-                variantId:varinatID
-            }) 
-           await wishlistModel.deleteOne({userId:userId._id,productId:productID,variantId:varinatID})
-           
-            return res.status(STATUS_CODES.CREATED).json({
-                success:true,
-                message:"item added to cart"
-            })
-        }
-    } catch (error) {
-        console.log(error)
-        return res.status(STATUS_CODES.INTERNAL_SERVER_ERROR).json({
-            success:false,
-            message:"Indternal server Error !"
-        })
+    if (!userId) {
+      return res.status(STATUS_CODES.NOT_FOUND).json({
+        success: false,
+        message: "User not founded",
+      });
     }
-}
+    if (!varinatID) {
+      return res.status(STATUS_CODES.NOT_FOUND).json({
+        success: false,
+        message: "variantId not provided",
+      });
+    }
+    if (!productID) {
+      return res.status(STATUS_CODES.NOT_FOUND).json({
+        success: false,
+        message: "productId not provided",
+      });
+    }
+    const existing = await cartModel
+      .findOne({
+        userId: userId._id,
+        productId: productID,
+        variantId: varinatID,
+      })
+      .populate("variantId");
+    if (existing) {
+      console.log("already exist ");
+      return res.status(STATUS_CODES.CONFLICT).json({
+        success: false,
+        message: "already added to cart",
+      });
+    } else {
+      await cartModel.create({
+        userId: userId._id,
+        productId: productID,
+        variantId: varinatID,
+      });
+      await wishlistModel.deleteOne({
+        userId: userId._id,
+        productId: productID,
+        variantId: varinatID,
+      });
 
+      return res.status(STATUS_CODES.CREATED).json({
+        success: true,
+        message: "item added to cart",
+      });
+    }
+  } catch (error) {
+    console.log(error);
+    return res.status(STATUS_CODES.INTERNAL_SERVER_ERROR).json({
+      success: false,
+      message: "Indternal server Error !",
+    });
+  }
+};
 
 // ==============================
 // UPDATE CART QUANTITY
@@ -1197,121 +1230,121 @@ const addCart=async(req,res)=>{
 // Increases or decreases quantity
 // Enforces stock limit, listing status, category status
 // Recalculates subtotal dynamically
-const cartQuantityUpdate=async(req,res)=>{
-   try {
+const cartQuantityUpdate = async (req, res) => {
+  try {
     const cartId = req.params.id;
     const userId = req.session.user.id;
     const change = req.body.change;
 
     const cartItem = await cartModel
-        .findById(cartId)
-        .populate('variantId').populate({
-        path:'productId',
-        populate:{
-            path:'catgId',
-            model:'Category'
-        }
-    });
+      .findById(cartId)
+      .populate("variantId")
+      .populate({
+        path: "productId",
+        populate: {
+          path: "catgId",
+          model: "Category",
+        },
+      });
     if (!cartItem) {
-        return res.status(404).json({
-            success: false,
-            message: "Cart item not found"
-        });
+      return res.status(404).json({
+        success: false,
+        message: "Cart item not found",
+      });
     }
-    
 
     const variant = cartItem.variantId;
-    if (change===1) {
-        if (cartItem.quantity >= variant.stock) {
-            return res.status(403).json({
-                success: false,
-                message: " stock limit reached"
-            });
-        }
-        if(cartItem.quantity >= 5){
-             return res.status(403).json({
-                success: false,
-                message: "Order limit reached"
-            });
-        }
-        if(!variant.isListed||cartItem.productId.isBlock||cartItem.productId.catgId.isActive===false){
-            return res.status(STATUS_CODES.FORBIDDEN).json({
-                success:false,
-                message:"This product currently unavailable!"
-            })
+    if (change === 1) {
+      if (cartItem.quantity >= variant.stock) {
+        return res.status(403).json({
+          success: false,
+          message: " stock limit reached",
+        });
+      }
+      if (cartItem.quantity >= 5) {
+        return res.status(403).json({
+          success: false,
+          message: "Order limit reached",
+        });
+      }
+      if (
+        !variant.isListed ||
+        cartItem.productId.isBlock ||
+        cartItem.productId.catgId.isActive === false
+      ) {
+        return res.status(STATUS_CODES.FORBIDDEN).json({
+          success: false,
+          message: "This product currently unavailable!",
+        });
+      }
 
-        }
-        
-        cartItem.quantity += 1;
-       
+      cartItem.quantity += 1;
     } else {
-        if (cartItem.quantity>1) {
-            if(!variant.isListed||cartItem.productId.isBlock||cartItem.productId.catgId.isActive===false){
-            return res.status(STATUS_CODES.FORBIDDEN).json({
-                success:false,
-                message:"This product currently unavailable!"
-            })
-
+      if (cartItem.quantity > 1) {
+        if (
+          !variant.isListed ||
+          cartItem.productId.isBlock ||
+          cartItem.productId.catgId.isActive === false
+        ) {
+          return res.status(STATUS_CODES.FORBIDDEN).json({
+            success: false,
+            message: "This product currently unavailable!",
+          });
         }
-            cartItem.quantity-= 1;
-        }
+        cartItem.quantity -= 1;
+      }
     }
     await cartItem.save();
     const cartItems = await cartModel
-        .find({ userId })
-        .populate('variantId').populate('productId')
+      .find({ userId })
+      .populate("variantId")
+      .populate("productId");
     let subtotal = 0;
-    cartItems.forEach(item => {
-        subtotal += item.quantity * item.variantId.salePrice;
+    cartItems.forEach((item) => {
+      console.log( item.variantId.salePrice,'it is the salepirce in here')
+      subtotal += Math.round(item.quantity * item.variantId.salePrice)
     });
-
-    
     return res.status(200).json({
-        success: true,
-        quantity: cartItem.quantity,
-        totalAmountPerPrdct: cartItem.quantity * variant.salePrice,
-        subtotal
+      success: true,
+      quantity: cartItem.quantity,
+      totalAmountPerPrdct: Math.round(cartItem.quantity * variant.salePrice),
+      subtotal,
     });
-
-
-} catch (error) {
+  } catch (error) {
     console.error(error);
     return res.status(500).json({
-        success: false,
-        message: "Internal server error"
+      success: false,
+      message: "Internal server error",
     });
-}
-
-}
-
+  }
+};
 
 // ==============================
 // REMOVE ITEM FROM CART
 // ==============================
 // Deletes a cart item by cartId
 // Ensures the item exists before deletion
-const remCart=async(req,res)=>{
-    try {
-    const existing= await cartModel.findOne({_id:req.params.id})
-    if(!existing){
-        return res.status(STATUS_CODES.NOT_FOUND).json({
-            success:false,
-            message:'user not founded'
-        })
+const remCart = async (req, res) => {
+  try {
+    const existing = await cartModel.findOne({ _id: req.params.id });
+    if (!existing) {
+      return res.status(STATUS_CODES.NOT_FOUND).json({
+        success: false,
+        message: "user not founded",
+      });
     }
-    await cartModel.findByIdAndDelete(req.params.id)
+    await cartModel.findByIdAndDelete(req.params.id);
     return res.status(STATUS_CODES.OK).json({
-        success:true,
-        message:"item deleted from cart."
-    })
-} catch (error) {
+      success: true,
+      message: "item deleted from cart.",
+    });
+  } catch (error) {
     return res.status(STATUS_CODES.INTERNAL_SERVER_ERROR).json({
-        success:false,
-        message:"Internal sever Error"
-    })
-}
-}
-
+      success: false,
+      message: "Internal sever Error",
+    });
+  }
+};
 
 // ==============================
 // GET CHECKOUT PAGE
@@ -1321,21 +1354,24 @@ const remCart=async(req,res)=>{
 const getCheckout = async (req, res) => {
   try {
     let cartItems = [];
-    let subtotal = 0;
-    let totalDiscount = 0;
+    let subtotal = 0;              // ORIGINAL TOTAL
+    let offerDiscountTotal = 0;
     let finalAmount = 0;
     let shipping = 0;
+    let coupons;
 
     const FREE_SHIPPING_LIMIT = 1500;
     const userId = new mongoose.Types.ObjectId(req.session.user.id);
     const { type, variantId } = req.query;
 
+    coupons = await couponModel.find({ status: "active" });
+
     // ======================
-    // CART CHECKOUT FLOW
+    // CART FLOW
     // ======================
     if (type !== "buyNow") {
-      req.session.buyNow = false;
-
+      req.session.buyNow=false
+      // Cart flow - Get items from user's cart
       cartItems = await cartModel.aggregate([
         { $match: { userId } },
         {
@@ -1343,8 +1379,8 @@ const getCheckout = async (req, res) => {
             from: "products",
             localField: "productId",
             foreignField: "_id",
-            as: "product"
-          }
+            as: "product",
+          },
         },
         { $unwind: "$product" },
         {
@@ -1352,8 +1388,8 @@ const getCheckout = async (req, res) => {
             from: "variants",
             localField: "variantId",
             foreignField: "_id",
-            as: "variant"
-          }
+            as: "variant",
+          },
         },
         { $unwind: "$variant" },
         {
@@ -1371,106 +1407,71 @@ const getCheckout = async (req, res) => {
         },
         {
           $project: {
+            product: 1,
+            variant: 1,
             quantity: 1,
-            "product._id": 1,
-            "product.name": 1,
-            "product.isBlock": 1,
-            "product.catgId": 1,
-            "variant._id": 1,
-            "variant.deviceModel": 1,
-            "variant.salePrice": 1,
-            "variant.orgPrice":1,
-            "variant.stock": 1,
-            "variant.isListed": 1,
-            "mainImage.url": 1
+            mainImage: 1,
+            orgPrice: "$variant.orgPrice"
           }
         }
       ]);
 
       if (!cartItems.length) return res.redirect("/cart");
 
+      // Calculate offers for each cart item
       for (let item of cartItems) {
-        // -----------------
-        // VALIDATIONS
-        // -----------------
-        if (!item.variant.isListed) return res.redirect("/cart");
-        if (item.product.isBlock) return res.redirect("/cart");
-        if (item.variant.stock < 1) return res.redirect("/cart");
+        const orgTotal = item.variant.orgPrice * item.quantity;
+        subtotal += orgTotal;
 
-        const itemTotal = item.variant.salePrice * item.quantity;
-        subtotal += itemTotal;
+        const offerResult = await calculateBestItemOffer(item);
 
-        // -----------------
-        // FETCH PRODUCT + CATEGORY OFFERS ONLY
-        // -----------------
-        const offers = await offerModel.find({
-          status: "active",
-          startDate: { $lte: new Date() },
-          endDate: { $gte: new Date() },
-          $or: [
-            { applicableOn: "product", productIds: item.product._id },
-            { applicableOn: "category", categoryIds: item.product.catgId }
-          ]
-        });
+        const totalItemDiscount = offerResult.discountAmount * item.quantity;
+        const totalItemFinal = offerResult.finalPrice * item.quantity;
 
-        let bestDiscount = 0;
-        let bestOffer = null;
+        item.offerDiscount = totalItemDiscount;
+        item.finalPrice = totalItemFinal;
 
-        for (let offer of offers) {
-          if (offer.offerType !== "percentage") continue;
-
-          const discount = (itemTotal * offer.discountValue) / 100;
-
-          if (discount > bestDiscount) {
-            bestDiscount = discount;
-            bestOffer = offer;
-          }
+        // SAFE OFFER ATTACH - Cart flow
+        if (offerResult.bestOffer) {
+          item.appliedOffer = {
+            title: offerResult.bestOffer.title,
+            value: offerResult.bestOffer.discountValue,
+            discount: totalItemDiscount
+          };
+        } else {
+          item.appliedOffer = null;
         }
 
-        bestDiscount = Math.round(bestDiscount);
-        totalDiscount += bestDiscount;
-
-        item.finalPrice = Math.max(0, itemTotal - bestDiscount);
-
-        item.appliedOffer = bestOffer
-          ? {
-              value: bestOffer.discountValue,
-              discount: bestDiscount
-            }
-          : null;
-
-        finalAmount += item.finalPrice;
+        offerDiscountTotal += totalItemDiscount;
+        finalAmount += totalItemFinal;
       }
 
-      // -----------------
-      // SHIPPING RULE
-      // -----------------
+      // Add shipping if applicable
       if (finalAmount < FREE_SHIPPING_LIMIT) {
         shipping = 50;
         finalAmount += shipping;
       }
+    }
 
     // ======================
-    // BUY NOW FLOW
+    // FIXED BUY NOW FLOW - WITH PROPER appliedOffer STRUCTURE
     // ======================
-    } else {
-      req.session.variantId = variantId;
-      req.session.buyNow = true;
-
-      const result = await variantModel.aggregate([
+    else {
+      // Get the variant with product details
+      req.session.buyNow=true
+      const variantData = await variantModel.aggregate([
         { $match: { _id: new mongoose.Types.ObjectId(variantId) } },
         {
           $lookup: {
             from: "products",
             localField: "productId",
             foreignField: "_id",
-            as: "product"
-          }
+            as: "product",
+          },
         },
         { $unwind: "$product" },
         {
           $addFields: {
-            quantity: 1,
             mainImage: {
               $first: {
                 $filter: {
@@ -1481,236 +1482,321 @@ const getCheckout = async (req, res) => {
               }
             }
           }
-        },
-        {
-          $project: {
-            quantity: 1,
-            stock: 1,
-            "product._id": 1,
-            "product.name": 1,
-            "product.isBlock": 1,
-            "product.catgId": 1,
-            salePrice: 1,
-            isListed: 1,
-            orgPrice:1,
-            "mainImage.url": 1
-          }
         }
       ]);
 
-      if (!result.length) return res.status(404).send("Variant not found");
-
-      const item = result[0];
-
-      if (!item.isListed) return res.redirect("/products");
-      if (item.product.isBlock) return res.redirect("/products");
-      if (item.stock < 1) return res.redirect("/products");
-
-      const itemTotal = item.salePrice * item.quantity;
-      subtotal = itemTotal;
-
-      const offers = await offerModel.find({
-        status: "active",
-        startDate: { $lte: new Date() },
-        endDate: { $gte: new Date() },
-        $or: [
-          { applicableOn: "product", productIds: item.product._id },
-          { applicableOn: "category", categoryIds: item.product.catgId }
-        ]
-      });
-
-      let bestDiscount = 0;
-
-      for (let offer of offers) {
-        if (offer.offerType !== "percentage") continue;
-
-        const discount = (itemTotal * offer.discountValue) / 100;
-        bestDiscount = Math.max(bestDiscount, discount);
+      if (!variantData.length) {
+        return res.redirect("/products");
       }
 
-      bestDiscount = Math.round(bestDiscount);
+      const variant = variantData[0];
+      req.session.variantId=variant._id
+      
+      // Create item object that EXACTLY matches cart flow structure
+      const item = {
+        product: variant.product,
+        variant: {
+          orgPrice: variant.orgPrice,
+          salePrice: variant.salePrice,
+          deviceModel: variant.deviceModel,
+          stock: variant.stock,
+          _id: variant._id
+        },
+        quantity: 1,
+        mainImage: variant.mainImage,
+        orgPrice: variant.orgPrice
+      };
+      
+      console.log('Buy Now Item Structure:', {
+        hasVariant: !!item.variant,
+        variantOrgPrice: item.variant?.orgPrice,
+        productName: item.product?.name
+      });
 
-      item.finalPrice = Math.max(0, subtotal - bestDiscount);
+      // Calculate original subtotal
+      subtotal = item.orgPrice;
+      
+      // Calculate best offer for this single item
+      const offerResult = await calculateBestItemOffer({
+        product: item.product,
+        variant: item.variant,
+        quantity: 1
+      });
 
-      finalAmount = item.finalPrice;
+      // Set item properties
+      item.offerDiscount = offerResult.discountAmount;
+      item.finalPrice = offerResult.finalPrice;
 
+      // FIXED: Proper appliedOffer structure matching cart flow
+      if (offerResult.bestOffer) {
+        item.appliedOffer = {
+          title: offerResult.bestOffer.title,
+          value: offerResult.bestOffer.discountValue,
+          discount: offerResult.discountAmount  // Use discountAmount directly
+        };
+        console.log('Applied Offer Set:', item.appliedOffer);
+      } else {
+        item.appliedOffer = null;
+        console.log('No Applied Offer');
+      }
+
+      // Update totals
+      offerDiscountTotal = offerResult.discountAmount;
+      finalAmount = offerResult.finalPrice;
+
+      // Add shipping if applicable
       if (finalAmount < FREE_SHIPPING_LIMIT) {
         shipping = 50;
         finalAmount += shipping;
       }
 
-      cartItems = result;
+      // Create cartItems array with the single item
+      cartItems = [item];
     }
 
-    const addresses = await addressModel.find();
-    console.log(cartItems)
+    const addresses = await addressModel.find({ userId });
+    
+    // Debug logs to verify both flows work the same
+    console.log("========= CHECKOUT DATA =========");
+    console.log("Flow Type:", type || "cart");
+    console.log("Subtotal (Org Total):", subtotal);
+    console.log("Offer Discount Total:", offerDiscountTotal);
+    console.log("Subtotal after offers:", subtotal - offerDiscountTotal);
+    console.log("Shipping:", shipping);
+    console.log("Final Amount:", finalAmount);
+    console.log("Items Count:", cartItems.length);
+    
+    if (cartItems.length > 0) {
+      console.log("First Item Structure:");
+      console.log("  - Has variant.orgPrice:", !!cartItems[0].variant?.orgPrice);
+      console.log("  - variant.orgPrice:", cartItems[0].variant?.orgPrice);
+      console.log("  - finalPrice:", cartItems[0].finalPrice);
+      console.log("  - offerDiscount:", cartItems[0].offerDiscount);
+      console.log("  - has appliedOffer:", !!cartItems[0].appliedOffer);
+      if (cartItems[0].appliedOffer) {
+        console.log("  - appliedOffer.title:", cartItems[0].appliedOffer.title);
+        console.log("  - appliedOffer.value:", cartItems[0].appliedOffer.value);
+        console.log("  - appliedOffer.discount:", cartItems[0].appliedOffer.discount);
+      }
+    }
+    console.log("=================================");
+
     res.render("./user/checkout", {
       addresses,
       cartItems,
       subtotal,
+      offerDiscountTotal,
       shipping,
-      finalAmount
+      finalAmount,
+      coupons,
     });
 
   } catch (err) {
-    console.error(err);
+    console.error("Checkout Error:", err);
     res.status(500).send("Checkout error");
   }
 };
-
 
 // ==============================
 // GET ADDRESS MANAGEMENT
 // ==============================
 // Lists all saved addresses of the logged-in user
-const getAddressMngmnt=async(req,res)=>{
-    const userID=new mongoose.Types.ObjectId(req.session.user.id)
-    const addresses=await addressModel.aggregate([{$match:{userId:userID}}]);
-    res.render('./user/user-address-management',{
-        addresses
-    })
-}
+const getAddressMngmnt = async (req, res) => {
+  const userID = new mongoose.Types.ObjectId(req.session.user.id);
+  const addresses = await addressModel.aggregate([
+    { $match: { userId: userID } },
+  ]);
+  res.render("./user/user-address-management", {
+    addresses,
+  });
+};
 
 // ==============================
 // ADD NEW ADDRESS
 // ==============================
 // Prevents duplicate addresses
-const addAddress=async(req,res)=>{
-    try {
-        
-        const {firstName,lastName,phone,streetAddress,landmark,city,state,pincode,addressType,isDefault}=req.body.data;
-        const userId=req.session.user.id;
-        console.log(firstName,lastName,phone,streetAddress,landmark,city,state,pincode,addressType,isDefault)
-        const existing=await addressModel.findOne({userId:userId,streetAddress:streetAddress,pinCode:pincode,city:city})
-        if(existing){
-            console.log('existing ')
-            return res.status(STATUS_CODES.CONFLICT).json({
-                success:false,
-                message:"Address already exists"
-            })
-        }
-        console.log("not existing")
-            await addressModel.create({
-            userId,
-            firstName,
-            lastName,
-            phone,
-            streetAddress,
-            landMark:landmark,
-            pinCode:pincode,
-            city,
-            state,
-            addressType,
-            isDefault
-    
-        })
-
-        return res.status(STATUS_CODES.CREATED).json({
-            success:true,
-            message:"address saved "
-        })
-    } catch (error) {
-        console.log(error)
+const addAddress = async (req, res) => {
+  try {
+    const userId = req.session.user.id;
+    const {
+      firstName,
+      lastName,
+      phone,
+      streetAddress,
+      landmark,
+      city,
+      state,
+      pincode,
+      addressType,
+      isDefault,
+    } = req.body.data;
+    console.log(
+      firstName,
+      lastName,
+      phone,
+      streetAddress,
+      landmark,
+      city,
+      state,
+      pincode,
+      addressType,
+      isDefault,
+    );
+    const existing = await addressModel.findOne({
+      userId: userId,
+      streetAddress: streetAddress,
+      pinCode: pincode,
+      city: city,
+    });
+    if (existing) {
+      console.log("existing ");
+      return res.status(STATUS_CODES.CONFLICT).json({
+        success: false,
+        message: "Address already exists",
+      });
     }
-}
+    console.log("not existing");
+    //remove existing default address
+    if(isDefault){
+      await addressModel.updateMany({userId},
+        {$set:{isDefault:false}}
+      )
+    }
+    await addressModel.create({
+      userId,
+      firstName,
+      lastName,
+      phone,
+      streetAddress,
+      landMark: landmark,
+      pinCode: pincode,
+      city,
+      state,
+      addressType,
+      isDefault,
+    });
 
+    return res.status(STATUS_CODES.CREATED).json({
+      success: true,
+      message: "address saved ",
+    });
+  } catch (error) {
+    console.log(error);
+  }
+};
 
 // ==============================
 // GET EDIT ADDRESS PAGE
 // ==============================
-const geteditAddress=async(req,res)=>{
-    const addressId=req.params.id;
-    delete req.session.adrsId
-    req.session.adrsId=addressId
-    const userID=new mongoose.Types.ObjectId(req.session.user.id);
-    const address=await addressModel.findOne({userId:userID,_id:addressId})
-    res.render('./user/edit-address',{
-        address
-    })
-}
+const geteditAddress = async (req, res) => {
+  const addressId = req.params.id;
+  delete req.session.adrsId;
+  req.session.adrsId = addressId;
+  const userID = new mongoose.Types.ObjectId(req.session.user.id);
+  const address = await addressModel.findOne({
+    userId: userID,
+    _id: addressId,
+  });
+  res.render("./user/edit-address", {
+    address,
+  });
+};
 
 // ==============================
 // UPDATE ADDRESS
 // ==============================
 // Updates only changed fields dynamically
-const editAddress=async(req,res)=>{
-    try {
-       
-        const addressId=req.session.adrsId;
-        const userId=req.session.user.id
-        const address= await addressModel.findOne({_id:addressId,userId:userId});
-        let isChanged=false;
-       for(let key in req.body.data){
-        console.log(`${address[key]}===${req.body.data[key]}`)
-        if(req.body.data[key]!==undefined&&String(address[key]) !== String(req.body.data[key])){
-            address[key]=req.body.data[key];
-            isChanged=true
-        }
+const editAddress = async (req, res) => {
+  try {
+    const addressId = req.session.adrsId;
+    const userId = req.session.user.id;
+    const address = await addressModel.findOne({
+      _id: addressId,
+      userId: userId,
+    });
+    let isChanged = false;
+    for (let key in req.body.data) {
+      if(req.body.data.isDefault===true){
+        console.log('enter to address')
+       await addressModel.updateMany(
+        {userId},
+        {$set:{isDefault:false}}
+       )
+      }
+      console.log(`${address[key]}===${req.body.data[key]}`);
+      if (
+        req.body.data[key] !== undefined &&
+        String(address[key]) !== String(req.body.data[key])
+      ) {
+        address[key] = req.body.data[key];
+        isChanged = true;
+      }
     }
-    if(!isChanged){
-        return res.status(STATUS_CODES.OK).json({
-            success:false,
-            message:"data not updated!"
-        })
+    if (!isChanged) {
+      return res.status(STATUS_CODES.OK).json({
+        success: false,
+        message: "data not updated!",
+      });
     }
-    await address.save()
+    await address.save();
     return res.status(STATUS_CODES.OK).json({
-        success:true,
-        message:'address updated!'
-    })
-        
-    } catch (error) {
-        console.log(error)
-    }
-}
+      success: true,
+      message: "address updated!",
+    });
+  } catch (error) {
+    console.log(error);
+  }
+};
 
 // ==============================
 //get ADDRESS
 // ==============================
-const getAddAddress=async(req,res)=>{
-    console.log('add page')
-    res.render('./user/add-address')
-}
+const getAddAddress = async (req, res) => {
+  console.log("add page");
+  res.render("./user/add-address");
+};
 
 // ==============================
 // DELETE ADDRESS
 // ==============================
-const deleteAddress=async(req,res)=>{
-    try {
-        const addressId=new mongoose.Types.ObjectId(req.params.id)
-        if(!addressId){
-            return res.status(STATUS_CODES.NOT_FOUND).json({
-                success:false,
-                message:"address not provided"
-            })
-        }
-        await addressModel.deleteOne({_id:addressId,userId:req.session.user.id})
-        return res.status(STATUS_CODES.OK).json({
-            success:true,
-            message:"address deleted"
-        })
-        
-        
-    } catch (error) {
-        console.log(error)
+const deleteAddress = async (req, res) => {
+  try {
+    const addressId = new mongoose.Types.ObjectId(req.params.id);
+    if (!addressId) {
+      return res.status(STATUS_CODES.NOT_FOUND).json({
+        success: false,
+        message: "address not provided",
+      });
     }
-}
+    await addressModel.deleteOne({
+      _id: addressId,
+      userId: req.session.user.id,
+    });
+    return res.status(STATUS_CODES.OK).json({
+      success: true,
+      message: "address deleted",
+    });
+  } catch (error) {
+    console.log(error);
+  }
+};
 
 // ==============================
 // ORDER CONFIRMATION PAGE
 // ==============================
 // Shows order details after successful checkout
-const getConfirmation=async(req,res)=>{ 
-
-    const userId=req.session.user.id
-        const orderId=req.params.id;
-        const order=await orderModel.findOne({_id:orderId}).populate('orderItems.productId').populate('orderItems.variantId');
-    console.log(order)
-     res.render('./user/ord-confirmation',{
-        order
-
-     })
-}
+const getConfirmation = async (req, res) => {
+  const userId = req.session.user.id;
+  const orderId = req.params.id;
+  const order = await orderModel
+    .findOne({ _id: orderId })
+    .populate("orderItems.productId")
+    .populate("orderItems.variantId");
+  console.log(order);
+  res.render("./user/ord-confirmation", {
+    order,
+  });
+};
 
 // ==============================
 // PLACE ORDER (FINAL CONFIRMATION)
@@ -1721,27 +1807,35 @@ const getConfirmation=async(req,res)=>{
 // Performs full validation before creating order
 const ordConfirmation = async (req, res) => {
   try {
-let bestOffer_id=null;
-const FREE_SHIPPING_LIMIT = 1500;
-    let items = [];
-    let shippingAddress;
+
+    const FREE_SHIPPING_LIMIT = 1500;
+    const maxDiscount = 250;
 
     const userId = new mongoose.Types.ObjectId(req.session.user.id);
     const data = req.body.data;
 
     // ==============================
+    // COUPON
+    // ==============================
+    let coupon = null;
+    if (data.couponCode) {
+      coupon = await couponModel.findById(
+        new mongoose.Types.ObjectId(data.couponCode)
+      );
+    }
+
+    // ==============================
     // SHIPPING ADDRESS
     // ==============================
+    let shippingAddress;
+
     if (data.address?.addressId) {
       const savedAddress = await addressModel.findById(
         new mongoose.Types.ObjectId(data.address.addressId)
       );
 
       if (!savedAddress) {
-        return res.status(404).json({
-          success: false,
-          message: "Address not found"
-        });
+        return res.status(404).json({ success:false, message:"Address not found" });
       }
 
       shippingAddress = {
@@ -1753,239 +1847,231 @@ const FREE_SHIPPING_LIMIT = 1500;
         landMark: savedAddress.landMark,
         city: savedAddress.city,
         state: savedAddress.state,
-        pinCode: savedAddress.pinCode
+        pinCode: savedAddress.pinCode,
       };
     } else {
-      shippingAddress = {
-        addressType: "manual",
-        firstName: data.address.firstName,
-        lastName: data.address.lastName,
-        phone: data.address.phone,
-        streetAddress: data.address.streetAddress,
-        landMark: data.address.landMark,
-        city: data.address.city,
-        state: data.address.state,
-        pinCode: data.address.pinCode
-      };
+      shippingAddress = data.address;
     }
 
     // ==============================
-    // PAYMENT VALIDATION
+    // PAYMENT
     // ==============================
     const paymentMethod = data.paymentMethod;
 
-    if (!["cod", "wallet", "razorpay"].includes(paymentMethod)) {
-      return res.status(400).json({
-        success: false,
-        message: "Invalid payment method"
-      });
+    if (!["cod","wallet","razorpay"].includes(paymentMethod)) {
+      return res.status(400).json({ success:false, message:"Invalid payment method"});
     }
 
     // ==============================
-    // FETCH ITEMS
+    // FETCH ITEMS (BUY NOW / CART)
     // ==============================
+    let items = [];
+
     if (req.session.buyNow) {
+
       items = await variantModel.aggregate([
         {
           $match: {
             _id: new mongoose.Types.ObjectId(req.session.variantId),
-            isListed: true,
-            stock: { $gt: 0 }
+            isListed:true,
+            stock:{ $gt:0 }
           }
         },
         {
-          $lookup: {
-            from: "products",
-            localField: "productId",
-            foreignField: "_id",
-            as: "product"
+          $lookup:{
+            from:"products",
+            localField:"productId",
+            foreignField:"_id",
+            as:"product"
           }
         },
-        { $unwind: "$product" },
-        { $addFields: { quantity: 1 } }
+        { $unwind:"$product" },
+        {
+          $addFields:{
+            quantity:1,
+            variant:"$$ROOT"
+          }
+        }
       ]);
+
     } else {
+
       items = await cartModel.aggregate([
-        { $match: { userId } },
+        { $match:{ userId }},
         {
-          $lookup: {
-            from: "products",
-            localField: "productId",
-            foreignField: "_id",
-            as: "product"
+          $lookup:{
+            from:"products",
+            localField:"productId",
+            foreignField:"_id",
+            as:"product"
           }
         },
-        { $unwind: "$product" },
+        { $unwind:"$product" },
         {
-          $lookup: {
-            from: "variants",
-            localField: "variantId",
-            foreignField: "_id",
-            as: "variant"
+          $lookup:{
+            from:"variants",
+            localField:"variantId",
+            foreignField:"_id",
+            as:"variant"
           }
         },
-        { $unwind: "$variant" }
+        { $unwind:"$variant" }
       ]);
     }
 
     if (!items.length) {
-      return res.status(404).json({
-        success: false,
-        message: "No valid items found"
-      });
+      return res.status(404).json({ success:false, message:"No valid items found"});
     }
 
     // ==============================
-    // VALIDATION
+    // CALCULATIONS (MATCH CHECKOUT)
     // ==============================
-    for (const item of items) {
-      if (item.product?.isBlock) {
-        return res.status(403).json({
-          success: false,
-          message: "Product blocked",
-          redirect: "/cart"
-        });
-      }
-
-      if (!item.variant?.isListed || item.variant.stock < item.quantity) {
-        return res.status(409).json({
-          success: false,
-          message: "Item out of stock",
-          redirect: "/cart"
-        });
-      }
-    }
-
     // ==============================
-    // CALCULATIONS
-    // ==============================
-    let subtotal = 0;
-    let totalDiscount = 0;
-    const orderItems = [];
+// CALCULATIONS (FIXED)
+// ==============================
+let subtotal = 0;
+let totalOfferDiscount = 0;     // ✅ Track ALL item discounts
+let totalSavedAmount = 0;       // ✅ Track total savings
+const orderItems = [];
 
-    // First pass — subtotal
-    for (const item of items) {
-      const price = item.variant.salePrice;
-      subtotal += price * item.quantity;
-    }
+// First calculate original subtotal
+for (const item of items) {
+  subtotal += item.variant.orgPrice * item.quantity;
+}
+console.log("Original Subtotal:", subtotal);
 
-    // Second pass — offers + snapshot
-    for (const item of items) {
-      const price = item.variant.salePrice;
-      const itemTotal = price * item.quantity;
+// Then calculate offers for each item
+for (const item of items) {
+  const quantity = item.quantity;
 
-      const { bestOffer, discountAmount } =
-        await calculateBestItemOffer({
-          quantity: item.quantity,
-          variant: { salePrice: price },
-          product: item.product
-        });
-        console.log('it is the best offer',bestOffer)
-        bestOffer_id=bestOffer?._id
+  const offerResult = await calculateBestItemOffer({
+    quantity,
+    variant: item.variant,
+    product: item.product
+  });
 
-      totalDiscount += discountAmount;
-        console.log(discountAmount)
-      orderItems.push({
-        productId: item.product._id,
-        variantId: item.variant._id,
+  const totalItemDiscount = offerResult.discountAmount * quantity;
+  const totalItemFinal = offerResult.finalPrice * quantity;
+  
+  // ✅ Add to running totals
+  totalOfferDiscount += totalItemDiscount;
+  totalSavedAmount += totalItemDiscount;
+  
+  console.log(`Item ${item.product.name}:`);
+  console.log(`  - Discount: ${totalItemDiscount}`);
+  console.log(`  - Final: ${totalItemFinal}`);
 
-        name: item.product.name,
-        quantity: item.quantity,
+  orderItems.push({
+    productId: item.product._id,
+    variantId: item.variant._id,
+    name: item.product.name,
+    quantity,
+    price: item.variant.salePrice,
+    itemTotal: item.variant.salePrice * quantity,
+    paymentStatus: paymentMethod === "cod" ? "pending" : "initiated",
+    offer: offerResult.bestOffer ? {
+      offerId: offerResult.bestOffer._id,
+      title: offerResult.bestOffer.title,
+      type: offerResult.bestOffer.offerType,
+      value: offerResult.bestOffer.discountValue,
+      discountAmount: totalItemDiscount  // ✅ Use totalItemDiscount directly
+    } : null,
+    finalPrice: totalItemFinal,
+    status: "processing"
+  });
+}
 
-        // REQUIRED BY SCHEMA
-        price: price,
-        paymentStatus:
-          paymentMethod === "cod" ? "pending" : "initiated",
+// Calculate after product discounts
+const afterProductDiscounts = subtotal - totalOfferDiscount;
+console.log("After Product Discounts:", afterProductDiscounts);
 
-        itemTotal,
+// ==============================
+// SHIPPING
+// ==============================
+const shipping = afterProductDiscounts >= FREE_SHIPPING_LIMIT ? 0 : 50;
+console.log("Shipping:", shipping);
 
-        offer: bestOffer
-          ? {
-              offerId: bestOffer._id,
-              title: bestOffer.title,
-              type: bestOffer.offerType,
-              value: bestOffer.discountValue,
-              appliedOn: bestOffer.applicableOn,
-              discountAmount
-            }
-          : null,
+// Calculate final amount before coupon
+let finalAmount = afterProductDiscounts + shipping;
+console.log("Before Coupon:", finalAmount);
 
-        finalPrice: itemTotal - discountAmount,
-        status: "processing"
-      });
+// ==============================
+// COUPON APPLY
+// ==============================
+let couponDiscount = 0;
 
-    }
+if (coupon && afterProductDiscounts >= coupon.MinimumPurchaseValue) {
+  couponDiscount = coupon.discountType === "percentage"
+    ? (afterProductDiscounts * coupon.discountValue) / 100  // ✅ Use afterProductDiscounts
+    : coupon.discountValue;
 
-    // ==============================
-    // SHIPPING + TOTAL
-    // ==============================
-    const shipping =
-      subtotal >= FREE_SHIPPING_LIMIT ? 0 : 50;
+  couponDiscount = Math.min(couponDiscount, maxDiscount);
+  console.log("Coupon Discount:", couponDiscount);
+  
+  finalAmount -= couponDiscount;
+}
 
-    const finalAmount =
-      subtotal - totalDiscount + shipping;
-      console.log(totalDiscount,'is it the total discount')
+// Calculate total savings
+const totalSavings = Math.floor(totalOfferDiscount) + couponDiscount;
 
-    // ==============================
-    // CREATE ORDER
-    // ==============================
+console.log("========== ORDER PRICE DEBUG ==========");
+console.log("Items count:", items.length);
+console.log("Subtotal (Org total):", subtotal);
+console.log("Offer discount total:", totalOfferDiscount);           // ✅ 604.2
+console.log("Subtotal after offers:", afterProductDiscounts);       // ✅ 639.8
+console.log("Shipping:", shipping);                                 // ✅ 50
+console.log("Coupon discount:", couponDiscount);                    // ✅ 0
+console.log("Final amount:", finalAmount);                          // ✅ 689.8
+console.log("💸 Total Savings:", totalSavings);                     // ✅ 604.2
+console.log("=======================================");
 
-
-    const order = await orderModel.create({
-      userId,
-      paymentMethod,
-      paymentStatus:
-      paymentMethod === "cod" ? "pending" : "initiated",
-      shippingAddress,
-      totalPrice: subtotal,
-       totalDiscount,
-      shipping,
-      finalAmount,
-      orderItems
-    });
-    
-    console.log(order.discount,'it is the super one')
+// ==============================
+// CREATE ORDER
+// ==============================
+const order = await orderModel.create({
+  userId,
+  paymentMethod,
+  paymentStatus: paymentMethod === "cod" ? "pending" : "initiated",
+  shippingAddress,
+  totalPrice: subtotal,                    // ✅ 1244
+  totalDiscount: totalOfferDiscount,        // ✅ 604.2 (NOT savedAmount)
+  shipping,                                 // ✅ 50
+  couponId: coupon ? coupon._id : null,
+  couponDiscount,                           // ✅ 0
+  finalAmount,                              // ✅ 689.8
+  orderItems,
+});
 
     // ==============================
     // STOCK UPDATE
     // ==============================
     for (const item of items) {
-      const result = await variantModel.updateOne(
-        {
-          _id: item.variant._id,
-          stock: { $gte: item.quantity }
-        },
-        {
-          $inc: { stock: -item.quantity }
-        }
+      await variantModel.updateOne(
+        { _id:item.variant._id, stock:{ $gte:item.quantity }},
+        { $inc:{ stock:-item.quantity }}
       );
-
-      if (!result.modifiedCount) {
-        throw new Error("Stock update failed");
-      }
     }
 
     // ==============================
-    // CLEAR CART
+    // CLEAR CART / BUY NOW SESSION
     // ==============================
     if (!req.session.buyNow) {
       await cartModel.deleteMany({ userId });
     }
 
+    req.session.buyNow = null;
+    req.session.variantId = null;
+
     return res.status(201).json({
-      success: true,
-      message: "Order placed successfully",
-      orderId: order._id
+      success:true,
+      orderId:order._id
     });
+
   } catch (err) {
     console.error(err);
-    return res.status(500).json({
-      success: false,
-      message: "Internal server error"
-    });
+    res.status(500).json({ success:false, message:"Internal server error"});
   }
 };
-
 
 
 // ==============================
@@ -1995,279 +2081,282 @@ const FREE_SHIPPING_LIMIT = 1500;
 // - Pagination
 // - Status filtering
 // - Product & variant details
-const getOrder=async(req,res)=>{
-    const userId=new mongoose.Types.ObjectId(req.session.user.id)
-    const currentPage=parseInt(req.query.page)||1
-    const status=req.query.status
-    const limit=4;
-    const skip =(currentPage-1)*limit
+const getOrder = async (req, res) => {
+  const userId = new mongoose.Types.ObjectId(req.session.user.id);
+  const currentPage = parseInt(req.query.page) || 1;
+  const status = req.query.status;
+  const limit = 4;
+  const skip = (currentPage - 1) * limit;
 
-const result = await orderModel.aggregate([
-    {$match:{userId:userId}},
-    {$sort:{createdAt:-1}},
-    {$facet:{
-        data:[
-            {$unwind:"$orderItems"},
-            {$skip:skip},
-            {$limit:limit}
-            ,
-            {$lookup:{
-                from:"products",
-                localField:"orderItems.productId",
-                foreignField:"_id",
-                as:"product"
-            }},
-            {$unwind:"$product"},
-            ...(status?[{$match:{"orderItems.status":status}}]:[]),
-            {$lookup:{
-                from:"variants",
-                localField:"orderItems.variantId",
-                foreignField:"_id",
-                as:"variant"
-            }},
-            {$unwind:"$variant"}
+  const result = await orderModel.aggregate([
+    { $match: { userId: userId } },
+    { $sort: { createdAt: -1 } },
+    {
+      $facet: {
+        data: [
+          { $unwind: "$orderItems" },
+          { $skip: skip },
+          { $limit: limit },
+          {
+            $lookup: {
+              from: "products",
+              localField: "orderItems.productId",
+              foreignField: "_id",
+              as: "product",
+            },
+          },
+          { $unwind: "$product" },
+          ...(status ? [{ $match: { "orderItems.status": status } }] : []),
+          {
+            $lookup: {
+              from: "variants",
+              localField: "orderItems.variantId",
+              foreignField: "_id",
+              as: "variant",
+            },
+          },
+          { $unwind: "$variant" },
         ],
-        totalCount:[
-            {$unwind:'$orderItems'},
-            {$count:"count"}
-        ]
-    }},
-
-]);
-const orders=result[0].data
-const totalItems=result[0].totalCount[0]?.count||0;
-const  totalPages=Math.ceil(totalItems/limit)
-res.render("./user/order-history", { 
-        orders,
-        totalPages,
-        currentPage,
-        totalItems,
-        status
- });
-
-}
-
+        totalCount: [{ $unwind: "$orderItems" }, { $count: "count" }],
+      },
+    },
+  ]);
+  const orders = result[0].data;
+  const totalItems = result[0].totalCount[0]?.count || 0;
+  const totalPages = Math.ceil(totalItems / limit);
+  res.render("./user/order-history", {
+    orders,
+    totalPages,
+    currentPage,
+    totalItems,
+    status,
+  });
+};
 
 // ==============================
 // CANCEL ORDER ITEM
 // ==============================
 // Cancels a specific order item (not entire order)
-const orderCancel=async(req,res)=>{
-    try {
-        const orderItemId=new mongoose.Types.ObjectId(req.params.id);
-        console.log(orderItemId)
-        const {orderId,reason}=req.body
-        const orderID=new mongoose.Types.ObjectId(orderId);
-        console.log(reason)
-        const order=await orderModel.findOne({_id:orderID},{orderItems:{$elemMatch:{_id:orderItemId}}})
-        if(!order){
-            return res.status(STATUS_CODES.NOT_FOUND).json({
-                success:false,
-                message:'Order not founded'
-            })
-        }
-       let cor= await orderModel.updateOne({_id:orderID,"orderItems._id":orderItemId},
-            {$set:{
-                "orderItems.$.status":"cancelled",
-                "orderItems.$.cancelledAt":new Date(),
-                "orderItems.$.cancellationReason":reason
-
-            }}
-        )
-        return res.status(STATUS_CODES.CREATED).json({
-            success:true,
-            message:`${orderId} order cancelled`
-        })
-    } catch (error) {
-        
+const orderCancel = async (req, res) => {
+  try {
+    const orderItemId = new mongoose.Types.ObjectId(req.params.id);
+    console.log(orderItemId);
+    const { orderId, reason } = req.body;
+    const orderID = new mongoose.Types.ObjectId(orderId);
+    console.log(reason);
+    const order = await orderModel.findOne(
+      { _id: orderID },
+      { orderItems: { $elemMatch: { _id: orderItemId } } },
+    );
+    if (!order) {
+      return res.status(STATUS_CODES.NOT_FOUND).json({
+        success: false,
+        message: "Order not founded",
+      });
     }
-}
+    let cor = await orderModel.updateOne(
+      { _id: orderID, "orderItems._id": orderItemId },
+      {
+        $set: {
+          "orderItems.$.status": "cancelled",
+          "orderItems.$.cancelledAt": new Date(),
+          "orderItems.$.cancellationReason": reason,
+        },
+      },
+    );
+    return res.status(STATUS_CODES.CREATED).json({
+      success: true,
+      message: `${orderId} order cancelled`,
+    });
+  } catch (error) {}
+};
 
 // ==============================
 // GENERATE INVOICE
 // ==============================
 // Fetches invoice details for a specific order item
-const invoice=async(req,res)=>{
-    const orderItemsId=new mongoose.Types.ObjectId(req.params.id);
-    const order_id= req.query.odrId
-    const order = await orderModel.aggregate([
-  {
-    $match: { _id: new mongoose.Types.ObjectId(order_id) }
-  },
-  {
-    $unwind:"$orderItems"
-  },
-  {
-    $match:{
-        "orderItems._id":orderItemsId
-    }
-  },
-  {
-    $lookup:{
-        from:"variants",
-        localField:"orderItems.variantId",
-        foreignField:"_id",
-        as:"variant"
-    }
-  },
-  {
-    $unwind:"$variant"
-  },
-  {
-    $lookup:{
-        from:'products',
-        localField:"orderItems.productId",
-        foreignField:"_id",
-        as:"product"
-    }
-  },{
-    $unwind:"$product" 
-  },
-  {
-    $project: {
-      shippingAddress: 1,
-      orderId: 1,
-      paymentMethod: 1,
-      paymentStatus: 1,
-      totalPrice: 1,
-      finalAmount: 1,
-      createdAt: 1,
-      orderItem:"$orderItems",
-      variant:1,
-      product:1
-    }
-  }
-])
-    res.render('./user/invoice',{
-        order:order[0],
-    });
-}
+const invoice = async (req, res) => {
+  const orderItemsId = new mongoose.Types.ObjectId(req.params.id);
+  const order_id = req.query.odrId;
+  const order = await orderModel.aggregate([
+    {
+      $match: { _id: new mongoose.Types.ObjectId(order_id) },
+    },
+    {
+      $unwind: "$orderItems",
+    },
+    {
+      $match: {
+        "orderItems._id": orderItemsId,
+      },
+    },
+    {
+      $lookup: {
+        from: "variants",
+        localField: "orderItems.variantId",
+        foreignField: "_id",
+        as: "variant",
+      },
+    },
+    {
+      $unwind: "$variant",
+    },
+    {
+      $lookup: {
+        from: "products",
+        localField: "orderItems.productId",
+        foreignField: "_id",
+        as: "product",
+      },
+    },
+    {
+      $unwind: "$product",
+    },
+    {
+      $project: {
+        shippingAddress: 1,
+        orderId: 1,
+        paymentMethod: 1,
+        paymentStatus: 1,
+        totalPrice: 1,
+        finalAmount: 1,
+        createdAt: 1,
+        orderItem: "$orderItems",
+        variant: 1,
+        product: 1,
+      },
+    },
+  ]);
+  res.render("./user/invoice", {
+    order: order[0],
+  });
+};
 
 // ==============================
 // REQUEST RETURN
 // ==============================
-const returnReq=async(req,res)=>{
-    try {
-        const orderItemId=new mongoose.Types.ObjectId(req.params.id)
-        const {orderId,reason}=req.body
-        const existing=await orderModel.findOne({_id:new mongoose.Types.ObjectId(orderId),"orderItems._id":new mongoose.Types.ObjectId(orderItemId)})
-        if(!existing){
-            return res.status(STATUS_CODES.NOT_FOUND).json({
-                success:false,
-                message:"order not founded"
-            })
-        }
-        const item=existing.orderItems.id(orderItemId)
-        if(item.status!=='delivered'){   
-            return res.status(STATUS_CODES.FORBIDDEN).json({
-                success:false,
-                message:"Return allowed only after delivery"
-            })
-        }
-        item.status='return_req';
-        item.returnReason=reason      
-        item.returnedAt=new Date();
-        await existing.save();
-        return res.status(STATUS_CODES.CREATED).json({
-            success:true,
-            message:'return requasted.'
-        })
-        
-    } catch (error) {
-        console.log(error)
-        res.status(STATUS_CODES.INTERNAL_SERVER_ERROR).json({
-            success:false,
-            message:"Internal server Error!."
-        })
+const returnReq = async (req, res) => {
+  try {
+    const orderItemId = new mongoose.Types.ObjectId(req.params.id);
+    const { orderId, reason } = req.body;
+    const existing = await orderModel.findOne({
+      _id: new mongoose.Types.ObjectId(orderId),
+      "orderItems._id": new mongoose.Types.ObjectId(orderItemId),
+    });
+    if (!existing) {
+      return res.status(STATUS_CODES.NOT_FOUND).json({
+        success: false,
+        message: "order not founded",
+      });
     }
-}
+    const item = existing.orderItems.id(orderItemId);
+    if (item.status !== "delivered") {
+      return res.status(STATUS_CODES.FORBIDDEN).json({
+        success: false,
+        message: "Return allowed only after delivery",
+      });
+    }
+    item.status = "return_req";
+    item.returnReason = reason;
+    item.returnedAt = new Date();
+    await existing.save();
+    return res.status(STATUS_CODES.CREATED).json({
+      success: true,
+      message: "return requasted.",
+    });
+  } catch (error) {
+    console.log(error);
+    res.status(STATUS_CODES.INTERNAL_SERVER_ERROR).json({
+      success: false,
+      message: "Internal server Error!.",
+    });
+  }
+};
 
 // ==============================
 // GET SECURITY PAGE
 // ==============================
-const getSecurity=(req,res)=>{
-    res.render('./user/security')
-}
+const getSecurity = (req, res) => {
+  res.render("./user/security");
+};
 
 // ==============================
 // RESET PASSWORD
 // ==============================
-const resetPass=async(req,res)=>{
-const {currentPassword,newPassword}=req.body
-const userId=new mongoose.Types.ObjectId(req.session.user.id);
-try {
-    const User=await user.findOne({_id:userId});
-    if(!User){
-        return res.status(STATUS_CODES.NOT_FOUND).json({
-            success:false,
-            message:"user not found"
-        })
+const resetPass = async (req, res) => {
+  const { currentPassword, newPassword } = req.body;
+  const userId = new mongoose.Types.ObjectId(req.session.user.id);
+  try {
+    const User = await user.findOne({ _id: userId });
+    if (!User) {
+      return res.status(STATUS_CODES.NOT_FOUND).json({
+        success: false,
+        message: "user not found",
+      });
     }
 
-    const isMatch=await bcrypt.compare(currentPassword,User.password);
-    if(!isMatch){
-        return res.status(STATUS_CODES.NOT_FOUND).json({
-            success:false,
-            message:"Current Password not Match"
-        })
+    const isMatch = await bcrypt.compare(currentPassword, User.password);
+    if (!isMatch) {
+      return res.status(STATUS_CODES.NOT_FOUND).json({
+        success: false,
+        message: "Current Password not Match",
+      });
     }
-    const salt_round=Number(process.env.SALT_ROUND)
-    const hashedPassword= await bcrypt.hash(newPassword,salt_round)
-    User.password=hashedPassword;;
-    await User.save()
+    const salt_round = Number(process.env.SALT_ROUND);
+    const hashedPassword = await bcrypt.hash(newPassword, salt_round);
+    User.password = hashedPassword;
+    await User.save();
     return res.status(STATUS_CODES.OK).json({
-        success:false,
-        message:"Password Updated."
-    })      
-    
-} catch (error) {
+      success: false,
+      message: "Password Updated.",
+    });
+  } catch (error) {
     return status(STATUS_CODES.INTERNAL_SERVER_ERROR).json({
-        success:false,
-        message:"Internal server Error!"
-    })
-}
-}
+      success: false,
+      message: "Internal server Error!",
+    });
+  }
+};
 export default {
-    getLogin,
-    postLogin,
-    resendOtpVerify,
-    getForgetPassword,
-    PostForgetPassword,
-    getOtpVerify,
-    getSignup,
-    getResetPass,
-    postResetPass,
-    getHome,
-    register,
-    OtpVerify,
-    logOut,
-    getProduct,
-    getDetialProduct,
-    getUserProfil,
-    editProfileInfo,
-    editProfileImg,
-    getSecurity,
-    resetPass,
-    getWishlist,
-    postWishlist,
-    remWishlist,
-    getCart,
-    addCart,
-    cartQuantityUpdate,
-    getVariantData,
-    remCart,
-    getCheckout,
-    getAddressMngmnt,
-    getAddAddress,
-    geteditAddress,
-    addAddress,
-    editAddress,
-    deleteAddress,
-    getConfirmation,
-    ordConfirmation,
-    getOrder,
-    orderCancel,
-    returnReq,
-    invoice
-
+  getLogin,
+  postLogin,
+  resendOtpVerify,
+  getForgetPassword,
+  PostForgetPassword,
+  getOtpVerify,
+  getSignup,
+  getResetPass,
+  postResetPass,
+  getHome,
+  register,
+  OtpVerify,
+  logOut,
+  getProduct,
+  getDetialProduct,
+  getUserProfil,
+  editProfileInfo,
+  editProfileImg,
+  getSecurity,
+  resetPass,
+  getWishlist,
+  postWishlist,
+  remWishlist,
+  getCart,
+  addCart,
+  cartQuantityUpdate,
+  getVariantData,
+  remCart,
+  getCheckout,
+  getAddressMngmnt,
+  getAddAddress,
+  geteditAddress,
+  addAddress,
+  editAddress,
+  deleteAddress,
+  getConfirmation,
+  ordConfirmation,
+  getOrder,
+  orderCancel,
+  returnReq,
+  invoice,
 };

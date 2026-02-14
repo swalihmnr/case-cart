@@ -24,19 +24,23 @@ const currentPage = Math.max(parseInt(page) || 1, 1);
     const coupens=await coupenModel.find(filter).limit(limit).skip(skip)
     const today=new Date()
 
-    await coupenModel.updateMany(
-         {
-          endDate: { $lt: today },
-          status: { $ne: "expired" }
-       },
-       { $set: { status: "expired" } }
-    )
-    await coupenModel.updateMany(
-        {startDate:{$lt:today},
-         status:{$ne:"inactive"}   
-    },
-        {$set:{status:"active"}}
-    )
+await coupenModel.updateMany(
+  {
+    endDate: { $lt: today },
+    status: { $ne: "expired" }
+  },
+  { $set: { status: "expired" } }
+);
+
+
+await coupenModel.updateMany(
+  {
+    startDate: { $lte: today },
+    status: { $nin: ["inactive", "expired"] }
+  },
+  { $set: { status: "active" } }
+);
+
     const result=await coupenModel.aggregate([
         {$facet:
             {activeCount:[
@@ -87,6 +91,7 @@ const renderAddCoupen=async(req,res)=>{
     res.render('./admin/coupen-add')
 }
 const postAddCoupen=async(req,res)=>{
+    console.log('entered')
     try {
         const {
   title,
@@ -95,7 +100,6 @@ const postAddCoupen=async(req,res)=>{
   discountType,
   discountValue,
   minOrderValue,
-  usageLimit,
   startDate,
   endDate,
   status
@@ -108,7 +112,6 @@ if (
   !discountType ||
   discountValue === undefined ||
   minOrderValue === undefined ||
-  usageLimit === undefined ||
   !startDate ||
   !endDate ||
   !status
@@ -139,18 +142,18 @@ if (
             })
         }
     }
-    await coupenModel.create({
+    let use=await coupenModel.create({
         title: title.trim(),
         couponCode: couponCode.toUpperCase().trim(),
         description,
         discountType,
         discountValue,
         MinimumPurchaseValue:minOrderValue,
-        usageLimit,
         startDate,
         endDate,
         status
     })
+    console.log(use)
     return res.status(STATUS_CODES.OK).json({
         success:true,
         message:"Coupen created Successfully!"
@@ -185,7 +188,6 @@ const {
   discountType,
   discountValue,
   minOrderValue,
-  usageLimit,
   startDate,
   endDate,
   status
@@ -198,10 +200,10 @@ if (
   !discountType ||
   discountValue === undefined ||
   minOrderValue === undefined ||
-  usageLimit === undefined ||
   !startDate ||
   !endDate ||
-  !status
+  status === undefined
+
 ){
     return res.status(STATUS_CODES.NOT_FOUND).json({
         success:false,
@@ -240,11 +242,8 @@ if (
     if(minOrderValue!==coupon.MinimumPurchaseValue){
         coupon.MinimumPurchaseValue=minOrderValue
         flag=true
-    }
-    if(usageLimit!==coupon.usageLimit){
-        coupon.usageLimit=usageLimit
-        flag=true
-    }
+    } 
+   
    if (
       new Date(startDate).toISOString().split("T")[0] !==
       new Date(coupon.startDate).toISOString().split("T")[0]
@@ -259,18 +258,22 @@ if (
       coupon.endDate = endDate;
        flag=true
     }
-    if(status!==coupon.status){
-        coupon.status=status
-         flag=true
-    }
-    if(flag){
-        await coupon.save()
+if (status !== undefined && status.trim() !== coupon.status) {
+  coupon.status = status.trim();
+  flag = true;
+}
+if(flag){
+    await coupon.save()
+    console.log("FRONTEND STATUS:", status);
+    console.log("DB STATUS:", coupon.status);
+        console.log(`it is the coupon status:${coupon.status}`)
         return res.status(STATUS_CODES.OK).json({
             success:true,
             message:"updated successfully"
         })
 
     }
+
      return res.status(STATUS_CODES.OK).json({
             success:false,
             message:"Nothing updeted yet"

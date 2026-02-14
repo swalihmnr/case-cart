@@ -5,6 +5,7 @@ export default async function discountChecker(discIds,modelName,variantPrice,typ
     //type represent to confirm percentange or fixedamount
     let discount=0;
     let bestDiscount=0;
+    let maxDiscount=250
     let name;
     let disType;
     let discountTypeValue;
@@ -24,6 +25,9 @@ export default async function discountChecker(discIds,modelName,variantPrice,typ
 
             }
         }
+    }
+    if(bestDiscount>maxDiscount){
+        bestDiscount=maxDiscount
     }
 
     console.log(bestDiscount,'it is the best discount')

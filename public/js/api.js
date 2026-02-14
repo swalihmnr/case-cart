@@ -299,6 +299,15 @@ try {
   return error.response
 }
 }
+const verifyCouponAxios=async(data)=>{
+  try {
+    console.log(data,'it is the data here')
+  return await api.post(`/user/checkout/verify/coupon`,{data})
+    
+  } catch (error) {
+    return error.response
+  }
+}
 export default {
   userSignupAxios,
   userOtpAxios,
@@ -323,6 +332,7 @@ export default {
   ordCancelAxios,
   ordReturnAxios,
   orderInvoice,
-  changePasswordAxios
+  changePasswordAxios,
+  verifyCouponAxios
 
 };

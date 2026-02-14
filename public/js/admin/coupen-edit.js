@@ -2,10 +2,12 @@ import api from '../adminApi.js';
 
 const url = new URL(window.location.href);
 
-// Expose generate function like togglePassword
+// Expose generate function
 window.generateCouponCode = generateCouponCode;
+
 const form = document.getElementById("couponForm");
 const couponId = form.dataset.couponId;
+
 // -------------------------------
 // PATTERNS
 // -------------------------------
@@ -13,14 +15,11 @@ const patterns = {
   title: /^.{3,}$/,
   description: /^.{10,}$/,
   couponCode: /^[A-Z0-9]{3,20}$/,
-  percentage: /^(?:[1-9][0-9]?|90)$/,
-  amount: /^[1-9]\d*$/,
-  usageLimit: /^[1-9]\d*$/
+  amount: /^[1-9]\d*$/
 };
 
 // -------------------------------
 // OPTIONAL URL MESSAGE
-// Example: ?created=true
 // -------------------------------
 if (url.searchParams.get("created") === "true") {
   Swal.fire({
@@ -52,7 +51,6 @@ document.querySelector("#couponForm")?.addEventListener("submit", async (e) => {
   const typeErr = document.getElementById("discountTypeErr");
   const valueErr = document.getElementById("discountValueErr");
   const minErr = document.getElementById("minOrderValueErr");
-  const usageErr = document.getElementById("usageLimitErr");
   const startErr = document.getElementById("startDateErr");
   const endErr = document.getElementById("endDateErr");
 
@@ -63,7 +61,6 @@ document.querySelector("#couponForm")?.addEventListener("submit", async (e) => {
   typeErr.innerText = "";
   valueErr.innerText = "";
   minErr.innerText = "";
-  usageErr.innerText = "";
   startErr.innerText = "";
   endErr.innerText = "";
 
@@ -92,25 +89,14 @@ document.querySelector("#couponForm")?.addEventListener("submit", async (e) => {
     valid = false;
   }
 
-  if (data.discountType === "percentage") {
-    if (!patterns.percentage.test(data.discountValue)) {
-      valueErr.innerText = "Percentage must be between 1–90";
-      valid = false;
-    }
-  } else if (data.discountType === "fixedamount") {
-    if (!patterns.amount.test(data.discountValue)) {
-      valueErr.innerText = "Amount must be greater than 0";
-      valid = false;
-    }
+  // Fixed Amount Validation Only
+  if (!patterns.amount.test(data.discountValue)) {
+    valueErr.innerText = "Amount must be greater than 0";
+    valid = false;
   }
 
   if (data.minOrderValue === "" || Number(data.minOrderValue) < 0) {
     minErr.innerText = "Enter valid minimum order value";
-    valid = false;
-  }
-
-  if (!patterns.usageLimit.test(data.usageLimit)) {
-    usageErr.innerText = "Usage limit must be at least 1";
     valid = false;
   }
 
@@ -135,7 +121,6 @@ document.querySelector("#couponForm")?.addEventListener("submit", async (e) => {
   // SUBMIT
   // -----------------
   if (valid) {
-    // INLINE PAYLOAD (No separate function)
     const payload = {
       couponId,
       title: data.title,
@@ -144,7 +129,6 @@ document.querySelector("#couponForm")?.addEventListener("submit", async (e) => {
       discountType: data.discountType,
       discountValue: Number(data.discountValue),
       minOrderValue: Number(data.minOrderValue),
-      usageLimit: Number(data.usageLimit),
       startDate: data.startDate,
       endDate: data.endDate,
       status: data.status
@@ -207,7 +191,6 @@ function getFormData() {
     discountType: document.getElementById("discountType")?.value,
     discountValue: document.getElementById("discountValue")?.value.trim(),
     minOrderValue: document.getElementById("minOrderValue")?.value.trim(),
-    usageLimit: document.getElementById("usageLimit")?.value.trim(),
     startDate: document.getElementById("startDate")?.value,
     endDate: document.getElementById("endDate")?.value,
     status: document.getElementById("couponStatus")?.value
