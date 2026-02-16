@@ -1,0 +1,343 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Order Details - CaseCart</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+
+<body class="bg-gray-50">
+    <%- include('../partials/user/header') %>
+
+        <!-- Breadcrumb -->
+        <div class="bg-white border-b">
+            <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-3">
+                <div class="flex items-center space-x-2 text-sm">
+                    <a href="/" class="text-gray-600 hover:text-purple-600">Home</a>
+                    <span class="text-gray-400">/</span>
+                    <a href="/order" class="text-gray-600 hover:text-purple-600">My Orders</a>
+                    <span class="text-gray-400">/</span>
+                    <span class="text-gray-800 font-medium">
+                        <%= order.orderId %>
+                    </span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Main Content -->
+        <div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
+            <!-- Back Button -->
+            <div class="mb-4">
+                <a href="/order" class="flex items-center text-gray-600 hover:text-purple-600">
+                    <svg class="w-5 h-5 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7">
+                        </path>
+                    </svg>
+                    Back to Orders
+                </a>
+            </div>
+
+            <!-- Order Details Card -->
+            <div class="bg-white rounded-lg border border-gray-200 overflow-hidden">
+                <!-- Order Header -->
+                <div class="p-6 border-b border-gray-200">
+                    <div class="flex justify-between items-start">
+                        <div>
+                            <h2 class="text-xl font-bold text-gray-900 mb-2">#<%= order.orderId %>
+                            </h2>
+                            <p class="text-gray-500">Placed on <%= new Date(order.createdAt).toLocaleDateString('en-US',
+                                    { day: 'numeric' , month: 'short' , year: 'numeric' }) %> - <%= new
+                                        Date(order.createdAt).toLocaleTimeString([], { hour: '2-digit' ,
+                                        minute: '2-digit' }) %>
+                            </p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Order Items Section -->
+                <div class="p-6 border-b border-gray-200">
+                    <h3 class="text-lg font-semibold text-gray-900 mb-4">Order Items (<%= order.orderItems.length %>)
+                    </h3>
+
+                    <div class="space-y-4">
+                        <% order.orderItems.forEach((item, index)=> { %>
+                            <div class="flex items-start gap-4 <%= index > 0 ? 'pt-4 border-t border-gray-100' : '' %>">
+                                <div class="w-16 h-16 flex-shrink-0">
+                                    <img src="<%= item.product.productImages[0].url %>" alt="<%= item.product.name %>"
+                                        class="w-full h-full object-cover rounded-lg border border-gray-200">
+                                </div>
+                                <div class="flex-1">
+                                    <div class="flex flex-col md:flex-row justify-between gap-4">
+                                        <div>
+                                            <p class="font-medium text-gray-900">
+                                                <%= item.product.name %>
+                                            </p>
+                                            <p class="text-sm text-gray-500">Color: <%= item.variant.color %> | Qty: <%=
+                                                        item.quantity %>
+                                            </p>
+                                            <p class="text-sm my-1">
+                                                Status:
+                                                <span
+                                                    class="<%= item.status === 'delivered' ? 'text-green-600' : item.status === 'cancelled' ? 'text-red-600' : 'text-blue-600' %> font-medium uppercase text-xs">
+                                                    <%= item.status %>
+                                                </span>
+                                            </p>
+                                            <% if (['pending', 'processing' , 'placed' ].includes(item.status)) { %>
+                                                <button
+                                                    onclick="cancelItem('<%= item._id %>', '<%= item.product.name %>', '<%= order._id %>')"
+                                                    class="text-sm text-red-600 hover:text-red-700 mt-2 font-medium">
+                                                    Cancel Item
+                                                </button>
+                                                <% } else if (item.status==='delivered' ) { %>
+                                                    <button
+                                                        onclick="returnItem('<%= item._id %>', '<%= item.product.name %>', '<%= order._id %>')"
+                                                        class="text-sm text-blue-600 hover:text-blue-700 mt-2 font-medium">
+                                                        Return Item
+                                                    </button>
+                                                    <button
+                                                        onclick="downloadInvoice('<%= order._id %>', '<%= item._id %>')"
+                                                        class="text-sm text-gray-600 hover:text-gray-700 mt-2 font-medium ml-3">
+                                                        <i class="fas fa-download mr-1"></i> Invoice
+                                                    </button>
+                                                    <% } %>
+                                        </div>
+                                        <div class="text-right">
+                                            <p class="text-gray-600">₹<%= item.finalPrice %> x <%= item.quantity %>
+                                            </p>
+                                            <p class="font-medium text-gray-900">₹<%= item.finalPrice * item.quantity %>
+                                            </p>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <% }); %>
+                    </div>
+                </div>
+
+                <!-- Order Summary -->
+                <div class="p-6 border-b border-gray-200">
+                    <h3 class="text-lg font-semibold text-gray-900 mb-4">Order Summary</h3>
+
+                    <div class="space-y-3">
+                        <div class="flex justify-between text-sm">
+                            <span class="text-gray-600">Subtotal</span>
+                            <span class="font-medium text-gray-900">₹<%= order.totalPrice %></span>
+                        </div>
+                        <% if (order.totalDiscount> 0) { %>
+                            <div class="flex justify-between text-sm">
+                                <span class="text-gray-600">Discount</span>
+                                <span class="font-medium text-green-600">-₹<%= order.totalDiscount %></span>
+                            </div>
+                            <% } %>
+                                <% if (order.couponDiscount> 0) { %>
+                                    <div class="flex justify-between text-sm">
+                                        <span class="text-gray-600">Coupon Discount</span>
+                                        <span class="font-medium text-green-600">-₹<%= order.couponDiscount %></span>
+                                    </div>
+                                    <% } %>
+                                        <div class="flex justify-between text-sm">
+                                            <span class="text-gray-600">Shipping</span>
+                                            <span class="font-medium text-green-600"><%= order.shipping %></span>
+                                        </div>
+                                        <div
+                                            class="flex justify-between text-base font-semibold pt-3 border-t border-gray-200">
+                                            <span class="text-gray-900">Total Amount</span>
+                                            <span class="text-gray-900">₹<%= Math.floor(order.finalAmount )|| (order.totalPrice -
+                                                    (order.totalDiscount || 0) - (order.couponDiscount || 0)) %>
+                                            </span>
+                                        </div>
+                    </div>
+                </div>
+
+                <!-- Payment Details & Address -->
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6 p-6 border-b border-gray-200">
+                    <div>
+                        <h3 class="text-lg font-semibold text-gray-900 mb-4">Payment Details</h3>
+                        <div class="space-y-2 text-sm">
+                            <div class="flex justify-between">
+                                <span class="text-gray-600">Method</span>
+                                <span class="font-medium text-gray-900">
+                                    <%= order.paymentMethod %>
+                                </span>
+                            </div>
+                            <div class="flex justify-between">
+                                <span class="text-gray-600">Status</span>
+                                <span
+                                    class="font-medium <%= order.paymentStatus === 'Completed' ? 'text-green-600' : 'text-yellow-600' %>">
+                                    <%= order.paymentStatus %>
+                                </span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div>
+                        <h3 class="text-lg font-semibold text-gray-900 mb-4">Shipping Address</h3>
+                        <% if (order.shippingAddress) { %>
+                            <p class="text-gray-600 text-sm">
+                                <%= order.shippingAddress.firstName %>
+                                    <%= order.shippingAddress.lastName %><br>
+                                        <%= order.shippingAddress.streetAddress %><br>
+                                            <%= order.shippingAddress.city %>, <%= order.shippingAddress.state %> - <%=
+                                                        order.shippingAddress.pinCode %><br>
+                                                        Phone: <%= order.shippingAddress.phone %>
+                            </p>
+                            <% } else { %>
+                                <p class="text-gray-600 text-sm">Address not available</p>
+                                <% } %>
+                    </div>
+                </div>
+
+                <!-- Global Actions -->
+                <% // Check if any item is cancellable to show "Cancel Entire Order" const
+                    hasCancellableItems=order.orderItems.some(item=> ['pending', 'processing',
+                    'placed'].includes(item.status));
+                    %>
+                    <div class="p-6">
+                        <div class="flex flex-col sm:flex-row gap-3">
+                            <% if (hasCancellableItems) { %>
+                                <button onclick="cancelFullOrder('<%= order._id %>')"
+                                    class="flex-1 px-4 py-3 bg-red-600 text-white rounded-lg hover:bg-red-700 font-medium transition text-center">
+                                    Cancel Entire Order
+                                </button>
+                                <% } %>
+                                    <a href="/order"
+                                        class="flex-1 px-4 py-3 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 font-medium transition text-center">
+                                        View All Orders
+                                    </a>
+                        </div>
+                    </div>
+            </div>
+        </div>
+
+        <%- include('../partials/footer') %>
+
+            <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+            <script type="module">
+                import api from '/js/api.js';
+
+                window.cancelFullOrder = async (orderId) => {
+                    const result = await Swal.fire({
+                        title: 'Cancel Entire Order?',
+                        text: 'Are you sure you want to cancel this entire order? This action cannot be undone.',
+                        icon: 'warning',
+                        showCancelButton: true,
+                        confirmButtonColor: '#dc2626',
+                        cancelButtonColor: '#6b7280',
+                        confirmButtonText: 'Yes, cancel order',
+                        cancelButtonText: 'No, keep it'
+                    });
+
+                    if (result.isConfirmed) {
+                        try {
+                            const response = await api.cancelWholeOrderAxios(orderId, { reason: 'User requested cancellation' });
+                            if (response.data.success) {
+                                await Swal.fire({
+                                    title: 'Order Cancelled!',
+                                    text: 'Your order has been cancelled successfully.',
+                                    icon: 'success',
+                                    confirmButtonColor: '#8b5cf6'
+                                });
+                                window.location.reload();
+                            } else {
+                                Swal.fire('Error', response.data.message || 'Failed to cancel order', 'error');
+                            }
+                        } catch (error) {
+                            console.error(error);
+                            Swal.fire('Error', 'Something went wrong', 'error');
+                        }
+                    }
+                }
+
+                window.cancelItem = async (itemId, itemName, orderId) => {
+                    const result = await Swal.fire({
+                        title: 'Cancel Item?',
+                        text: `Are you sure you want to cancel ${itemName}?`,
+                        input: 'text',
+                        inputPlaceholder: 'Reason for cancellation (optional)',
+                        icon: 'warning',
+                        showCancelButton: true,
+                        confirmButtonColor: '#dc2626',
+                        cancelButtonColor: '#6b7280',
+                        confirmButtonText: 'Yes, cancel item',
+                        cancelButtonText: 'No, keep it'
+                    });
+
+                    if (result.isConfirmed) {
+                        try {
+                            const response = await api.ordCancelAxios({
+                                orderId: orderId,
+                                reason: result.value || 'User requested cancellation'
+                            }, itemId);
+
+                            if (response.data.success) {
+                                await Swal.fire({
+                                    title: 'Item Cancelled!',
+                                    text: 'Item has been cancelled successfully.',
+                                    icon: 'success',
+                                    confirmButtonColor: '#8b5cf6'
+                                });
+                                window.location.reload();
+                            } else {
+                                Swal.fire('Error', response.data.message || 'Failed to cancel item', 'error');
+                            }
+                        } catch (error) {
+                            console.error(error);
+                            Swal.fire('Error', 'Something went wrong', 'error');
+                        }
+                    }
+                }
+
+                window.returnItem = async (itemId, itemName, orderId) => {
+                    const result = await Swal.fire({
+                        title: 'Return Item?',
+                        text: `Are you sure you want to return ${itemName}?`,
+                        input: 'text',
+                        inputPlaceholder: 'Reason for return',
+                        icon: 'question',
+                        showCancelButton: true,
+                        confirmButtonColor: '#3b82f6',
+                        cancelButtonColor: '#6b7280',
+                        confirmButtonText: 'Yes, return item',
+                        cancelButtonText: 'No, keep it',
+                        inputValidator: (value) => {
+                            if (!value) {
+                                return 'You need to write something!'
+                            }
+                        }
+                    });
+
+                    if (result.isConfirmed) {
+                        try {
+                            const response = await api.ordReturnAxios({
+                                orderId: orderId,
+                                reason: result.value
+                            }, itemId);
+
+                            if (response.data.success) {
+                                await Swal.fire({
+                                    title: 'Return Requested!',
+                                    text: 'Your return request has been submitted.',
+                                    icon: 'success',
+                                    confirmButtonColor: '#3b82f6'
+                                });
+                                window.location.reload();
+                            } else {
+                                Swal.fire('Error', response.data.message || 'Failed to request return', 'error');
+                            }
+                        } catch (error) {
+                            console.error(error);
+                            Swal.fire('Error', 'Something went wrong', 'error');
+                        }
+                    }
+                }
+
+                window.downloadInvoice = (orderId, itemId) => {
+                    api.orderInvoice(orderId, itemId);
+                }
+            </script>
+</body>
+
+</html>
