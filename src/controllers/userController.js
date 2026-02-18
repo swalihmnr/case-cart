@@ -92,7 +92,7 @@ let postLogin = async (req, res) => {
         .status(404)
         .json({ success: false, message: "user hasn't signup yet" });
     }
-  } catch (err) {}
+  } catch (err) { }
 };
 
 // ==============================
@@ -651,7 +651,7 @@ const getVariantData = async (req, res) => {
     const today = new Date();
     const productId = req.params.id;
     const variantId = req.query.variantId;
-    let currentDiscount=0;
+    let currentDiscount = 0;
     if (!productId || !variantId) {
       return res.status(STATUS_CODES.NOT_FOUND).json({
         success: false,
@@ -704,8 +704,8 @@ const getVariantData = async (req, res) => {
     ]);
 
 
-    
-    currentDiscount=variant.orgPrice-variant.salePrice
+
+    currentDiscount = variant.orgPrice - variant.salePrice
     let disObject = {};
     let salePrice;
     disObject.isOffer = false;
@@ -722,19 +722,19 @@ const getVariantData = async (req, res) => {
         variant.orgPrice,
         offerType,
       );
-      
+
     }
     salePrice = variant.salePrice;
-    console.log('current discount'+currentDiscount+" it's from offer "+disObject.bestDiscount)
-    if (offers.length !== 0&&currentDiscount<disObject.bestDiscount) {
-        salePrice = Math.floor(variant.orgPrice - disObject.bestDiscount);
+    console.log('current discount' + currentDiscount + " it's from offer " + disObject.bestDiscount)
+    if (offers.length !== 0 && currentDiscount < disObject.bestDiscount) {
+      salePrice = Math.floor(variant.orgPrice - disObject.bestDiscount);
     }
     if (currentDiscount < disObject.bestDiscount) {
       salePrice = Math.floor(variant.orgPrice - disObject.bestDiscount);
-      disObject.isOffer = true;   
+      disObject.isOffer = true;
     } else {
       salePrice = variant.salePrice;
-      disObject.isOffer = false;  
+      disObject.isOffer = false;
     }
     const orgPrice = variant.orgPrice;
     return res.status(STATUS_CODES.OK).json({
@@ -1002,7 +1002,7 @@ const postWishlist = async (req, res) => {
       success: true,
       message: "added to wishlist",
     });
-  } catch (error) {}
+  } catch (error) { }
 };
 
 // ==============================
@@ -1301,7 +1301,7 @@ const cartQuantityUpdate = async (req, res) => {
       .populate("productId");
     let subtotal = 0;
     cartItems.forEach((item) => {
-      console.log( item.variantId.salePrice,'it is the salepirce in here')
+      console.log(item.variantId.salePrice, 'it is the salepirce in here')
       subtotal += Math.round(item.quantity * item.variantId.salePrice)
     });
     return res.status(200).json({
@@ -1370,7 +1370,7 @@ const getCheckout = async (req, res) => {
     // CART FLOW
     // ======================
     if (type !== "buyNow") {
-      req.session.buyNow=false
+      req.session.buyNow = false
       // Cart flow - Get items from user's cart
       cartItems = await cartModel.aggregate([
         { $match: { userId } },
@@ -1458,7 +1458,7 @@ const getCheckout = async (req, res) => {
     // ======================
     else {
       // Get the variant with product details
-      req.session.buyNow=true
+      req.session.buyNow = true
       const variantData = await variantModel.aggregate([
         { $match: { _id: new mongoose.Types.ObjectId(variantId) } },
         {
@@ -1490,8 +1490,13 @@ const getCheckout = async (req, res) => {
       }
 
       const variant = variantData[0];
-      req.session.variantId=variant._id
-      
+      // VALIDATION: Check product block and stock
+      if (variant.product.isBlock || variant.stock < 1) {
+        return res.redirect('/product/' + variant.product._id + '/detials?error=Product unavailable');
+      }
+
+      req.session.variantId = variant._id
+
       // Create item object that EXACTLY matches cart flow structure
       const item = {
         product: variant.product,
@@ -1506,7 +1511,7 @@ const getCheckout = async (req, res) => {
         mainImage: variant.mainImage,
         orgPrice: variant.orgPrice
       };
-      
+
       console.log('Buy Now Item Structure:', {
         hasVariant: !!item.variant,
         variantOrgPrice: item.variant?.orgPrice,
@@ -1515,7 +1520,7 @@ const getCheckout = async (req, res) => {
 
       // Calculate original subtotal
       subtotal = item.orgPrice;
-      
+
       // Calculate best offer for this single item
       const offerResult = await calculateBestItemOffer({
         product: item.product,
@@ -1555,7 +1560,7 @@ const getCheckout = async (req, res) => {
     }
 
     const addresses = await addressModel.find({ userId });
-    
+
     // Debug logs to verify both flows work the same
     console.log("========= CHECKOUT DATA =========");
     console.log("Flow Type:", type || "cart");
@@ -1565,7 +1570,7 @@ const getCheckout = async (req, res) => {
     console.log("Shipping:", shipping);
     console.log("Final Amount:", finalAmount);
     console.log("Items Count:", cartItems.length);
-    
+
     if (cartItems.length > 0) {
       console.log("First Item Structure:");
       console.log("  - Has variant.orgPrice:", !!cartItems[0].variant?.orgPrice);
@@ -1657,9 +1662,9 @@ const addAddress = async (req, res) => {
     }
     console.log("not existing");
     //remove existing default address
-    if(isDefault){
-      await addressModel.updateMany({userId},
-        {$set:{isDefault:false}}
+    if (isDefault) {
+      await addressModel.updateMany({ userId },
+        { $set: { isDefault: false } }
       )
     }
     await addressModel.create({
@@ -1716,12 +1721,12 @@ const editAddress = async (req, res) => {
     });
     let isChanged = false;
     for (let key in req.body.data) {
-      if(req.body.data.isDefault===true){
+      if (req.body.data.isDefault === true) {
         console.log('enter to address')
-       await addressModel.updateMany(
-        {userId},
-        {$set:{isDefault:false}}
-       )
+        await addressModel.updateMany(
+          { userId },
+          { $set: { isDefault: false } }
+        )
       }
       console.log(`${address[key]}===${req.body.data[key]}`);
       if (
@@ -1792,6 +1797,12 @@ const getConfirmation = async (req, res) => {
     .findOne({ _id: orderId })
     .populate("orderItems.productId")
     .populate("orderItems.variantId");
+  console.log("CONFIRMATION PAGE - Order Fetched:", {
+    id: order._id,
+    paymentStatus: order.paymentStatus,
+    paymentConfirmedAt: order.paymentConfirmedAt,
+    finalAmount: order.finalAmount
+  });
   console.log(order);
   res.render("./user/ord-confirmation", {
     order,
@@ -1822,7 +1833,10 @@ const ordConfirmation = async (req, res) => {
       coupon = await couponModel.findById(
         new mongoose.Types.ObjectId(data.couponCode)
       );
+
+
     }
+
 
     // ==============================
     // SHIPPING ADDRESS
@@ -1835,7 +1849,7 @@ const ordConfirmation = async (req, res) => {
       );
 
       if (!savedAddress) {
-        return res.status(404).json({ success:false, message:"Address not found" });
+        return res.status(404).json({ success: false, message: "Address not found" });
       }
 
       shippingAddress = {
@@ -1858,8 +1872,8 @@ const ordConfirmation = async (req, res) => {
     // ==============================
     const paymentMethod = data.paymentMethod;
 
-    if (!["cod","wallet","razorpay"].includes(paymentMethod)) {
-      return res.status(400).json({ success:false, message:"Invalid payment method"});
+    if (!["cod", "wallet", "razorpay"].includes(paymentMethod)) {
+      return res.status(400).json({ success: false, message: "Invalid payment method" });
     }
 
     // ==============================
@@ -1873,23 +1887,23 @@ const ordConfirmation = async (req, res) => {
         {
           $match: {
             _id: new mongoose.Types.ObjectId(req.session.variantId),
-            isListed:true,
-            stock:{ $gt:0 }
+            isListed: true,
+            stock: { $gt: 0 }
           }
         },
         {
-          $lookup:{
-            from:"products",
-            localField:"productId",
-            foreignField:"_id",
-            as:"product"
+          $lookup: {
+            from: "products",
+            localField: "productId",
+            foreignField: "_id",
+            as: "product"
           }
         },
-        { $unwind:"$product" },
+        { $unwind: "$product" },
         {
-          $addFields:{
-            quantity:1,
-            variant:"$$ROOT"
+          $addFields: {
+            quantity: 1,
+            variant: "$$ROOT"
           }
         }
       ]);
@@ -1897,158 +1911,161 @@ const ordConfirmation = async (req, res) => {
     } else {
 
       items = await cartModel.aggregate([
-        { $match:{ userId }},
+        { $match: { userId } },
         {
-          $lookup:{
-            from:"products",
-            localField:"productId",
-            foreignField:"_id",
-            as:"product"
+          $lookup: {
+            from: "products",
+            localField: "productId",
+            foreignField: "_id",
+            as: "product"
           }
         },
-        { $unwind:"$product" },
+        { $unwind: "$product" },
         {
-          $lookup:{
-            from:"variants",
-            localField:"variantId",
-            foreignField:"_id",
-            as:"variant"
+          $lookup: {
+            from: "variants",
+            localField: "variantId",
+            foreignField: "_id",
+            as: "variant"
           }
         },
-        { $unwind:"$variant" }
+        { $unwind: "$variant" }
       ]);
     }
 
     if (!items.length) {
-      return res.status(404).json({ success:false, message:"No valid items found"});
+      return res.status(404).json({ success: false, message: "No valid items found" });
     }
 
     // ==============================
     // CALCULATIONS (MATCH CHECKOUT)
     // ==============================
     // ==============================
-// CALCULATIONS (FIXED)
-// ==============================
-let subtotal = 0;
-let totalOfferDiscount = 0;     // ✅ Track ALL item discounts
-let totalSavedAmount = 0;       // ✅ Track total savings
-const orderItems = [];
+    // CALCULATIONS (FIXED)
+    // ==============================
+    let subtotal = 0;
+    let totalOfferDiscount = 0;     // ✅ Track ALL item discounts
+    let totalSavedAmount = 0;       // ✅ Track total savings
+    const orderItems = [];
 
-// First calculate original subtotal
-for (const item of items) {
-  subtotal += item.variant.orgPrice * item.quantity;
-}
-console.log("Original Subtotal:", subtotal);
+    let afterProductDiscounts = 0;
 
-// Then calculate offers for each item
-for (const item of items) {
-  const quantity = item.quantity;
+    // First calculate original subtotal
+    for (const item of items) {
+      subtotal += item.variant.orgPrice * item.quantity;
+    }
+    console.log("Original Subtotal:", subtotal);
 
-  const offerResult = await calculateBestItemOffer({
-    quantity,
-    variant: item.variant,
-    product: item.product
-  });
+    // Then calculate offers for each item
+    for (const item of items) {
+      const quantity = item.quantity;
 
-  const totalItemDiscount = offerResult.discountAmount * quantity;
-  const totalItemFinal = offerResult.finalPrice * quantity;
-  
-  // ✅ Add to running totals
-  totalOfferDiscount += totalItemDiscount;
-  totalSavedAmount += totalItemDiscount;
-  
-  console.log(`Item ${item.product.name}:`);
-  console.log(`  - Discount: ${totalItemDiscount}`);
-  console.log(`  - Final: ${totalItemFinal}`);
+      const offerResult = await calculateBestItemOffer({
+        quantity,
+        variant: item.variant,
+        product: item.product
+      });
 
-  orderItems.push({
-    productId: item.product._id,
-    variantId: item.variant._id,
-    name: item.product.name,
-    quantity,
-    price: item.variant.salePrice,
-    itemTotal: item.variant.salePrice * quantity,
-    paymentStatus: paymentMethod === "cod" ? "pending" : "initiated",
-    offer: offerResult.bestOffer ? {
-      offerId: offerResult.bestOffer._id,
-      title: offerResult.bestOffer.title,
-      type: offerResult.bestOffer.offerType,
-      value: offerResult.bestOffer.discountValue,
-      discountAmount: totalItemDiscount  // ✅ Use totalItemDiscount directly
-    } : null,
-    finalPrice: totalItemFinal,
-    status: "processing"
-  });
-}
+      const totalItemDiscount = offerResult.discountAmount * quantity;
+      const totalItemFinal = offerResult.finalPrice * quantity;
 
-// Calculate after product discounts
-const afterProductDiscounts = subtotal - totalOfferDiscount;
-console.log("After Product Discounts:", afterProductDiscounts);
 
-// ==============================
-// SHIPPING
-// ==============================
-const shipping = afterProductDiscounts >= FREE_SHIPPING_LIMIT ? 0 : 50;
-console.log("Shipping:", shipping);
+      totalOfferDiscount += totalItemDiscount;
+      totalSavedAmount += totalItemDiscount;
+      afterProductDiscounts += totalItemFinal; // Accumulate final price directly
 
-// Calculate final amount before coupon
-let finalAmount = afterProductDiscounts + shipping;
-console.log("Before Coupon:", finalAmount);
+      console.log(`Item ${item.product.name}:`);
+      console.log(`  - Discount: ${totalItemDiscount}`);
+      console.log(`  - Final: ${totalItemFinal}`);
 
-// ==============================
-// COUPON APPLY
-// ==============================
-let couponDiscount = 0;
+      orderItems.push({
+        productId: item.product._id,
+        variantId: item.variant._id,
+        name: item.product.name,
+        quantity,
+        price: item.variant.salePrice,
+        itemTotal: item.variant.salePrice * quantity,
+        paymentStatus: paymentMethod === "cod" ? "pending" : "initiated",
+        offer: offerResult.bestOffer ? {
+          offerId: offerResult.bestOffer._id,
+          title: offerResult.bestOffer.title,
+          type: offerResult.bestOffer.offerType,
+          value: offerResult.bestOffer.discountValue,
+          discountAmount: totalItemDiscount  // ✅ Use totalItemDiscount directly
+        } : null,
+        finalPrice: totalItemFinal,
+        status: "processing"
+      });
+    }
 
-if (coupon && afterProductDiscounts >= coupon.MinimumPurchaseValue) {
-  couponDiscount = coupon.discountType === "percentage"
-    ? (afterProductDiscounts * coupon.discountValue) / 100  // ✅ Use afterProductDiscounts
-    : coupon.discountValue;
+    // Calculate after product discounts
+    // const afterProductDiscounts = subtotal - totalOfferDiscount; // REPLACED with direct accumulation
+    console.log("After Product Discounts:", afterProductDiscounts);
 
-  couponDiscount = Math.min(couponDiscount, maxDiscount);
-  console.log("Coupon Discount:", couponDiscount);
-  
-  finalAmount -= couponDiscount;
-}
+    // ==============================
+    // SHIPPING
+    // ==============================
+    const shipping = afterProductDiscounts >= FREE_SHIPPING_LIMIT ? 0 : 50;
+    console.log("Shipping:", shipping);
 
-// Calculate total savings
-const totalSavings = Math.floor(totalOfferDiscount) + couponDiscount;
+    // Calculate final amount before coupon
+    let finalAmount = afterProductDiscounts + shipping;
+    console.log("Before Coupon:", finalAmount);
 
-console.log("========== ORDER PRICE DEBUG ==========");
-console.log("Items count:", items.length);
-console.log("Subtotal (Org total):", subtotal);
-console.log("Offer discount total:", totalOfferDiscount);           // ✅ 604.2
-console.log("Subtotal after offers:", afterProductDiscounts);       // ✅ 639.8
-console.log("Shipping:", shipping);                                 // ✅ 50
-console.log("Coupon discount:", couponDiscount);                    // ✅ 0
-console.log("Final amount:", finalAmount);                          // ✅ 689.8
-console.log("💸 Total Savings:", totalSavings);                     // ✅ 604.2
-console.log("=======================================");
+    // ==============================
+    // COUPON APPLY
+    // ==============================
+    let couponDiscount = 0;
 
-// ==============================
-// CREATE ORDER
-// ==============================
-const order = await orderModel.create({
-  userId,
-  paymentMethod,
-  paymentStatus: paymentMethod === "cod" ? "pending" : "initiated",
-  shippingAddress,
-  totalPrice: subtotal,                    // ✅ 1244
-  totalDiscount: totalOfferDiscount,        // ✅ 604.2 (NOT savedAmount)
-  shipping,                                 // ✅ 50
-  couponId: coupon ? coupon._id : null,
-  couponDiscount,                           // ✅ 0
-  finalAmount,                              // ✅ 689.8
-  orderItems,
-});
+    if (coupon && afterProductDiscounts >= coupon.MinimumPurchaseValue) {
+      couponDiscount = coupon.discountType === "percentage"
+        ? (afterProductDiscounts * coupon.discountValue) / 100
+        : coupon.discountValue;
+
+      couponDiscount = Math.min(couponDiscount, maxDiscount);
+      console.log("Coupon Discount:", couponDiscount);
+
+      finalAmount -= couponDiscount;
+    }
+
+    // Calculate total savings
+    const totalSavings = Math.floor(totalOfferDiscount) + couponDiscount;
+
+    console.log("========== ORDER PRICE DEBUG ==========");
+    console.log("Items count:", items.length);
+    console.log("Subtotal (Org total):", subtotal);
+    console.log("Offer discount total:", totalOfferDiscount);
+    console.log("Subtotal after offers:", afterProductDiscounts);
+    console.log("Shipping:", shipping);
+    console.log("Coupon discount:", couponDiscount);
+    console.log("Final amount:", finalAmount);
+    console.log("💸 Total Savings:", totalSavings);
+    console.log("=======================================");
+
+    // ==============================
+    // CREATE ORDER
+    // ==============================
+    const order = await orderModel.create({
+      userId,
+      paymentMethod,
+      paymentStatus: paymentMethod === "cod" ? "pending" : "initiated",
+      shippingAddress,
+      totalPrice: subtotal,
+      totalDiscount: totalOfferDiscount,
+      shipping,
+      couponId: coupon ? coupon._id : null,
+      couponDiscount,
+      finalAmount,
+      orderItems,
+    });
 
     // ==============================
     // STOCK UPDATE
     // ==============================
     for (const item of items) {
       await variantModel.updateOne(
-        { _id:item.variant._id, stock:{ $gte:item.quantity }},
-        { $inc:{ stock:-item.quantity }}
+        { _id: item.variant._id, stock: { $gte: item.quantity } },
+        { $inc: { stock: -item.quantity } }
       );
     }
 
@@ -2063,13 +2080,13 @@ const order = await orderModel.create({
     req.session.variantId = null;
 
     return res.status(201).json({
-      success:true,
-      orderId:order._id
+      success: true,
+      orderId: order._id
     });
 
   } catch (err) {
     console.error(err);
-    res.status(500).json({ success:false, message:"Internal server error"});
+    res.status(500).json({ success: false, message: "Internal server error" });
   }
 };
 
@@ -2081,6 +2098,10 @@ const order = await orderModel.create({
 // - Pagination
 // - Status filtering
 // - Product & variant details
+// Fetches user orders with:
+// - Pagination
+// - Status filtering
+// - Product & variant details
 const getOrder = async (req, res) => {
   const userId = new mongoose.Types.ObjectId(req.session.user.id);
   const currentPage = parseInt(req.query.page) || 1;
@@ -2088,15 +2109,20 @@ const getOrder = async (req, res) => {
   const limit = 4;
   const skip = (currentPage - 1) * limit;
 
+  let matchQuery = { userId: userId };
+  if (status) {
+    matchQuery["orderItems.status"] = status;
+  }
+
   const result = await orderModel.aggregate([
-    { $match: { userId: userId } },
+    { $match: matchQuery },
     { $sort: { createdAt: -1 } },
     {
       $facet: {
         data: [
-          { $unwind: "$orderItems" },
           { $skip: skip },
           { $limit: limit },
+          { $unwind: "$orderItems" },
           {
             $lookup: {
               from: "products",
@@ -2106,7 +2132,6 @@ const getOrder = async (req, res) => {
             },
           },
           { $unwind: "$product" },
-          ...(status ? [{ $match: { "orderItems.status": status } }] : []),
           {
             $lookup: {
               from: "variants",
@@ -2116,14 +2141,45 @@ const getOrder = async (req, res) => {
             },
           },
           { $unwind: "$variant" },
+          {
+            $group: {
+              _id: "$_id",
+              orderId: { $first: "$orderId" },
+              userId: { $first: "$userId" },
+              address: { $first: "$address" },
+              paymentMethod: { $first: "$paymentMethod" },
+              paymentStatus: { $first: "$paymentStatus" },
+              totalPrice: { $first: "$totalPrice" },
+              couponDiscount: { $first: "$couponDiscount" },
+              createdAt: { $first: "$createdAt" },
+              orderItems: {
+                $push: {
+                  _id: "$orderItems._id",
+                  orderId: "$orderItems.orderId",
+                  productId: "$orderItems.productId",
+                  product: "$product",
+                  variantId: "$orderItems.variantId",
+                  variant: "$variant",
+                  quantity: "$orderItems.quantity",
+                  finalPrice: "$orderItems.finalPrice",
+                  status: "$orderItems.status",
+                  cancelledAt: "$orderItems.cancelledAt",
+                  cancellationReason: "$orderItems.cancellationReason"
+                }
+              }
+            }
+          },
+          { $sort: { createdAt: -1 } }
         ],
-        totalCount: [{ $unwind: "$orderItems" }, { $count: "count" }],
+        totalCount: [{ $count: "count" }],
       },
     },
   ]);
+
   const orders = result[0].data;
   const totalItems = result[0].totalCount[0]?.count || 0;
   const totalPages = Math.ceil(totalItems / limit);
+
   res.render("./user/order-history", {
     orders,
     totalPages,
@@ -2134,27 +2190,155 @@ const getOrder = async (req, res) => {
 };
 
 // ==============================
+// GET ORDER DETAILS
+// ==============================
+const getOrderDetails = async (req, res) => {
+  try {
+    const orderId = new mongoose.Types.ObjectId(req.params.id);
+    const order = await orderModel.aggregate([
+      { $match: { _id: orderId } },
+      { $unwind: "$orderItems" },
+      {
+        $lookup: {
+          from: "products",
+          localField: "orderItems.productId",
+          foreignField: "_id",
+          as: "product",
+        },
+      },
+      { $unwind: "$product" },
+      {
+        $lookup: {
+          from: "variants",
+          localField: "orderItems.variantId",
+          foreignField: "_id",
+          as: "variant",
+        },
+      },
+      { $unwind: "$variant" },
+      {
+        $group: {
+          _id: "$_id",
+          shipping: { $first: "$shipping" },
+          orderId: { $first: "$orderId" },
+          userId: { $first: "$userId" },
+          shippingAddress: { $first: "$shippingAddress" },
+          paymentMethod: { $first: "$paymentMethod" },
+          paymentStatus: { $first: "$paymentStatus" },
+          totalPrice: { $first: "$totalPrice" },
+          totalDiscount: { $first: "$totalDiscount" },
+          finalAmount: { $first: "$finalAmount" },
+          couponDiscount: { $first: "$couponDiscount" },
+          createdAt: { $first: "$createdAt" },
+          orderItems: {
+            $push: {
+              _id: "$orderItems._id",
+              productId: "$orderItems.productId",
+              product: "$product",
+              variantId: "$orderItems.variantId",
+              variant: "$variant",
+              quantity: "$orderItems.quantity",
+              finalPrice: "$orderItems.finalPrice",
+              status: "$orderItems.status",
+              cancelledAt: "$orderItems.cancelledAt",
+              cancellationReason: "$orderItems.cancellationReason"
+            }
+          }
+        }
+      }
+    ]);
+
+    if (!order || order.length === 0) {
+      return res.status(404).render("404");
+    }
+
+    res.render("./user/order-details", { order: order[0] });
+  } catch (error) {
+    console.error(error);
+    res.status(500).render("500");
+  }
+};
+
+// ==============================
+// CANCEL WHOLE ORDER
+// ==============================
+const cancelWholeOrder = async (req, res) => {
+  try {
+    const orderId = req.params.id;
+    const reason = req.body.reason || "User requested cancellation";
+
+    // Verify order exists and has items that can be cancelled
+    const orderExists = await orderModel.findOne({
+      _id: new mongoose.Types.ObjectId(orderId),
+      "orderItems.status": { $in: ['pending', 'placed', 'processing'] }
+    });
+
+    if (!orderExists) {
+      return res.status(400).json({
+        success: false,
+        message: "Order cannot be cancelled (might be already delivered or cancelled)"
+      });
+    }
+
+    const result = await orderModel.updateMany(
+      { _id: new mongoose.Types.ObjectId(orderId) },
+      {
+        $set: {
+          "orderItems.$[elem].status": "cancelled",
+          "orderItems.$[elem].cancelledAt": new Date(),
+          "orderItems.$[elem].cancellationReason": reason
+        }
+      },
+      {
+        arrayFilters: [{ "elem.status": { $in: ["pending", "placed", "processing"] } }]
+      }
+    );
+
+    if (result.modifiedCount > 0) {
+      return res.json({ success: true, message: "Order cancelled successfully" });
+    } else {
+      return res.status(400).json({ success: false, message: "No items could be cancelled" });
+    }
+
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ success: false, message: "Internal server error" });
+  }
+};
+
+// ==============================
 // CANCEL ORDER ITEM
 // ==============================
 // Cancels a specific order item (not entire order)
 const orderCancel = async (req, res) => {
   try {
     const orderItemId = new mongoose.Types.ObjectId(req.params.id);
-    console.log(orderItemId);
     const { orderId, reason } = req.body;
     const orderID = new mongoose.Types.ObjectId(orderId);
-    console.log(reason);
-    const order = await orderModel.findOne(
-      { _id: orderID },
-      { orderItems: { $elemMatch: { _id: orderItemId } } },
-    );
-    if (!order) {
+
+    // Check if order exists
+    const existingOrder = await orderModel.findOne({
+      _id: orderID,
+      "orderItems._id": orderItemId
+    });
+
+    if (!existingOrder) {
       return res.status(STATUS_CODES.NOT_FOUND).json({
         success: false,
-        message: "Order not founded",
+        message: "Order item not found",
       });
     }
-    let cor = await orderModel.updateOne(
+
+    // Check if item is already cancelled/delivered to prevent invalid state transitions
+    const item = existingOrder.orderItems.id(orderItemId);
+    if (['cancelled', 'delivered', 'returned'].includes(item.status)) {
+      return res.status(400).json({
+        success: false,
+        message: `Item is already ${item.status}`,
+      });
+    }
+
+    const result = await orderModel.updateOne(
       { _id: orderID, "orderItems._id": orderItemId },
       {
         $set: {
@@ -2164,11 +2348,21 @@ const orderCancel = async (req, res) => {
         },
       },
     );
-    return res.status(STATUS_CODES.CREATED).json({
-      success: true,
-      message: `${orderId} order cancelled`,
-    });
-  } catch (error) {}
+
+    if (result.modifiedCount > 0) {
+      // Optional: Check if all items are cancelled to update main order status if you track it
+      return res.status(STATUS_CODES.OK).json({
+        success: true,
+        message: `Item cancelled successfully`,
+      });
+    } else {
+      return res.status(400).json({ success: false, message: "Failed to cancel item" });
+    }
+
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ success: false, message: "Internal server error" });
+  }
 };
 
 // ==============================
@@ -2359,4 +2553,6 @@ export default {
   orderCancel,
   returnReq,
   invoice,
+  getOrderDetails,
+  cancelWholeOrder,
 };

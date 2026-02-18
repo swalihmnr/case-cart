@@ -37,6 +37,9 @@ const orderSchema = new Schema(
     transactionId: {
       type: String,
     },
+    paymentConfirmedAt: {
+      type: Date,
+    },
     totalPrice: {
       type: Number,
       required: true,
@@ -49,19 +52,19 @@ const orderSchema = new Schema(
       type: Number,
       required: true,
     },
-    shipping:{
-      type:Number,
-      default:0
+    shipping: {
+      type: Number,
+      default: 0
     },
     couponId: {
       type: Types.ObjectId,
       ref: "coupon",
       default: null,
     },
-    couponDiscount:{
-      type:Number,
-      required:false,
-      default:0
+    couponDiscount: {
+      type: Number,
+      required: false,
+      default: 0
     },
     shippingAddress: {
       addressType: {
@@ -75,7 +78,7 @@ const orderSchema = new Schema(
       landMark: { type: String },
       city: { type: String, required: true },
       state: { type: String, required: true },
-      pinCode: { type: String, required: true }, 
+      pinCode: { type: String, required: true },
     },
     orderItems: [
       {
@@ -161,7 +164,7 @@ const orderSchema = new Schema(
 );
 
 // Pre-save hook example (optional) to ensure pinCode is stored correctly
-orderSchema.pre('save', function(next) {
+orderSchema.pre('save', function (next) {
   // If you need any specific logic before saving the order
   next();
 });
