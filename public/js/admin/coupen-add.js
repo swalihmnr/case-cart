@@ -86,9 +86,12 @@ document.querySelector("#couponForm")?.addEventListener("submit", async (e) => {
     valid = false;
   }
 
-  // FIXED AMOUNT ONLY
+  // FIXED AMOUNT / PERCENTAGE VALIDATION
   if (!patterns.amount.test(data.discountValue)) {
     valueErr.innerText = "Amount must be greater than 0";
+    valid = false;
+  } else if (data.discountType === 'percentage' && Number(data.discountValue) > 70) {
+    valueErr.innerText = "Percentage cannot exceed 70%";
     valid = false;
   }
 

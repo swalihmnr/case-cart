@@ -316,6 +316,27 @@ const verifyCouponAxios = async (data) => {
     return error.response
   }
 }
+
+
+const createRazorpayOrderAxios = async (orderId) => {
+  try {
+    return await api.post("/api/payment/create-order", { orderId });
+  } catch (error) {
+    return error.response;
+  }
+};
+
+const verifyRazorpayPaymentAxios = async (data) => {
+  try {
+    return await api.post("/api/payment/verify-payment", data);
+  } catch (error) {
+    return error.response;
+  }
+};
+
+
+
+
 export default {
   userSignupAxios,
   userOtpAxios,
@@ -342,6 +363,9 @@ export default {
   cancelWholeOrderAxios,
   orderInvoice,
   changePasswordAxios,
-  verifyCouponAxios
+  verifyCouponAxios,
+  createRazorpayOrderAxios,
+  verifyRazorpayPaymentAxios
+
 
 };

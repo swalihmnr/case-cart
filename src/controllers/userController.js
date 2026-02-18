@@ -1490,7 +1490,7 @@ const getCheckout = async (req, res) => {
       }
 
       const variant = variantData[0];
-       // VALIDATION: Check product block and stock
+      // VALIDATION: Check product block and stock
       if (variant.product.isBlock || variant.stock < 1) {
         return res.redirect('/product/' + variant.product._id + '/detials?error=Product unavailable');
       }
@@ -1797,6 +1797,12 @@ const getConfirmation = async (req, res) => {
     .findOne({ _id: orderId })
     .populate("orderItems.productId")
     .populate("orderItems.variantId");
+  console.log("CONFIRMATION PAGE - Order Fetched:", {
+    id: order._id,
+    paymentStatus: order.paymentStatus,
+    paymentConfirmedAt: order.paymentConfirmedAt,
+    finalAmount: order.finalAmount
+  });
   console.log(order);
   res.render("./user/ord-confirmation", {
     order,
@@ -1828,9 +1834,9 @@ const ordConfirmation = async (req, res) => {
         new mongoose.Types.ObjectId(data.couponCode)
       );
 
-      
+
     }
-    
+
 
     // ==============================
     // SHIPPING ADDRESS
@@ -1942,6 +1948,8 @@ const ordConfirmation = async (req, res) => {
     let totalSavedAmount = 0;       // ✅ Track total savings
     const orderItems = [];
 
+    let afterProductDiscounts = 0;
+
     // First calculate original subtotal
     for (const item of items) {
       subtotal += item.variant.orgPrice * item.quantity;
@@ -1961,9 +1969,10 @@ const ordConfirmation = async (req, res) => {
       const totalItemDiscount = offerResult.discountAmount * quantity;
       const totalItemFinal = offerResult.finalPrice * quantity;
 
-      // ✅ Add to running totals
+
       totalOfferDiscount += totalItemDiscount;
       totalSavedAmount += totalItemDiscount;
+      afterProductDiscounts += totalItemFinal; // Accumulate final price directly
 
       console.log(`Item ${item.product.name}:`);
       console.log(`  - Discount: ${totalItemDiscount}`);
@@ -1990,7 +1999,7 @@ const ordConfirmation = async (req, res) => {
     }
 
     // Calculate after product discounts
-    const afterProductDiscounts = subtotal - totalOfferDiscount;
+    // const afterProductDiscounts = subtotal - totalOfferDiscount; // REPLACED with direct accumulation
     console.log("After Product Discounts:", afterProductDiscounts);
 
     // ==============================
@@ -2010,7 +2019,7 @@ const ordConfirmation = async (req, res) => {
 
     if (coupon && afterProductDiscounts >= coupon.MinimumPurchaseValue) {
       couponDiscount = coupon.discountType === "percentage"
-        ? (afterProductDiscounts * coupon.discountValue) / 100  // ✅ Use afterProductDiscounts
+        ? (afterProductDiscounts * coupon.discountValue) / 100
         : coupon.discountValue;
 
       couponDiscount = Math.min(couponDiscount, maxDiscount);
@@ -2025,12 +2034,12 @@ const ordConfirmation = async (req, res) => {
     console.log("========== ORDER PRICE DEBUG ==========");
     console.log("Items count:", items.length);
     console.log("Subtotal (Org total):", subtotal);
-    console.log("Offer discount total:", totalOfferDiscount);           // ✅ 604.2
-    console.log("Subtotal after offers:", afterProductDiscounts);       // ✅ 639.8
-    console.log("Shipping:", shipping);                                 // ✅ 50
-    console.log("Coupon discount:", couponDiscount);                    // ✅ 0
-    console.log("Final amount:", finalAmount);                          // ✅ 689.8
-    console.log("💸 Total Savings:", totalSavings);                     // ✅ 604.2
+    console.log("Offer discount total:", totalOfferDiscount);
+    console.log("Subtotal after offers:", afterProductDiscounts);
+    console.log("Shipping:", shipping);
+    console.log("Coupon discount:", couponDiscount);
+    console.log("Final amount:", finalAmount);
+    console.log("💸 Total Savings:", totalSavings);
     console.log("=======================================");
 
     // ==============================
@@ -2041,12 +2050,12 @@ const ordConfirmation = async (req, res) => {
       paymentMethod,
       paymentStatus: paymentMethod === "cod" ? "pending" : "initiated",
       shippingAddress,
-      totalPrice: subtotal,                    // ✅ 1244
-      totalDiscount: totalOfferDiscount,        // ✅ 604.2 (NOT savedAmount)
-      shipping,                                 // ✅ 50
+      totalPrice: subtotal,
+      totalDiscount: totalOfferDiscount,
+      shipping,
       couponId: coupon ? coupon._id : null,
-      couponDiscount,                           // ✅ 0
-      finalAmount,                              // ✅ 689.8
+      couponDiscount,
+      finalAmount,
       orderItems,
     });
 

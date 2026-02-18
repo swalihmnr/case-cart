@@ -20,6 +20,7 @@ import './config/passport.js'
 import morgan from 'morgan';
 import { attachUser } from './middlewares/auth.js';
 import { attachAdmin } from './middlewares/auth.js';
+import paymentRouter from '../src/router/paymentRouter.js'
 app.use(session({
     secret:process.env.SECRET_KEY,
     resave:false,
@@ -42,11 +43,15 @@ app.use('/auth',authRouter)
 app.use('/',userRouter)
 app.use(attachAdmin)
 
+//payment router here
+
+app.use("/api/payment", paymentRouter);
+
 // admin Routers here
 app.use('/admin',adminRouter)
 app.use('/admin',adminOfferRouter)
 app.use('/admin',adminCoupenRouter)
-
+// user Routers here
 app.use('/user',userCouponController)
 
 app.use(express.static(path.join(__dirname,'../public')));
