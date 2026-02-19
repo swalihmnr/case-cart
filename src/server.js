@@ -13,7 +13,8 @@ import authRouter from '../src/router/authRouter.js'
 import adminOfferRouter from '../src/router/admin/offerRouter.js'
 import adminCoupenRouter from '../src/router/admin/coupenRouter.js'
 
-import userCouponController from '../src/router/user/couponRouter.js'
+import userCouponRouter from '../src/router/user/couponRouter.js'
+import walletRouter from './router/user/walletRouter.js';
 import connectDB from './config/db.js';
 import passport from 'passport';
 import './config/passport.js'
@@ -52,7 +53,8 @@ app.use('/admin',adminRouter)
 app.use('/admin',adminOfferRouter)
 app.use('/admin',adminCoupenRouter)
 // user Routers here
-app.use('/user',userCouponController)
+app.use('/user',userCouponRouter)
+app.use('/',walletRouter)
 
 app.use(express.static(path.join(__dirname,'../public')));
 app.use((req,res)=>{

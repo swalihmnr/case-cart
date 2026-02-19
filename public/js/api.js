@@ -334,6 +334,20 @@ const verifyRazorpayPaymentAxios = async (data) => {
   }
 };
 
+const createRazorpayOrderWallletAxios=async(payload)=>{
+  try {
+    return await api.post('/api/payment/wallet/create-order',payload)
+  } catch (error) {
+    return error.response
+  }
+}
+const verifyRazorpayPaymentWalletAxios=async(data)=>{
+  try {
+    return await api.post('/api/payment/wallet/verify-payment',data)
+  } catch (error) {
+    return error.response
+  }
+}
 
 
 
@@ -365,7 +379,9 @@ export default {
   changePasswordAxios,
   verifyCouponAxios,
   createRazorpayOrderAxios,
-  verifyRazorpayPaymentAxios
+  verifyRazorpayPaymentAxios,
+  createRazorpayOrderWallletAxios,
+  verifyRazorpayPaymentWalletAxios
 
 
 };
