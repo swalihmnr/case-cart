@@ -1833,9 +1833,15 @@ const ordConfirmation = async (req, res) => {
       coupon = await couponModel.findById(
         new mongoose.Types.ObjectId(data.couponCode)
       );
-
-
     }
+
+    if (coupon && coupon.usedBy.map(id => id.toString()).includes(userId.toString())) {
+      return res.json({
+        success: false,
+        message: "Coupon already used"
+      });
+    }
+
 
 
     // ==============================
@@ -1875,7 +1881,7 @@ const ordConfirmation = async (req, res) => {
     if (!["cod", "wallet", "razorpay"].includes(paymentMethod)) {
       return res.status(400).json({ success: false, message: "Invalid payment method" });
     }
-
+    console.log(req.session.variantId)
     // ==============================
     // FETCH ITEMS (BUY NOW / CART)
     // ==============================
@@ -2058,6 +2064,19 @@ const ordConfirmation = async (req, res) => {
       finalAmount,
       orderItems,
     });
+
+    //to add userID for prevent reusing coupons
+    if (coupon) {
+      await couponModel.findByIdAndUpdate(
+        coupon._id,
+        {
+          $addToSet: {
+            usedBy: userId
+          }
+        }
+      );
+    }
+
 
     // ==============================
     // STOCK UPDATE

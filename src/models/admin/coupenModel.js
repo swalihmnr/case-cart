@@ -42,10 +42,6 @@ const couponSchema = new mongoose.Schema(
       default: 0
     },
 
-    // usageLimit: {
-    //   type: Number,
-    //   default: 1
-    // },
 
     startDate: {
       type: Date,
@@ -61,7 +57,14 @@ const couponSchema = new mongoose.Schema(
       type: String,
       enum: ["active","inactive", "scheduled", "expired"],
       default: "scheduled"
-    }
+    },
+    usedBy: [
+  {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: "user"
+  }
+]
+
   },
   {
     timestamps: true
