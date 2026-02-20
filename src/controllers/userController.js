@@ -16,6 +16,7 @@ import offerModel from "../../src/models/admin/offerModel.js";
 import discountChecker from "../../src/utils/calculateDiscount.js";
 import calculateBestItemOffer from "../utils/calculateBestOfferItem.js";
 import couponModel from "../../src/models/admin/coupenModel.js";
+import wallet from "../models/walletModel.js";
 
 // ==============================
 // GET LOGIN PAGE
@@ -1359,7 +1360,7 @@ const getCheckout = async (req, res) => {
     let finalAmount = 0;
     let shipping = 0;
     let coupons;
-
+    const walletBalance=await wallet.findOne({userId:req.session.user.id});
     const FREE_SHIPPING_LIMIT = 1500;
     const userId = new mongoose.Types.ObjectId(req.session.user.id);
     const { type, variantId } = req.query;
@@ -1558,7 +1559,10 @@ const getCheckout = async (req, res) => {
       // Create cartItems array with the single item
       cartItems = [item];
     }
-
+    let walletButton=true
+    // if(walletBalance.balance<finalAmount){
+    //   walletButton=false
+    // }
     const addresses = await addressModel.find({ userId });
 
     // Debug logs to verify both flows work the same
@@ -1594,6 +1598,7 @@ const getCheckout = async (req, res) => {
       shipping,
       finalAmount,
       coupons,
+      walletButton
     });
 
   } catch (err) {
@@ -1818,7 +1823,7 @@ const getConfirmation = async (req, res) => {
 // Performs full validation before creating order
 const ordConfirmation = async (req, res) => {
   try {
-
+    const walletBalance=await wallet.findOne({userId:req.session.user.id});
     const FREE_SHIPPING_LIMIT = 1500;
     const maxDiscount = 250;
 
@@ -2047,6 +2052,7 @@ const ordConfirmation = async (req, res) => {
     console.log("Final amount:", finalAmount);
     console.log("💸 Total Savings:", totalSavings);
     console.log("=======================================");
+  
 
     // ==============================
     // CREATE ORDER
@@ -2054,7 +2060,13 @@ const ordConfirmation = async (req, res) => {
     const order = await orderModel.create({
       userId,
       paymentMethod,
-      paymentStatus: paymentMethod === "cod" ? "pending" : "initiated",
+      paymentStatus:
+      paymentMethod === "cod"
+        ? "pending"
+        : paymentMethod === "wallet"
+        ? "paid"
+        : "initiated",
+
       shippingAddress,
       totalPrice: subtotal,
       totalDiscount: totalOfferDiscount,
@@ -2063,9 +2075,29 @@ const ordConfirmation = async (req, res) => {
       couponDiscount,
       finalAmount,
       orderItems,
-    });
+    }); 
+      if(paymentMethod==='wallet'){
+      if(walletBalance?.balance<finalAmount){
+          return res.status(STATUS_CODES.BAD_REQUEST).json({
+            success:false,
+            message:"Insufficient Amount!"
+          })
+      }
+      walletBalance.balance-=finalAmount;
+      walletBalance.transactions.push({
+        amount:finalAmount,
+        description:"Order Payment",
+        orderId:order._id,
+        transactionType:"debited"
+      })
 
+     await walletBalance.save()
+
+    }
+    
+    
     //to add userID for prevent reusing coupons
+
     if (coupon) {
       await couponModel.findByIdAndUpdate(
         coupon._id,
@@ -2076,7 +2108,6 @@ const ordConfirmation = async (req, res) => {
         }
       );
     }
-
 
     // ==============================
     // STOCK UPDATE
@@ -2299,6 +2330,19 @@ const cancelWholeOrder = async (req, res) => {
       });
     }
 
+
+      const cancellableItems = orderExists.orderItems.filter(item =>
+      ["pending", "placed", "processing"].includes(item.status)
+    );
+
+    if (!cancellableItems.length) {
+      return res.status(400).json({
+        success: false,
+        message: "No items can be cancelled"
+      });
+    }
+
+
     const result = await orderModel.updateMany(
       { _id: new mongoose.Types.ObjectId(orderId) },
       {
@@ -2312,6 +2356,45 @@ const cancelWholeOrder = async (req, res) => {
         arrayFilters: [{ "elem.status": { $in: ["pending", "placed", "processing"] } }]
       }
     );
+    if (
+      result.modifiedCount > 0 && orderExists.paymentStatus === "paid") {
+
+      let Wallet = await wallet.findOne({
+        userId: orderExists.userId
+      });
+
+      if (!Wallet) {
+        Wallet = await wallet.create({
+          userId: orderExists.userId,
+          balance: 0,
+          transactions: []
+        });
+      }
+
+    const refund = Math.floor(
+    orderExists.finalAmount - orderExists.shipping
+  )
+      Wallet.balance += refund;
+
+      Wallet.transactions.push({
+        amount: refund,
+        description: "Refund for cancelled order",
+        orderId: orderExists._id,
+        transactionType: "credited"
+      });
+
+      await Wallet.save();
+    }
+
+    // =========================
+    // RESTORE STOCK 
+    // =========================
+    for (const item of cancellableItems) {
+      await variantModel.updateOne(
+        { _id: item.variantId },
+        { $inc: { stock: item.quantity } }
+      );
+    }
 
     if (result.modifiedCount > 0) {
       return res.json({ success: true, message: "Order cancelled successfully" });
@@ -2356,7 +2439,7 @@ const orderCancel = async (req, res) => {
         message: `Item is already ${item.status}`,
       });
     }
-
+    
     const result = await orderModel.updateOne(
       { _id: orderID, "orderItems._id": orderItemId },
       {
@@ -2367,6 +2450,37 @@ const orderCancel = async (req, res) => {
         },
       },
     );
+
+     // ======================
+    // RESTORE STOCK
+    // ======================
+    await variantModel.updateOne(
+      { _id: item.variantId },
+      { $inc: { stock: item.quantity } }
+    );
+
+
+   if (result.modifiedCount > 0 && existingOrder.paymentStatus === "paid"){
+      let Wallet =await wallet.findOne({userId:req.session.user.id})
+      if(!Wallet){
+        Wallet=await wallet.create({
+          userId:req.session.user.id,
+          balance:0,
+          transactions:[]
+        })
+      }
+      Wallet.balance+=item.finalPrice;
+      Wallet.transactions.push({
+        amount:item.finalPrice,
+        description:"Refund for cancelled order",
+        orderId:existingOrder._id,
+        transactionType:'credited'
+      })
+      
+     
+      await Wallet.save()
+    }
+    
 
     if (result.modifiedCount > 0) {
       // Optional: Check if all items are cancelled to update main order status if you track it

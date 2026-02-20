@@ -60,7 +60,7 @@ const verifyWalletRazorpayPayment=async(req,res)=>{
             transactions:{
                 amount,
                 description:"added money to wallet",
-                transactionType:"Credited",
+                transactionType:"credited",
                 paymentId:razorpay_payment_id,
                 status: "completed"
             }
@@ -76,7 +76,7 @@ const verifyWalletRazorpayPayment=async(req,res)=>{
         
     } catch (error) {
     console.error("Wallet verify error:", error);
-    res.status(500).json({
+    res.status(STATUS_CODES.INTERNAL_SERVER_ERROR).json({
       success: false,
       message: "Wallet verification failed"
     });

@@ -9,6 +9,7 @@ import { uploadBufferTocloudnery } from '../utils/cloudneryUpload.js';
 import orderModel from '../models/orderModel.js';
 import { STATUS_CODES } from '../utils/statusCodes.js';
 import flowChecker from '../utils/order-flow-checker.js'
+import wallet from '../models/walletModel.js';
 
 
 // Render admin login page
@@ -1032,34 +1033,95 @@ const orderStatusChanger=async(req,res)=>{
 // ==============================
 // Admin approves product return
 // Order item status changed to "returned"
-const reqApprove=async(req,res)=>{
-    try {
-        
-        const orderId=new mongoose.Types.ObjectId(req.params.id);
-        const {itemId}=req.body
-        const ordItemId=new mongoose.Types.ObjectId(itemId)
-        const existing=await orderModel.findOne({_id:orderId,'orderItems._id':ordItemId});
-        if(!existing){
-            return res.status(STATUS_CODES.NOT_FOUND).json({
-                success:false,
-                message:"Item not Founded"
-            })
-        }
-        const item=existing.orderItems.id(itemId);
-        item.status="returned"
-        await existing.save()
-        return res.status(STATUS_CODES.OK).json({
-            success:true,
-            message:"Returned Approved"
-        })
-        
-    } catch (error) {
-        return res.status(STATUS_CODES.INTERNAL_SERVER_ERROR).json({
-            success:false,
-            message:"Internal server Error!"
-        })
+const reqApprove = async (req, res) => {
+  try {
+
+    const orderId = new mongoose.Types.ObjectId(req.params.id);
+    const { itemId } = req.body;
+    const ordItemId = new mongoose.Types.ObjectId(itemId);
+
+    const existing = await orderModel.findOne({
+      _id: orderId,
+      "orderItems._id": ordItemId
+    });
+
+    if (!existing) {
+      return res.status(STATUS_CODES.NOT_FOUND).json({
+        success: false,
+        message: "Item not found"
+      });
     }
-}
+
+    const item = existing.orderItems.id(ordItemId);
+
+    // Prevent duplicate refund
+    if (item.status === "returned") {
+      return res.json({
+        success: false,
+        message: "Already returned"
+      });
+    }
+
+    // ======================
+    // UPDATE STATUS
+    // ======================
+    item.status = "returned";
+    item.returnedAt = new Date();
+
+    await existing.save();
+
+    // ======================
+    // RESTORE STOCK
+    // ======================
+    await variantModel.updateOne(
+      { _id: item.variantId },
+      { $inc: { stock: item.quantity } }
+    );
+
+    // ======================
+    // REFUND (ONLY IF PAID)
+    // ======================
+    if (existing.paymentStatus === "paid") {
+
+      let Wallet = await wallet.findOne({
+        userId: existing.userId
+      });
+
+      if (!Wallet) {
+        Wallet = await wallet.create({
+          userId: existing.userId,
+          balance: 0,
+          transactions: []
+        });
+      }
+
+      const refundAmount = item.finalPrice;
+
+      Wallet.balance += refundAmount;
+
+      Wallet.transactions.push({
+        amount: refundAmount,
+        description: "Refund for returned item",
+        orderId: existing._id,
+        transactionType: "credited"
+      });
+
+      await Wallet.save();
+    }
+
+    return res.status(STATUS_CODES.OK).json({
+      success: true,
+      message: "Return approved & refunded"
+    });
+
+  } catch (error) {
+    console.error(error);
+    return res.status(STATUS_CODES.INTERNAL_SERVER_ERROR).json({
+      success: false,
+      message: "Internal server error"
+    });
+  }
+};
 
 
 // ==============================
