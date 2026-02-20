@@ -1186,6 +1186,35 @@ const addCart = async (req, res) => {
         message: "productId not provided",
       });
     }
+    const variantData = await variantModel.findById(varinatID);
+    const productData = await productModel.findById(productID).populate('catgId');
+
+    if (!variantData || !productData) {
+      return res.status(STATUS_CODES.NOT_FOUND).json({
+        success: false,
+        message: "Product or Variant not found",
+      });
+    }
+
+    // Validation Check: Stock, Listing, Product Block, Category Active
+    if (variantData.stock < 1) {
+      return res.status(STATUS_CODES.FORBIDDEN).json({
+        success: false,
+        message: "This product is currently out of stock!",
+      });
+    }
+
+    if (
+      !variantData.isListed ||
+      productData.isBlock ||
+      (productData.catgId && productData.catgId.isActive === false)
+    ) {
+      return res.status(STATUS_CODES.FORBIDDEN).json({
+        success: false,
+        message: "This product is currently unavailable!",
+      });
+    }
+
     const existing = await cartModel
       .findOne({
         userId: userId._id,
