@@ -12,6 +12,7 @@ import userRouter from '../src/router/userRouter.js'
 import authRouter from '../src/router/authRouter.js'
 import adminOfferRouter from '../src/router/admin/offerRouter.js'
 import adminCoupenRouter from '../src/router/admin/coupenRouter.js'
+import adminReportRouter from '../src/router/admin/reportRouter.js'
 
 import userCouponRouter from '../src/router/user/couponRouter.js'
 import walletRouter from './router/user/walletRouter.js';
@@ -52,6 +53,7 @@ app.use("/api/payment", paymentRouter);
 app.use('/admin',adminRouter)
 app.use('/admin',adminOfferRouter)
 app.use('/admin',adminCoupenRouter)
+app.use('/admin',adminReportRouter)
 // user Routers here
 app.use('/user',userCouponRouter)
 app.use('/',walletRouter)
