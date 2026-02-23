@@ -26,7 +26,7 @@ document.addEventListener("DOMContentLoaded", () => {
   let email = document.getElementById("email").value.trim();
   let password = document.getElementById("signup-password").value.trim();
   let confirmPass = document.getElementById("confirm-password").value.trim();
-
+  const referralCode = document.getElementById("referral-code").value;
   let Err_fname = document.getElementById("fnameErr");
   let Err_lname = document.getElementById("lnameErr");
   let Err_number = document.getElementById("numberErr");
@@ -87,7 +87,8 @@ document.addEventListener("DOMContentLoaded", () => {
       lastname: lname,
       number: pnumber,
       email,
-      password
+      password,
+      referralCode:referralCode||null
     }
     sessionStorage.setItem('email',email);
     localStorage.removeItem('otpTimer');

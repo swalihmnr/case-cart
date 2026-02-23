@@ -17,6 +17,7 @@ import discountChecker from "../../src/utils/calculateDiscount.js";
 import calculateBestItemOffer from "../utils/calculateBestOfferItem.js";
 import couponModel from "../../src/models/admin/coupenModel.js";
 import wallet from "../models/walletModel.js";
+import randomNumberGerator from '../../src/utils/randomNumberGerator.js'
 
 // ==============================
 // GET LOGIN PAGE
@@ -113,21 +114,36 @@ let getSignup = (req, res) => {
 // Generates OTP for email verification
 let register = async (req, res) => {
   try {
-    const { firstname, lastname, number, email, password } = req.body;
-
+    const { firstname, lastname, number, email, password, referralCode } = req.body;
+    console.log(referralCode)
     const existing = await user.findOne({ email });
     if (existing) {
       console.log(`user already exists on this email ${email}`);
       return res.json({ success: false, message: "user already exists" });
     } else {
+      let referralPerson = null;
+      if (referralCode) {
+        const existingReferrer = await user.findOne({ referralCode: referralCode });
+        console.log('here is nothing')
+        console.log(existingReferrer, 'existingReferrer')
+        if (existingReferrer) {
+          referralPerson = existingReferrer._id;
+        } else {
+          return res.json({ success: false, message: "Invalid referral code" });
+        }
+      }
       const salt_round = Number(process.env.SALT_ROUND);
       const hashedPassword = await bcrypt.hash(password, salt_round);
-
       const newUser = new user({
         firstName: firstname,
         lastName: lastname,
         number,
         email,
+        referredBy: referralPerson || null,
+        referralCode: `${lastname}${randomNumberGerator()}`
+          .toUpperCase()
+          .trim(),
+
         password: hashedPassword,
       });
       console.log(hashedPassword);
@@ -190,10 +206,41 @@ let OtpVerify = async (req, res) => {
       }
 
       if (dbOtp === data) {
+        const isAlreadyVerified = User.isVerified;
         await user.updateOne(
           { email: userEmail },
           { $set: { isVerified: true } },
         );
+
+        if (!isAlreadyVerified && User.referredBy) {
+          const rewardAmount = 50;
+
+          let newUserWallet = await wallet.findOne({ userId: User._id });
+          if (!newUserWallet) {
+            newUserWallet = new wallet({ userId: User._id, balance: rewardAmount });
+          } else {
+            newUserWallet.balance += rewardAmount;
+          }
+          newUserWallet.transactions.push({
+            amount: rewardAmount,
+            transactionType: 'credited',
+            description: 'Signup Referral Bonus'
+          });
+          await newUserWallet.save();
+
+          let referrerWallet = await wallet.findOne({ userId: User.referredBy });
+          if (!referrerWallet) {
+            referrerWallet = new wallet({ userId: User.referredBy, balance: rewardAmount });
+          } else {
+            referrerWallet.balance += rewardAmount;
+          }
+          referrerWallet.transactions.push({
+            amount: rewardAmount,
+            transactionType: 'credited',
+            description: 'Referral Bonus for inviting a user'
+          });
+          await referrerWallet.save();
+        }
         console.log(`otp verified successfully: ${data}`);
         req.session.isKey = true;
         req.session.requre_sign = false;
@@ -1389,7 +1436,7 @@ const getCheckout = async (req, res) => {
     let finalAmount = 0;
     let shipping = 0;
     let coupons;
-    const walletBalance=await wallet.findOne({userId:req.session.user.id});
+    const walletBalance = await wallet.findOne({ userId: req.session.user.id });
     const FREE_SHIPPING_LIMIT = 1500;
     const userId = new mongoose.Types.ObjectId(req.session.user.id);
     const { type, variantId } = req.query;
@@ -1588,7 +1635,7 @@ const getCheckout = async (req, res) => {
       // Create cartItems array with the single item
       cartItems = [item];
     }
-    let walletButton=true
+    let walletButton = true
     // if(walletBalance.balance<finalAmount){
     //   walletButton=false
     // }
@@ -1852,7 +1899,7 @@ const getConfirmation = async (req, res) => {
 // Performs full validation before creating order
 const ordConfirmation = async (req, res) => {
   try {
-    const walletBalance=await wallet.findOne({userId:req.session.user.id});
+    const walletBalance = await wallet.findOne({ userId: req.session.user.id });
     const FREE_SHIPPING_LIMIT = 1500;
     const maxDiscount = 250;
 
@@ -2081,7 +2128,7 @@ const ordConfirmation = async (req, res) => {
     console.log("Final amount:", finalAmount);
     console.log("💸 Total Savings:", totalSavings);
     console.log("=======================================");
-  
+
 
     // ==============================
     // CREATE ORDER
@@ -2090,11 +2137,11 @@ const ordConfirmation = async (req, res) => {
       userId,
       paymentMethod,
       paymentStatus:
-      paymentMethod === "cod"
-        ? "pending"
-        : paymentMethod === "wallet"
-        ? "paid"
-        : "initiated",
+        paymentMethod === "cod"
+          ? "pending"
+          : paymentMethod === "wallet"
+            ? "paid"
+            : "initiated",
 
       shippingAddress,
       totalPrice: subtotal,
@@ -2104,27 +2151,27 @@ const ordConfirmation = async (req, res) => {
       couponDiscount,
       finalAmount,
       orderItems,
-    }); 
-      if(paymentMethod==='wallet'){
-      if(walletBalance?.balance<finalAmount){
-          return res.status(STATUS_CODES.BAD_REQUEST).json({
-            success:false,
-            message:"Insufficient Amount!"
-          })
+    });
+    if (paymentMethod === 'wallet') {
+      if (walletBalance?.balance < finalAmount) {
+        return res.status(STATUS_CODES.BAD_REQUEST).json({
+          success: false,
+          message: "Insufficient Amount!"
+        })
       }
-      walletBalance.balance-=finalAmount;
+      walletBalance.balance -= finalAmount;
       walletBalance.transactions.push({
-        amount:finalAmount,
-        description:"Order Payment",
-        orderId:order._id,
-        transactionType:"debited"
+        amount: finalAmount,
+        description: "Order Payment",
+        orderId: order._id,
+        transactionType: "debited"
       })
 
-     await walletBalance.save()
+      await walletBalance.save()
 
     }
-    
-    
+
+
     //to add userID for prevent reusing coupons
 
     if (coupon) {
@@ -2360,7 +2407,7 @@ const cancelWholeOrder = async (req, res) => {
     }
 
 
-      const cancellableItems = orderExists.orderItems.filter(item =>
+    const cancellableItems = orderExists.orderItems.filter(item =>
       ["pending", "placed", "processing"].includes(item.status)
     );
 
@@ -2400,9 +2447,9 @@ const cancelWholeOrder = async (req, res) => {
         });
       }
 
-    const refund = Math.floor(
-    orderExists.finalAmount - orderExists.shipping
-  )
+      const refund = Math.floor(
+        orderExists.finalAmount - orderExists.shipping
+      )
       Wallet.balance += refund;
 
       Wallet.transactions.push({
@@ -2468,7 +2515,7 @@ const orderCancel = async (req, res) => {
         message: `Item is already ${item.status}`,
       });
     }
-    
+
     const result = await orderModel.updateOne(
       { _id: orderID, "orderItems._id": orderItemId },
       {
@@ -2480,7 +2527,7 @@ const orderCancel = async (req, res) => {
       },
     );
 
-     // ======================
+    // ======================
     // RESTORE STOCK
     // ======================
     await variantModel.updateOne(
@@ -2489,27 +2536,27 @@ const orderCancel = async (req, res) => {
     );
 
 
-   if (result.modifiedCount > 0 && existingOrder.paymentStatus === "paid"){
-      let Wallet =await wallet.findOne({userId:req.session.user.id})
-      if(!Wallet){
-        Wallet=await wallet.create({
-          userId:req.session.user.id,
-          balance:0,
-          transactions:[]
+    if (result.modifiedCount > 0 && existingOrder.paymentStatus === "paid") {
+      let Wallet = await wallet.findOne({ userId: req.session.user.id })
+      if (!Wallet) {
+        Wallet = await wallet.create({
+          userId: req.session.user.id,
+          balance: 0,
+          transactions: []
         })
       }
-      Wallet.balance+=item.finalPrice;
+      Wallet.balance += item.finalPrice;
       Wallet.transactions.push({
-        amount:item.finalPrice,
-        description:"Refund for cancelled order",
-        orderId:existingOrder._id,
-        transactionType:'credited'
+        amount: item.finalPrice,
+        description: "Refund for cancelled order",
+        orderId: existingOrder._id,
+        transactionType: 'credited'
       })
-      
-     
+
+
       await Wallet.save()
     }
-    
+
 
     if (result.modifiedCount > 0) {
       // Optional: Check if all items are cancelled to update main order status if you track it

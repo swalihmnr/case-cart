@@ -31,6 +31,11 @@ const userSchema= new mongoose.Schema({
         type:Boolean,
         default:false
     },
+    referralCode: String, 
+    referredBy:{
+       type:mongoose.Schema.Types.ObjectId,
+       ref:"user",
+    }, 
     profileImg:{
         type:String,
         required:false,
