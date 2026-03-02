@@ -42,6 +42,24 @@ function initOfferPage() {
 
   search?.addEventListener("input", debounce(handleProductSearch, 300));
 
+  // Clear errors dynamically on input/change
+  const fields = [
+    { id: "offerTitle", err: "offerTitleErr" },
+    { id: "offerDesc", err: "offerDescErr" },
+    { id: "offerType", err: "offerTypeErr", event: "change" },
+    { id: "offerValue", err: "offerValueErr" },
+    { id: "applicableOn", err: "applicableOnErr", event: "change" },
+    { id: "startDate", err: "startDateErr", event: "change" },
+    { id: "endDate", err: "endDateErr", event: "change" }
+  ];
+
+  fields.forEach(f => {
+    const el = document.getElementById(f.id);
+    if (el) {
+      el.addEventListener(f.event || "input", () => clearFieldError(f.err));
+    }
+  });
+
   // Initialize date inputs (only set min dates, not values)
   initDateInputs();
 }
@@ -50,12 +68,12 @@ function initDateInputs() {
   const today = new Date().toISOString().split('T')[0];
   const startDateInput = document.getElementById('startDate');
   const endDateInput = document.getElementById('endDate');
-  
+
   // Only set minimum dates, not values
   if (startDateInput) {
     startDateInput.min = today;
   }
-  
+
   if (endDateInput) {
     endDateInput.min = today;
   }
@@ -268,7 +286,7 @@ function validateOfferForm(data) {
     const startDate = new Date(data.startDate);
     const today = new Date();
     today.setHours(0, 0, 0, 0);
-    
+
     if (startDate < today) {
       showError('startDateErr', 'Start date cannot be in the past');
       isValid = false;
@@ -282,7 +300,7 @@ function validateOfferForm(data) {
   } else if (data.startDate) {
     const startDate = new Date(data.startDate);
     const endDate = new Date(data.endDate);
-    
+
     if (endDate <= startDate) {
       showError('endDateErr', 'End date must be after start date');
       isValid = false;
@@ -344,7 +362,7 @@ function showError(fieldId, message) {
   if (errorElement) {
     errorElement.textContent = message;
     errorElement.classList.remove('hidden');
-    
+
     // Add red border to the corresponding input
     const inputField = document.getElementById(fieldId.replace('Err', ''));
     if (inputField) {
@@ -359,7 +377,7 @@ function clearFieldError(fieldId) {
   if (errorElement) {
     errorElement.textContent = '';
     errorElement.classList.add('hidden');
-    
+
     // Remove red border from the corresponding input
     const inputField = document.getElementById(fieldId.replace('Err', ''));
     if (inputField) {
@@ -375,7 +393,7 @@ function clearAllErrors() {
     el.textContent = '';
     el.classList.add('hidden');
   });
-  
+
   // Remove all red borders
   document.querySelectorAll('.border-red-500').forEach(el => {
     el.classList.remove('border-red-500', 'border-2');
@@ -462,7 +480,7 @@ function addSelectedProduct(id, name) {
     e.preventDefault();
     div.remove();
   };
-  
+
   container.appendChild(div);
 }
 
@@ -472,7 +490,7 @@ function addSelectedProduct(id, name) {
 async function loadProductDetails(productId) {
   try {
     const product = (window.ALL_PRODUCTS || []).find(p => p._id === productId);
-    
+
     // If not in ALL_PRODUCTS, fetch from API
     let productData = product;
     if (!productData) {

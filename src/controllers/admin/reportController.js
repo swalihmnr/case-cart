@@ -55,7 +55,24 @@ const getReport = async (req, res) => {
             {
                 $group: {
                     _id: null,
-                    totalSales: { $sum: "$finalAmount" }, // Using finalAmount from order level
+                    totalSales: {
+                        $sum: {
+                            $cond: [
+                                { $in: [{ $arrayElemAt: ["$orderItems.status", 0] }, ["cancelled", "returned"]] },
+                                0,
+                                "$finalAmount"
+                            ]
+                        }
+                    },
+                    totalRefunds: {
+                        $sum: {
+                            $cond: [
+                                { $in: [{ $arrayElemAt: ["$orderItems.status", 0] }, ["cancelled", "returned"]] },
+                                "$finalAmount",
+                                0
+                            ]
+                        }
+                    },
                     orderCount: { $sum: 1 },
                     totalDiscount: { $sum: "$totalDiscount" },
                     totalCouponDiscount: { $sum: "$couponDiscount" },
@@ -63,12 +80,13 @@ const getReport = async (req, res) => {
             }
         ]);
 
-        const summary = orderSummary[0] || { totalSales: 0, orderCount: 0, totalDiscount: 0, totalCouponDiscount: 0 };
+        const summary = orderSummary[0] || { totalSales: 0, totalRefunds: 0, orderCount: 0, totalDiscount: 0, totalCouponDiscount: 0 };
         const avgOrderValue = summary.orderCount > 0 ? summary.totalSales / summary.orderCount : 0;
 
         // Fetch Paginated Orders
         const orders = await Order.find(matchStage)
             .populate("userId", "firstName lastName email")
+            .populate("orderItems.productId", "name")
             .sort({ createdAt: -1 })
             .skip(skip)
             .limit(limit)
@@ -123,6 +141,7 @@ const exportPdf = async (req, res) => {
         const matchStage = buildMatchStage(req.query);
         const orders = await Order.find(matchStage)
             .populate("userId", "firstName lastName email")
+            .populate("orderItems.productId", "name")
             .sort({ createdAt: -1 })
             .lean();
 
@@ -149,7 +168,7 @@ const exportPdf = async (req, res) => {
                     order.orderId || order._id.toString().slice(-6),
                     moment(order.createdAt).format('YYYY-MM-DD'),
                     order.userId ? `${order.userId.firstName || ''} ${order.userId.lastName || ''}`.trim() : 'Unknown',
-                    (order.orderItems ? order.orderItems.length : 0).toString(),
+                    order.orderItems ? order.orderItems.map(item => item.productId ? item.productId.name : 'Unknown').join(", ") : 'No Items',
                     (order.finalAmount || 0).toFixed(2),
                     totalRowDiscount.toFixed(2),
                     order.paymentMethod || 'N/A',
@@ -166,9 +185,15 @@ const exportPdf = async (req, res) => {
 
         // Calculate totals for summary
         let totalSales = 0;
+        let totalRefunds = 0;
         let totalDiscount = 0;
         orders.forEach(o => {
-            totalSales += (o.finalAmount || 0);
+            const status = o.orderItems && o.orderItems.length > 0 ? o.orderItems[0].status : 'unknown';
+            if (['cancelled', 'returned'].includes(status)) {
+                totalRefunds += (o.finalAmount || 0);
+            } else {
+                totalSales += (o.finalAmount || 0);
+            }
             totalDiscount += (o.totalDiscount || 0) + (o.couponDiscount || 0);
         });
 
@@ -176,7 +201,8 @@ const exportPdf = async (req, res) => {
         doc.fontSize(14).text('Summary:');
         doc.fontSize(12).moveDown(0.5);
         doc.text(`Total Orders: ${orders.length}`);
-        doc.text(`Total Sales: Rs ${totalSales.toFixed(2)}`);
+        doc.text(`Successful Sales: Rs ${totalSales.toFixed(2)}`);
+        doc.text(`Refund Amount: Rs ${totalRefunds.toFixed(2)}`);
         doc.text(`Total Discount Given: Rs ${totalDiscount.toFixed(2)}`);
 
         doc.end();
@@ -193,6 +219,7 @@ const exportExcel = async (req, res) => {
         const matchStage = buildMatchStage(req.query);
         const orders = await Order.find(matchStage)
             .populate("userId", "firstName lastName email")
+            .populate("orderItems.productId", "name")
             .sort({ createdAt: -1 })
             .lean();
 
@@ -207,7 +234,7 @@ const exportExcel = async (req, res) => {
             { header: 'Order ID', key: 'orderId', width: 22 },
             { header: 'Date', key: 'date', width: 15 },
             { header: 'Customer Name', key: 'customer', width: 25 },
-            { header: 'Items', key: 'items', width: 10 },
+            { header: 'Products', key: 'items', width: 35 },
             { header: 'Total Amount', key: 'amount', width: 18 },
             { header: 'Discount', key: 'discount', width: 15 },
             { header: 'Payment Method', key: 'payment', width: 20 },
@@ -222,6 +249,7 @@ const exportExcel = async (req, res) => {
         headerRow.height = 25;
 
         let totalSales = 0;
+        let totalRefunds = 0;
         let totalDiscount = 0;
 
         orders.forEach(order => {
@@ -231,14 +259,18 @@ const exportExcel = async (req, res) => {
             }
             const totalRowDiscount = (order.totalDiscount || 0) + (order.couponDiscount || 0);
 
-            totalSales += (order.finalAmount || 0);
+            if (['cancelled', 'returned'].includes(status)) {
+                totalRefunds += (order.finalAmount || 0);
+            } else {
+                totalSales += (order.finalAmount || 0);
+            }
             totalDiscount += totalRowDiscount;
 
             const row = sheet.addRow({
                 orderId: order.orderId || order._id.toString().slice(-6),
                 date: moment(order.createdAt).format('YYYY-MM-DD'),
                 customer: order.userId ? `${order.userId.firstName || ''} ${order.userId.lastName || ''}`.trim() : 'Unknown',
-                items: order.orderItems ? order.orderItems.length : 0,
+                items: order.orderItems ? order.orderItems.map(item => item.productId ? item.productId.name : 'Unknown').join(", ") : 'No Items',
                 amount: (order.finalAmount || 0).toFixed(2),
                 discount: totalRowDiscount.toFixed(2),
                 payment: order.paymentMethod || 'N/A',
@@ -256,10 +288,11 @@ const exportExcel = async (req, res) => {
         // Adding summary properly formatted
         sheet.addRow([]); // Blank row
         const sumRow1 = sheet.addRow([null, null, null, 'Total Orders:', orders.length]);
-        const sumRow2 = sheet.addRow([null, null, null, 'Total Sales (Rs):', totalSales.toFixed(2)]);
-        const sumRow3 = sheet.addRow([null, null, null, 'Total Discount (Rs):', totalDiscount.toFixed(2)]);
+        const sumRow2 = sheet.addRow([null, null, null, 'Total Successful Sales (Rs):', totalSales.toFixed(2)]);
+        const sumRow3 = sheet.addRow([null, null, null, 'Total Refund Amount (Rs):', totalRefunds.toFixed(2)]);
+        const sumRow4 = sheet.addRow([null, null, null, 'Total Discount (Rs):', totalDiscount.toFixed(2)]);
 
-        [sumRow1, sumRow2, sumRow3].forEach(row => {
+        [sumRow1, sumRow2, sumRow3, sumRow4].forEach(row => {
             row.getCell(4).font = { bold: true };
             row.getCell(4).alignment = { horizontal: 'right' };
             row.getCell(5).font = { bold: true, color: { argb: 'FF000000' } };

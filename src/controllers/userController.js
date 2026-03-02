@@ -1092,7 +1092,6 @@ const remWishlist = async (req, res) => {
 // Calculates subtotal and total cart items
 const getCart = async (req, res) => {
   try {
-    const maxDiscount = 250;
     const userId = new mongoose.Types.ObjectId(req.session.user.id);
     const totalDocs = await cartModel.countDocuments({ userId });
 
@@ -1137,11 +1136,6 @@ const getCart = async (req, res) => {
 
           let discount = (orgPrice * offer.discountValue) / 100;
 
-          // ---------- APPLY MAX CAP ----------
-          if (discount > maxDiscount) {
-            discount = maxDiscount;
-          }
-
           if (discount > bestOfferDiscountPerUnit) {
             bestOfferDiscountPerUnit = discount;
             bestOffer = offer;
@@ -1183,7 +1177,7 @@ const getCart = async (req, res) => {
       item.finalPrice = itemFinalTotal;
     }
 
-    if (finalAmount < 1500) {
+    if (finalAmount > 0 && finalAmount < 1500) {
       shipping = 50;
       finalAmount += shipping;
     }
@@ -1210,6 +1204,14 @@ const getCart = async (req, res) => {
 // Removes item from wishlist if exists
 const addCart = async (req, res) => {
   try {
+    if (!req.session || !req.session.user || !req.session.user.id) {
+      return res.status(401).json({
+        success: false,
+        message: "Please login to add items to your cart",
+        redirectUrl: "/login"
+      });
+    }
+
     const userId = new mongoose.Types.ObjectId(req.session.user.id);
     const { variantId, productId } = req.body;
     const varinatID = new mongoose.Types.ObjectId(variantId);
@@ -1430,6 +1432,9 @@ const remCart = async (req, res) => {
 // Validates product availability before proceeding
 const getCheckout = async (req, res) => {
   try {
+    if (!req.session || !req.session.user || !req.session.user.id) {
+      return res.redirect('/login');
+    }
     let cartItems = [];
     let subtotal = 0;              // ORIGINAL TOTAL
     let offerDiscountTotal = 0;
@@ -1441,7 +1446,7 @@ const getCheckout = async (req, res) => {
     const userId = new mongoose.Types.ObjectId(req.session.user.id);
     const { type, variantId } = req.query;
 
-    coupons = await couponModel.find({ status: "active" });
+    coupons = await couponModel.find({ status: "active", usedBy: { $ne: userId } });
 
     // ======================
     // CART FLOW
@@ -1899,9 +1904,14 @@ const getConfirmation = async (req, res) => {
 // Performs full validation before creating order
 const ordConfirmation = async (req, res) => {
   try {
-    const walletBalance = await wallet.findOne({ userId: req.session.user.id });
+    let walletBalance = await wallet.findOne({ userId: req.session.user.id });
+    if (!walletBalance) {
+      walletBalance = new wallet({
+        balance: 0,
+        userId: req.session.user.id
+      })
+    }
     const FREE_SHIPPING_LIMIT = 1500;
-    const maxDiscount = 250;
 
     const userId = new mongoose.Types.ObjectId(req.session.user.id);
     const data = req.body.data;
@@ -2031,8 +2041,8 @@ const ordConfirmation = async (req, res) => {
     // CALCULATIONS (FIXED)
     // ==============================
     let subtotal = 0;
-    let totalOfferDiscount = 0;     // ✅ Track ALL item discounts
-    let totalSavedAmount = 0;       // ✅ Track total savings
+    let totalOfferDiscount = 0;
+    let totalSavedAmount = 0;
     const orderItems = [];
 
     let afterProductDiscounts = 0;
@@ -2072,7 +2082,7 @@ const ordConfirmation = async (req, res) => {
         quantity,
         price: item.variant.salePrice,
         itemTotal: item.variant.salePrice * quantity,
-        paymentStatus: paymentMethod === "cod" ? "pending" : "initiated",
+        paymentStatus: paymentMethod === "cod" ? "pending" : paymentMethod === "wallet" ? "paid" : "initiated",
         offer: offerResult.bestOffer ? {
           offerId: offerResult.bestOffer._id,
           title: offerResult.bestOffer.title,
@@ -2104,12 +2114,23 @@ const ordConfirmation = async (req, res) => {
     // ==============================
     let couponDiscount = 0;
 
-    if (coupon && afterProductDiscounts >= coupon.MinimumPurchaseValue) {
-      couponDiscount = coupon.discountType === "percentage"
-        ? (afterProductDiscounts * coupon.discountValue) / 100
-        : coupon.discountValue;
+    if (coupon) {
+      if (afterProductDiscounts < coupon.MinimumPurchaseValue) {
+        return res.status(400).json({
+          success: false,
+          message: `Minimum purchase amount of ₹${coupon.MinimumPurchaseValue} is required to apply this coupon.`
+        });
+      }
 
-      couponDiscount = Math.min(couponDiscount, maxDiscount);
+      if (coupon.discountType === "percentage") {
+        couponDiscount = (afterProductDiscounts * coupon.discountValue) / 100;
+        if (coupon.maximumDiscount && coupon.maximumDiscount > 0) {
+          couponDiscount = Math.min(couponDiscount, coupon.maximumDiscount);
+        }
+      } else {
+        couponDiscount = coupon.discountValue;
+      }
+
       console.log("Coupon Discount:", couponDiscount);
 
       finalAmount -= couponDiscount;
@@ -2145,7 +2166,7 @@ const ordConfirmation = async (req, res) => {
 
       shippingAddress,
       totalPrice: subtotal,
-      totalDiscount: totalOfferDiscount,
+      totalDiscount: Math.floor(totalOfferDiscount),
       shipping,
       couponId: coupon ? coupon._id : null,
       couponDiscount,
@@ -2166,15 +2187,15 @@ const ordConfirmation = async (req, res) => {
         orderId: order._id,
         transactionType: "debited"
       })
-
+      order.paymentStatus = "paid";
+      order.paymentConfirmedAt = new Date()
+      await order.save()
       await walletBalance.save()
 
     }
 
-
     //to add userID for prevent reusing coupons
-
-    if (coupon) {
+    if (coupon && paymentMethod !== "razorpay") {
       await couponModel.findByIdAndUpdate(
         coupon._id,
         {
@@ -2188,22 +2209,26 @@ const ordConfirmation = async (req, res) => {
     // ==============================
     // STOCK UPDATE
     // ==============================
-    for (const item of items) {
-      await variantModel.updateOne(
-        { _id: item.variant._id, stock: { $gte: item.quantity } },
-        { $inc: { stock: -item.quantity } }
-      );
+    if (paymentMethod !== "razorpay") {
+      for (const item of items) {
+        await variantModel.updateOne(
+          { _id: item.variant._id, stock: { $gte: item.quantity } },
+          { $inc: { stock: -item.quantity } }
+        );
+      }
     }
 
     // ==============================
     // CLEAR CART / BUY NOW SESSION
     // ==============================
-    if (!req.session.buyNow) {
+    if (!req.session.buyNow && paymentMethod !== "razorpay") {
       await cartModel.deleteMany({ userId });
     }
 
-    req.session.buyNow = null;
-    req.session.variantId = null;
+    if (paymentMethod !== "razorpay") {
+      req.session.buyNow = null;
+      req.session.variantId = null;
+    }
 
     return res.status(201).json({
       success: true,
@@ -2388,6 +2413,30 @@ const getOrderDetails = async (req, res) => {
 // ==============================
 // CANCEL WHOLE ORDER
 // ==============================
+const markPaymentFailed = async (req, res) => {
+  try {
+    const orderId = req.params.id;
+    const order = await orderModel.findById(orderId);
+
+    if (!order) {
+      return res.status(STATUS_CODES.NOT_FOUND).json({ success: false, message: "Order not found" });
+    }
+
+    if (order.paymentStatus === 'initiated') {
+      await orderModel.findByIdAndUpdate(orderId, {
+        paymentStatus: 'failed',
+        'orderItems.$[].paymentStatus': 'failed'
+      });
+      return res.json({ success: true, message: "Payment marked as failed" });
+    }
+
+    return res.json({ success: true, message: "No update needed" });
+  } catch (error) {
+    console.error("Error marking payment failed:", error);
+    return res.status(STATUS_CODES.INTERNAL_SERVER_ERROR).json({ success: false, message: "Internal server error" });
+  }
+}
+
 const cancelWholeOrder = async (req, res) => {
   try {
     const orderId = req.params.id;
@@ -2465,11 +2514,13 @@ const cancelWholeOrder = async (req, res) => {
     // =========================
     // RESTORE STOCK 
     // =========================
-    for (const item of cancellableItems) {
-      await variantModel.updateOne(
-        { _id: item.variantId },
-        { $inc: { stock: item.quantity } }
-      );
+    if (orderExists.paymentStatus !== "initiated" && orderExists.paymentStatus !== "failed") {
+      for (const item of cancellableItems) {
+        await variantModel.updateOne(
+          { _id: item.variantId },
+          { $inc: { stock: item.quantity } }
+        );
+      }
     }
 
     if (result.modifiedCount > 0) {
@@ -2530,10 +2581,12 @@ const orderCancel = async (req, res) => {
     // ======================
     // RESTORE STOCK
     // ======================
-    await variantModel.updateOne(
-      { _id: item.variantId },
-      { $inc: { stock: item.quantity } }
-    );
+    if (existingOrder.paymentStatus !== "initiated" && existingOrder.paymentStatus !== "failed") {
+      await variantModel.updateOne(
+        { _id: item.variantId },
+        { $inc: { stock: item.quantity } }
+      );
+    }
 
 
     if (result.modifiedCount > 0 && existingOrder.paymentStatus === "paid") {
@@ -2764,4 +2817,5 @@ export default {
   invoice,
   getOrderDetails,
   cancelWholeOrder,
+  markPaymentFailed,
 };

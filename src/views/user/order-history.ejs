@@ -80,7 +80,9 @@
                                         <div>
                                             <div>
                                                 <% // Determine overall status based on items let
-                                                    overallStatus='Processing' ; if (order.orderItems.every(i=> i.status
+                                                    overallStatus='Processing' ; if (order.paymentStatus==='Failed' ||
+                                                    order.paymentStatus==='failed' ) { overallStatus='Payment Failed' ;
+                                                    } else if (order.orderItems.every(i=> i.status
                                                     === 'cancelled')) {
                                                     overallStatus = 'Cancelled';
                                                     } else if (order.orderItems.some(i => i.status === 'delivered')) {
@@ -91,7 +93,7 @@
                                                     %>
                                                     <span class="text-gray-500 text-xs block">STATUS</span>
                                                     <span
-                                                        class="font-medium <%= overallStatus === 'Cancelled' ? 'text-red-600' : overallStatus === 'Delivered' ? 'text-green-600' : 'text-blue-600' %>">
+                                                        class="font-medium <%= overallStatus === 'Cancelled' ? 'text-red-600' : overallStatus === 'Payment Failed' ? 'text-red-600' : overallStatus === 'Delivered' ? 'text-green-600' : 'text-blue-600' %>">
                                                         <%= overallStatus %>
                                                     </span>
                                             </div>
@@ -119,7 +121,7 @@
                                                         </p>
                                                     </div>
                                                     <span class="font-medium text-gray-900">₹<%= item.finalPrice %>
-                                                            </span>
+                                                    </span>
                                                 </div>
                                             </div>
                                         </div>

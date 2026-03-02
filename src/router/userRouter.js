@@ -45,6 +45,7 @@ router.get('/order/confirm/:id', userController.getConfirmation);
 router.post('/order/confirm', userController.ordConfirmation)
 router.get('/order', userAuth, blockUser, userController.getOrder);
 router.get('/order/:id', userAuth, blockUser, userController.getOrderDetails);
+router.post('/order/:id/payment-failed', userAuth, blockUser, userController.markPaymentFailed);
 router.patch('/order/:id/cancel-all', userAuth, blockUser, userController.cancelWholeOrder);
 router.patch('/order/:id/cancel', userController.orderCancel)
 router.patch('/order/:id/return', userController.returnReq)

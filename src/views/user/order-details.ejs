@@ -80,18 +80,28 @@
                                             </p>
                                             <p class="text-sm my-1">
                                                 Status:
-                                                <span
-                                                    class="<%= item.status === 'delivered' ? 'text-green-600' : item.status === 'cancelled' ? 'text-red-600' : 'text-blue-600' %> font-medium uppercase text-xs">
-                                                    <%= item.status %>
-                                                </span>
+                                                <% if (order.paymentStatus==='Failed' || order.paymentStatus==='failed'
+                                                    ) { %>
+                                                    <span class="text-red-600 font-medium uppercase text-xs">
+                                                        Payment Failed
+                                                    </span>
+                                                    <% } else { %>
+                                                        <span
+                                                            class="<%= item.status === 'delivered' ? 'text-green-600' : item.status === 'cancelled' ? 'text-red-600' : 'text-blue-600' %> font-medium uppercase text-xs">
+                                                            <%= item.status %>
+                                                        </span>
+                                                        <% } %>
                                             </p>
-                                            <% if (['pending', 'processing' , 'placed' ].includes(item.status)) { %>
+                                            <% if (['pending', 'processing' , 'placed' ].includes(item.status) &&
+                                                order.paymentStatus !=='Failed' && order.paymentStatus !=='failed' ) {
+                                                %>
                                                 <button
                                                     onclick="cancelItem('<%= item._id %>', '<%= item.product.name %>', '<%= order._id %>')"
                                                     class="text-sm text-red-600 hover:text-red-700 mt-2 font-medium">
                                                     Cancel Item
                                                 </button>
-                                                <% } else if (item.status==='delivered' ) { %>
+                                                <% } else if (item.status==='delivered' && order.paymentStatus
+                                                    !=='Failed' && order.paymentStatus !=='failed' ) { %>
                                                     <button
                                                         onclick="returnItem('<%= item._id %>', '<%= item.product.name %>', '<%= order._id %>')"
                                                         class="text-sm text-blue-600 hover:text-blue-700 mt-2 font-medium">
@@ -140,13 +150,16 @@
                                     <% } %>
                                         <div class="flex justify-between text-sm">
                                             <span class="text-gray-600">Shipping</span>
-                                            <span class="font-medium text-green-600"><%= order.shipping %></span>
+                                            <span class="font-medium text-green-600">
+                                                <%= order.shipping %>
+                                            </span>
                                         </div>
                                         <div
                                             class="flex justify-between text-base font-semibold pt-3 border-t border-gray-200">
                                             <span class="text-gray-900">Total Amount</span>
-                                            <span class="text-gray-900">₹<%= Math.floor(order.finalAmount )|| (order.totalPrice -
-                                                    (order.totalDiscount || 0) - (order.couponDiscount || 0)) %>
+                                            <span class="text-gray-900">₹<%= Math.floor(order.finalAmount )||
+                                                    (order.totalPrice - (order.totalDiscount || 0) -
+                                                    (order.couponDiscount || 0)) %>
                                             </span>
                                         </div>
                     </div>
@@ -197,16 +210,23 @@
                     %>
                     <div class="p-6">
                         <div class="flex flex-col sm:flex-row gap-3">
-                            <% if (hasCancellableItems) { %>
-                                <button onclick="cancelFullOrder('<%= order._id %>')"
-                                    class="flex-1 px-4 py-3 bg-red-600 text-white rounded-lg hover:bg-red-700 font-medium transition text-center">
-                                    Cancel Entire Order
+                            <% if (order.paymentStatus==='Failed' || order.paymentStatus==='failed' ) { %>
+                                <button onclick="retryPayment('<%= order._id %>')"
+                                    class="flex-1 px-4 py-3 bg-purple-600 text-white rounded-lg hover:bg-purple-700 font-medium transition text-center">
+                                    Retry Payment
                                 </button>
                                 <% } %>
-                                    <a href="/order"
-                                        class="flex-1 px-4 py-3 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 font-medium transition text-center">
-                                        View All Orders
-                                    </a>
+                                    <% if (hasCancellableItems && order.paymentStatus !=='Failed' && order.paymentStatus
+                                        !=='failed' ) { %>
+                                        <button onclick="cancelFullOrder('<%= order._id %>')"
+                                            class="flex-1 px-4 py-3 bg-red-600 text-white rounded-lg hover:bg-red-700 font-medium transition text-center">
+                                            Cancel Entire Order
+                                        </button>
+                                        <% } %>
+                                            <a href="/order"
+                                                class="flex-1 px-4 py-3 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 font-medium transition text-center">
+                                                View All Orders
+                                            </a>
                         </div>
                     </div>
             </div>
@@ -214,9 +234,90 @@
 
         <%- include('../partials/footer') %>
 
+            <script src="https://checkout.razorpay.com/v1/checkout.js"></script>
             <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
             <script type="module">
                 import api from '/js/api.js';
+
+                window.retryPayment = async (orderId) => {
+                    try {
+                        Swal.fire({
+                            title: 'Processing',
+                            html: 'Please wait while we prepare your payment...',
+                            allowOutsideClick: false,
+                            didOpen: () => Swal.showLoading()
+                        });
+
+                        const res = await api.createRazorpayOrderAxios(orderId);
+                        Swal.close();
+
+                        if (!res.data.success) {
+                            return Swal.fire('Error', 'Could not initiate payment. Please try again.', 'error');
+                        }
+
+                        const options = {
+                            key: res.data.key,
+                            amount: res.data.order.amount,
+                            currency: res.data.order.currency,
+                            name: "CaseCart",
+                            description: "Order Payment",
+                            image: "/img/logo.png",
+                            order_id: res.data.order.id,
+                            handler: async function (response) {
+                                try {
+                                    Swal.fire({
+                                        title: 'Verifying Payment',
+                                        text: 'Please wait while we verify your payment...',
+                                        allowOutsideClick: false,
+                                        didOpen: () => Swal.showLoading()
+                                    });
+
+                                    const data = {
+                                        razorpay_payment_id: response.razorpay_payment_id,
+                                        razorpay_order_id: response.razorpay_order_id,
+                                        razorpay_signature: response.razorpay_signature,
+                                        orderId: orderId
+                                    };
+
+                                    const verifyRes = await api.verifyRazorpayPaymentAxios(data);
+                                    Swal.close();
+
+                                    if (verifyRes.data.success || verifyRes.data.status === 'success' || verifyRes.data.paymentStatus === 'success') {
+                                        await Swal.fire({
+                                            icon: 'success',
+                                            title: 'Payment Successful!',
+                                            text: 'Your payment was successful.',
+                                            timer: 1500,
+                                            showConfirmButton: false
+                                        });
+                                        window.location.reload();
+                                    } else {
+                                        Swal.fire('Error', verifyRes.data.message || 'Payment verification failed', 'error');
+                                    }
+                                } catch (error) {
+                                    Swal.close();
+                                    Swal.fire('Error', 'An error occurred during verification', 'error');
+                                }
+                            },
+                            theme: { color: "#9333ea" },
+                            modal: {
+                                ondismiss: function () {
+                                    Swal.fire('Cancelled', 'Payment was cancelled', 'info');
+                                }
+                            }
+                        };
+
+                        const retryRazorpayInstance = new Razorpay(options);
+                        retryRazorpayInstance.on('payment.failed', function (response) {
+                            Swal.fire('Payment Failed', response.error.description || 'Payment could not be processed', 'error');
+                        });
+                        retryRazorpayInstance.open();
+                    } catch (error) {
+                        Swal.close();
+                        console.error("Error during payment retry:", error);
+                        Swal.fire('Error', 'An error occurred while retrying payment', 'error');
+                    }
+                };
 
                 window.cancelFullOrder = async (orderId) => {
                     const result = await Swal.fire({

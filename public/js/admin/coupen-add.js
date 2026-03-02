@@ -34,6 +34,51 @@ document.getElementById("couponCode")?.addEventListener("input", (e) => {
 });
 
 // -------------------------------
+// TOGGLE MAXIMUM DISCOUNT FIELD
+// -------------------------------
+const maxDiscountWrapper = document.getElementById("maxDiscountWrapper");
+document.getElementById("discountType")?.addEventListener("change", (e) => {
+  if (e.target.value === "percentage") {
+    maxDiscountWrapper.style.display = "block";
+  } else {
+    maxDiscountWrapper.style.display = "none";
+    document.getElementById("maximumDiscount").value = "";
+  }
+});
+
+// -------------------------------
+// CLEAR ERRORS ON INPUT/CHANGE
+// -------------------------------
+const fieldsToClear = [
+  { input: "couponTitle", error: "couponTitleErr" },
+  { input: "couponCode", error: "couponCodeErr" },
+  { input: "couponDesc", error: "couponDescErr" },
+  { input: "discountType", error: "discountTypeErr", event: "change" },
+  { input: "discountValue", error: "discountValueErr" },
+  { input: "maximumDiscount", error: "maximumDiscountErr" },
+  { input: "minOrderValue", error: "minOrderValueErr" },
+  { input: "startDate", error: "startDateErr", event: "change" },
+  { input: "endDate", error: "endDateErr", event: "change" }
+];
+
+fieldsToClear.forEach(field => {
+  const inputEl = document.getElementById(field.input);
+  const errorEl = document.getElementById(field.error);
+  if (inputEl && errorEl) {
+    inputEl.addEventListener(field.event || "input", () => {
+      errorEl.innerText = "";
+    });
+  }
+});
+
+// -------------------------------
+// CANCEL BUTTON
+// -------------------------------
+document.getElementById("cancelBtn")?.addEventListener("click", () => {
+  window.history.back();
+});
+
+// -------------------------------
 // FORM SUBMIT
 // -------------------------------
 document.querySelector("#couponForm")?.addEventListener("submit", async (e) => {
@@ -47,6 +92,7 @@ document.querySelector("#couponForm")?.addEventListener("submit", async (e) => {
   const descErr = document.getElementById("couponDescErr");
   const typeErr = document.getElementById("discountTypeErr");
   const valueErr = document.getElementById("discountValueErr");
+  const maxDiscErr = document.getElementById("maximumDiscountErr");
   const minErr = document.getElementById("minOrderValueErr");
   const startErr = document.getElementById("startDateErr");
   const endErr = document.getElementById("endDateErr");
@@ -57,6 +103,7 @@ document.querySelector("#couponForm")?.addEventListener("submit", async (e) => {
   descErr.innerText = "";
   typeErr.innerText = "";
   valueErr.innerText = "";
+  if (maxDiscErr) maxDiscErr.innerText = "";
   minErr.innerText = "";
   startErr.innerText = "";
   endErr.innerText = "";
@@ -95,6 +142,11 @@ document.querySelector("#couponForm")?.addEventListener("submit", async (e) => {
     valid = false;
   }
 
+  if (data.maximumDiscount !== "" && (!patterns.amount.test(data.maximumDiscount) && Number(data.maximumDiscount) !== 0)) {
+    if (maxDiscErr) maxDiscErr.innerText = "Max discount must be a positive number";
+    valid = false;
+  }
+
   if (data.minOrderValue === "" || Number(data.minOrderValue) < 0) {
     minErr.innerText = "Enter valid minimum order value";
     valid = false;
@@ -127,6 +179,7 @@ document.querySelector("#couponForm")?.addEventListener("submit", async (e) => {
       description: data.desc,
       discountType: data.discountType,
       discountValue: Number(data.discountValue),
+      maximumDiscount: Number(data.maximumDiscount) || 0,
       minOrderValue: Number(data.minOrderValue),
       startDate: data.startDate,
       endDate: data.endDate,
@@ -189,6 +242,7 @@ function getFormData() {
     desc: document.getElementById("couponDesc")?.value.trim(),
     discountType: document.getElementById("discountType")?.value,
     discountValue: document.getElementById("discountValue")?.value.trim(),
+    maximumDiscount: document.getElementById("maximumDiscount")?.value.trim(),
     minOrderValue: document.getElementById("minOrderValue")?.value.trim(),
     startDate: document.getElementById("startDate")?.value,
     endDate: document.getElementById("endDate")?.value,

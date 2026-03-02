@@ -1,7 +1,7 @@
 import axios from "https://cdn.jsdelivr.net/npm/axios@1.7.7/+esm";
 
 const api = axios.create({
-  baseURL: "http://localhost:3000",
+  baseURL: "/",
   timeout: 5000,
   headers: {
     "Content-Type": "application/json",
@@ -214,6 +214,9 @@ const addToCartAxios = async (productId, variantId) => {
       productId
     })
   } catch (error) {
+    if (error.response && error.response.status === 401) {
+      return error.response;
+    }
     return error.response
   }
 }
@@ -326,6 +329,14 @@ const createRazorpayOrderAxios = async (orderId) => {
   }
 };
 
+const markPaymentFailedAxios = async (orderId) => {
+  try {
+    return await api.post(`/order/${orderId}/payment-failed`);
+  } catch (error) {
+    return error.response;
+  }
+};
+
 const verifyRazorpayPaymentAxios = async (data) => {
   try {
     return await api.post("/api/payment/verify-payment", data);
@@ -334,16 +345,16 @@ const verifyRazorpayPaymentAxios = async (data) => {
   }
 };
 
-const createRazorpayOrderWallletAxios=async(payload)=>{
+const createRazorpayOrderWallletAxios = async (payload) => {
   try {
-    return await api.post('/api/payment/wallet/create-order',payload)
+    return await api.post('/api/payment/wallet/create-order', payload)
   } catch (error) {
     return error.response
   }
 }
-const verifyRazorpayPaymentWalletAxios=async(data)=>{
+const verifyRazorpayPaymentWalletAxios = async (data) => {
   try {
-    return await api.post('/api/payment/wallet/verify-payment',data)
+    return await api.post('/api/payment/wallet/verify-payment', data)
   } catch (error) {
     return error.response
   }
@@ -380,6 +391,7 @@ export default {
   verifyCouponAxios,
   createRazorpayOrderAxios,
   verifyRazorpayPaymentAxios,
+  markPaymentFailedAxios,
   createRazorpayOrderWallletAxios,
   verifyRazorpayPaymentWalletAxios
 

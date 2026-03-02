@@ -31,11 +31,11 @@ const couponSchema = new mongoose.Schema(
       type: Number,
       required: true
     },
-    // usedCount: {
-    //   type: Number,
-    //   required: false,
-    //   default:0
-    // },
+    maximumDiscount: {
+      type: Number,
+      required: false,
+      default: 0
+    },
 
     MinimumPurchaseValue: {
       type: Number,
@@ -55,15 +55,15 @@ const couponSchema = new mongoose.Schema(
 
     status: {
       type: String,
-      enum: ["active","inactive", "scheduled", "expired"],
+      enum: ["active", "inactive", "scheduled", "expired"],
       default: "scheduled"
     },
     usedBy: [
-  {
-    type: mongoose.Schema.Types.ObjectId,
-    ref: "user"
-  }
-]
+      {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: "user"
+      }
+    ]
 
   },
   {

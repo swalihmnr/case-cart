@@ -2,6 +2,9 @@ import razorpayInstance from "../config/razorpayConfig.js";
 import env from 'dotenv';
 import crypto from 'crypto';
 import orderModel from "../models/orderModel.js";
+import variantModel from "../models/admin/variantModel.js";
+import cartModel from "../models/cartModel.js";
+import couponModel from "../models/admin/coupenModel.js";
 import { STATUS_CODES } from "../utils/statusCodes.js";
 
 env.config();
@@ -67,6 +70,22 @@ export const verifyRazorpayPayment = async (req, res) => {
     if (expectedSignature === razorpay_signature) {
       // Payment successful
 
+      const order = await orderModel.findById(orderId);
+      if (!order) {
+        return res.status(STATUS_CODES.NOT_FOUND).json({
+          success: false,
+          message: "Order not found"
+        });
+      }
+
+      // Check if this order was already paid/processed to prevent duplicate stock reduction
+      if (order.paymentStatus === 'paid') {
+        return res.json({
+          success: true,
+          message: "Payment already verified successfully"
+        });
+      }
+
       // Update order status
       await orderModel.findByIdAndUpdate(orderId, {
         paymentStatus: 'paid',
@@ -76,6 +95,33 @@ export const verifyRazorpayPayment = async (req, res) => {
         'orderItems.$[].paymentStatus': 'paid',
         'orderItems.$[].status': 'placed' // Ensure items are marked as placed
       });
+
+      // ==============================
+      // STOCK UPDATE
+      // ==============================
+      for (const item of order.orderItems) {
+        await variantModel.updateOne(
+          { _id: item.variantId, stock: { $gte: item.quantity } },
+          { $inc: { stock: -item.quantity } }
+        );
+      }
+
+      // ==============================
+      // CLEAR CART
+      // ==============================
+      // We remove only the bought items from the cart matching the user.
+      const variantIds = order.orderItems.map(item => item.variantId);
+      await cartModel.deleteMany({ userId: order.userId, variantId: { $in: variantIds } });
+
+      // ==============================
+      // MARK COUPON AS USED
+      // ==============================
+      if (order.couponId) {
+        await couponModel.findByIdAndUpdate(
+          order.couponId,
+          { $addToSet: { usedBy: order.userId } }
+        );
+      }
 
       return res.json({
         success: true,

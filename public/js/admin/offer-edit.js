@@ -15,6 +15,11 @@ document.addEventListener("DOMContentLoaded", () => {
   const offerId = window.OFFER_ID;
   const ALL_PRODUCTS = window.ALL_PRODUCTS || [];
 
+  const cancelBtn = document.getElementById("cancelBtn");
+  if (cancelBtn) {
+    cancelBtn.addEventListener("click", () => window.history.back());
+  }
+
   // =====================
   // CONFIG
   // =====================

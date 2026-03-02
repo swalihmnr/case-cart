@@ -75,7 +75,8 @@ async function checkUrlForCoupon() {
                     couponData.discountType,
                     couponData.MinimumPurchaseValue,
                     couponData.endDate,
-                    couponData._id
+                    couponData._id,
+                    couponData.maximumDiscount
                 );
             }
         } catch (error) {
@@ -291,7 +292,36 @@ async function verifyAndApplyCoupon(couponCode) {
 
         if (res.data.success) {
             const couponData = res.data.data;
-            showToast(res.data.message, 'success');
+
+            const shipping = parseFloat(checkoutData.shipping) || 0;
+            const finalAmount = parseFloat(checkoutData.finalAmount) || 0;
+            const effectiveSubtotal = finalAmount - shipping;
+
+            const orderButton = document.querySelector('button[onclick="placeOrder()"]');
+            const errorElement = document.getElementById("selectedCouponError");
+
+            let isValid = true;
+            if (effectiveSubtotal < couponData.MinimumPurchaseValue) {
+                isValid = false;
+                showToast(`Minimum purchase of ₹${couponData.MinimumPurchaseValue} required`, 'warning');
+                if (orderButton) {
+                    orderButton.disabled = true;
+                    orderButton.classList.add('opacity-50', 'cursor-not-allowed');
+                }
+                if (errorElement) {
+                    errorElement.textContent = `⚠️ Minimum purchase of ₹${couponData.MinimumPurchaseValue} required.`;
+                    errorElement.classList.remove("hidden");
+                }
+            } else {
+                if (orderButton) {
+                    orderButton.disabled = false;
+                    orderButton.classList.remove('opacity-50', 'cursor-not-allowed');
+                }
+                if (errorElement) {
+                    errorElement.classList.add("hidden");
+                }
+                showToast(res.data.message, 'success');
+            }
 
             document.getElementById("selectedCouponCode").textContent = couponData.couponCode;
             document.getElementById("selectedCouponDesc").textContent = couponData.description;
@@ -307,7 +337,15 @@ async function verifyAndApplyCoupon(couponCode) {
             const container = document.getElementById("selectedCouponDetails");
             container.dataset.couponId = couponData._id;
             container.classList.remove("hidden");
-            updateTotalWithCoupon(couponData);
+
+            if (isValid) {
+                updateTotalWithCoupon(couponData);
+            } else {
+                // Remove discount from display, keep total as base amount
+                selectedCoupon = couponData;
+                couponDiscount = 0;
+                updateTotalDisplay(0);
+            }
         } else {
             showToast(res.data.message || 'Invalid coupon code', 'error');
         }
@@ -323,15 +361,48 @@ function updateTotalWithCoupon(couponData) {
     const finalAmount = parseFloat(checkoutData.finalAmount) || 0;
     const effectiveSubtotal = finalAmount - shipping;
 
+    const orderButton = document.querySelector('button[onclick="placeOrder()"]');
+    const errorElement = document.getElementById("selectedCouponError");
+
+    let isValid = true;
     if (effectiveSubtotal < couponData.MinimumPurchaseValue) {
+        isValid = false;
         showToast(`Minimum purchase of ₹${couponData.MinimumPurchaseValue} required`, 'warning');
+        if (orderButton) {
+            orderButton.disabled = true;
+            orderButton.classList.add('opacity-50', 'cursor-not-allowed');
+        }
+        if (errorElement) {
+            errorElement.textContent = `⚠️ Minimum purchase of ₹${couponData.MinimumPurchaseValue} required.`;
+            errorElement.classList.remove("hidden");
+        }
+
+        // Remove discount visually
+        selectedCoupon = couponData;
+        couponDiscount = 0;
+        updateTotalDisplay(0);
         return false;
     }
 
+    if (orderButton) {
+        orderButton.disabled = false;
+        orderButton.classList.remove('opacity-50', 'cursor-not-allowed');
+    }
+    if (errorElement) {
+        errorElement.classList.add("hidden");
+    }
+
     let discount = 0;
+
     if (couponData.discountType === 'percentage') {
         const discountVal = parseFloat(couponData.discountValue) || 0;
         discount = (effectiveSubtotal * discountVal) / 100;
+
+        // Apply dynamic limit if present
+        const maxDisc = parseFloat(couponData.maximumDiscount);
+        if (maxDisc && maxDisc > 0) {
+            discount = Math.min(discount, maxDisc);
+        }
     } else {
         discount = parseFloat(couponData.discountValue) || 0;
     }
@@ -410,6 +481,12 @@ function removeSelectedCoupon() {
         couponDiscountElement.classList.add('hidden');
     }
 
+    const errorElement = document.getElementById('selectedCouponError');
+    if (errorElement) {
+        errorElement.classList.add('hidden');
+        errorElement.textContent = '';
+    }
+
     const finalTotalElement = document.getElementById('finalTotal');
     const originalFinal = parseFloat(checkoutData.finalAmount);
 
@@ -420,6 +497,12 @@ function removeSelectedCoupon() {
     const existingSavings = document.querySelector('.coupon-savings-message');
     if (existingSavings) {
         existingSavings.remove();
+    }
+
+    const orderButton = document.querySelector('button[onclick="placeOrder()"]');
+    if (orderButton) {
+        orderButton.disabled = false;
+        orderButton.classList.remove('opacity-50', 'cursor-not-allowed');
     }
 
     showToast('Coupon removed', 'info');
@@ -491,7 +574,36 @@ function clearAddressForm() {
 }
 
 // Show selected coupon
-window.showSelectedCoupon = function (code, title, description, discountValue, discountType, minPurchase, validTill, couponId) {
+window.showSelectedCoupon = function (code, title, description, discountValue, discountType, minPurchase, validTill, couponId, maxDiscount) {
+    const shipping = parseFloat(checkoutData.shipping) || 0;
+    const finalAmount = parseFloat(checkoutData.finalAmount) || 0;
+    const effectiveSubtotal = finalAmount - shipping;
+
+    const orderButton = document.querySelector('button[onclick="placeOrder()"]');
+    const errorElement = document.getElementById("selectedCouponError");
+
+    let isValid = true;
+    if (effectiveSubtotal < parseFloat(minPurchase)) {
+        isValid = false;
+        showToast(`Minimum purchase of ₹${minPurchase} required`, 'warning');
+        if (orderButton) {
+            orderButton.disabled = true;
+            orderButton.classList.add('opacity-50', 'cursor-not-allowed');
+        }
+        if (errorElement) {
+            errorElement.textContent = `⚠️ Minimum purchase of ₹${minPurchase} required.`;
+            errorElement.classList.remove("hidden");
+        }
+    } else {
+        if (orderButton) {
+            orderButton.disabled = false;
+            orderButton.classList.remove('opacity-50', 'cursor-not-allowed');
+        }
+        if (errorElement) {
+            errorElement.classList.add("hidden");
+        }
+    }
+
     selectedCoupon = {
         _id: couponId,
         couponCode: code,
@@ -499,6 +611,7 @@ window.showSelectedCoupon = function (code, title, description, discountValue, d
         description,
         discountType,
         discountValue: parseFloat(discountValue),
+        maximumDiscount: parseFloat(maxDiscount) || 0,
         MinimumPurchaseValue: parseFloat(minPurchase),
         endDate: validTill
     };
@@ -528,7 +641,13 @@ window.showSelectedCoupon = function (code, title, description, discountValue, d
     const couponBadgeElement = document.getElementById('selectedCouponBadge');
     if (couponBadgeElement) couponBadgeElement.textContent = badgeText;
 
-    updateTotalWithCoupon(selectedCoupon);
+    if (isValid) {
+        updateTotalWithCoupon(selectedCoupon);
+    } else {
+        // Remove discount visually
+        couponDiscount = 0;
+        updateTotalDisplay(0);
+    }
 }
 
 // Handle coupon click
@@ -542,7 +661,8 @@ window.handleCouponClick = function (element) {
         dataset.discountType,
         dataset.minPurchase,
         dataset.endDate,
-        dataset.id
+        dataset.id,
+        dataset.maxDiscount
     );
 }
 
@@ -641,7 +761,7 @@ async function placeOrder() {
                 window.history.replaceState({}, '', url);
                 await initiateRazorpayPayment(currentOrderId);
             } else {
-                showToast(res.data.message || 'Order creation failed', 'error');
+                handleOrderFailure(res);
                 if (orderButton) {
                     orderButton.disabled = false;
                     orderButton.innerHTML = 'Place Order';
@@ -1134,6 +1254,8 @@ function showPaymentFailureModal(title, message, orderId) {
 
     if (orderId) {
         currentOrderId = orderId;
+        // Explicitly mark the payment as failed in the backend
+        api.markPaymentFailedAxios(orderId).catch(err => console.error("Error marking payment failed:", err));
     }
 
     if (typeof Swal === 'undefined') {

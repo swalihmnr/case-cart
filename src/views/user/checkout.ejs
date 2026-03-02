@@ -422,6 +422,9 @@
                                             Min. purchase: ₹<span id="selectedCouponMin"></span> |
                                             Valid till: <span id="selectedCouponDate"></span>
                                         </p>
+                                        <!-- Error Message Box -->
+                                        <p id="selectedCouponError"
+                                            class="text-xs text-red-600 font-semibold mt-1 hidden"></p>
                                     </div>
                                     <button onclick="removeSelectedCoupon()"
                                         class="ml-2 px-3 py-1 bg-red-600 text-white text-xs rounded-lg hover:bg-red-700 whitespace-nowrap transition-colors shadow-sm">
@@ -602,6 +605,7 @@
                                                                 data-min-purchase="<%= coupon.MinimumPurchaseValue %>"
                                                                 data-end-date="<%= coupon.endDate %>"
                                                                 data-id="<%= coupon._id %>"
+                                                                data-max-discount="<%= coupon.maximumDiscount %>"
                                                                 onclick="handleCouponClick(this)">
                                                                 <div
                                                                     class="flex flex-col sm:flex-row sm:items-start justify-between gap-2 sm:gap-0">
@@ -718,12 +722,10 @@
                                 </div>
 
                                 <!-- Product Savings -->
-
                                 <div class="flex justify-between text-green-600 text-sm">
                                     <span>Product Savings</span>
-                                    <span class="font-medium">-₹<%= subtotal-finalAmount %></span>
+                                    <span class="font-medium">-₹<%= (offerDiscountTotal || 0).toFixed(2) %></span>
                                 </div>
-
 
                                 <!-- Coupon Discount (Hidden by default) -->
                                 <div class="flex justify-between text-green-600 text-sm hidden" id="couponDiscount">

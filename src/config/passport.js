@@ -8,8 +8,8 @@ passport.use(
     {
       clientID: process.env.GOOGLE_CLIENT_ID,
       clientSecret: process.env.GOOGLE_CLIENT_SECRET,
-      callbackURL: "http://localhost:3000/auth/google/callback",
-
+      callbackURL: "/auth/google/callback",
+      proxy: true,
     },
     async (accessToken, refreshToken, profile, done) => {
       try {
@@ -18,7 +18,7 @@ passport.use(
         let existingUser = await User.findOne({ email });
 
         if (!existingUser) {
-            const newUser = await User.create({
+          const newUser = await User.create({
             firstName: profile.name.givenName,
             lastName: profile.name.familyName,
             email: email,
@@ -28,7 +28,7 @@ passport.use(
             profileImg: profile.photos[0].value,
           });
 
-          return done(null, newUser); 
+          return done(null, newUser);
         }
         console.log('existing user enter again')
         return done(null, existingUser);
