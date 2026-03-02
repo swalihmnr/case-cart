@@ -113,18 +113,34 @@ document.querySelector("#couponForm")?.addEventListener("submit", async (e) => {
   // -----------------
   // VALIDATION
   // -----------------
-  if (!patterns.title.test(data.title)) {
-    titleErr.innerText = "Title must be at least 3 characters";
+
+  if (!data.title) {
+    titleErr.innerText = "Coupon Title is required";
+    valid = false;
+  } else if (data.title.length < 3 || data.title.length > 50) {
+    titleErr.innerText = "Title must be between 3 and 50 characters";
+    valid = false;
+  } else if (data.title.trim().length === 0) {
+    titleErr.innerText = "Title cannot be only spaces";
     valid = false;
   }
 
-  if (!patterns.couponCode.test(data.couponCode)) {
+  if (!data.couponCode) {
+    codeErr.innerText = "Coupon Code is required";
+    valid = false;
+  } else if (!patterns.couponCode.test(data.couponCode)) {
     codeErr.innerText = "Code must be 3-20 uppercase letters/numbers";
     valid = false;
   }
 
-  if (!patterns.description.test(data.desc)) {
-    descErr.innerText = "Description must be at least 10 characters";
+  if (!data.desc) {
+    descErr.innerText = "Description is required";
+    valid = false;
+  } else if (data.desc.length < 10 || data.desc.length > 500) {
+    descErr.innerText = "Description must be between 10 and 500 characters";
+    valid = false;
+  } else if (data.desc.trim().length === 0) {
+    descErr.innerText = "Description cannot be only spaces";
     valid = false;
   }
 
@@ -142,13 +158,16 @@ document.querySelector("#couponForm")?.addEventListener("submit", async (e) => {
     valid = false;
   }
 
-  if (data.maximumDiscount !== "" && (!patterns.amount.test(data.maximumDiscount) && Number(data.maximumDiscount) !== 0)) {
-    if (maxDiscErr) maxDiscErr.innerText = "Max discount must be a positive number";
+  if (data.minOrderValue === "" || Number(data.minOrderValue) < 0) {
+    minErr.innerText = "Enter valid minimum order value";
+    valid = false;
+  } else if (data.discountType === 'fixedamount' && Number(data.discountValue) >= Number(data.minOrderValue)) {
+    valueErr.innerText = "Discount amount must be less than minimum order value";
     valid = false;
   }
 
-  if (data.minOrderValue === "" || Number(data.minOrderValue) < 0) {
-    minErr.innerText = "Enter valid minimum order value";
+  if (data.maximumDiscount !== "" && (!patterns.amount.test(data.maximumDiscount) && Number(data.maximumDiscount) !== 0)) {
+    if (maxDiscErr) maxDiscErr.innerText = "Max discount must be a positive number";
     valid = false;
   }
 

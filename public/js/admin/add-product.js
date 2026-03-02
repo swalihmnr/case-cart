@@ -72,9 +72,9 @@ function processNextImage() {
         document.getElementById('productImages').value = '';
         return;
     }
-    
+
     currentFile = pendingFiles[currentFileIndex];
-    
+
     // Validate file
     if (!currentFile.type.startsWith('image/')) {
         alert('Please select only image files');
@@ -82,14 +82,14 @@ function processNextImage() {
         processNextImage();
         return;
     }
-    
+
     if (currentFile.size > 5 * 1024 * 1024) {
         alert('Image size must be less than 5MB');
         currentFileIndex++;
         processNextImage();
         return;
     }
-    
+
     // Show crop modal
     const reader = new FileReader();
     reader.onload = (e) => {
@@ -101,20 +101,20 @@ function processNextImage() {
 function openCropModal(imageSrc) {
     const modal = document.getElementById('cropModal');
     const cropImage = document.getElementById('cropImage');
-    
+
     // Set image source
     cropImage.src = imageSrc;
     cropImage.style.display = 'block';
-    
+
     // Show modal
     modal.classList.remove('hidden');
     modal.classList.add('flex');
-    
+
     // Destroy previous cropper if exists
     if (currentCropper) {
         currentCropper.destroy();
     }
-    
+
     // Initialize Cropper.js with basic options
     currentCropper = new Cropper(cropImage, {
         aspectRatio: 1,
@@ -135,12 +135,12 @@ function closeCropModal() {
     const modal = document.getElementById('cropModal');
     modal.classList.add('hidden');
     modal.classList.remove('flex');
-    
+
     if (currentCropper) {
         currentCropper.destroy();
         currentCropper = null;
     }
-    
+
     // Reset processing
     pendingFiles = [];
     currentFileIndex = 0;
@@ -151,7 +151,7 @@ function cropAndSave() {
         alert('No image to crop');
         return;
     }
-    
+
     try {
         const canvas = currentCropper.getCroppedCanvas({
             width: 800,
@@ -159,36 +159,36 @@ function cropAndSave() {
             imageSmoothingEnabled: true,
             imageSmoothingQuality: 'high',
         });
-        
+
         if (!canvas) {
             throw new Error('Could not crop image');
         }
-        
+
         canvas.toBlob((blob) => {
             const croppedFile = new File([blob], `cropped_${currentFile.name}`, {
                 type: 'image/jpeg', // Force JPEG for consistency
                 lastModified: Date.now(),
             });
-            
+
             // Add to images array
             const imageData = {
                 file: croppedFile,
                 preview: URL.createObjectURL(blob),
                 isMain: productImages.length === 0
             };
-            
+
             productImages.push(imageData);
             renderImagePreviews();
-            
+
             // Process next image
             closeCropModal();
             currentFileIndex++;
-            
+
             if (currentFileIndex < pendingFiles.length) {
                 processNextImage();
             }
         }, 'image/jpeg', 0.9); // Use JPEG with 90% quality
-        
+
     } catch (error) {
         console.error('Cropping error:', error);
         alert('Error cropping image: ' + error.message);
@@ -200,7 +200,7 @@ function cropAndSave() {
 function renderImagePreviews() {
     const container = document.getElementById('imagesPreview');
     container.innerHTML = '';
-    
+
     productImages.forEach((img, index) => {
         const div = document.createElement('div');
         div.className = 'relative group';
@@ -232,11 +232,11 @@ function renderImagePreviews() {
 function removeImage(index) {
     URL.revokeObjectURL(productImages[index].preview);
     productImages.splice(index, 1);
-    
+
     if (productImages.length > 0 && !productImages.some(img => img.isMain)) {
         productImages[0].isMain = true;
     }
-    
+
     renderImagePreviews();
 }
 
@@ -265,7 +265,7 @@ function clearDeviceForm() {
     document.getElementById('originalPrice').value = '';
     document.getElementById('salePrice').value = '';
     document.getElementById('stock').value = '';
-    
+
     ['deviceNameError', 'originalPriceError', 'salePriceError', 'stockError'].forEach(id => {
         document.getElementById(id).classList.add('hidden');
     });
@@ -276,39 +276,51 @@ function addDevice() {
     const originalPrice = parseFloat(document.getElementById('originalPrice').value);
     const salePrice = parseFloat(document.getElementById('salePrice').value);
     const stock = parseInt(document.getElementById('stock').value);
-    
+
     let isValid = true;
-    
+
     if (!deviceName) {
+        document.getElementById('deviceNameError').innerText = 'Device name is required.';
+        document.getElementById('deviceNameError').classList.remove('hidden');
+        isValid = false;
+    } else if (deviceName.length < 2 || deviceName.length > 50) {
+        document.getElementById('deviceNameError').innerText = 'Device name must be 2 to 50 characters.';
         document.getElementById('deviceNameError').classList.remove('hidden');
         isValid = false;
     } else {
         document.getElementById('deviceNameError').classList.add('hidden');
     }
-    
+
     if (!originalPrice || originalPrice <= 0) {
+        document.getElementById('originalPriceError').innerText = 'Original price must be greater than 0.';
         document.getElementById('originalPriceError').classList.remove('hidden');
         isValid = false;
     } else {
         document.getElementById('originalPriceError').classList.add('hidden');
     }
-    
-    if (!salePrice || salePrice <= 0 || salePrice > originalPrice) {
+
+    if (!salePrice || salePrice <= 0) {
+        document.getElementById('salePriceError').innerText = 'Sale price must be greater than 0.';
+        document.getElementById('salePriceError').classList.remove('hidden');
+        isValid = false;
+    } else if (salePrice >= originalPrice) {
+        document.getElementById('salePriceError').innerText = 'Sale price must be strictly less than Original price.';
         document.getElementById('salePriceError').classList.remove('hidden');
         isValid = false;
     } else {
         document.getElementById('salePriceError').classList.add('hidden');
     }
-    
-    if (isNaN(stock) || stock < 0) {
+
+    if (isNaN(stock) || stock < 0 || !Number.isInteger(stock)) {
+        document.getElementById('stockError').innerText = 'Stock must be a whole number greater than or equal to 0.';
         document.getElementById('stockError').classList.remove('hidden');
         isValid = false;
     } else {
         document.getElementById('stockError').classList.add('hidden');
     }
-    
+
     if (!isValid) return;
-    
+
     const device = {
         id: Date.now(),
         name: deviceName,
@@ -317,7 +329,7 @@ function addDevice() {
         stock,
         discount: Math.round(((originalPrice - salePrice) / originalPrice) * 100)
     };
-    
+
     devices.push(device);
     renderDevices();
     closeDeviceModal();
@@ -325,12 +337,12 @@ function addDevice() {
 
 function renderDevices() {
     const container = document.getElementById('devicesList');
-    
+
     if (devices.length === 0) {
         container.innerHTML = '<p class="text-center text-gray-500 text-sm py-8">No devices added yet</p>';
         return;
     }
-    
+
     container.innerHTML = devices.map(device => `
         <div class="border border-gray-200 rounded-lg p-4">
             <div class="flex justify-between items-start mb-2">
@@ -375,84 +387,94 @@ async function createProduct() {
     const description = document.getElementById('description').value.trim();
     const category = document.getElementById('category').value;
     const status = document.querySelector('input[name="status"]:checked').value;
-    
+
     let isValid = true;
-    
+
     if (!productName) {
+        document.getElementById('productNameError').innerText = 'Product name is required.';
+        document.getElementById('productNameError').classList.remove('hidden');
+        isValid = false;
+    } else if (productName.length < 3 || productName.length > 100) {
+        document.getElementById('productNameError').innerText = 'Product name must be between 3 and 100 characters.';
         document.getElementById('productNameError').classList.remove('hidden');
         isValid = false;
     } else {
         document.getElementById('productNameError').classList.add('hidden');
     }
-    
+
     if (!description) {
+        document.getElementById('descriptionError').innerText = 'Description is required.';
+        document.getElementById('descriptionError').classList.remove('hidden');
+        isValid = false;
+    } else if (description.length < 10 || description.length > 1000) {
+        document.getElementById('descriptionError').innerText = 'Description must be between 10 and 1000 characters.';
         document.getElementById('descriptionError').classList.remove('hidden');
         isValid = false;
     } else {
         document.getElementById('descriptionError').classList.add('hidden');
     }
-    
+
     if (!category) {
         document.getElementById('categoryError').classList.remove('hidden');
         isValid = false;
     } else {
         document.getElementById('categoryError').classList.add('hidden');
     }
-    
+
     if (devices.length === 0) {
         document.getElementById('devicesError').classList.remove('hidden');
         isValid = false;
     } else {
         document.getElementById('devicesError').classList.add('hidden');
     }
-    
+
     if (!isValid) {
-       
+
         return;
     }
-    
+
     const formData = new FormData();
     formData.append('productName', productName);
     formData.append('description', description);
     formData.append('category', category);
     formData.append('status', status);
     formData.append('devices', JSON.stringify(devices));
-    
+
     productImages.forEach((img, index) => {
-        formData.append(`images`,img.file);
+        formData.append(`images`, img.file);
         if (img.isMain) {
             formData.append('mainImageIndex', index);
         }
     });
-    
-    
-    try {
-    let res = await adminApi.addProductAxios(formData);
 
-    if (res.data.success) {
+
+    try {
+        let res = await adminApi.addProductAxios(formData);
+
+        if (res.data.success) {
+            Swal.fire({
+                title: "Product added!",
+                text: res.data.message,
+                icon: "success"
+            }).then(() => {
+                window.location.href = res.data.redirectUrl;
+            });
+        }
+    } catch (err) {
+        console.log("Error:", err);
+
+        // Grab backend error message (409 duplicate)
+        const msg = err.response?.data?.message || "Something went wrong";
+
         Swal.fire({
-            title: "Product added!",
-            text: res.data.message,
-            icon: "success"
-        }).then(() => {
-            window.location.href = res.data.redirectUrl;
+            title: "Error!",
+            text: msg,
+            icon: "error"
         });
     }
-} catch (err) {
-    console.log("Error:", err);
 
-    // Grab backend error message (409 duplicate)
-    const msg = err.response?.data?.message || "Something went wrong";
 
-    Swal.fire({
-        title: "Error!",
-        text: msg,
-        icon: "error"
-    });
-}
 
-    
-   
 }
 
 function cancelForm() {

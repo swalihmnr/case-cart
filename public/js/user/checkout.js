@@ -192,7 +192,21 @@ function initFormValidation() {
     const form = document.getElementById('shippingForm');
     if (!form) return;
 
-    const inputs = form.querySelectorAll('input, select');
+    // Toggle address type container based on checkbox
+    const saveAddressCheckbox = document.getElementById('saveAddressCheckbox');
+    const addressTypeContainer = document.getElementById('addressTypeContainer');
+
+    if (saveAddressCheckbox && addressTypeContainer) {
+        saveAddressCheckbox.addEventListener('change', function () {
+            if (this.checked) {
+                addressTypeContainer.classList.remove('hidden');
+            } else {
+                addressTypeContainer.classList.add('hidden');
+            }
+        });
+    }
+
+    const inputs = form.querySelectorAll('input:not([type="radio"]):not([type="checkbox"]), select');
     inputs.forEach(input => {
         input.addEventListener('input', function () {
             clearError(this.id);
@@ -750,6 +764,34 @@ async function placeOrder() {
         }
 
         const payload = buildPayload();
+
+        // Check if the user wants to save the manual address
+        if (payload.address.type === "manual") {
+            const saveCheckbox = document.getElementById('saveAddressCheckbox');
+            if (saveCheckbox && saveCheckbox.checked) {
+                const addressType = document.querySelector('input[name="addressType"]:checked')?.value || 'Home';
+
+                try {
+                    // Make a parallel request to save the address
+                    await api.addAddressAxios({
+                        firstName: payload.address.firstName,
+                        lastName: payload.address.lastName,
+                        phone: payload.address.phone,
+                        streetAddress: payload.address.streetAddress,
+                        landmark: payload.address.landMark,
+                        city: payload.address.city,
+                        state: payload.address.state,
+                        pincode: payload.address.pinCode,
+                        addressType: addressType,
+                        isDefault: false
+                    });
+                } catch (addrErr) {
+                    console.error("Failed to save address to profile:", addrErr);
+                    // Silently fail to not interrupt order placement, or you could show a toast:
+                    showToast('Order proceeding but failed to save address to profile', 'warning');
+                }
+            }
+        }
 
         if (paymentMethod === 'razorpay') {
             const res = await api.confirmationAxios(payload);

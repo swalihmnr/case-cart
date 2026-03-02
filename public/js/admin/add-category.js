@@ -1,9 +1,9 @@
 import adminApi from "../adminApi.js";
 window.submitCategory = submitCategory;
 async function submitCategory(event) {
-  let action = event.currentTarget.dataset.action; 
-let mode = event.currentTarget.dataset.mode;       
-let id = event.currentTarget.dataset.id;           
+  let action = event.currentTarget.dataset.action;
+  let mode = event.currentTarget.dataset.mode;
+  let id = event.currentTarget.dataset.id;
 
   console.log(mode);
   let categoryName = document.getElementById("categoryName").value.trim();
@@ -12,19 +12,38 @@ let id = event.currentTarget.dataset.id;
     .value.trim();
   let errName = document.getElementById("nameErr");
   let errDes = document.getElementById("desErr");
-  //regexpatterns
-  const CatNamePattern = /^[A-Za-z\s]{3,}$/;
+
   errName.innerText = "";
   errDes.innerText = "";
   let flag = true;
-  if (!CatNamePattern.test(categoryName)) {
-    errName.innerText = "Enter Category Name";
+
+  // Category Name Validation
+  if (!categoryName) {
+    errName.innerText = "Category Name is required.";
+    flag = false;
+  } else if (categoryName.length < 3 || categoryName.length > 50) {
+    errName.innerText = "Category Name must be between 3 and 50 characters.";
+    flag = false;
+  } else if (!/^[A-Za-z\s]+$/.test(categoryName)) {
+    errName.innerText = "Category Name can only contain letters and spaces.";
+    flag = false;
+  } else if (categoryName.trim().length === 0) {
+    errName.innerText = "Category Name cannot be just spaces.";
     flag = false;
   }
-  if (categoryDescription === "") {
-    errDes.innerText = "Enter the Product Description";
+
+  // Category Description Validation
+  if (!categoryDescription) {
+    errDes.innerText = "Category Description is required.";
+    flag = false;
+  } else if (categoryDescription.length < 10 || categoryDescription.length > 500) {
+    errDes.innerText = "Category Description must be between 10 and 500 characters.";
+    flag = false;
+  } else if (categoryDescription.trim().length === 0) {
+    errDes.innerText = "Category Description cannot be just spaces.";
     flag = false;
   }
+
   if (flag) {
     let data = {
       action,
@@ -45,25 +64,25 @@ let id = event.currentTarget.dataset.id;
           }).then(() => {
             window.location.href = res.data.redirectUrl;
           });
-          
+
         }
       } catch (error) {
-    
+
         Swal.fire({
           icon: "warning",
           title: "not Updated!",
-          text: error.response.statusText,
+          text: error.response?.data?.message || error.response?.statusText || "Something went wrong",
           timer: 1800,
           showConfirmButton: false,
         })
-      
+
       }
-      
+
     } else {
       try {
         let res = await adminApi.addCategoryAxios(data);
-        console.log(res,'nothing')
-        if(res.data.success){
+        console.log(res, 'nothing')
+        if (res.data.success) {
           Swal.fire({
             icon: "success",
             title: "product added!",
@@ -73,20 +92,20 @@ let id = event.currentTarget.dataset.id;
           }).then(() => {
             window.location.href = res.data.redirectUrl;
           });
-        }else{
+        } else {
           Swal.fire({
-          icon: "warning",
-          title: "not added!",
-          text: res.data.message,
-          timer: 1800,
-          showConfirmButton: false,
-        })
+            icon: "warning",
+            title: "not added!",
+            text: res.data.message,
+            timer: 1800,
+            showConfirmButton: false,
+          })
         }
       } catch (error) {
-        console.log(error )
-        
+        console.log(error)
+
       }
-      
+
     }
   }
 }
