@@ -99,8 +99,7 @@ document.addEventListener("DOMContentLoaded", () => {
    }else{
       Swal.fire({
       icon: "warning",
-      title: "User already exists",
-      text: "Try logging in or use a different email.",
+      title: res.data.message,
       confirmButtonColor: "#f6ad55" // orange
 });
 

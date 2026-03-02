@@ -2,14 +2,17 @@ import express from 'express';
 import userController from '../controllers/userController.js';
 import { otpAccess } from '../middlewares/otp.js'
 import { userAuth, keResetPass, goBackOtpVerify, blockUser, wishlistCount, cartCount, notUser } from '../middlewares/auth.js'
+import { registerValidator } from '../validators/registerValidator.js';
+import { addressValidator } from '../validators/addressValidator.js';
+import { loginValidator } from '../validators/loginValidator.js';
 import upload from '../middlewares/multer.js';
 const router = express.Router();
 router.use(wishlistCount)
 router.use(cartCount)
 router.get('/login', goBackOtpVerify, userController.getLogin);
-router.post('/login', userController.postLogin);
+router.post('/login', loginValidator, userController.postLogin);
 router.get('/signup', goBackOtpVerify, userController.getSignup);
-router.post('/signup', userController.register)
+router.post('/signup',registerValidator,userController.register)
 router.get('/otpVerfication', otpAccess, userController.getOtpVerify);
 router.post('/otpVerfication', userController.OtpVerify);
 router.get('/resetPassword', keResetPass, userController.getResetPass);
@@ -38,7 +41,7 @@ router.get('/checkout', userAuth, blockUser, userController.getCheckout);
 router.get('/address', userAuth, userController.getAddressMngmnt);
 router.get('/address/edit/:id', userAuth, userController.geteditAddress);
 router.get('/address/add', userAuth, userController.getAddAddress);
-router.post('/address/add', userController.addAddress);
+router.post('/address/add',addressValidator, userController.addAddress);
 router.post('/address/edit', userController.editAddress);
 router.patch('/address/:id/del', userController.deleteAddress)
 router.get('/order/confirm/:id', userController.getConfirmation);

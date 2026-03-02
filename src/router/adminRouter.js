@@ -3,22 +3,25 @@ import express from "express";
 const router = express.Router()
 import adminController from "../controllers/adminController.js";
 import { requiredAdmin } from '../middlewares/auth.js'
+import { loginValidator } from "../validators/loginValidator.js";
+import { addProductValidation } from "../validators/productValidator.js";
+import { addCategoryValidator } from "../validators/categoryValidator.js";
 router.get('/login', adminController.getLogin);
-router.post('/login', adminController.postLogin);
+router.post('/login',loginValidator, adminController.postLogin);
 router.use(requiredAdmin)
 router.get("/logout", adminController.adminLogout);
 router.get('/dashboard', adminController.getDashboard)
 router.get('/customers', adminController.getCustomer)
 router.patch('/customers/block/:id', adminController.blockCustomer)
 router.get('/add-category', adminController.getAddCategory)
-router.post('/add-category', adminController.postAddCategory)
+router.post('/add-category', addCategoryValidator, adminController.postAddCategory)
 router.get('/category', adminController.getCategory)
 router.post('/category', adminController.postAddCategory)
 router.patch('/category/block/:id', adminController.blockCategory)
 router.get('/category/edit/:id', adminController.editCategory)
 router.patch('/category/edit/:id', adminController.postEditCategory)
 router.get('/add-product', adminController.getAddproduct)
-router.post('/add-product', upload.array('images', 5), adminController.postAddproduct);
+router.post('/add-product', upload.array('images', 5),addProductValidation, adminController.postAddproduct);
 router.get('/product-list', adminController.getProductList)
 router.get('/product/edit/:id', adminController.getProductEdit)
 router.patch('/product/:id/edit-image', upload.single('image'), adminController.productImageEdit)
