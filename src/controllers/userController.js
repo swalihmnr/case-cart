@@ -1502,6 +1502,11 @@ const getCheckout = async (req, res) => {
 
       // Calculate offers for each cart item
       for (let item of cartItems) {
+        // Validation Check: Stock, Listing, Product Block
+        if (!item.variant.isListed || item.product.isBlock || item.variant.stock < item.quantity) {
+          return res.redirect("/cart?error=Some items in your cart are currently unavailable or out of stock.");
+        }
+
         const orgTotal = item.variant.orgPrice * item.quantity;
         subtotal += orgTotal;
 
@@ -1572,8 +1577,8 @@ const getCheckout = async (req, res) => {
       }
 
       const variant = variantData[0];
-      // VALIDATION: Check product block and stock
-      if (variant.product.isBlock || variant.stock < 1) {
+      // VALIDATION: Check product block, listing status, and stock
+      if (variant.product.isBlock || !variant.isListed || variant.stock < 1) {
         return res.redirect('/product/' + variant.product._id + '/detials?error=Product unavailable');
       }
 
@@ -2032,6 +2037,23 @@ const ordConfirmation = async (req, res) => {
 
     if (!items.length) {
       return res.status(404).json({ success: false, message: "No valid items found" });
+    }
+
+    // ==============================
+    // VALIDATION (AVAILABILITY & STOCK)
+    // ==============================
+    let unavailableItems = [];
+    for (const item of items) {
+      if (!item.variant.isListed || item.product.isBlock || item.variant.stock < item.quantity) {
+        unavailableItems.push(item.product.name);
+      }
+    }
+
+    if (unavailableItems.length > 0) {
+      return res.status(400).json({
+        success: false,
+        message: `Some items in your cart are currently unavailable or out of stock: ${unavailableItems.join(', ')}`
+      });
     }
 
     // ==============================
