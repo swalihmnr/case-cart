@@ -1645,10 +1645,15 @@ const getCheckout = async (req, res) => {
       // Create cartItems array with the single item
       cartItems = [item];
     }
-    let walletButton = true
-    // if(walletBalance.balance<finalAmount){
-    //   walletButton=false
-    // }
+    let walletButton =false
+    let cod=false;
+    if(walletBalance.balance>=finalAmount){
+      walletButton=true
+    }
+
+    if(finalAmount>1000){
+      cod=true
+    }
     const addresses = await addressModel.find({ userId });
 
     // Debug logs to verify both flows work the same
@@ -1684,7 +1689,8 @@ const getCheckout = async (req, res) => {
       shipping,
       finalAmount,
       coupons,
-      walletButton
+      walletButton,
+      cod
     });
 
   } catch (err) {
@@ -2503,6 +2509,17 @@ const cancelWholeOrder = async (req, res) => {
         arrayFilters: [{ "elem.status": { $in: ["pending", "placed", "processing"] } }]
       }
     );
+
+    await orderModel.updateOne(
+      { _id: orderId },
+      {
+        $set: {
+          finalAmount: 0,
+          orderStatus: "cancelled"
+        }
+      }
+    );
+
     if (
       result.modifiedCount > 0 && orderExists.paymentStatus === "paid") {
 
@@ -2536,7 +2553,7 @@ const cancelWholeOrder = async (req, res) => {
     // =========================
     // RESTORE STOCK 
     // =========================
-    if (orderExists.paymentStatus !== "initiated" && orderExists.paymentStatus !== "failed") {
+    if (result.modifiedCount > 0 && orderExists.paymentStatus === 'paid') {
       for (const item of cancellableItems) {
         await variantModel.updateOne(
           { _id: item.variantId },
@@ -2571,7 +2588,7 @@ const orderCancel = async (req, res) => {
     const existingOrder = await orderModel.findOne({
       _id: orderID,
       "orderItems._id": orderItemId
-    });
+    }).populate('couponId');
 
     if (!existingOrder) {
       return res.status(STATUS_CODES.NOT_FOUND).json({
@@ -2600,10 +2617,54 @@ const orderCancel = async (req, res) => {
       },
     );
 
+
+    let refundAmount = 0;
+
+    if (result.modifiedCount > 0) {
+      let activeSubtotal = 0;
+      for (const orderItem of existingOrder.orderItems) {
+        if (
+          orderItem._id.toString() !== orderItemId.toString() &&
+          !['cancelled', 'returned'].includes(orderItem.status)
+        ) {
+          activeSubtotal += orderItem.finalPrice;
+        }
+      }
+
+      let newCouponDiscount = 0;
+      if (existingOrder.couponId) {
+        const coupon = existingOrder.couponId;
+        if (activeSubtotal >= coupon.MinimumPurchaseValue) {
+          if (coupon.discountType === "percentage") {
+            newCouponDiscount = (activeSubtotal * coupon.discountValue) / 100;
+            if (coupon.maximumDiscount && coupon.maximumDiscount > 0) {
+              newCouponDiscount = Math.min(newCouponDiscount, coupon.maximumDiscount);
+            }
+          } else {
+            newCouponDiscount = coupon.discountValue;
+          }
+        }
+      }
+
+      const newFinalAmount = activeSubtotal + existingOrder.shipping - newCouponDiscount;
+      refundAmount = Math.max(0, existingOrder.finalAmount - newFinalAmount);
+      const updatedFinalAmount = existingOrder.finalAmount - refundAmount;
+
+      await orderModel.updateOne(
+        { _id: orderID },
+        {
+          $set: {
+            finalAmount: updatedFinalAmount,
+            couponDiscount: newCouponDiscount
+          }
+        }
+      );
+    }
+
     // ======================
     // RESTORE STOCK
     // ======================
-    if (existingOrder.paymentStatus !== "initiated" && existingOrder.paymentStatus !== "failed") {
+    if (result.modifiedCount > 0 && existingOrder.paymentStatus === 'paid') {
       await variantModel.updateOne(
         { _id: item.variantId },
         { $inc: { stock: item.quantity } }
@@ -2611,18 +2672,18 @@ const orderCancel = async (req, res) => {
     }
 
 
-    if (result.modifiedCount > 0 && existingOrder.paymentStatus === "paid") {
-      let Wallet = await wallet.findOne({ userId: req.session.user.id })
+    if (result.modifiedCount > 0 && existingOrder.paymentStatus === "paid" && refundAmount > 0) {
+      let Wallet = await wallet.findOne({ userId: existingOrder.userId })
       if (!Wallet) {
         Wallet = await wallet.create({
-          userId: req.session.user.id,
+          userId: existingOrder.userId,
           balance: 0,
           transactions: []
         })
       }
-      Wallet.balance += item.finalPrice;
+      Wallet.balance += refundAmount;
       Wallet.transactions.push({
-        amount: item.finalPrice,
+        amount: refundAmount,
         description: "Refund for cancelled order",
         orderId: existingOrder._id,
         transactionType: 'credited'
