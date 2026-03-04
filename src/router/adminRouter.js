@@ -10,7 +10,6 @@ router.get('/login', adminController.getLogin);
 router.post('/login',loginValidator, adminController.postLogin);
 router.use(requiredAdmin)
 router.get("/logout", adminController.adminLogout);
-router.get('/dashboard', adminController.getDashboard)
 router.get('/customers', adminController.getCustomer)
 router.patch('/customers/block/:id', adminController.blockCustomer)
 router.get('/add-category', adminController.getAddCategory)

@@ -64,10 +64,6 @@ const postLogin = async (req, res) => {
 
 }
 
-// Render admin dashboard page
-const getDashboard = (req, res) => {
-    res.render('./admin/admin-dashboard')
-}
 
 // Fetch customers with:
 // - Pagination
@@ -1242,7 +1238,6 @@ export default {
     getLogin,
     postLogin,
     adminLogout,
-    getDashboard,
     getCustomer,
     blockCustomer,
     getAddCategory,

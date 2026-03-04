@@ -13,6 +13,7 @@ import authRouter from '../src/router/authRouter.js'
 import adminOfferRouter from '../src/router/admin/offerRouter.js'
 import adminCoupenRouter from '../src/router/admin/coupenRouter.js'
 import adminReportRouter from '../src/router/admin/reportRouter.js'
+import adminDashboardRouter from '../src/router/admin/dashboardRouter.js'
 
 import userCouponRouter from '../src/router/user/couponRouter.js'
 import walletRouter from './router/user/walletRouter.js';
@@ -23,11 +24,22 @@ import morgan from 'morgan';
 import { attachUser } from './middlewares/auth.js';
 import { attachAdmin } from './middlewares/auth.js';
 import paymentRouter from '../src/router/paymentRouter.js'
+import MongoStore from "connect-mongo";
+
 app.use(session({
-    secret:process.env.SECRET_KEY,
-    resave:false,
-    saveUninitialized:false
-}))
+    secret: process.env.SECRET_KEY,
+    resave: false,
+    saveUninitialized: false,
+
+    store: MongoStore.create({
+        mongoUrl: process.env.MONGO_URI,
+        collectionName: "sessions"
+    }),
+
+    cookie: {
+        maxAge: 1000 * 60 * 60 * 24 // 1 day
+    }
+}));
 
 let __filename=fileURLToPath(import.meta.url)
 let __dirname=dirname(__filename);
@@ -54,6 +66,7 @@ app.use('/admin',adminRouter)
 app.use('/admin',adminOfferRouter)
 app.use('/admin',adminCoupenRouter)
 app.use('/admin',adminReportRouter)
+app.use('/admin',adminDashboardRouter)
 // user Routers here
 app.use('/user',userCouponRouter)
 app.use('/',walletRouter)
