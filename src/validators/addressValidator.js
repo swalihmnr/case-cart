@@ -1,4 +1,6 @@
 import { body, validationResult } from "express-validator";
+
+
 const validateResult = (req, res, next) => {
   const errors = validationResult(req);
 
@@ -53,7 +55,7 @@ export const addressValidator = [
 
   body('data.addressType')
     .notEmpty().withMessage('Address type is required')
-    .isIn(['Home', 'Work', 'Other']).withMessage('Invalid address type'),
+    .isIn(['home', 'work', 'other']).withMessage('Invalid address type'),
 
   body('data.isDefault')
     .optional()

@@ -414,7 +414,6 @@ window.showCancelModal = function (orderId, orderID, orderItemId) {
 };
 
 window.showReturnModal = function (orderId, orderID, orderItemId) {
-
   Swal.fire({
     title: 'Return Order?',
     text: `Are you sure you want to return order #${orderId}?`,
@@ -424,67 +423,51 @@ window.showReturnModal = function (orderId, orderID, orderItemId) {
     inputLabel: 'Reason for Return',
     inputPlaceholder: 'Enter your reason...',
     inputAttributes: {
-      'aria-label': 'Reason for return'
+      'aria-label': 'Reason for return '
     },
 
     showCancelButton: true,
     confirmButtonColor: '#dc2626',
     cancelButtonColor: '#6b7280',
-    confirmButtonText: 'Yes, return it!',
-    cancelButtonText: 'No',
+    confirmButtonText: 'Yes, cancel it!',
+    cancelButtonText: 'No, keep it',
 
     preConfirm: (reason) => {
       if (!reason || !reason.trim()) {
-        Swal.showValidationMessage('Please provide a reason for return');
+        Swal.showValidationMessage('Please provide a reason for cancellation');
         return false;
       }
       return reason.trim();
     }
-
   }).then(async (result) => {
-
     if (result.isConfirmed) {
-
-      try {
-
-        const reason = result.value;
-
-        const data = {
-          orderId: orderID,
-          reason
-        };
-
-        const res = await api.ordReturnAxios(data, orderItemId);
-
-        if (res.data.success) {
-
-          Swal.fire(
-            'Return Request Sent!',
-            `Order #${orderId} return request submitted.`,
-            'success'
-          ).then(() => location.reload());
-
-        }
-
-      } catch (err) {
-
-        const errorMessage =
-          err?.response?.data?.message ||
-          err.message ||
-          "Something went wrong";
-
+      const reason = result.value;
+      const data = {
+        orderId: orderID,
+        reason
+      };
+      let res = await api.ordReturnAxios(data, orderItemId);
+      if (res.data.success) {
         Swal.fire(
-          'Return Failed',
-          errorMessage,
-          'error'
-        );
-
+          'Returned requast Success!',
+          `Order #${orderId} has been Returned.`,
+          'success'
+        ).then(() => {
+          location.reload();
+        });
+      } else {
+        Swal.fire(
+          'Something Went wrong!',
+          `Order #${orderId} not has been Returned.`,
+          'success'
+        ).then(() => {
+          location.reload();
+        });
       }
-
     }
-
   });
 };
+
 window.invoice = async function (orderId, orderID, orderItemId) {
   console.log(orderItemId, 'it is printing here');
   await api.orderInvoice(orderID, orderItemId);

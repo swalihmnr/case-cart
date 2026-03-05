@@ -210,7 +210,7 @@ document.querySelector("#couponForm")?.addEventListener("submit", async (e) => {
     try {
       let res = await api.createCouponAxios(payload);
 
-      if (res?.data?.success) {
+      if (res.data.success) {
         Swal.fire({
           icon: "success",
           title: "Coupon Created",
@@ -219,19 +219,17 @@ document.querySelector("#couponForm")?.addEventListener("submit", async (e) => {
           window.location.href = "/admin/coupen";
         });
       } else {
-        const error = new Error(res?.data?.message || "Error creating coupon");
-        error.status = res?.status;
-        throw error;
+        Swal.fire({
+          icon: "warning",
+          title: "Error",
+          text: res.data.message
+        });
       }
     } catch (error) {
-      console.error("Coupon creation error:", error);
-      const errorMessage = error.response?.data?.message || error.message || "Something went wrong";
-      const status = error.response?.status || error.status;
-
       Swal.fire({
         icon: "error",
-        title: status === 409 ? "Coupon Already Exists" : "Failed!",
-        text: errorMessage
+        title: "Failed!",
+        text: error.response?.data?.message || "Something went wrong"
       });
     }
   }

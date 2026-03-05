@@ -32,7 +32,6 @@ document.addEventListener('DOMContentLoaded', function () {
     initSavedAddresses();
     initFormValidation();
     checkUrlForCoupon();
-    checkStoredCoupon();
     initPaymentSelection();
 
     // Check for failed payment in URL
@@ -83,22 +82,6 @@ async function checkUrlForCoupon() {
         } catch (error) {
             console.log("Error loading coupon from URL:", error);
         }
-    }
-}
-
-// Check for stored coupon in session
-async function checkStoredCoupon() {
-    try {
-        const urlParams = new URLSearchParams(window.location.search);
-        if (urlParams.get('code')) return; // Prioritize URL coupon
-
-        const storedCoupon = localStorage.getItem('appliedCoupon');
-        console.log("Auto-applying stored coupon:", storedCoupon);
-        if (storedCoupon) {
-            await verifyAndApplyCoupon(storedCoupon, true);
-        }
-    } catch (e) {
-        console.error("Failed to auto-apply stored coupon on load:", e);
     }
 }
 
@@ -317,7 +300,7 @@ function validateAddressForm() {
 }
 
 // Verify and apply coupon
-async function verifyAndApplyCoupon(couponCode, isAutoApplied = false) {
+async function verifyAndApplyCoupon(couponCode) {
     try {
         const res = await api.verifyCouponAxios(couponCode);
 
@@ -351,9 +334,7 @@ async function verifyAndApplyCoupon(couponCode, isAutoApplied = false) {
                 if (errorElement) {
                     errorElement.classList.add("hidden");
                 }
-                if (!isAutoApplied) {
-                    showToast(res.data.message, 'success');
-                }
+                showToast(res.data.message, 'success');
             }
 
             document.getElementById("selectedCouponCode").textContent = couponData.couponCode;
@@ -446,7 +427,6 @@ function updateTotalWithCoupon(couponData) {
 
     selectedCoupon = couponData;
     couponDiscount = discount;
-    localStorage.setItem('appliedCoupon', couponData.couponCode);
     updateTotalDisplay(discount);
     return true;
 }
@@ -509,7 +489,6 @@ function removeSelectedCoupon() {
 
     selectedCoupon = null;
     couponDiscount = 0;
-    localStorage.removeItem('appliedCoupon');
 
     const couponDiscountElement = document.getElementById('couponDiscount');
     if (couponDiscountElement) {
@@ -794,7 +773,7 @@ async function placeOrder() {
 
                 try {
                     // Make a parallel request to save the address
-                    const payloadToSave = {
+                    await api.addAddressAxios({
                         firstName: payload.address.firstName,
                         lastName: payload.address.lastName,
                         phone: payload.address.phone,
@@ -805,17 +784,11 @@ async function placeOrder() {
                         pincode: payload.address.pinCode,
                         addressType: addressType,
                         isDefault: false
-                    };
-                    console.log("Saving address with payload:", payloadToSave);
-                    const addrRes = await api.addAddressAxios(payloadToSave);
-                    console.log("Save address response:", addrRes);
+                    });
                 } catch (addrErr) {
                     console.error("Failed to save address to profile:", addrErr);
-                    let errMsg = 'Order proceeding but failed to save address to profile';
-                    if (addrErr.data && addrErr.data.message) {
-                        errMsg = "Address save failed: " + addrErr.data.message;
-                    }
-                    showToast(errMsg, 'warning');
+                    // Silently fail to not interrupt order placement, or you could show a toast:
+                    showToast('Order proceeding but failed to save address to profile', 'warning');
                 }
             }
         }
@@ -824,7 +797,6 @@ async function placeOrder() {
             const res = await api.confirmationAxios(payload);
 
             if (res.data.success) {
-                localStorage.removeItem('appliedCoupon');
                 currentOrderId = res.data.orderId;
                 const url = new URL(window.location);
                 url.searchParams.set('orderId', currentOrderId);
@@ -841,7 +813,6 @@ async function placeOrder() {
             const res = await api.confirmationAxios(payload);
 
             if (res.data.success) {
-                localStorage.removeItem('appliedCoupon');
                 showToast('Order placed successfully!', 'success');
                 setTimeout(() => {
                     window.location.href = `/order/confirm/${res.data.orderId}`;

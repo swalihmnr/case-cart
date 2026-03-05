@@ -1,45 +1,40 @@
-export default async function discountChecker(discIds, modelName, variantPrice, type) {
-    // discIds represents filtered offer/coupon Ids;
-    // modelName represent modelName for finding offer/coupon
-    // variant Price for calculate the discount
-    // type represent to confirm percentage or fixedamount
-    let bestDiscount = 0;
+export default async function discountChecker(discIds,modelName,variantPrice,type){
+    //disIds represents filtered offer/coupon Ids;
+    //modelName represent modelName for finding offer/coupon
+    //variant Price for calculte the discount
+    //type represent to confirm percentange or fixedamount
+    let discount=0;
+    let bestDiscount=0;
+    let maxDiscount=250
     let name;
     let disType;
     let discountTypeValue;
-
-    for (let id of discIds) {
-        const promotion = await modelName.findById(id._id);
-        if (!promotion) continue;
-
-        let currentDiscount = 0;
-        const discValue = Number(promotion.discountValue) || 0;
-        const price = Number(variantPrice) || 0;
-        const promoType = promotion[type];
-
-        if (promoType === "percentage") {
-            currentDiscount = (discValue * price) / 100;
-            // Apply promotion-specific maximum discount if it exists and is > 0
-            if (promotion.maximumDiscount && promotion.maximumDiscount > 0) {
-                currentDiscount = Math.min(currentDiscount, Number(promotion.maximumDiscount));
-            }
-        } else if (promoType === "fixedamount") {
-            currentDiscount = Math.min(discValue, price);
+    for(let id of discIds){
+        const promotion=await modelName.findById(id._id)
+        console.log(promotion)
+        const discValue=Number(promotion.discountValue)||0;
+        if(promotion[type]==="percentage"){
+            discount=(discValue*variantPrice)/100
         }
+        if(discount>bestDiscount){
+            bestDiscount=discount
+            name=promotion.title
+            if(promotion[type]==='percentage'){
+                disType="percentage"
+                discountTypeValue=promotion.discountValue
 
-        if (currentDiscount > bestDiscount) {
-            bestDiscount = currentDiscount;
-            name = promotion.title;
-            disType = promoType;
-            discountTypeValue = discValue;
+            }
         }
     }
+    if(bestDiscount>maxDiscount){
+        bestDiscount=maxDiscount
+    }
 
-    console.log(bestDiscount, 'it is the best discount');
-    return {
-        bestDiscount,
-        name,
-        disType,
-        discountTypeValue
-    };
+    console.log(bestDiscount,'it is the best discount')
+   return{
+    bestDiscount,
+    name,
+    disType,
+    discountTypeValue
+   } 
 }

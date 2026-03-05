@@ -10,12 +10,9 @@ document.addEventListener("DOMContentLoaded", () => {
   const results = document.getElementById("productSearchResults");
   const selectedBox = document.getElementById("selectedProducts");
   const offerStatus = document.getElementById("offerStatus");
-  const offerTitle = document.getElementById("offerTitle");
-  const offerDesc = document.getElementById("offerDesc");
-  const offerType = document.getElementById("offerType");
-  const offerValue = document.getElementById("offerValue");
 
   const specificItem = window.SPECIFIC_ITEM;
+  const offerId = window.OFFER_ID;
   const ALL_PRODUCTS = window.ALL_PRODUCTS || [];
 
   const cancelBtn = document.getElementById("cancelBtn");
@@ -31,8 +28,6 @@ document.addEventListener("DOMContentLoaded", () => {
   // =====================
   // UI TOGGLE
   // =====================
-  const maxDiscountWrapper = document.getElementById("maxDiscountWrapper");
-
   function refreshUI() {
     productBox.classList.add("hidden");
     categoryBox.classList.add("hidden");
@@ -44,17 +39,9 @@ document.addEventListener("DOMContentLoaded", () => {
     if (applicableOn.value === "category") {
       categoryBox.classList.remove("hidden");
     }
-
-    // Toggle max discount field visibility
-    if (offerType.value === "percentage") {
-      maxDiscountWrapper?.classList.remove("hidden");
-    } else {
-      maxDiscountWrapper?.classList.add("hidden");
-    }
   }
 
   applicableOn.addEventListener("change", refreshUI);
-  offerType.addEventListener("change", refreshUI);
   refreshUI();
 
   // =====================
@@ -183,10 +170,6 @@ document.addEventListener("DOMContentLoaded", () => {
       if (payload.offerValue < 1 || payload.offerValue > MAX_PERCENT) {
         return `Percentage must be between 1 and ${MAX_PERCENT}`;
       }
-
-      if (payload.maximumDiscount && (isNaN(payload.maximumDiscount) || payload.maximumDiscount < 0)) {
-        return "Maximum discount must be a positive number";
-      }
     }
 
 
@@ -217,25 +200,12 @@ document.addEventListener("DOMContentLoaded", () => {
   form.addEventListener("submit", async e => {
     e.preventDefault();
 
-    const offerIdInput = document.getElementById("offerId");
-    const currentOfferId = offerIdInput?.value;
-
-    if (!currentOfferId) {
-      Swal.fire({
-        icon: "error",
-        title: "Error",
-        text: "Offer ID is missing. Please refresh the page.",
-      });
-      return;
-    }
-
     const payload = {
-      offerId: currentOfferId,
+      offerId: offerId._id,
       title: offerTitle.value.trim(),
       description: offerDesc.value.trim(),
       offerType: offerType.value,
       offerValue: Number(offerValue.value),
-      maximumDiscount: Number(document.getElementById("maximumDiscount")?.value) || 0,
       applicableOn: applicableOn.value,
       startDate: startDate.value,
       endDate: endDate.value,
@@ -268,7 +238,7 @@ document.addEventListener("DOMContentLoaded", () => {
     try {
       const res = await api.offerEditAxios(payload);
 
-      if (res?.data?.success) {
+      if (res.data.success) {
         Swal.fire({
           icon: "success",
           title: "Offer Updated",
@@ -279,20 +249,19 @@ document.addEventListener("DOMContentLoaded", () => {
           location.href = "/admin/offers";
         });
       } else {
-        const error = new Error(res?.data?.message || "Update failed");
-        error.status = res?.status;
-        throw error;
+        Swal.fire({
+          icon: "error",
+          title: "Update Failed",
+          text: res.data.message || "Something went wrong"
+        });
       }
     } catch (err) {
       console.error("Update failed:", err);
 
-      const errorMessage = err.response?.data?.message || err.message || "Could not update the offer. Try again later.";
-      const status = err.response?.status || err.status;
-
       Swal.fire({
         icon: "error",
-        title: status === 409 ? "Offer Already Exists" : "Server Error",
-        text: errorMessage
+        title: "Server Error",
+        text: "Could not update the offer. Try again later."
       });
     }
   });

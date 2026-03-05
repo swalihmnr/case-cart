@@ -182,7 +182,6 @@
                                         <p class="text-xs sm:text-sm text-red-500 mt-1" id="first-nameError"></p>
                                     </div>
 
-
                                     <!-- Last Name -->
                                     <div>
                                         <label for="last-name"
@@ -276,38 +275,6 @@
                                         <p class="text-xs sm:text-sm text-red-500 mt-1" id="pincodeError"></p>
                                     </div>
                                 </div>
-
-                                <!-- Save Address Option -->
-                                <div class="mt-4 pt-4 border-t border-gray-200">
-                                    <label class="flex items-center space-x-3 cursor-pointer">
-                                        <input type="checkbox" id="saveAddressCheckbox"
-                                            class="w-4 h-4 text-purple-600 border-gray-300 rounded focus:ring-purple-500 cursor-pointer">
-                                        <span class="text-sm font-medium text-gray-700">Save this address to my
-                                            profile</span>
-                                    </label>
-
-                                    <div id="addressTypeContainer" class="hidden mt-3 ml-7 space-y-2">
-                                        <p class="text-sm font-medium text-gray-700">Save address as:</p>
-                                        <div class="flex items-center space-x-4">
-                                            <label class="flex items-center cursor-pointer">
-                                                <input type="radio" name="addressType" value="Home"
-                                                    class="w-4 h-4 text-purple-600 border-gray-300 focus:ring-purple-500 cursor-pointer"
-                                                    checked>
-                                                <span class="ml-2 text-sm text-gray-600">Home</span>
-                                            </label>
-                                            <label class="flex items-center cursor-pointer">
-                                                <input type="radio" name="addressType" value="Work"
-                                                    class="w-4 h-4 text-purple-600 border-gray-300 focus:ring-purple-500 cursor-pointer">
-                                                <span class="ml-2 text-sm text-gray-600">Work</span>
-                                            </label>
-                                            <label class="flex items-center cursor-pointer">
-                                                <input type="radio" name="addressType" value="Other"
-                                                    class="w-4 h-4 text-purple-600 border-gray-300 focus:ring-purple-500 cursor-pointer">
-                                                <span class="ml-2 text-sm text-gray-600">Other</span>
-                                            </label>
-                                        </div>
-                                    </div>
-                                </div>
                             </form>
                         </div>
 
@@ -343,81 +310,71 @@
                                 </div>
 
                                 <!-- Wallet -->
-                                <% if (walletButton) { %>
-                                    <div class="border-2 border-gray-300 rounded-lg p-3 sm:p-4 hover:border-purple-400 cursor-pointer transition-all payment-option"
-                                        data-payment="wallet">
-                                        <label class="flex items-center justify-between cursor-pointer w-full">
-                                            <div class="flex items-center">
-                                                <input type="radio" name="payment" value="wallet"
-                                                    class="w-4 h-4 text-purple-600 focus:ring-purple-500 cursor-pointer">
-                                                <span
-                                                    class="ml-3 font-semibold text-gray-800 text-sm sm:text-base">Wallet</span>
-                                            </div>
-                                            <div class="flex items-center space-x-2">
-                                                <div class="flex items-center space-x-1">
-                                                    <div
-                                                        class="w-6 h-6 bg-yellow-100 rounded-full flex items-center justify-center">
-                                                        <svg class="w-4 h-4 text-yellow-600" fill="currentColor"
-                                                            viewBox="0 0 20 20">
-                                                            <path fill-rule="evenodd"
-                                                                d="M4 4a2 2 0 00-2 2v4a2 2 0 002 2h12a2 2 0 002-2V6a2 2 0 00-2-2H4z"
-                                                                clip-rule="evenodd"></path>
-                                                        </svg>
-                                                    </div>
+                                <div class="border-2 border-gray-300 rounded-lg p-3 sm:p-4 hover:border-purple-400 cursor-pointer transition-all payment-option"
+                                    data-payment="wallet">
+                                    <label class="flex items-center justify-between cursor-pointer w-full">
+                                        <div class="flex items-center">
+                                            <input type="radio" name="payment" value="wallet"
+                                                class="w-4 h-4 text-purple-600 focus:ring-purple-500 cursor-pointer">
+                                            <span
+                                                class="ml-3 font-semibold text-gray-800 text-sm sm:text-base">Wallet</span>
+                                        </div>
+                                        <div class="flex items-center space-x-2">
+                                            <div class="flex items-center space-x-1">
+                                                <div
+                                                    class="w-6 h-6 bg-yellow-100 rounded-full flex items-center justify-center">
+                                                    <svg class="w-4 h-4 text-yellow-600" fill="currentColor"
+                                                        viewBox="0 0 20 20">
+                                                        <path fill-rule="evenodd"
+                                                            d="M4 4a2 2 0 00-2 2v4a2 2 0 002 2h12a2 2 0 002-2V6a2 2 0 00-2-2H4z"
+                                                            clip-rule="evenodd"></path>
+                                                    </svg>
                                                 </div>
-                                                <svg class="w-5 h-5 text-gray-400" fill="none" stroke="currentColor"
-                                                    viewBox="0 0 24 24">
-                                                    <path stroke-linecap="round" stroke-linejoin="round"
-                                                        stroke-width="2" d="M9 5l7 7-7 7"></path>
-                                                </svg>
                                             </div>
-                                        </label>
-                                        <p class="text-xs sm:text-sm text-gray-500 mt-2 ml-7">Pay using your wallet
-                                            balance
-                                        </p>
-                                    </div>
-                                    <% } %>
+                                            <svg class="w-5 h-5 text-gray-400" fill="none" stroke="currentColor"
+                                                viewBox="0 0 24 24">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                                    d="M9 5l7 7-7 7"></path>
+                                            </svg>
+                                        </div>
+                                    </label>
+                                    <p class="text-xs sm:text-sm text-gray-500 mt-2 ml-7">Pay using your wallet balance
+                                    </p>
+                                </div>
 
-                                        <!-- Cash on Delivery -->
-                                        <% if (cod) { %>
-                                            <div class="border-2 border-gray-300 rounded-lg p-3 sm:p-4 hover:border-purple-400 cursor-pointer transition-all payment-option"
-                                                data-payment="cod">
-
-                                                <label class="flex items-center justify-between cursor-pointer w-full">
-                                                    <div class="flex items-center">
-                                                        <input type="radio" name="payment" value="cod"
-                                                            class="w-4 h-4 text-purple-600 focus:ring-purple-500 cursor-pointer">
-                                                        <span
-                                                            class="ml-3 font-semibold text-gray-800 text-sm sm:text-base">Cash
-                                                            on
-                                                            Delivery</span>
-                                                    </div>
-                                                    <div class="flex items-center space-x-2">
-                                                        <div class="flex items-center space-x-1">
-                                                            <div
-                                                                class="w-6 h-6 bg-green-100 rounded-full flex items-center justify-center">
-                                                                <svg class="w-4 h-4 text-green-600" fill="none"
-                                                                    stroke="currentColor" viewBox="0 0 24 24">
-                                                                    <path stroke-linecap="round" stroke-linejoin="round"
-                                                                        stroke-width="2"
-                                                                        d="M17 9V7a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2m2 4h10a2 2 0 002-2v-6a2 2 0 00-2-2H9a2 2 0 00-2 2v6a2 2 0 002 2zm7-5a2 2 0 11-4 0 2 2 0 014 0z">
-                                                                    </path>
-                                                                </svg>
-                                                            </div>
-                                                        </div>
-                                                        <svg class="w-5 h-5 text-gray-400" fill="none"
-                                                            stroke="currentColor" viewBox="0 0 24 24">
-                                                            <path stroke-linecap="round" stroke-linejoin="round"
-                                                                stroke-width="2" d="M9 5l7 7-7 7"></path>
-                                                        </svg>
-                                                    </div>
-                                                </label>
-                                                <p class="text-xs sm:text-sm text-gray-500 mt-2 ml-7">Pay when you
-                                                    receive your
-                                                    order</p>
+                                <!-- Cash on Delivery -->
+                                <div class="border-2 border-gray-300 rounded-lg p-3 sm:p-4 hover:border-purple-400 cursor-pointer transition-all payment-option"
+                                    data-payment="cod">
+                                    <label class="flex items-center justify-between cursor-pointer w-full">
+                                        <div class="flex items-center">
+                                            <input type="radio" name="payment" value="cod"
+                                                class="w-4 h-4 text-purple-600 focus:ring-purple-500 cursor-pointer">
+                                            <span class="ml-3 font-semibold text-gray-800 text-sm sm:text-base">Cash on
+                                                Delivery</span>
+                                        </div>
+                                        <div class="flex items-center space-x-2">
+                                            <div class="flex items-center space-x-1">
+                                                <div
+                                                    class="w-6 h-6 bg-green-100 rounded-full flex items-center justify-center">
+                                                    <svg class="w-4 h-4 text-green-600" fill="none"
+                                                        stroke="currentColor" viewBox="0 0 24 24">
+                                                        <path stroke-linecap="round" stroke-linejoin="round"
+                                                            stroke-width="2"
+                                                            d="M17 9V7a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2m2 4h10a2 2 0 002-2v-6a2 2 0 00-2-2H9a2 2 0 00-2 2v6a2 2 0 002 2zm7-5a2 2 0 11-4 0 2 2 0 014 0z">
+                                                        </path>
+                                                    </svg>
+                                                </div>
                                             </div>
-                                            <% } %>
-
+                                            <svg class="w-5 h-5 text-gray-400" fill="none" stroke="currentColor"
+                                                viewBox="0 0 24 24">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                                    d="M9 5l7 7-7 7"></path>
+                                            </svg>
+                                        </div>
+                                    </label>
+                                    <p class="text-xs sm:text-sm text-gray-500 mt-2 ml-7">Pay when you receive your
+                                        order</p>
+                                </div>
                             </div>
                         </div>
                     </div>
@@ -866,6 +823,8 @@
     <!-- Commented out problematic scripts for debugging -->
     <script src="https://checkout.razorpay.com/v1/checkout.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <script type="module" src="/js/user/checkout.js"></script>
+
     <!-- Pass data to JavaScript - FIXED to include saleSubtotal -->
     <script>
         // Ensure all values are defined and numbers
@@ -884,8 +843,5 @@
 
         console.log('Checkout Data Initialized from EJS:', window.checkoutData);
     </script>
-    <script type="module" src="/js/user/checkout.js"></script>
-
-
 
     <%- include('../partials/user/footer') %>

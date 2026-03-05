@@ -583,49 +583,37 @@ const getProduct = async (req, res) => {
               productIds: 1,
               applicableOn: 1,
               minimumOrderValue: 1,
-              maximumDiscount: 1,
             },
           },
         ]);
 
-        const orgPrice = Number(p.minVariant.orgPrice);
-        const existingSalePrice = Number(p.minVariant.salePrice);
-        const existingDiscount = orgPrice - existingSalePrice;
+        const price = p.minVariant.orgPrice;
 
-        let bestOfferDiscount = 0;
+        let bestDiscount = 0;
         let bestOffer = null;
 
         for (let offer of offers) {
+          if (offer.discountValue >= price) continue;
           let discountAmount = 0;
-          const discValue = Number(offer.discountValue) || 0;
-
           if (offer.offerType === "percentage") {
-            discountAmount = (orgPrice * discValue) / 100;
-            if (offer.maximumDiscount && offer.maximumDiscount > 0) {
-              discountAmount = Math.min(discountAmount, Number(offer.maximumDiscount));
-            }
+            discountAmount = price * (offer.discountValue / 100);
           } else {
-            discountAmount = Math.min(discValue, orgPrice);
+            discountAmount = Math.min(offer.discountValue, price);
           }
 
-          if (discountAmount > bestOfferDiscount) {
-            bestOfferDiscount = discountAmount;
+          if (discountAmount > bestDiscount) {
+            bestDiscount = discountAmount;
             bestOffer = offer;
           }
         }
 
-        // Compare best offer discount with existing sale price discount
-        const isOfferBetter = bestOfferDiscount > existingDiscount;
-        const finalDiscount = isOfferBetter ? bestOfferDiscount : existingDiscount;
-        const finalSalePrice = Math.floor(orgPrice - finalDiscount);
-
         return {
           ...p,
-          offerType: isOfferBetter ? bestOffer.offerType : null,
-          offerValue: isOfferBetter ? bestOffer.discountValue : 0,
-          offerName: isOfferBetter ? bestOffer.title : null,
-          bestDiscount: finalDiscount,
-          salePrice: finalSalePrice,
+          offerType: bestOffer?.offerType || null,
+          offerValue: bestOffer?.discountValue || 0,
+          offerName: bestOffer?.title || null,
+          bestDiscount,
+          salePrice: price - bestDiscount,
         };
       }),
     );
@@ -742,6 +730,7 @@ const getVariantData = async (req, res) => {
       {
         $match: {
           $or: [
+            { applicableOn: "global" },
             {
               applicableOn: "product",
               productIds: product._id,
@@ -758,9 +747,6 @@ const getVariantData = async (req, res) => {
           applicableOn: 1,
           categoryIds: 1,
           productIds: 1,
-          discountValue: 1,
-          offerType: 1,
-          maximumDiscount: 1,
         },
       },
     ]);
@@ -1659,15 +1645,10 @@ const getCheckout = async (req, res) => {
       // Create cartItems array with the single item
       cartItems = [item];
     }
-    let walletButton = false
-    let cod = false;
-    if (walletBalance?.balance >= finalAmount) {
-      walletButton = true
-    }
-
-    if (finalAmount > 1000) {
-      cod = true
-    }
+    let walletButton = true
+    // if(walletBalance.balance<finalAmount){
+    //   walletButton=false
+    // }
     const addresses = await addressModel.find({ userId });
 
     // Debug logs to verify both flows work the same
@@ -1703,8 +1684,7 @@ const getCheckout = async (req, res) => {
       shipping,
       finalAmount,
       coupons,
-      walletButton,
-      cod
+      walletButton
     });
 
   } catch (err) {
@@ -1797,11 +1777,7 @@ const addAddress = async (req, res) => {
       message: "address saved ",
     });
   } catch (error) {
-    console.error("Error saving address:", error);
-    return res.status(500).json({
-      success: false,
-      message: error.message || "Failed to save address",
-    });
+    console.log(error);
   }
 };
 
@@ -2361,8 +2337,7 @@ const getOrder = async (req, res) => {
                   finalPrice: "$orderItems.finalPrice",
                   status: "$orderItems.status",
                   cancelledAt: "$orderItems.cancelledAt",
-                  cancellationReason: "$orderItems.cancellationReason",
-                  isReject: "$orderItems.isReject"
+                  cancellationReason: "$orderItems.cancellationReason"
                 }
               }
             }
@@ -2439,8 +2414,7 @@ const getOrderDetails = async (req, res) => {
               finalPrice: "$orderItems.finalPrice",
               status: "$orderItems.status",
               cancelledAt: "$orderItems.cancelledAt",
-              cancellationReason: "$orderItems.cancellationReason",
-              isReject: "$orderItems.isReject"
+              cancellationReason: "$orderItems.cancellationReason"
             }
           }
         }
@@ -2450,6 +2424,7 @@ const getOrderDetails = async (req, res) => {
     if (!order || order.length === 0) {
       return res.status(404).render("404");
     }
+
     res.render("./user/order-details", { order: order[0] });
   } catch (error) {
     console.error(error);
@@ -2528,17 +2503,6 @@ const cancelWholeOrder = async (req, res) => {
         arrayFilters: [{ "elem.status": { $in: ["pending", "placed", "processing"] } }]
       }
     );
-
-    await orderModel.updateOne(
-      { _id: orderId },
-      {
-        $set: {
-          finalAmount: 0,
-          orderStatus: "cancelled"
-        }
-      }
-    );
-
     if (
       result.modifiedCount > 0 && orderExists.paymentStatus === "paid") {
 
@@ -2572,7 +2536,7 @@ const cancelWholeOrder = async (req, res) => {
     // =========================
     // RESTORE STOCK 
     // =========================
-    if (result.modifiedCount > 0 && orderExists.paymentStatus === 'paid') {
+    if (orderExists.paymentStatus !== "initiated" && orderExists.paymentStatus !== "failed") {
       for (const item of cancellableItems) {
         await variantModel.updateOne(
           { _id: item.variantId },
@@ -2607,7 +2571,7 @@ const orderCancel = async (req, res) => {
     const existingOrder = await orderModel.findOne({
       _id: orderID,
       "orderItems._id": orderItemId
-    }).populate('couponId');
+    });
 
     if (!existingOrder) {
       return res.status(STATUS_CODES.NOT_FOUND).json({
@@ -2636,54 +2600,10 @@ const orderCancel = async (req, res) => {
       },
     );
 
-
-    let refundAmount = 0;
-
-    if (result.modifiedCount > 0) {
-      let activeSubtotal = 0;
-      for (const orderItem of existingOrder.orderItems) {
-        if (
-          orderItem._id.toString() !== orderItemId.toString() &&
-          !['cancelled', 'returned'].includes(orderItem.status)
-        ) {
-          activeSubtotal += orderItem.finalPrice;
-        }
-      }
-
-      let newCouponDiscount = 0;
-      if (existingOrder.couponId) {
-        const coupon = existingOrder.couponId;
-        if (activeSubtotal >= coupon.MinimumPurchaseValue) {
-          if (coupon.discountType === "percentage") {
-            newCouponDiscount = (activeSubtotal * coupon.discountValue) / 100;
-            if (coupon.maximumDiscount && coupon.maximumDiscount > 0) {
-              newCouponDiscount = Math.min(newCouponDiscount, coupon.maximumDiscount);
-            }
-          } else {
-            newCouponDiscount = coupon.discountValue;
-          }
-        }
-      }
-
-      const newFinalAmount = activeSubtotal + existingOrder.shipping - newCouponDiscount;
-      refundAmount = Math.max(0, existingOrder.finalAmount - newFinalAmount);
-      const updatedFinalAmount = existingOrder.finalAmount - refundAmount;
-
-      await orderModel.updateOne(
-        { _id: orderID },
-        {
-          $set: {
-            finalAmount: updatedFinalAmount,
-            couponDiscount: newCouponDiscount
-          }
-        }
-      );
-    }
-
     // ======================
     // RESTORE STOCK
     // ======================
-    if (result.modifiedCount > 0 && existingOrder.paymentStatus === 'paid') {
+    if (existingOrder.paymentStatus !== "initiated" && existingOrder.paymentStatus !== "failed") {
       await variantModel.updateOne(
         { _id: item.variantId },
         { $inc: { stock: item.quantity } }
@@ -2691,18 +2611,18 @@ const orderCancel = async (req, res) => {
     }
 
 
-    if (result.modifiedCount > 0 && existingOrder.paymentStatus === "paid" && refundAmount > 0) {
-      let Wallet = await wallet.findOne({ userId: existingOrder.userId })
+    if (result.modifiedCount > 0 && existingOrder.paymentStatus === "paid") {
+      let Wallet = await wallet.findOne({ userId: req.session.user.id })
       if (!Wallet) {
         Wallet = await wallet.create({
-          userId: existingOrder.userId,
+          userId: req.session.user.id,
           balance: 0,
           transactions: []
         })
       }
-      Wallet.balance += refundAmount;
+      Wallet.balance += item.finalPrice;
       Wallet.transactions.push({
-        amount: refundAmount,
+        amount: item.finalPrice,
         description: "Refund for cancelled order",
         orderId: existingOrder._id,
         transactionType: 'credited'
@@ -2808,12 +2728,6 @@ const returnReq = async (req, res) => {
       });
     }
     const item = existing.orderItems.id(orderItemId);
-    if (item.isReject) {
-      return res.status(STATUS_CODES.BAD_REQUEST).json({
-        success: false,
-        message: "already returned item"
-      })
-    }
     if (item.status !== "delivered") {
       return res.status(STATUS_CODES.FORBIDDEN).json({
         success: false,

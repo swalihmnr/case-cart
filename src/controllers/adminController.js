@@ -1119,7 +1119,7 @@ const reqApprove = async (req, res) => {
         const existing = await orderModel.findOne({
             _id: orderId,
             "orderItems._id": ordItemId
-        }).populate('couponId');
+        });
 
         if (!existing) {
             return res.status(STATUS_CODES.NOT_FOUND).json({
@@ -1146,47 +1146,6 @@ const reqApprove = async (req, res) => {
 
         await existing.save();
 
-        let refundAmount = 0;
-
-        let activeSubtotal = 0;
-        for (const orderItem of existing.orderItems) {
-            if (
-                orderItem._id.toString() !== ordItemId.toString() &&
-                !['cancelled', 'returned'].includes(orderItem.status)
-            ) {
-                activeSubtotal += orderItem.finalPrice;
-            }
-        }
-
-        let newCouponDiscount = 0;
-        if (existing.couponId) {
-            const coupon = existing.couponId;
-            if (activeSubtotal >= coupon.MinimumPurchaseValue) {
-                if (coupon.discountType === "percentage") {
-                    newCouponDiscount = (activeSubtotal * coupon.discountValue) / 100;
-                    if (coupon.maximumDiscount && coupon.maximumDiscount > 0) {
-                        newCouponDiscount = Math.min(newCouponDiscount, coupon.maximumDiscount);
-                    }
-                } else {
-                    newCouponDiscount = coupon.discountValue;
-                }
-            }
-        }
-
-        const newFinalAmount = activeSubtotal + existing.shipping - newCouponDiscount;
-        refundAmount = Math.max(0, existing.finalAmount - newFinalAmount);
-        const updatedFinalAmount = existing.finalAmount - refundAmount;
-
-        await orderModel.updateOne(
-            { _id: orderId },
-            {
-                $set: {
-                    finalAmount: updatedFinalAmount,
-                    couponDiscount: newCouponDiscount
-                }
-            }
-        );
-
         // ======================
         // RESTORE STOCK
         // ======================
@@ -1198,7 +1157,7 @@ const reqApprove = async (req, res) => {
         // ======================
         // REFUND (ONLY IF PAID)
         // ======================
-        if (existing.paymentStatus === "paid" && refundAmount > 0) {
+        if (existing.paymentStatus === "paid") {
 
             let Wallet = await wallet.findOne({
                 userId: existing.userId
@@ -1211,6 +1170,8 @@ const reqApprove = async (req, res) => {
                     transactions: []
                 });
             }
+
+            const refundAmount = item.finalPrice;
 
             Wallet.balance += refundAmount;
 

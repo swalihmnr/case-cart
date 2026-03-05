@@ -125,7 +125,7 @@ const createOfferAxios = async (data) => {
   try {
     console.log('hlow')
     console.log(data)
-    return await api.post('/admin/offer/add', data)
+    return api.post('/admin/offer/add', data)
   } catch (error) {
     return error.response
   }
@@ -152,7 +152,7 @@ const createCouponAxios = async (payload) => {
     return await api.post('/admin/coupen/add', payload)
 
   } catch (error) {
-    return error.response
+
   }
 }
 const editCouponAxios = async (payload) => {

@@ -6,7 +6,7 @@ const remWishlist=async(id)=>{
         if(res.data.success){
           Swal.fire({
         icon: 'success',
-        title: 'removed from wishlist',
+        title: 'added to wishlist',
         text: res.data.message,
         confirmButtonColor: '#667eea'
       });
