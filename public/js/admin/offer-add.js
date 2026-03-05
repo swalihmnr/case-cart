@@ -9,8 +9,10 @@ const MAX_PERCENT = 70;
 // CONTEXT DETECTION
 // ===============================
 const urlParams = new URLSearchParams(window.location.search);
-const productIdFromUrl = urlParams.get("id");
-const isProductContext = !!productIdFromUrl;
+const idFromUrl = urlParams.get("id");
+const itemTypeFromUrl = urlParams.get("item"); // "Product" or "Category"
+const isProductContext = idFromUrl && itemTypeFromUrl === "Product";
+const isCategoryContext = idFromUrl && itemTypeFromUrl === "Category";
 
 // ===============================
 // DOM READY
@@ -32,6 +34,8 @@ function initOfferPage() {
 
   if (isProductContext) {
     enableProductContextMode();
+  } else if (isCategoryContext) {
+    enableCategoryContextMode();
   } else {
     enableNormalMode();
   }
@@ -91,6 +95,9 @@ function enableProductContextMode() {
   const productIdInput = document.getElementById("productIdFromUrl");
 
   productContextMessage?.classList.remove("hidden");
+  if (productContextMessage) {
+    productContextMessage.querySelector('p').textContent = "You are creating an offer for a specific product.";
+  }
 
   applicableOn.value = "product";
   applicableOn.disabled = true;
@@ -100,9 +107,35 @@ function enableProductContextMode() {
   productSelectorContainer?.classList.add("hidden");
   categorySelectorContainer?.classList.add("hidden");
 
-  if (productIdInput) productIdInput.value = productIdFromUrl;
+  if (productIdInput) productIdInput.value = idFromUrl;
 
-  loadProductDetails(productIdFromUrl);
+  loadProductDetails(idFromUrl);
+}
+
+function enableCategoryContextMode() {
+  const applicableOn = document.getElementById("applicableOn");
+  const productContextMessage = document.getElementById("productContextMessage");
+
+  if (productContextMessage) {
+    productContextMessage.classList.remove("hidden");
+    productContextMessage.querySelector('p').textContent = "You are creating an offer for a specific category.";
+  }
+
+  applicableOn.value = "category";
+  applicableOn.disabled = true;
+  applicableOn.classList.add("bg-gray-100", "cursor-not-allowed");
+
+  applicableOn.addEventListener("change", handleApplicableOnChange);
+  loadCategories();
+  handleApplicableOnChange();
+
+  setTimeout(() => {
+    const checkbox = document.getElementById(`cat-${idFromUrl}`);
+    if (checkbox) {
+      checkbox.checked = true;
+      checkbox.disabled = true;
+    }
+  }, 100);
 }
 
 function enableNormalMode() {
@@ -261,7 +294,7 @@ function validateOfferForm(data) {
     showError('applicableOnErr', 'Please select where the offer applies');
     isValid = false;
   } else {
-    if (!isProductContext) {
+    if (!isProductContext && !isCategoryContext) {
       if (data.applicableOn === 'product') {
         const selectedProducts = getSelectedProductIds();
         if (selectedProducts.length === 0) {
@@ -327,7 +360,10 @@ function buildPayload(data) {
 
   if (isProductContext) {
     payload.applicableOn = "product";
-    payload.productIds = [productIdFromUrl];
+    payload.productIds = [idFromUrl];
+  } else if (isCategoryContext) {
+    payload.applicableOn = "category";
+    payload.categoryIds = [idFromUrl];
   } else {
     if (data.applicableOn === "product") {
       payload.productIds = getSelectedProductIds();
