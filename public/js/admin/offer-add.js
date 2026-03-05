@@ -133,7 +133,12 @@ function enableCategoryContextMode() {
     const checkbox = document.getElementById(`cat-${idFromUrl}`);
     if (checkbox) {
       checkbox.checked = true;
-      checkbox.disabled = true;
+      checkbox.onclick = () => false;
+      checkbox.classList.add('cursor-not-allowed', 'opacity-80');
+      // If there's a parent label, make that not-allowed too
+      if (checkbox.parentElement) {
+        checkbox.parentElement.classList.add('cursor-not-allowed');
+      }
     }
   }, 100);
 }
