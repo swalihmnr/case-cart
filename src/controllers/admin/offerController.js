@@ -142,161 +142,160 @@ const renderOffersPage = async (req, res) => {
 // =========================
 // ADD OFFER
 // =========================
-const renderOfferAdd=async(req,res)=>{
-    console.log('entered')
-    let schemaModel;
-    if(req.query.item==="Product"){
-        schemaModel=Product
-    }else{
-        schemaModel=Category
-    }
-    console.log('entered1')
-    let response=await idFinder(schemaModel,req.query.id)
-    let passFromUrl={};
-    console.log('entered2')
-    if(response){
-        passFromUrl.name=response?.name||null
-    }
-    const category=await Category.find();
-    const products=await Product.find()
-    console.log(passFromUrl)
-    return res.render('./admin/offer-add',{
-        category,
-        products,
-        passFromUrl
-    })
+const renderOfferAdd = async (req, res) => {
+  console.log('entered')
+  let schemaModel;
+  if (req.query.item === "Product") {
+    schemaModel = Product
+  } else {
+    schemaModel = Category
+  }
+  console.log('entered1')
+  let response = await idFinder(schemaModel, req.query.id)
+  let passFromUrl = {};
+  console.log('entered2')
+  if (response) {
+    passFromUrl.name = response?.name || null
+  }
+  const category = await Category.find();
+  const products = await Product.find()
+  console.log(passFromUrl)
+  return res.render('./admin/offer-add', {
+    category,
+    products,
+    passFromUrl
+  })
 }
 
-const postOfferAdd=async(req,res)=>{
-    try {
-        console.log(req.body)
-        const {title,description,offerType,offerValue,applicableOn,minOrderValue,startDate,endDate,productIds,categoryIds }=req.body;
-        if (
-            !title ||
-            !offerType ||
-            !offerValue ||
-            !applicableOn ||
-            !startDate ||
-            !endDate) 
-            {
-                return res.status(STATUS_CODES.FORBIDDEN).json({
-                    success:false,
-                    message:"some fields are missing"
-                })
-                
-            }else{
-              
-                const start=new Date(startDate)
-                const end=new Date(endDate);
-                if(isNaN(end.getTime())){
-                    return res.status(STATUS_CODES.FORBIDDEN).json({
-                        success:false,
-                        message:"Invalid date"
-                    })
-                }
-                if(isNaN(start.getTime())){
-                    return res.status(STATUS_CODES.FORBIDDEN).json({
-                        success:false,
-                        message:"Invalid date"
-                    })
-                }
-                console.log('hlow')
-    const existing =await offerModel.findOne({title:title});
-    console.log(existing)
-    if(existing){
-        return res.status(STATUS_CODES.CONFLICT).json({
-            success:false,
-            message:"Offer already exist!"
+const postOfferAdd = async (req, res) => {
+  try {
+    console.log(req.body)
+    const { title, description, offerType, offerValue, applicableOn, maximumDiscount, startDate, endDate, productIds, categoryIds } = req.body;
+    if (
+      !title ||
+      !offerType ||
+      !offerValue ||
+      !applicableOn ||
+      !startDate ||
+      !endDate) {
+      return res.status(STATUS_CODES.FORBIDDEN).json({
+        success: false,
+        message: "some fields are missing"
+      })
+
+    } else {
+
+      const start = new Date(startDate)
+      const end = new Date(endDate);
+      if (isNaN(end.getTime())) {
+        return res.status(STATUS_CODES.FORBIDDEN).json({
+          success: false,
+          message: "Invalid date"
         })
-    }
-    const offerData={
+      }
+      if (isNaN(start.getTime())) {
+        return res.status(STATUS_CODES.FORBIDDEN).json({
+          success: false,
+          message: "Invalid date"
+        })
+      }
+      console.log('hlow')
+      const existing = await offerModel.findOne({ title: title });
+      console.log(existing)
+      if (existing) {
+        return res.status(STATUS_CODES.CONFLICT).json({
+          success: false,
+          message: "Offer already exist!"
+        })
+      }
+      const offerData = {
         title,
         description,
         offerType,
-        discountValue:offerValue,
+        discountValue: offerValue,
         applicableOn,
-        minimumOrderValue:minOrderValue,
+        maximumDiscount: maximumDiscount || 0,
         startDate,
         endDate
-    }
-    if(applicableOn==='category'){
-       if(categoryIds.length===0){
-        return res.status(STATUS_CODES.NOT_FOUND).json({
-          success:false,
-          message:`You must add items belong to ${applicableOn}`
+      }
+      if (applicableOn === 'category') {
+        if (categoryIds.length === 0) {
+          return res.status(STATUS_CODES.NOT_FOUND).json({
+            success: false,
+            message: `You must add items belong to ${applicableOn}`
+          })
+        }
+        offerData.categoryIds = categoryIds.map((id) => {
+          return new mongoose.Types.ObjectId(id);
         })
       }
-        offerData.categoryIds=categoryIds.map((id)=>{
-           return  new mongoose.Types.ObjectId(id);
-        })
-    }
-    if(applicableOn==="product"){
-       if(productIds.length===0){
-        return res.status(STATUS_CODES.NOT_FOUND).json({
-          success:false,
-          message:`You must add items belong to ${applicableOn}`
+      if (applicableOn === "product") {
+        if (productIds.length === 0) {
+          return res.status(STATUS_CODES.NOT_FOUND).json({
+            success: false,
+            message: `You must add items belong to ${applicableOn}`
+          })
+        }
+        offerData.productIds = productIds.map((id) => {
+          return new mongoose.Types.ObjectId(id)
         })
       }
-        offerData.productIds=productIds.map((id)=>{
-           return new mongoose.Types.ObjectId(id)
-        })
+      await offerModel.create(offerData)
+      return res.status(STATUS_CODES.CREATED).json({
+        success: true,
+        message: "Offer Created successfully"
+      })
     }
-    await offerModel.create(offerData)
-    return res.status(STATUS_CODES.CREATED).json({
-        success:true,
-        message:"Offer Created successfully"
-    })
-}
 
-        
-    } catch (error) {
-        console.log(error)
-        return res.status(STATUS_CODES.INTERNAL_SERVER_ERROR).json({
-            success:false,
-            message:"Internal server Error!"
-        })
-        
-    }
-} 
+
+  } catch (error) {
+    console.log(error)
+    return res.status(STATUS_CODES.INTERNAL_SERVER_ERROR).json({
+      success: false,
+      message: "Internal server Error!"
+    })
+
+  }
+}
 
 
 // =========================
 // EDIT OFFER
 // =========================
 const renderOfferEdit = async (req, res) => {
-    try {
-      const response={};
-      console.log(req.query)
-    console.log("body",req.query)
+  try {
+    const response = {};
+    console.log(req.query)
+    console.log("body", req.query)
     const offerId = new mongoose.Types.ObjectId(req.query.id);
-response.type = null;
-response.data = null;
+    response.type = null;
+    response.data = null;
 
-if (req.query.item && req.query.itemId) {
-  let schemaModel;
+    if (req.query.item && req.query.itemId) {
+      let schemaModel;
 
-  if (req.query.item === "Product") {
-    response.type = "product";
-    schemaModel = Product;
-  } else if (req.query.item === "Category") {
-    response.type = "category";
-    schemaModel = Category;
-  }
+      if (req.query.item === "Product") {
+        response.type = "product";
+        schemaModel = Product;
+      } else if (req.query.item === "Category") {
+        response.type = "category";
+        schemaModel = Category;
+      }
 
-  if (schemaModel) {
-    response.data = await idFinder(schemaModel, req.query.itemId);
-  }
-}
+      if (schemaModel) {
+        response.data = await idFinder(schemaModel, req.query.itemId);
+      }
+    }
 
 
     const offer = await offerModel
       .findById(offerId)
       .populate("productIds")
       .populate("categoryIds");
-      console.log(req.query.id)
-console.log(offer)
+    console.log(req.query.id)
+    console.log(offer)
     const products = await Product.find({ isBlock: false });
-    console.log('it  is the product',products)
+    console.log('it  is the product', products)
     const categories = await Category.find();
 
     return res.render("./admin/offer-edit", {
@@ -305,101 +304,117 @@ console.log(offer)
       categories,
       response
     });
-    
-} catch (err) {
+
+  } catch (err) {
     console.error("Render edit error:", err);
     return res.redirect("/admin/offers");
-}
+  }
 };
-const postEditOffer=async(req,res)=>{
-    try {
+const postEditOffer = async (req, res) => {
+  try {
     console.log(req.body)
-  
-    const {offerId, title, description, offerType, offerValue, applicableOn, minOrderValue, startDate, endDate, productIds,categoryIds,status} = req.body;
+
+    const { offerId, title, description, offerType, offerValue, applicableOn, maximumDiscount, startDate, endDate, productIds, categoryIds, status } = req.body;
     console.log(offerId)
     if (!offerId || !title || !description || !offerType || !offerValue || !applicableOn || !startDate || !endDate) {
-        return res.status(STATUS_CODES.NOT_FOUND).json({ success: false, message: "Missing required fields" });
+      return res.status(STATUS_CODES.NOT_FOUND).json({ success: false, message: "Missing required fields" });
     }
 
-   let  offerDataToUpdate={
-        title,
-        description,
-        offerType,
-        discountValue:offerValue,
-        applicableOn,
-        minimumOrderValue:minOrderValue,
-        startDate,
-        endDate,
-        status 
+    const currentOfferObjectId = new mongoose.Types.ObjectId(offerId);
+
+    const existingOffer = await offerModel.findOne({
+      title: title.trim(),
+      _id: { $ne: currentOfferObjectId }
+    });
+
+    if (existingOffer) {
+      return res.status(STATUS_CODES.CONFLICT).json({
+        success: false,
+        message: "Another offer with this title already exists"
+      });
     }
-    if(applicableOn==='category'){
-      if(categoryIds.length===0){
+
+    let offerDataToUpdate = {
+      title,
+      description,
+      offerType,
+      discountValue: offerValue,
+      applicableOn,
+      maximumDiscount: Number(maximumDiscount) || 0,
+      startDate,
+      endDate,
+      status
+    }
+    if (applicableOn === 'category') {
+      const ids = Array.isArray(categoryIds) ? categoryIds : [];
+      if (ids.length === 0) {
         return res.status(STATUS_CODES.NOT_FOUND).json({
-          success:false,
-          message:`You must add items belong to ${applicableOn}`
+          success: false,
+          message: `You must add items belong to ${applicableOn}`
         })
       }
-        offerDataToUpdate.categoryIds=categoryIds.map((id)=>{
-           return  new mongoose.Types.ObjectId(id);
-        })
+      offerDataToUpdate.categoryIds = ids.map((id) => {
+        return new mongoose.Types.ObjectId(id);
+      })
     }
-    if(applicableOn==="product"){
-      if(productIds.length===0){
+    if (applicableOn === "product") {
+      const ids = Array.isArray(productIds) ? productIds : [];
+      if (ids.length === 0) {
         return res.status(STATUS_CODES.NOT_FOUND).json({
-          success:false,
-          message:`You must add items belong to ${applicableOn}`
+          success: false,
+          message: `You must add items belong to ${applicableOn}`
         })
       }
-        offerDataToUpdate.productIds=productIds.map((id)=>{
-           return new mongoose.Types.ObjectId(id)
-        })
+      offerDataToUpdate.productIds = ids.map((id) => {
+        return new mongoose.Types.ObjectId(id)
+      })
     }
-    if(applicableOn==='global'){
-      offerDataToUpdate.productIds=[]
-      offerDataToUpdate.categoryIds=[]
+    if (applicableOn === 'global') {
+      offerDataToUpdate.productIds = []
+      offerDataToUpdate.categoryIds = []
     }
-    const updatedData=await offerModel.findByIdAndUpdate(new mongoose.Types.ObjectId(offerId),offerDataToUpdate,{new:true,runValidators:true})
+    const updatedData = await offerModel.findByIdAndUpdate(currentOfferObjectId, offerDataToUpdate, { new: true, runValidators: true })
     return res.status(STATUS_CODES.OK).json({
-        success:true,
-        message:"Offer udpdated Successfully"
+      success: true,
+      message: "Offer udpdated Successfully"
     })
 
-    } catch (error) {
-        return res.status(STATUS_CODES.INTERNAL_SERVER_ERROR).json({
-            success:false,
-            message:"Internal server Error"
-        })
-    }
+  } catch (error) {
+    return res.status(STATUS_CODES.INTERNAL_SERVER_ERROR).json({
+      success: false,
+      message: "Internal server Error"
+    })
+  }
 
 }
 
 // =========================
 // DELETE OFFER
 // =========================
-const deleteOffer=async(req,res)=>{
-    try {
-        const offerId=new mongoose.Types.ObjectId(req.params.id);
-        const response=await offerModel.findByIdAndDelete(offerId)
-        return res.status(STATUS_CODES.OK).json({
-            success:true,
-            message:"Offer deleted Successfully"
-        })
-    } catch (error) {
-        console.log(error)
-        return res.status(STATUS_CODES.INTERNAL_SERVER_ERROR).json({
-            success:false,
-            message:"Internal server Error"
-       })
-        
-    }
-    
+const deleteOffer = async (req, res) => {
+  try {
+    const offerId = new mongoose.Types.ObjectId(req.params.id);
+    const response = await offerModel.findByIdAndDelete(offerId)
+    return res.status(STATUS_CODES.OK).json({
+      success: true,
+      message: "Offer deleted Successfully"
+    })
+  } catch (error) {
+    console.log(error)
+    return res.status(STATUS_CODES.INTERNAL_SERVER_ERROR).json({
+      success: false,
+      message: "Internal server Error"
+    })
+
+  }
+
 }
 
 export default {
-    renderOffersPage,
-    renderOfferAdd,
-    postOfferAdd,
-    renderOfferEdit,
-    postEditOffer,
-    deleteOffer
+  renderOffersPage,
+  renderOfferAdd,
+  postOfferAdd,
+  renderOfferEdit,
+  postEditOffer,
+  deleteOffer
 }

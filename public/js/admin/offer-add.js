@@ -9,8 +9,10 @@ const MAX_PERCENT = 70;
 // CONTEXT DETECTION
 // ===============================
 const urlParams = new URLSearchParams(window.location.search);
-const productIdFromUrl = urlParams.get("id");
-const isProductContext = !!productIdFromUrl;
+const itemIdFromUrl = urlParams.get("id");
+const itemTypeFromUrl = urlParams.get("item");
+const isProductContext = itemIdFromUrl && itemTypeFromUrl === "Product";
+const isCategoryContext = itemIdFromUrl && itemTypeFromUrl === "Category";
 
 // ===============================
 // DOM READY
@@ -34,6 +36,9 @@ function initOfferPage() {
     enableProductContextMode();
   } else {
     enableNormalMode();
+    if (isCategoryContext) {
+      enableCategoryContextMode();
+    }
   }
 
   form.addEventListener("submit", handleOfferSubmit);
@@ -48,6 +53,7 @@ function initOfferPage() {
     { id: "offerDesc", err: "offerDescErr" },
     { id: "offerType", err: "offerTypeErr", event: "change" },
     { id: "offerValue", err: "offerValueErr" },
+    { id: "maximumDiscount", err: "maximumDiscountErr" },
     { id: "applicableOn", err: "applicableOnErr", event: "change" },
     { id: "startDate", err: "startDateErr", event: "change" },
     { id: "endDate", err: "endDateErr", event: "change" }
@@ -59,6 +65,21 @@ function initOfferPage() {
       el.addEventListener(f.event || "input", () => clearFieldError(f.err));
     }
   });
+
+  // Handle maximum discount field visibility
+  const offerTypeSelect = document.getElementById("offerType");
+  const maxDiscountWrapper = document.getElementById("maxDiscountWrapper");
+
+  const toggleMaxDiscount = () => {
+    if (offerTypeSelect.value === "percentage") {
+      maxDiscountWrapper?.classList.remove("hidden");
+    } else {
+      maxDiscountWrapper?.classList.add("hidden");
+    }
+  };
+
+  offerTypeSelect?.addEventListener("change", toggleMaxDiscount);
+  toggleMaxDiscount(); // Initial check
 
   // Initialize date inputs (only set min dates, not values)
   initDateInputs();
@@ -90,7 +111,13 @@ function enableProductContextMode() {
   const categorySelectorContainer = document.getElementById("categorySelectorContainer");
   const productIdInput = document.getElementById("productIdFromUrl");
 
-  productContextMessage?.classList.remove("hidden");
+  if (productContextMessage) {
+    productContextMessage.classList.remove("hidden");
+    const p = productContextMessage.querySelector("p");
+    if (p) {
+      p.innerText = "You are creating an offer for a specific product.";
+    }
+  }
 
   applicableOn.value = "product";
   applicableOn.disabled = true;
@@ -100,9 +127,41 @@ function enableProductContextMode() {
   productSelectorContainer?.classList.add("hidden");
   categorySelectorContainer?.classList.add("hidden");
 
-  if (productIdInput) productIdInput.value = productIdFromUrl;
+  if (productIdInput) productIdInput.value = itemIdFromUrl;
 
-  loadProductDetails(productIdFromUrl);
+  loadProductDetails(itemIdFromUrl);
+}
+
+function enableCategoryContextMode() {
+  const applicableOn = document.getElementById("applicableOn");
+  const productContextMessage = document.getElementById("productContextMessage");
+
+  applicableOn.value = "category";
+  applicableOn.disabled = true;
+  applicableOn.classList.add("bg-gray-100", "cursor-not-allowed");
+
+  if (productContextMessage) {
+    productContextMessage.classList.remove("hidden");
+    const p = productContextMessage.querySelector("p");
+    if (p) {
+      p.innerText = "You are creating an offer for a specific category.";
+    }
+  }
+
+  handleApplicableOnChange();
+
+  setTimeout(() => {
+    const cb = document.getElementById(`cat-${itemIdFromUrl}`);
+    if (cb) {
+      cb.checked = true;
+      document.querySelectorAll(".category-checkbox").forEach(box => {
+        if (box !== cb) {
+          box.disabled = true;
+          box.parentElement.classList.add("opacity-50");
+        }
+      });
+    }
+  }, 100);
 }
 
 function enableNormalMode() {
@@ -182,14 +241,21 @@ async function handleOfferSubmit(e) {
         location.href = "/admin/offers";
       });
     } else {
-      throw new Error(res?.data?.message || "Create failed");
+      const error = new Error(res?.data?.message || "Create failed");
+      error.status = res?.status;
+      throw error;
     }
   } catch (err) {
     console.error("Create offer error:", err);
+
+    // Extract server message if possible
+    const errorMessage = err.response?.data?.message || err.message || "Something went wrong. Please try again.";
+    const status = err.response?.status || err.status;
+
     Swal.fire({
       icon: "error",
-      title: "Server Error",
-      text: err.message || "Something went wrong. Please try again.",
+      title: status === 409 ? "Offer Already Exists" : "Server Error",
+      text: errorMessage,
       confirmButtonColor: "#7c3aed"
     });
   }
@@ -204,6 +270,7 @@ function getFormData() {
     desc: document.getElementById("offerDesc")?.value.trim(),
     offerType: document.getElementById("offerType")?.value,
     offerValue: document.getElementById("offerValue")?.value.trim(),
+    maximumDiscount: document.getElementById("maximumDiscount")?.value.trim(),
     applicableOn: document.getElementById("applicableOn")?.value,
     startDate: document.getElementById("startDate")?.value,
     endDate: document.getElementById("endDate")?.value,
@@ -256,12 +323,21 @@ function validateOfferForm(data) {
     }
   }
 
+  // Maximum Discount Validation
+  if (data.offerType === 'percentage' && data.maximumDiscount) {
+    const maxDisc = parseFloat(data.maximumDiscount);
+    if (isNaN(maxDisc) || maxDisc < 0) {
+      showError('maximumDiscountErr', 'Maximum discount must be a positive number');
+      isValid = false;
+    }
+  }
+
   // Applicable On Validation
   if (!data.applicableOn) {
     showError('applicableOnErr', 'Please select where the offer applies');
     isValid = false;
   } else {
-    if (!isProductContext) {
+    if (!isProductContext && !isCategoryContext) {
       if (data.applicableOn === 'product') {
         const selectedProducts = getSelectedProductIds();
         if (selectedProducts.length === 0) {
@@ -319,6 +395,7 @@ function buildPayload(data) {
     description: data.desc,
     offerType: data.offerType,
     offerValue: Number(data.offerValue),
+    maximumDiscount: Number(data.maximumDiscount) || 0,
     applicableOn: data.applicableOn,
     startDate: data.startDate,
     endDate: data.endDate,
@@ -327,7 +404,10 @@ function buildPayload(data) {
 
   if (isProductContext) {
     payload.applicableOn = "product";
-    payload.productIds = [productIdFromUrl];
+    payload.productIds = [itemIdFromUrl];
+  } else if (isCategoryContext) {
+    payload.applicableOn = "category";
+    payload.categoryIds = [itemIdFromUrl];
   } else {
     if (data.applicableOn === "product") {
       payload.productIds = getSelectedProductIds();

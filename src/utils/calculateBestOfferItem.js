@@ -1,57 +1,56 @@
 import offerModel from "../models/admin/offerModel.js";
 
-const MAX_DISCOUNT = 250;
 
 const calculateBestItemOffer = async (item) => {
 
   const orgPrice = item.variant.orgPrice;
   const salePrice = item.variant.salePrice;
   const quantity = item.quantity;
-  
+
   // Calculate current discount from sale price
   const currentDiscountPerUnit = orgPrice - salePrice;
-  
+
   console.log('Original Price:', orgPrice);
   console.log('Sale Price:', salePrice);
   console.log('Current Discount per unit:', currentDiscountPerUnit);
 
   // First check: If sale price already gives better discount than any offer could
-  // We need to find the maximum possible offer discount first
+  // Find the best offer discount first
   let bestOfferDiscountPerUnit = 0;
   let bestOffer = null;
 
-  // Only check offers if current discount is less than MAX_DISCOUNT
-  // (because offers are capped at MAX_DISCOUNT anyway)
-  if (currentDiscountPerUnit < MAX_DISCOUNT) {
-    const offers = await offerModel.find({
-      status: "active",
-      startDate: { $lte: new Date() },
-      endDate: { $gte: new Date() },
-      $or: [
-        { applicableOn: "product", productIds: { $in: [item.product._id] } },
-        { applicableOn: "category", categoryIds: { $in: [item.product.catgId] } }
-      ]
-    });
+  const offers = await offerModel.find({
+    status: "active",
+    startDate: { $lte: new Date() },
+    endDate: { $gte: new Date() },
+    $or: [
+      { applicableOn: "product", productIds: { $in: [item.product._id] } },
+      { applicableOn: "category", categoryIds: { $in: [item.product.catgId] } }
+    ]
+  });
 
-    console.log('Found offers:', offers.length);
+  console.log('Found offers:', offers.length);
 
-    for (const offer of offers) {
-      if (offer.offerType === "percentage") {
-        // Calculate percentage discount on orgPrice
-        let discount = (orgPrice * offer.discountValue) / 100;
-        console.log(`Offer ${offer.title}: ${discount} discount`);
+  for (const offer of offers) {
+    let discount = 0;
+    if (offer.offerType === "percentage") {
+      // Calculate percentage discount on orgPrice
+      discount = (orgPrice * offer.discountValue) / 100;
 
-        // Apply max cap per unit
-        if (discount > MAX_DISCOUNT) {
-          discount = MAX_DISCOUNT;
-        }
-
-        if (discount > bestOfferDiscountPerUnit) {
-          bestOfferDiscountPerUnit = discount;
-          bestOffer = offer;
-        }
+      // Apply promotion-specific max cap if it exists and is > 0
+      if (offer.maximumDiscount && offer.maximumDiscount > 0) {
+        discount = Math.min(discount, Number(offer.maximumDiscount));
       }
-      // Add other offer types if needed (fixed amount, etc.)
+    } else {
+      // Fixed amount
+      discount = offer.discountValue;
+    }
+
+    console.log(`Offer ${offer.title}: ${discount} discount (capped)`);
+
+    if (discount > bestOfferDiscountPerUnit) {
+      bestOfferDiscountPerUnit = discount;
+      bestOffer = offer;
     }
   }
 
@@ -73,7 +72,7 @@ const calculateBestItemOffer = async (item) => {
 
   // Calculate final price
   const finalUnitPrice = Math.floor(orgPrice - finalDiscountPerUnit);
-  
+
   // Calculate total discount amount for quantity
   const totalDiscountAmount = finalDiscountPerUnit * quantity;
   const totalFinalPrice = finalUnitPrice * quantity;

@@ -583,37 +583,49 @@ const getProduct = async (req, res) => {
               productIds: 1,
               applicableOn: 1,
               minimumOrderValue: 1,
+              maximumDiscount: 1,
             },
           },
         ]);
 
-        const price = p.minVariant.orgPrice;
+        const orgPrice = Number(p.minVariant.orgPrice);
+        const existingSalePrice = Number(p.minVariant.salePrice);
+        const existingDiscount = orgPrice - existingSalePrice;
 
-        let bestDiscount = 0;
+        let bestOfferDiscount = 0;
         let bestOffer = null;
 
         for (let offer of offers) {
-          if (offer.discountValue >= price) continue;
           let discountAmount = 0;
+          const discValue = Number(offer.discountValue) || 0;
+
           if (offer.offerType === "percentage") {
-            discountAmount = price * (offer.discountValue / 100);
+            discountAmount = (orgPrice * discValue) / 100;
+            if (offer.maximumDiscount && offer.maximumDiscount > 0) {
+              discountAmount = Math.min(discountAmount, Number(offer.maximumDiscount));
+            }
           } else {
-            discountAmount = Math.min(offer.discountValue, price);
+            discountAmount = Math.min(discValue, orgPrice);
           }
 
-          if (discountAmount > bestDiscount) {
-            bestDiscount = discountAmount;
+          if (discountAmount > bestOfferDiscount) {
+            bestOfferDiscount = discountAmount;
             bestOffer = offer;
           }
         }
 
+        // Compare best offer discount with existing sale price discount
+        const isOfferBetter = bestOfferDiscount > existingDiscount;
+        const finalDiscount = isOfferBetter ? bestOfferDiscount : existingDiscount;
+        const finalSalePrice = Math.floor(orgPrice - finalDiscount);
+
         return {
           ...p,
-          offerType: bestOffer?.offerType || null,
-          offerValue: bestOffer?.discountValue || 0,
-          offerName: bestOffer?.title || null,
-          bestDiscount,
-          salePrice: price - bestDiscount,
+          offerType: isOfferBetter ? bestOffer.offerType : null,
+          offerValue: isOfferBetter ? bestOffer.discountValue : 0,
+          offerName: isOfferBetter ? bestOffer.title : null,
+          bestDiscount: finalDiscount,
+          salePrice: finalSalePrice,
         };
       }),
     );
@@ -730,7 +742,6 @@ const getVariantData = async (req, res) => {
       {
         $match: {
           $or: [
-            { applicableOn: "global" },
             {
               applicableOn: "product",
               productIds: product._id,
@@ -747,6 +758,9 @@ const getVariantData = async (req, res) => {
           applicableOn: 1,
           categoryIds: 1,
           productIds: 1,
+          discountValue: 1,
+          offerType: 1,
+          maximumDiscount: 1,
         },
       },
     ]);
@@ -1645,14 +1659,14 @@ const getCheckout = async (req, res) => {
       // Create cartItems array with the single item
       cartItems = [item];
     }
-    let walletButton =false
-    let cod=false;
-    if(walletBalance.balance>=finalAmount){
-      walletButton=true
+    let walletButton = false
+    let cod = false;
+    if (walletBalance?.balance >= finalAmount) {
+      walletButton = true
     }
 
-    if(finalAmount>1000){
-      cod=true
+    if (finalAmount > 1000) {
+      cod = true
     }
     const addresses = await addressModel.find({ userId });
 
@@ -1783,7 +1797,11 @@ const addAddress = async (req, res) => {
       message: "address saved ",
     });
   } catch (error) {
-    console.log(error);
+    console.error("Error saving address:", error);
+    return res.status(500).json({
+      success: false,
+      message: error.message || "Failed to save address",
+    });
   }
 };
 

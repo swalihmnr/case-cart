@@ -58,7 +58,7 @@ const orderSchema = new Schema(
     },
     couponId: {
       type: Types.ObjectId,
-      ref: "coupon",
+      ref: "Coupon",
       default: null,
     },
     couponDiscount: {

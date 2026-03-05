@@ -217,12 +217,27 @@ const postEditCoupop = async (req, res) => {
                 message: "some fields are missing!"
             })
         } else {
-            const existing = await coupenModel.findOne({ couponCode: couponCode, _id: { $ne: new mongoose.Types.ObjectId(couponId) } })
+            const existing = await coupenModel.findOne({
+                $or: [
+                    { title: title.trim() },
+                    { couponCode: couponCode.trim() }
+                ],
+                _id: { $ne: new mongoose.Types.ObjectId(couponId) }
+            });
+
             if (existing) {
-                return res.status(STATUS_CODES.CONFLICT).json({
-                    success: false,
-                    message: "Coupon Code already exist"
-                })
+                if (existing.title === title.trim()) {
+                    return res.status(STATUS_CODES.CONFLICT).json({
+                        success: false,
+                        message: "Another coupon with this title already exists"
+                    });
+                }
+                if (existing.couponCode === couponCode.trim()) {
+                    return res.status(STATUS_CODES.CONFLICT).json({
+                        success: false,
+                        message: "Another coupon with this code already exists"
+                    });
+                }
             }
             const coupon = await coupenModel.findById(new mongoose.Types.ObjectId(couponId))
             let flag = false;
