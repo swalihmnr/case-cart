@@ -128,7 +128,7 @@
                   <% categories.forEach(c => { %>
                     <label class="flex items-center gap-2 text-xs sm:text-sm py-1">
                       <input type="checkbox"
-                        class="category-checkbox flex-shrink-0 w-4 h-4"
+                        class="category-checkbox flex-shrink-0 w-4 h-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
                         value="<%= c._id %>"
                         <%= offer.categoryIds.some(o => o._id.toString() === c._id.toString()) ? 'checked' : '' %>>
                       <span class="truncate"><%= c.name %></span>

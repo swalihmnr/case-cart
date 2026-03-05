@@ -575,7 +575,7 @@ function loadCategories() {
   container.innerHTML = categories.map(cat => `
     <div class="flex items-center mb-3 p-2 hover:bg-gray-50 rounded">
       <input type="checkbox"
-        class="category-checkbox mr-3 h-4 w-4 text-purple-600 focus:ring-purple-500 border-gray-300 rounded"
+        class="category-checkbox mr-3 h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
         value="${cat._id}"
         id="cat-${cat._id}"
         onchange="clearFieldError('categorySelectorErr')">
