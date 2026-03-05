@@ -604,3 +604,8 @@ function debounce(fn, delay) {
 
 // Make function globally available for inline event handlers
 window.clearFieldError = clearFieldError;
+
+function backButton(){
+  window.location.href='/admin/offers'
+}
+window.backButton=backButton
