@@ -102,11 +102,13 @@
                                                 </button>
                                                 <% } else if (item.status==='delivered' && order.paymentStatus
                                                     !=='Failed' && order.paymentStatus !=='failed' ) { %>
-                                                    <button
-                                                        onclick="returnItem('<%= item._id %>', '<%= item.product.name %>', '<%= order._id %>')"
-                                                        class="text-sm text-blue-600 hover:text-blue-700 mt-2 font-medium">
-                                                        Return Item
-                                                    </button>
+                                                             <% if (!item.isReject) { %>
+                                                                <button
+                                                                    onclick="returnItem('<%= item._id %>', '<%= item.product.name %>', '<%= order._id %>')"
+                                                                    class="text-sm text-blue-600 hover:text-blue-700 mt-2 font-medium">
+                                                                    Return Item
+                                                                </button>
+                                                                  <% } %>
                                                     <button
                                                         onclick="downloadInvoice('<%= order._id %>', '<%= item._id %>')"
                                                         class="text-sm text-gray-600 hover:text-gray-700 mt-2 font-medium ml-3">

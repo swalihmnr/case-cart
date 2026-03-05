@@ -2361,7 +2361,8 @@ const getOrder = async (req, res) => {
                   finalPrice: "$orderItems.finalPrice",
                   status: "$orderItems.status",
                   cancelledAt: "$orderItems.cancelledAt",
-                  cancellationReason: "$orderItems.cancellationReason"
+                  cancellationReason: "$orderItems.cancellationReason",
+                  isReject: "$orderItems.isReject"
                 }
               }
             }
@@ -2438,7 +2439,8 @@ const getOrderDetails = async (req, res) => {
               finalPrice: "$orderItems.finalPrice",
               status: "$orderItems.status",
               cancelledAt: "$orderItems.cancelledAt",
-              cancellationReason: "$orderItems.cancellationReason"
+              cancellationReason: "$orderItems.cancellationReason",
+              isReject: "$orderItems.isReject"
             }
           }
         }
@@ -2448,7 +2450,6 @@ const getOrderDetails = async (req, res) => {
     if (!order || order.length === 0) {
       return res.status(404).render("404");
     }
-
     res.render("./user/order-details", { order: order[0] });
   } catch (error) {
     console.error(error);
@@ -2807,6 +2808,12 @@ const returnReq = async (req, res) => {
       });
     }
     const item = existing.orderItems.id(orderItemId);
+    if (item.isReject) {
+      return res.status(STATUS_CODES.BAD_REQUEST).json({
+        success: false,
+        message: "already returned item"
+      })
+    }
     if (item.status !== "delivered") {
       return res.status(STATUS_CODES.FORBIDDEN).json({
         success: false,
