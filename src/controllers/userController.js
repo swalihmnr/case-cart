@@ -1645,11 +1645,13 @@ const getCheckout = async (req, res) => {
       // Create cartItems array with the single item
       cartItems = [item];
     }
-    let cod=finalAmount>=1000?true:false;
+    let cod=finalAmount>1000?true:false;
+    console.log('it is the coee'+cod)
     let walletButton = false
-    if(walletBalance?.balance<finalAmount){
+    if(walletBalance?.balance>finalAmount){
       walletButton=true
     }
+
     const addresses = await addressModel.find({ userId });
 
     // Debug logs to verify both flows work the same
