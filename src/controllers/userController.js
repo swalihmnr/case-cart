@@ -1645,10 +1645,11 @@ const getCheckout = async (req, res) => {
       // Create cartItems array with the single item
       cartItems = [item];
     }
-    let walletButton = true
-    // if(walletBalance.balance<finalAmount){
-    //   walletButton=false
-    // }
+    let cod=finalAmount>=1000?true:false;
+    let walletButton = false
+    if(walletBalance?.balance<finalAmount){
+      walletButton=true
+    }
     const addresses = await addressModel.find({ userId });
 
     // Debug logs to verify both flows work the same
@@ -1684,7 +1685,8 @@ const getCheckout = async (req, res) => {
       shipping,
       finalAmount,
       coupons,
-      walletButton
+      walletButton,
+      cod
     });
 
   } catch (err) {
