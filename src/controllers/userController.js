@@ -2414,7 +2414,8 @@ const getOrderDetails = async (req, res) => {
               finalPrice: "$orderItems.finalPrice",
               status: "$orderItems.status",
               cancelledAt: "$orderItems.cancelledAt",
-              cancellationReason: "$orderItems.cancellationReason"
+              cancellationReason: "$orderItems.cancellationReason",
+              isReject:"$orderItems.isReject"
             }
           }
         }
