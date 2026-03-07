@@ -6,6 +6,7 @@ import calculateBestItemOffer from "../../utils/calculateBestOfferItem.js";
 import variantModel from "../../models/admin/variantModel.js";
 import { STATUS_CODES } from "../../utils/statusCodes.js";
 import addressModel from "../../models/addressModel.js";
+import coupenModel from "../../models/admin/coupenModel.js";
 
 
 // ==============================

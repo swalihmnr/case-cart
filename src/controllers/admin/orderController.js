@@ -3,6 +3,7 @@ import mongoose from 'mongoose';
 import { STATUS_CODES } from '../../utils/statusCodes.js';
 import flowChecker from '../../utils/order-flow-checker.js'
 import variantModel from '../../models/admin/variantModel.js';
+import wallet from '../../models/walletModel.js'
 
 // ==============================
 // GET ORDER MANAGEMENT PAGE
