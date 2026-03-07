@@ -57,7 +57,7 @@ document.querySelector('form').addEventListener('submit', async function (e) {
 
     const namePattern = /^[A-Za-z\s]+$/;
     const emailPattern = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    const numberPattern = /^[0-9]+$/;
+    const numberPattern = /^[0-9]{10}$/;
 
     let isValid = true;
 

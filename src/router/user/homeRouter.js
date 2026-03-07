@@ -1,9 +1,8 @@
-import express from "express";
-const router =express.Router(); 
+import express from 'express'
+const router =express.Router()
 import { userAuth, keResetPass, goBackOtpVerify, blockUser, wishlistCount, cartCount, notUser } from '../../middlewares/auth.js'
 router.use(wishlistCount)
 router.use(cartCount)
-import walletController from "../../controllers/user/walletController.js";
-router.get('/wallet',walletController.getWallet);
-
+import homeController from '../../controllers/user/homeController.js'
+router.get('/home',homeController.getHome)
 export default router

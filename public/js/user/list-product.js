@@ -1,7 +1,12 @@
 import api from "../api.js";
 
-window.clearFilters=clearFilters
+// ======================
+// CLEAR FILTERS
+// ======================
+window.clearFilters = clearFilters;
+
 function clearFilters() {
+
     const query = new URLSearchParams();
 
     query.set("page", 1);
@@ -11,8 +16,13 @@ function clearFilters() {
     query.set("Categories", "");
 
     window.location.href = `/product?${query.toString()}`;
+
 }
 
+
+// ======================
+// ELEMENTS
+// ======================
 const search = document.getElementById("search");
 const sort = document.getElementById("sort");
 const priceRadios = document.querySelectorAll('input[name="price"]');
@@ -20,75 +30,135 @@ const categoryCheckboxes = document.querySelectorAll(".filter-checkbox");
 
 let timer;
 
-// ----------------------
-// SEARCH INPUT
-// ----------------------
-search.addEventListener("input", () => {
+
+// ======================
+// SEARCH INPUT (DEBOUNCE)
+// ======================
+search?.addEventListener("input", function () {
+
     clearTimeout(timer);
-    timer = setTimeout(applyFilters, 700);
+
+    const value = this.value.trim();
+
+    timer = setTimeout(() => {
+
+        if (value.length === 0) {
+            clearFilters();
+            return;
+        }
+
+        if (value.length < 2) return;
+
+        applyFilters();
+
+    }, 800); // wait 800ms after typing stops
+
 });
 
-// ----------------------
-// PRICE CHANGE
-// ----------------------
-priceRadios.forEach(r => r.addEventListener("change", applyFilters));
 
-// ----------------------
-// CATEGORY CHANGE
-// ----------------------
-categoryCheckboxes.forEach(cb =>
-    cb.addEventListener("change", () => {
+// ======================
+// PRICE FILTER
+// ======================
+priceRadios.forEach(radio => {
+
+    radio.addEventListener("change", () => {
+
         clearTimeout(timer);
-        timer = setTimeout(applyFilters, 500);
-    })
-);
 
-// ----------------------
-// SORT CHANGE
-// ----------------------
-sort.addEventListener("change", applyFilters);
+        timer = setTimeout(applyFilters, 300);
 
-// ----------------------
-// APPLY FILTER
-// ----------------------
+    });
+
+});
+
+
+// ======================
+// CATEGORY FILTER
+// ======================
+categoryCheckboxes.forEach(cb => {
+
+    cb.addEventListener("change", () => {
+
+        clearTimeout(timer);
+
+        timer = setTimeout(applyFilters, 300);
+
+    });
+
+});
+
+
+// ======================
+// SORT FILTER
+// ======================
+sort?.addEventListener("change", () => {
+
+    clearTimeout(timer);
+
+    timer = setTimeout(applyFilters, 200);
+
+});
+
+
+// ======================
+// APPLY FILTER FUNCTION
+// ======================
 function applyFilters() {
+
     const selectedCategories = [...document.querySelectorAll(".filter-checkbox:checked")]
         .map(cb => cb.value);
 
-    const selectedPrice = document.querySelector('input[name="price"]:checked')?.value || "all";
+    const selectedPrice =
+        document.querySelector('input[name="price"]:checked')?.value || "all";
 
     const query = new URLSearchParams();
 
     query.set("page", 1);
-    query.set("search", search.value.trim());
+    query.set("search", search?.value.trim() || "");
     query.set("price", selectedPrice);
-    query.set("sort", sort.value);
-    query.set("Categories", selectedCategories);
+    query.set("sort", sort?.value || "");
+    query.set("Categories", selectedCategories.join(","));
 
     window.location.href = `/product?${query.toString()}`;
+
 }
+
+
+// ======================
+// ADD TO WISHLIST
+// ======================
 const addWishlist = async (productId, variantId) => {
-  try {
-    const res = await api.addWishlistAxios(productId, variantId);
-    console.log(res, 'it is the response');
-    // Swal.fire({
-    //   icon: 'success',
-    //   title: 'Added to wishlist',
-    //   text: res.data.message,
-    //   confirmButtonColor: '#667eea'
-    // });
 
-    setTimeout(() => location.reload(), 800);
+    try {
 
-  } catch (error) {
-    console.log(error.response);
-    Swal.fire({
-      icon: 'info',
-      title: 'Notice',
-      text: error.response?.data?.message || 'Something went wrong',
-      confirmButtonColor: '#667eea'
-    });
-  }
+        const res = await api.addWishlistAxios(productId, variantId);
+
+        console.log(res);
+
+        Swal.fire({
+            icon: "success",
+            title: "Added to Wishlist",
+            text: res.data.message,
+            confirmButtonColor: "#667eea",
+            timer: 1200,
+            showConfirmButton: false
+        });
+
+        setTimeout(() => location.reload(), 800);
+
+    } catch (error) {
+
+        console.log(error.response);
+
+        Swal.fire({
+            icon: "info",
+            title: "Notice",
+            text: error.response?.data?.message || "Something went wrong",
+            confirmButtonColor: "#667eea"
+        });
+
+    }
+
 };
 
 window.addWishlist = addWishlist;

@@ -1,6 +1,6 @@
 import { STATUS_CODES } from "../../utils/statusCodes.js";
 import coupenModel from "../../models/admin/coupenModel.js";
-import mongoose, { mongo } from "mongoose";
+import mongoose from 'mongoose';
 
 const renderCoupenPage = async (req, res) => {
     const { page = 1, search } = req.query;

@@ -157,7 +157,7 @@ document.addEventListener('DOMContentLoaded', function () {
                     }
                 }, 300);
             } else if (result.dismiss === Swal.DismissReason.cancel) {
-                window.location.href = '/wallet-dashboard';
+                window.location.href = '/wallet';
             }
         });
     }
@@ -202,7 +202,7 @@ document.addEventListener('DOMContentLoaded', function () {
                     }
                 }, 300);
             } else if (result.dismiss === Swal.DismissReason.cancel) {
-                window.location.href = '/wallet-dashboard';
+                window.location.href = '/wallet';
             }
         });
     }

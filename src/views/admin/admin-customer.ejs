@@ -134,8 +134,8 @@
                                 <td class="py-2 px-2 text-sm"><%= customer.email %> </td>
                                 <td class="py-2 px-2 text-sm"><%= customer.number ? customer.number : "google auth" %>
  </td>
-                                <td class="py-2 px-2 text-sm">12</td>
-                                <td class="py-2 px-2 text-sm">$847.50</td>
+                                <td class="py-2 px-2 text-sm"><%= customer.orderCount || 0 %></td>
+                                <td class="py-2 px-2 text-sm">₹<%= customer.totalSpent?.toLocaleString() || 0 %></td>
                                 <td class="py-2 px-2">
                                     <span class="text-xs bg-green-100 text-green-700 px-2 py-1 rounded-full"><%= customer.isBlock?"blocked":"active" %> </span>
                                 </td>

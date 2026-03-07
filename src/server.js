@@ -7,9 +7,23 @@ import {fileURLToPath} from 'url'
 import {dirname} from 'path'
 import path from 'path'
 import nocache from 'nocache';
-import adminRouter from '../src/router/adminRouter.js'
-import userRouter from '../src/router/userRouter.js'
+
+import autherRouter from '../src/router/user/authRouter.js'
+import productRouter from '../src/router/user/productRouter.js'
+import profileRouter from '../src/router/user/profileRouter.js'
+import orderRouter from '../src/router/user/orderRouter.js'
+import homeRouter from '../src/router/user/homeRouter.js'
+import wishlistRouter from '../src/router/user/wishlistRouter.js'
+import cartRouter from '../src/router/user/cartRouter.js'
+import checkoutRouter from '../src/router/user/checkoutRouter.js'
+import addressRouter from '../src/router/user/addressRouter.js'
+
 import authRouter from '../src/router/authRouter.js'
+import adminAuthRouter from '../src/router/admin/authRouter.js'
+import adminCategoryRouter from '../src/router/admin/categoryRouter.js'
+import customerRouter from '../src/router/admin/customersRouter.js'
+import adminOrderRouter from '../src/router/admin/orderRouter.js'
+import adminProductRouter from '../src/router/admin/productRouter.js'
 import adminOfferRouter from '../src/router/admin/offerRouter.js'
 import adminCoupenRouter from '../src/router/admin/coupenRouter.js'
 import adminReportRouter from '../src/router/admin/reportRouter.js'
@@ -54,7 +68,6 @@ app.use(passport.initialize())
 app.use(passport.session())
 app.use(attachUser)
 app.use('/auth',authRouter)
-app.use('/',userRouter)
 app.use(attachAdmin)
 
 //payment router here
@@ -62,14 +75,32 @@ app.use(attachAdmin)
 app.use("/api/payment", paymentRouter);
 
 // admin Routers here
-app.use('/admin',adminRouter)
 app.use('/admin',adminOfferRouter)
 app.use('/admin',adminCoupenRouter)
 app.use('/admin',adminReportRouter)
 app.use('/admin',adminDashboardRouter)
+app.use('/admin',adminAuthRouter)
+app.use('/admin',adminCategoryRouter)
+app.use('/admin',customerRouter)
+app.use('/admin',adminOrderRouter)
+app.use('/admin',adminProductRouter)
+
+
+
 // user Routers here
+
+app.use('/',autherRouter)
+app.use('/',productRouter)
+app.use('/',profileRouter)
+app.use('/',orderRouter)
+app.use('/',homeRouter)
 app.use('/user',userCouponRouter)
 app.use('/',walletRouter)
+app.use('/',wishlistRouter)
+app.use('/',cartRouter)
+app.use('/',checkoutRouter)
+app.use('/',addressRouter)
+
 
 app.use(express.static(path.join(__dirname,'../public')));
 app.use((req,res)=>{

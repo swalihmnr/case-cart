@@ -1,0 +1,11 @@
+import express from 'express'
+const router=express.Router();
+import orderController from '../../controllers/admin/orderController.js';
+import { requiredAdmin } from '../../middlewares/auth.js'
+router.use(requiredAdmin)
+router.get('/order', orderController.getOrderMngmnt)
+router.get('/order/details/:orderId/:itemId', orderController.getOrderDetails)
+router.patch('/order/:id/status', orderController.orderStatusChanger)
+router.patch('/order/:id/approve', orderController.reqApprove)
+router.patch('/order/:id/reject', orderController.reqReject)
+export default router

@@ -27,10 +27,5 @@ export const addCategoryValidator = [
     .isLength({ min: 5 })
     .withMessage("Description too short"),
 
-  body("action")
-    .optional()
-    .isIn(["save", "saveAndAdd"])
-    .withMessage("Invalid action type"),
-
   validateResult
 ];

@@ -55,7 +55,7 @@ export const addressValidator = [
 
   body('data.addressType')
     .notEmpty().withMessage('Address type is required')
-    .isIn(['home', 'work', 'other']).withMessage('Invalid address type'),
+    .isIn(['Home', 'Work', 'Other']).withMessage('Invalid address type'),
 
   body('data.isDefault')
     .optional()

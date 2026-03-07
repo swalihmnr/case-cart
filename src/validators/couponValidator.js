@@ -67,7 +67,7 @@ body("maximumDiscount")
 
 
   body("status")
-    .isIn(["active", "inactive"])
+    .isIn(["active", "inactive","scheduled"])
     .withMessage("Invalid status"),
 
   validateResult
