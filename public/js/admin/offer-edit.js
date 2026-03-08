@@ -170,6 +170,9 @@ document.addEventListener("DOMContentLoaded", () => {
       if (payload.offerValue < 1 || payload.offerValue > MAX_PERCENT) {
         return `Percentage must be between 1 and ${MAX_PERCENT}`;
       }
+      if (payload.maximumDiscountValue && payload.maximumDiscountValue <= 0) {
+        return "Maximum discount must be greater than 0";
+      }
     }
 
 
@@ -202,13 +205,14 @@ document.addEventListener("DOMContentLoaded", () => {
 
     const payload = {
       offerId: offerId._id,
-      title: offerTitle.value.trim(),
-      description: offerDesc.value.trim(),
-      offerType: offerType.value,
-      offerValue: Number(offerValue.value),
+      title: document.getElementById('offerTitle').value.trim(),
+      description: document.getElementById('offerDesc').value.trim(),
+      offerType: document.getElementById('offerType').value,
+      offerValue: Number(document.getElementById('offerValue').value),
+      maximumDiscountValue: document.getElementById("maximumDiscountValue")?.value.trim() ? Number(document.getElementById("maximumDiscountValue").value) : null,
       applicableOn: applicableOn.value,
-      startDate: startDate.value,
-      endDate: endDate.value,
+      startDate: document.getElementById('startDate').value,
+      endDate: document.getElementById('endDate').value,
       status: offerStatus.value
     };
 

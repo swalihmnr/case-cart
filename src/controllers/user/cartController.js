@@ -53,8 +53,15 @@ const getCart = async (req, res) => {
 
       for (let offer of offers) {
         if (offer.offerType === "percentage") {
+          // Calculate the discount as the difference between original price and percentage of price
+          let discount = orgPrice - ((orgPrice * offer.discountValue) / 100);
 
-          let discount = (orgPrice * offer.discountValue) / 100;
+          // Apply maximumDiscount cap if explicitly set
+          if (offer.maximumDiscount && offer.maximumDiscount > 0) {
+            if (discount > offer.maximumDiscount) {
+              discount = offer.maximumDiscount;
+            }
+          }
 
           if (discount > bestOfferDiscountPerUnit) {
             bestOfferDiscountPerUnit = discount;
@@ -346,8 +353,8 @@ const remCart = async (req, res) => {
 };
 
 export default {
-    getCart,
-    addCart,
-    cartQuantityUpdate,
-    remCart
+  getCart,
+  addCart,
+  cartQuantityUpdate,
+  remCart
 }

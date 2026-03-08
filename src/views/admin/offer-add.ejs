@@ -1,242 +1,232 @@
 <%- include('../partials/header') %>
 
-<div class="flex">
+  <div class="flex">
     <%- include('../partials/sidebar') %>
-    <main class="flex-1 p-4 md:p-6 lg:p-8 lg:ml-0">
+      <main class="flex-1 p-4 md:p-6 lg:p-8 lg:ml-0">
 
-       <div id="add-offer-page" class="page-content ">
-                <div class="mb-6">
-                    <div class="flex items-center space-x-3 mb-4">
-                        <button onclick="backButton()"  class="back-to-offers text-purple-600 hover:text-purple-700 p-2">
-                            <i class="fas fa-arrow-left"></i>
-                        </button>
-                        <div>
-                            <h1 class="text-2xl lg:text-3xl font-bold text-gray-900">Create New Offer</h1>
-                            <p class="text-gray-600 text-sm lg:text-base">Set up a new special offer or promotion.</p>
-                        </div>
-                    </div>
-                    
-                    <!-- Context Message (Visible only in Product Context) -->
-                    <div id="productContextMessage" class="hidden mb-4 p-3 bg-blue-50 border border-blue-200 rounded-lg">
-                        <div class="flex items-center">
-                            <i class="fas fa-info-circle text-blue-500 mr-2"></i>
-                            <p class="text-blue-700 text-sm">You are creating an offer for a specific product.</p>
-                        </div>
-                    </div>
-                </div>
-
-                <div class="bg-white rounded-lg shadow-sm p-4">
-                    <form class="space-y-6" novalidate>
-
-  <div class="grid md:grid-cols-2 gap-6">
-
-    <!-- LEFT SIDE -->
-    <div class="space-y-4">
-
-      <h3 class="text-lg font-semibold text-gray-900 border-b pb-2">
-        Offer Information
-      </h3>
-
-      <!-- Offer Title -->
-      <div>
-        <label class="block text-sm font-medium text-gray-700 mb-1">
-          Offer Title *
-        </label>
-        <input
-          type="text"
-          id="offerTitle"
-          class="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-purple-500"
-          placeholder="e.g. Summer Sale"
-        />
-        <p id="offerTitleErr" class="text-red-500 text-sm mt-1"></p>
-      </div>
-
-      <!-- Description -->
-      <div>
-        <label class="block text-sm font-medium text-gray-700 mb-1">
-          Description *
-        </label>
-        <textarea
-          id="offerDesc"
-          class="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-purple-500 h-24"
-          placeholder="Offer description"
-        ></textarea>
-        <p id="offerDescErr" class="text-red-500 text-sm mt-1"></p>
-      </div>
-
-      <!-- Offer Type -->
-      <div>
-        <label class="block text-sm font-medium text-gray-700 mb-1">
-          Offer Type *
-        </label>
-        <select
-          id="offerType"
-          class="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-purple-500"
-        >
-          <option value="">Select Type</option>
-          <option value="percentage">Percentage Discount</option>
-        </select>
-        <p id="offerTypeErr" class="text-red-500 text-sm mt-1"></p>
-      </div>
-
-      <!-- Offer Value -->
-      <div>
-        <label class="block text-sm font-medium text-gray-700 mb-1">
-          Offer Value *
-        </label>
-        <input
-          type="number"
-          id="offerValue"
-          class="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-purple-500"
-          placeholder="e.g. 25"
-        />
-        <p id="offerValueErr" class="text-red-500 text-sm mt-1"></p>
-      </div>
-
-    </div>
-
-    <!-- RIGHT SIDE -->
-    <div class="space-y-4">
-
-      <h3 class="text-lg font-semibold text-gray-900 border-b pb-2">
-        Offer Details
-      </h3>
-      <!-- Applicable On -->
-      <div>
-        <label class="block text-sm font-medium text-gray-700 mb-1">
-          Applicable On *
-        </label>
-        <select
-          id="applicableOn"
-          class="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-purple-500"
-        >
-          <option value="">Select</option>
-          <option value="product">Products</option>
-          <option value="category">Category</option>
-        </select>
-        <p id="applicableOnErr" class="text-red-500 text-sm mt-1"></p>
-      </div>
-
-      <!-- Product Selection (Visible only when Applicable On = Product in Normal Context) -->
-      <div id="productSelectorContainer" class="hidden">
-        <label class="block text-sm font-medium text-gray-700 mb-1">
-          Select Products *
-        </label>
-        <div class="relative">
-          <input
-            type="text"
-            id="productSearch"
-            class="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-purple-500"
-            placeholder="Search products..."
-          />
-          <div id="productSearchResults" class="hidden absolute z-10 w-full mt-1 bg-white border rounded-lg shadow-lg max-h-60 overflow-y-auto"></div>
-        </div>
-        <div id="selectedProducts" class="mt-2 p-2 border rounded-lg min-h-12">
-          <!-- Selected products will appear here -->
-        </div>
-        <p id="productSelectorErr" class="text-red-500 text-sm mt-1"></p>
-      </div>
-
-      <!-- Product Display (Visible only in Product Context) -->
-      <div id="productDisplayContainer" class="hidden">
-        <label class="block text-sm font-medium text-gray-700 mb-1">
-          Selected Product
-        </label>
-        <div id="selectedProductDisplay" class="p-3 bg-gray-50 border rounded-lg">
-          <!-- Product details will be loaded here -->
-        </div>
-        <input type="hidden" id="productIdFromUrl" />
-      </div>
-
-      <!-- Category Selection (Visible only when Applicable On = Category in Normal Context) -->
-      <div id="categorySelectorContainer" class="hidden">
-        <label class="block text-sm font-medium text-gray-700 mb-1">
-          Select Categories *
-        </label>
-        <div id="categorySelector" class="p-2 border rounded-lg max-h-40 overflow-y-auto">
-          <!-- Categories will be loaded here -->
-        </div>
-        <p id="categorySelectorErr" class="text-red-500 text-sm mt-1"></p>
-      </div>
-
-      <!-- Start Date -->
-      <div>
-        <label class="block text-sm font-medium text-gray-700 mb-1">
-          Start Date *
-        </label>
-        <input
-          type="date"
-          id="startDate"
-          class="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-purple-500"
-        />
-        <p id="startDateErr" class="text-red-500 text-sm mt-1"></p>
-      </div>
-
-      <!-- End Date -->
-      <div>
-        <label class="block text-sm font-medium text-gray-700 mb-1">
-          End Date *
-        </label>
-        <input
-          type="date"
-          id="endDate"
-          class="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-purple-500"
-        />
-        <p id="endDateErr" class="text-red-500 text-sm mt-1"></p>
-      </div>
-
-      <!-- Status -->
-      <div>
-        <label class="block text-sm font-medium text-gray-700 mb-1">
-          Status
-        </label>
-        <select
-          id="offerStatus"
-          class="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-purple-500"
-        >
-        <option value="scheduled">Scheduled</option>
-          <option value="active">Active</option>
-          <option value="inactive">Inactive</option>
-        </select>
-      </div>
-
-    </div>
-
-  </div>
-
-  <!-- ACTION BUTTONS -->
-  <div class="flex justify-end gap-3 pt-6 border-t">
-    <button
-      type="button"
-      id="cancelBtn"
-      class="px-4 py-2 border rounded-lg text-gray-700 hover:bg-gray-100"
-    >
-      Cancel
-    </button>
-
-    <button
-      type="submit"
-      class="bg-purple-600 text-white px-6 py-2 rounded-lg hover:bg-purple-700 transition"
-    >
-      Create Offer
-    </button>
-  </div>
-
-</form>
-
-                </div>
+        <div id="add-offer-page" class="page-content ">
+          <div class="mb-6">
+            <div class="flex items-center space-x-3 mb-4">
+              <button onclick="backButton()" class="back-to-offers text-purple-600 hover:text-purple-700 p-2">
+                <i class="fas fa-arrow-left"></i>
+              </button>
+              <div>
+                <h1 class="text-2xl lg:text-3xl font-bold text-gray-900">Create New Offer</h1>
+                <p class="text-gray-600 text-sm lg:text-base">Set up a new special offer or promotion.</p>
+              </div>
             </div>
-    </main>
-</div>
 
-<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+            <!-- Context Message (Visible only in Product Context) -->
+            <div id="productContextMessage" class="hidden mb-4 p-3 bg-blue-50 border border-blue-200 rounded-lg">
+              <div class="flex items-center">
+                <i class="fas fa-info-circle text-blue-500 mr-2"></i>
+                <p class="text-blue-700 text-sm">You are creating an offer for a specific product.</p>
+              </div>
+            </div>
+          </div>
 
-<!-- Inject products from backend -->
-<script>
-  // Inject products from backend to avoid API calls
-  window.ALL_PRODUCTS = <%- JSON.stringify(products) %> || [];
-  window.ALL_CATEGORIES = <%- JSON.stringify(category) %> || [];
-</script>
+          <div class="bg-white rounded-lg shadow-sm p-4">
+            <form class="space-y-6" novalidate>
 
-<script type="module" src="/js/admin/offer-add.js"></script>
-<%- include('../partials/footer') %>
+              <div class="grid md:grid-cols-2 gap-6">
+
+                <!-- LEFT SIDE -->
+                <div class="space-y-4">
+
+                  <h3 class="text-lg font-semibold text-gray-900 border-b pb-2">
+                    Offer Information
+                  </h3>
+
+                  <!-- Offer Title -->
+                  <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">
+                      Offer Title *
+                    </label>
+                    <input type="text" id="offerTitle"
+                      class="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-purple-500"
+                      placeholder="e.g. Summer Sale" />
+                    <p id="offerTitleErr" class="text-red-500 text-sm mt-1"></p>
+                  </div>
+
+                  <!-- Description -->
+                  <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">
+                      Description *
+                    </label>
+                    <textarea id="offerDesc"
+                      class="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-purple-500 h-24"
+                      placeholder="Offer description"></textarea>
+                    <p id="offerDescErr" class="text-red-500 text-sm mt-1"></p>
+                  </div>
+
+                  <!-- Offer Type -->
+                  <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">
+                      Offer Type *
+                    </label>
+                    <select id="offerType"
+                      class="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-purple-500">
+                      <option value="">Select Type</option>
+                      <option value="percentage">Percentage Discount</option>
+                    </select>
+                    <p id="offerTypeErr" class="text-red-500 text-sm mt-1"></p>
+                  </div>
+
+                  <!-- Offer Value -->
+                  <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">
+                      Offer Value *
+                    </label>
+                    <input type="number" id="offerValue"
+                      class="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-purple-500"
+                      placeholder="e.g. 25" />
+                    <p id="offerValueErr" class="text-red-500 text-sm mt-1"></p>
+                  </div>
+
+                  <!-- Maximum Discount Value -->
+                  <div id="maxDiscountContainer">
+                    <label class="block text-sm font-medium text-gray-700 mb-1">
+                      Maximum Discount Value
+                      <span class="text-gray-400 text-xs font-normal">(Optional, for Percentage)</span>
+                    </label>
+                    <input type="number" id="maximumDiscountValue"
+                      class="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-purple-500"
+                      placeholder="e.g. 1000" />
+                    <p id="maximumDiscountValueErr" class="text-red-500 text-sm mt-1"></p>
+                  </div>
+
+                </div>
+
+                <!-- RIGHT SIDE -->
+                <div class="space-y-4">
+
+                  <h3 class="text-lg font-semibold text-gray-900 border-b pb-2">
+                    Offer Details
+                  </h3>
+                  <!-- Applicable On -->
+                  <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">
+                      Applicable On *
+                    </label>
+                    <select id="applicableOn"
+                      class="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-purple-500">
+                      <option value="">Select</option>
+                      <option value="product">Products</option>
+                      <option value="category">Category</option>
+                    </select>
+                    <p id="applicableOnErr" class="text-red-500 text-sm mt-1"></p>
+                  </div>
+
+                  <!-- Product Selection (Visible only when Applicable On = Product in Normal Context) -->
+                  <div id="productSelectorContainer" class="hidden">
+                    <label class="block text-sm font-medium text-gray-700 mb-1">
+                      Select Products *
+                    </label>
+                    <div class="relative">
+                      <input type="text" id="productSearch"
+                        class="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-purple-500"
+                        placeholder="Search products..." />
+                      <div id="productSearchResults"
+                        class="hidden absolute z-10 w-full mt-1 bg-white border rounded-lg shadow-lg max-h-60 overflow-y-auto">
+                      </div>
+                    </div>
+                    <div id="selectedProducts" class="mt-2 p-2 border rounded-lg min-h-12">
+                      <!-- Selected products will appear here -->
+                    </div>
+                    <p id="productSelectorErr" class="text-red-500 text-sm mt-1"></p>
+                  </div>
+
+                  <!-- Product Display (Visible only in Product Context) -->
+                  <div id="productDisplayContainer" class="hidden">
+                    <label class="block text-sm font-medium text-gray-700 mb-1">
+                      Selected Product
+                    </label>
+                    <div id="selectedProductDisplay" class="p-3 bg-gray-50 border rounded-lg">
+                      <!-- Product details will be loaded here -->
+                    </div>
+                    <input type="hidden" id="productIdFromUrl" />
+                  </div>
+
+                  <!-- Category Selection (Visible only when Applicable On = Category in Normal Context) -->
+                  <div id="categorySelectorContainer" class="hidden">
+                    <label class="block text-sm font-medium text-gray-700 mb-1">
+                      Select Categories *
+                    </label>
+                    <div id="categorySelector" class="p-2 border rounded-lg max-h-40 overflow-y-auto">
+                      <!-- Categories will be loaded here -->
+                    </div>
+                    <p id="categorySelectorErr" class="text-red-500 text-sm mt-1"></p>
+                  </div>
+
+                  <!-- Start Date -->
+                  <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">
+                      Start Date *
+                    </label>
+                    <input type="date" id="startDate"
+                      class="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-purple-500" />
+                    <p id="startDateErr" class="text-red-500 text-sm mt-1"></p>
+                  </div>
+
+                  <!-- End Date -->
+                  <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">
+                      End Date *
+                    </label>
+                    <input type="date" id="endDate"
+                      class="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-purple-500" />
+                    <p id="endDateErr" class="text-red-500 text-sm mt-1"></p>
+                  </div>
+
+                  <!-- Status -->
+                  <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">
+                      Status
+                    </label>
+                    <select id="offerStatus"
+                      class="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-purple-500">
+                      <option value="scheduled">Scheduled</option>
+                      <option value="active">Active</option>
+                      <option value="inactive">Inactive</option>
+                    </select>
+                  </div>
+
+                </div>
+
+              </div>
+
+              <!-- ACTION BUTTONS -->
+              <div class="flex justify-end gap-3 pt-6 border-t">
+                <button type="button" id="cancelBtn"
+                  class="px-4 py-2 border rounded-lg text-gray-700 hover:bg-gray-100">
+                  Cancel
+                </button>
+
+                <button type="submit"
+                  class="bg-purple-600 text-white px-6 py-2 rounded-lg hover:bg-purple-700 transition">
+                  Create Offer
+                </button>
+              </div>
+
+            </form>
+
+          </div>
+        </div>
+      </main>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
+  <!-- Inject products from backend -->
+  <div id="serverData" class="hidden"
+    data-products="<%= JSON.stringify(typeof products !== 'undefined' && products ? products : []) %>"
+    data-categories="<%= JSON.stringify(typeof category !== 'undefined' && category ? category : []) %>">
+  </div>
+  <script>
+    const serverDataEl = document.getElementById('serverData');
+    window.ALL_PRODUCTS = JSON.parse(serverDataEl.dataset.products || '[]');
+    window.ALL_CATEGORIES = JSON.parse(serverDataEl.dataset.categories || '[]');
+  </script>
+
+  <script type="module" src="/js/admin/offer-add.js"></script>
+  <%- include('../partials/footer') %>

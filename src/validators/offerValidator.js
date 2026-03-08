@@ -38,6 +38,12 @@ export const addOfferValidator = [
       return true;
     }),
 
+  body("maximumDiscountValue")
+    .optional({ checkFalsy: true })
+    .toFloat()
+    .isFloat({ min: 1 })
+    .withMessage("Maximum discount value must be greater than 0"),
+
   body("applicableOn")
     .isIn(["product", "category"])
     .withMessage("Invalid applicable type"),

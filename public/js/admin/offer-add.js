@@ -52,6 +52,7 @@ function initOfferPage() {
     { id: "offerDesc", err: "offerDescErr" },
     { id: "offerType", err: "offerTypeErr", event: "change" },
     { id: "offerValue", err: "offerValueErr" },
+    { id: "maximumDiscountValue", err: "maximumDiscountValueErr" },
     { id: "applicableOn", err: "applicableOnErr", event: "change" },
     { id: "startDate", err: "startDateErr", event: "change" },
     { id: "endDate", err: "endDateErr", event: "change" }
@@ -242,6 +243,7 @@ function getFormData() {
     desc: document.getElementById("offerDesc")?.value.trim(),
     offerType: document.getElementById("offerType")?.value,
     offerValue: document.getElementById("offerValue")?.value.trim(),
+    maximumDiscountValue: document.getElementById("maximumDiscountValue")?.value.trim() ? document.getElementById("maximumDiscountValue").value.trim() : null,
     applicableOn: document.getElementById("applicableOn")?.value,
     startDate: document.getElementById("startDate")?.value,
     endDate: document.getElementById("endDate")?.value,
@@ -290,6 +292,15 @@ function validateOfferForm(data) {
   } else if (data.offerType === 'percentage') {
     if (discountVal <= 0 || discountVal > MAX_PERCENT) {
       showError('offerValueErr', `Percentage must be between 1 and ${MAX_PERCENT}`);
+      isValid = false;
+    }
+  }
+
+  // Maximum Discount Value Validation
+  if (data.offerType === 'percentage' && data.maximumDiscountValue) {
+    const maxDiscountVal = parseFloat(data.maximumDiscountValue);
+    if (isNaN(maxDiscountVal) || maxDiscountVal <= 0) {
+      showError('maximumDiscountValueErr', 'Maximum discount must be a valid number > 0');
       isValid = false;
     }
   }
@@ -357,6 +368,7 @@ function buildPayload(data) {
     description: data.desc,
     offerType: data.offerType,
     offerValue: Number(data.offerValue),
+    maximumDiscountValue: data.maximumDiscountValue !== null ? Number(data.maximumDiscountValue) : null,
     applicableOn: data.applicableOn,
     startDate: data.startDate,
     endDate: data.endDate,
@@ -605,7 +617,7 @@ function debounce(fn, delay) {
 // Make function globally available for inline event handlers
 window.clearFieldError = clearFieldError;
 
-function backButton(){
-  window.location.href='/admin/offers'
+function backButton() {
+  window.location.href = '/admin/offers'
 }
-window.backButton=backButton
+window.backButton = backButton

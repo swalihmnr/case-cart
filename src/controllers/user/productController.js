@@ -265,23 +265,38 @@ const getProduct = async (req, res) => {
         ]);
 
         const price = p.minVariant.orgPrice;
+        const currentDiscount = price - p.minVariant.salePrice;
 
-        let bestDiscount = 0;
+        let bestOfferDiscount = 0;
         let bestOffer = null;
 
         for (let offer of offers) {
           if (offer.discountValue >= price) continue;
           let discountAmount = 0;
           if (offer.offerType === "percentage") {
-            discountAmount = price * (offer.discountValue / 100);
+            discountAmount = price - (price * (offer.discountValue / 100));
+
+            // Apply maximumDiscount cap if explicitly set
+            if (offer.maximumDiscount && offer.maximumDiscount > 0) {
+              if (discountAmount > offer.maximumDiscount) {
+                discountAmount = offer.maximumDiscount;
+              }
+            }
           } else {
             discountAmount = Math.min(offer.discountValue, price);
           }
 
-          if (discountAmount > bestDiscount) {
-            bestDiscount = discountAmount;
+          if (discountAmount > bestOfferDiscount) {
+            bestOfferDiscount = discountAmount;
             bestOffer = offer;
           }
+        }
+
+        let appliedDiscount = currentDiscount;
+        if (bestOfferDiscount > currentDiscount) {
+          appliedDiscount = bestOfferDiscount;
+        } else {
+          bestOffer = null; // Discard offer if it doesn't beat the existing sale price
         }
 
         return {
@@ -289,8 +304,8 @@ const getProduct = async (req, res) => {
           offerType: bestOffer?.offerType || null,
           offerValue: bestOffer?.discountValue || 0,
           offerName: bestOffer?.title || null,
-          bestDiscount,
-          salePrice: price - bestDiscount,
+          bestDiscount: appliedDiscount,
+          salePrice: price - appliedDiscount,
         };
       }),
     );
@@ -554,9 +569,9 @@ const getVariantData = async (req, res) => {
 
 
     currentDiscount = variant.orgPrice - variant.salePrice
-    let disObject = {};
+    let disObject = { bestDiscount: 0, isOffer: false };
     let salePrice;
-    disObject.isOffer = false;
+
     if (offers.length !== 0) {
       let combinedOffers = offers.filter((v) =>
         ["product", "category"].includes(v.applicableOn),
@@ -573,17 +588,19 @@ const getVariantData = async (req, res) => {
 
     }
     salePrice = variant.salePrice;
-    console.log('current discount' + currentDiscount + " it's from offer " + disObject.bestDiscount)
-    if (offers.length !== 0 && currentDiscount < disObject.bestDiscount) {
-      salePrice = Math.floor(variant.orgPrice - disObject.bestDiscount);
-    }
-    if (currentDiscount < disObject.bestDiscount) {
+    disObject.isOffer = false;
+
+    if (offers.length !== 0 && disObject.bestDiscount > currentDiscount) {
+      // Offer is better than the built-in sale discount
       salePrice = Math.floor(variant.orgPrice - disObject.bestDiscount);
       disObject.isOffer = true;
     } else {
+      // Sale price is better or equal
       salePrice = variant.salePrice;
+      disObject.bestDiscount = currentDiscount; // Sync the value conceptually
       disObject.isOffer = false;
     }
+
     const orgPrice = variant.orgPrice;
     return res.status(STATUS_CODES.OK).json({
       success: true,
