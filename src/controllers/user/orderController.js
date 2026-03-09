@@ -975,6 +975,7 @@ const invoice = async (req, res) => {
         orderItem: "$orderItems",
         variant: 1,
         product: 1,
+        shipping:1
       },
     },
   ]);

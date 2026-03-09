@@ -160,6 +160,7 @@ const userProfileAxios = async (data) => {
     }
     return res
   } catch (error) {
+    console.log(error)
     return error.response
   }
 }
@@ -169,6 +170,7 @@ const userProfileImgUplaoderAxios = async (file) => {
       headers: { 'content-Type': "multipart/form-data" }
     })
   } catch (error) {
+    console.log(error)
     return error.response
   }
 }

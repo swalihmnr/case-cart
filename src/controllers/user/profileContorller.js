@@ -1,5 +1,6 @@
 import user from "../../models/userModel.js";
 import { STATUS_CODES } from "../../utils/statusCodes.js";
+import { uploadBufferTocloudnery } from "../../utils/cloudneryUpload.js";
 
 // ==============================
 // GET USER PROFILE PAGE
@@ -170,6 +171,7 @@ const editProfileImg = async (req, res) => {
       });
     }
   } catch (error) {
+    console.log(error)
     return res.status(STATUS_CODES.INTERNAL_SERVER_ERROR).json({
       success: false,
       message: "Internal Server Error !",
