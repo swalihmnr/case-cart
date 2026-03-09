@@ -4,5 +4,5 @@ import { userAuth, keResetPass, goBackOtpVerify, blockUser, wishlistCount, cartC
 router.use(wishlistCount)
 router.use(cartCount)
 import homeController from '../../controllers/user/homeController.js'
-router.get('/home',homeController.getHome)
+router.get('/',homeController.getHome)
 export default router

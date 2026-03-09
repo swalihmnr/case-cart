@@ -14,7 +14,7 @@ router.get("/google/callback",authController.googleAuthCallback,(req, res) => {
             email: req.user.email,
              profileUrl: req.user.profileImg
         };
-        res.redirect("/home"); 
+        res.redirect("/"); 
     }
 );
 

@@ -29,7 +29,7 @@ export const goBackOtpVerify=(req,res,next)=>{
    return res.redirect('/otpVerfication')
   }
   if(req.session.user){
-    return res.redirect('/home')
+    return res.redirect('/')
   }
   next()
 }

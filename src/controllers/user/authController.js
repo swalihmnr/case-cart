@@ -62,7 +62,7 @@ let postLogin = async (req, res) => {
               .json({
                 success: true,
                 message: "login successfully..",
-                redirectUrl: "/home",
+                redirectUrl: "/",
               });
           }
         } else {
@@ -330,7 +330,7 @@ let postResetPass = async (req, res) => {
     res.json({
       success: true,
       message: "Password updated successfully",
-      redirectUrl: "/home",
+      redirectUrl: "/",
     });
   }
 };
@@ -381,10 +381,10 @@ let PostForgetPassword = async (req, res) => {
 const logOut = (req, res) => {
   try {
     req.session.user = null;
-    res.redirect("/home");
+    res.redirect("/");
   } catch (error) {
     console.error("Logout error:", error);
-    res.redirect("/home");
+    res.redirect("/");
   }
 };
 
