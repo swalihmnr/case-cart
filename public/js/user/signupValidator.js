@@ -1,23 +1,22 @@
-import  api from '../api.js '
-
+import api from "../api.js ";
 
 document.addEventListener("DOMContentLoaded", () => {
-    const passwordInput = document.getElementById("signup-password");
-    const eyeIcon = document.getElementById("eye-icon");
+  const passwordInput = document.getElementById("signup-password");
+  const eyeIcon = document.getElementById("eye-icon");
 
-    eyeIcon.addEventListener("click", () => {
-      if (passwordInput.type === "password") {
-        passwordInput.type = "text";
-        eyeIcon.classList.remove("fa-eye");
-        eyeIcon.classList.add("fa-eye-slash");
-      } else {
-        passwordInput.type = "password";
-        eyeIcon.classList.remove("fa-eye-slash");
-        eyeIcon.classList.add("fa-eye");
-      }
-    });
+  eyeIcon.addEventListener("click", () => {
+    if (passwordInput.type === "password") {
+      passwordInput.type = "text";
+      eyeIcon.classList.remove("fa-eye");
+      eyeIcon.classList.add("fa-eye-slash");
+    } else {
+      passwordInput.type = "password";
+      eyeIcon.classList.remove("fa-eye-slash");
+      eyeIcon.classList.add("fa-eye");
+    }
   });
-  document.querySelector("form").addEventListener("submit", async(event) => {
+});
+document.querySelector("form").addEventListener("submit", async (event) => {
   event.preventDefault();
 
   let fname = document.getElementById("first-name").value.trim();
@@ -82,32 +81,26 @@ document.addEventListener("DOMContentLoaded", () => {
   }
   if (Err_flag) {
     console.log("Submitting signup form...");
-    const data={  
+    const data = {
       firstname: fname,
       lastname: lname,
       number: pnumber,
       email,
       password,
-      referralCode:referralCode||null
-    }
-    sessionStorage.setItem('email',email);
-    localStorage.removeItem('otpTimer');
-    localStorage.removeItem("otpExpire");  
-   let res=await api.userSignupAxios(data)
-   if(res.data.success){
-        window.location.href=res.data.redirectUrl
-   }else{
+      referralCode: referralCode || null,
+    };
+    sessionStorage.setItem("email", email);
+    localStorage.removeItem("otpTimer");
+    localStorage.removeItem("otpExpire");
+    let res = await api.userSignupAxios(data);
+    if (res.data.success) {
+      window.location.href = res.data.redirectUrl;
+    } else {
       Swal.fire({
-      icon: "warning",
-      title: res.data.message,
-      confirmButtonColor: "#f6ad55" // orange
+        icon: "warning",
+        title: res.data.message,
+        confirmButtonColor: "#f6ad55", // orange
+      });
+    }
+  }
 });
-
-   }
- 
-  } 
-
-
-});
-        
-        

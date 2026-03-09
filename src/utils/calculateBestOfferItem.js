@@ -1,7 +1,6 @@
 import offerModel from "../models/admin/offerModel.js";
 
 const calculateBestItemOffer = async (item) => {
-
   const orgPrice = item.variant.orgPrice;
   const salePrice = item.variant.salePrice;
   const quantity = item.quantity;
@@ -9,9 +8,9 @@ const calculateBestItemOffer = async (item) => {
   // Calculate current discount from sale price
   const currentDiscountPerUnit = orgPrice - salePrice;
 
-  console.log('Original Price:', orgPrice);
-  console.log('Sale Price:', salePrice);
-  console.log('Current Discount per unit:', currentDiscountPerUnit);
+  console.log("Original Price:", orgPrice);
+  console.log("Sale Price:", salePrice);
+  console.log("Current Discount per unit:", currentDiscountPerUnit);
 
   // First check: If sale price already gives better discount than any offer could
   // We need to find the maximum possible offer discount first
@@ -24,16 +23,16 @@ const calculateBestItemOffer = async (item) => {
     endDate: { $gte: new Date() },
     $or: [
       { applicableOn: "product", productIds: { $in: [item.product._id] } },
-      { applicableOn: "category", categoryIds: { $in: [item.product.catgId] } }
-    ]
+      { applicableOn: "category", categoryIds: { $in: [item.product.catgId] } },
+    ],
   });
 
-  console.log('Found offers:', offers.length);
+  console.log("Found offers:", offers.length);
 
   for (const offer of offers) {
     if (offer.offerType === "percentage") {
       // Calculate percentage discount on orgPrice as requested mathematically
-      let discount = orgPrice - ((orgPrice * offer.discountValue) / 100);
+      let discount = orgPrice - (orgPrice * offer.discountValue) / 100;
       console.log(`Offer ${offer.title}: ${discount} discount`);
 
       // Apply max cap per unit ONLY if explicitly set on the offer
@@ -59,12 +58,12 @@ const calculateBestItemOffer = async (item) => {
     // Current sale price is better or equal
     finalDiscountPerUnit = currentDiscountPerUnit;
     appliedOffer = null; // No offer applied, using sale price
-    console.log('Using sale price discount:', currentDiscountPerUnit);
+    console.log("Using sale price discount:", currentDiscountPerUnit);
   } else {
     // Offer is better
     finalDiscountPerUnit = bestOfferDiscountPerUnit;
     appliedOffer = bestOffer;
-    console.log('Using offer discount:', bestOfferDiscountPerUnit);
+    console.log("Using offer discount:", bestOfferDiscountPerUnit);
   }
 
   // Calculate final price
@@ -74,16 +73,19 @@ const calculateBestItemOffer = async (item) => {
   const totalDiscountAmount = finalDiscountPerUnit * quantity;
   const totalFinalPrice = finalUnitPrice * quantity;
 
-  console.log('Final Discount per unit:', finalDiscountPerUnit);
-  console.log('Final Unit Price:', finalUnitPrice);
-  console.log('Total for', quantity, 'items:', totalFinalPrice);
-  console.log('Total Discount:', totalDiscountAmount);
-  console.log('Applied Offer:', appliedOffer ? appliedOffer.title : 'None (using sale price)');
+  console.log("Final Discount per unit:", finalDiscountPerUnit);
+  console.log("Final Unit Price:", finalUnitPrice);
+  console.log("Total for", quantity, "items:", totalFinalPrice);
+  console.log("Total Discount:", totalDiscountAmount);
+  console.log(
+    "Applied Offer:",
+    appliedOffer ? appliedOffer.title : "None (using sale price)",
+  );
 
   return {
     bestOffer: appliedOffer,
-    discountAmount: finalDiscountPerUnit,  // per unit discount
-    finalPrice: finalUnitPrice             // per unit final price
+    discountAmount: finalDiscountPerUnit, // per unit discount
+    finalPrice: finalUnitPrice, // per unit final price
   };
 };
 

@@ -10,15 +10,12 @@ document.querySelectorAll(".block-btn").forEach((btn) => {
       confirmButtonColor: "#d33",
       cancelButtonColor: "#3085d6",
       confirmButtonText: "Yes, Continue",
-    }).then(async(result) => {
-      if(result.isConfirmed){
-        console.log('confirmed')
+    }).then(async (result) => {
+      if (result.isConfirmed) {
+        console.log("confirmed");
         let res = await adminApi.blockCategoryAxios(id);
-        if (res.data.success) 
-            location.reload();
-        
+        if (res.data.success) location.reload();
       }
-      });
-    
+    });
   });
 });

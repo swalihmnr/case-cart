@@ -33,7 +33,7 @@ const userSignupAxios = async (data) => {
 const userOtpAxios = async (otp) => {
   try {
     const email = sessionStorage.getItem("email");
-    console.log(email + 'it is the email')
+    console.log(email + "it is the email");
     if (!email) {
       throw new Error("Session expired. Email not found.");
     }
@@ -53,7 +53,7 @@ const userOtpAxios = async (otp) => {
         sessionStorage.setItem("urlLoginPage", resetUrl);
       }
     } else {
-      console.log('low')
+      console.log("low");
       if (res.data.redirectUrl) {
         sessionStorage.setItem("urlLoginPage", res.data.redirectUrl);
       }
@@ -90,14 +90,12 @@ const resendOtpAxios = async () => {
 const loginAxios = async (data) => {
   try {
     const res = await api.post("/login", data);
-    console.log(res)
+    console.log(res);
     return res;
-
   } catch (error) {
-    console.log('here is the main problem right')
-    return error.response
+    console.log("here is the main problem right");
+    return error.response;
   }
-
 };
 
 // ---------------------------
@@ -134,7 +132,7 @@ const resetPassAxios = async (data) => {
     if (!email) throw new Error("Session expired. Email missing.");
 
     let res = await api.post("/resetPassword", data);
-    return res
+    return res;
   } catch (err) {
     console.error("Reset password error:", err);
     throw err;
@@ -142,186 +140,172 @@ const resetPassAxios = async (data) => {
 };
 const admnLoginAxios = async (data) => {
   try {
-
-    return await api.post('/admin/login', data)
-  } catch (err) {
-
-  }
-}
+    return await api.post("/admin/login", data);
+  } catch (err) {}
+};
 const userProfileAxios = async (data) => {
   try {
-    let res = await api.post('/profile/info/edit', data);
+    let res = await api.post("/profile/info/edit", data);
     if (res.data.email) {
       clearInterval(window.OtpTimer);
-      localStorage.removeItem('otpTimer');
-      localStorage.removeItem('otpExpire');
-      sessionStorage.setItem("email", res.data.email)
-      sessionStorage.setItem("urlLoginPage", '/user-profile');
+      localStorage.removeItem("otpTimer");
+      localStorage.removeItem("otpExpire");
+      sessionStorage.setItem("email", res.data.email);
+      sessionStorage.setItem("urlLoginPage", "/user-profile");
     }
-    return res
+    return res;
   } catch (error) {
-    console.log(error)
-    return error.response
+    console.log(error);
+    return error.response;
   }
-}
+};
 const userProfileImgUplaoderAxios = async (file) => {
   try {
-    return await api.patch('/profile/edit/img', file, {
-      headers: { 'content-Type': "multipart/form-data" }
-    })
+    return await api.patch("/profile/edit/img", file, {
+      headers: { "content-Type": "multipart/form-data" },
+    });
   } catch (error) {
-    console.log(error)
-    return error.response
+    console.log(error);
+    return error.response;
   }
-}
+};
 
 const addWishlistAxios = async (productId, variant) => {
-
-  return await api.post('/product/wishlist/add', {
-    productId, variant
-  })
-
-}
+  return await api.post("/product/wishlist/add", {
+    productId,
+    variant,
+  });
+};
 const remWishlistAxios = async (id) => {
   try {
-    return await api.delete(`/product/wishlist/${id}/rem`)
-
+    return await api.delete(`/product/wishlist/${id}/rem`);
   } catch (error) {
     console.log(error.response + "Axios error");
-    return error.response
+    return error.response;
   }
-}
+};
 const productDetialAxios = async (productId, variantId) => {
   try {
-    return await api.get(`/product/${productId}`)
+    return await api.get(`/product/${productId}`);
   } catch (error) {
-    return error.response
+    return error.response;
   }
-}
+};
 const getVariantDataAxios = async (productId, variantId) => {
   try {
-    return await api.post(`/product/${productId}/getVariant?variantId=${variantId}`);
-
+    return await api.post(
+      `/product/${productId}/getVariant?variantId=${variantId}`,
+    );
   } catch (error) {
-    return error.response
+    return error.response;
   }
-}
-
-
+};
 
 const addToCartAxios = async (productId, variantId) => {
   try {
     return await api.patch(`/cart/add`, {
       variantId,
-      productId
-    })
+      productId,
+    });
   } catch (error) {
     if (error.response && error.response.status === 401) {
       return error.response;
     }
-    return error.response
+    return error.response;
   }
-}
+};
 const quantityUpdateAxios = async (cartId, change) => {
   try {
     return await api.post(`/cart/quantity/${cartId}`, {
-      change
-    })
-
+      change,
+    });
   } catch (error) {
-    return error.response
+    return error.response;
   }
-}
+};
 const removeFromCartAxios = async (productId, variantId) => {
-  return api.patch(`/product/cart/${productId}`)
-}
+  return api.patch(`/product/cart/${productId}`);
+};
 
 const addAddressAxios = async (data) => {
   try {
     return await api.post(`/address/add`, {
-      data
-    })
-
+      data,
+    });
   } catch (error) {
-    return error.response
+    return error.response;
   }
-}
+};
 const editAddressAxios = async (data) => {
   try {
     return await api.post(`/address/edit`, {
-      data
-    })
+      data,
+    });
   } catch (error) {
-    return error.response
+    return error.response;
   }
-}
+};
 const deleteAddressAxios = async (addressId) => {
   try {
-
     return api.patch(`/address/${addressId}/del`);
   } catch (error) {
-    return error.response
+    return error.response;
   }
-}
+};
 const confirmationAxios = async (data) => {
   try {
     return await api.post(`/order/confirm`, {
-      data
-    })
-
+      data,
+    });
   } catch (error) {
-    return error.response
+    return error.response;
   }
-}
+};
 const ordCancelAxios = async (data, orderItemId) => {
   try {
-    return await api.patch(`/order/${orderItemId}/cancel`, data)
+    return await api.patch(`/order/${orderItemId}/cancel`, data);
   } catch (error) {
-    return error.response
+    return error.response;
   }
-}
+};
 
 const ordReturnAxios = async (data, orderItemId) => {
   try {
-    return api.patch(`/order/${orderItemId}/return`, data)
+    return api.patch(`/order/${orderItemId}/return`, data);
   } catch (error) {
-    return error.response
+    return error.response;
   }
-}
+};
 
 const cancelWholeOrderAxios = async (orderId, data) => {
   try {
-    return await api.patch(`/order/${orderId}/cancel-all`, data)
+    return await api.patch(`/order/${orderId}/cancel-all`, data);
   } catch (error) {
-    return error.response
+    return error.response;
   }
-}
+};
 
 const orderInvoice = async (orderId, orderItemId) => {
   try {
-    console.log(orderItemId, 'it is the order Id')
-    window.location.href = `/order/${orderItemId}/invoice?odrId=${orderId}`
-  } catch (error) {
-
-  }
-}
+    console.log(orderItemId, "it is the order Id");
+    window.location.href = `/order/${orderItemId}/invoice?odrId=${orderId}`;
+  } catch (error) {}
+};
 const changePasswordAxios = async (data) => {
   try {
-    return await api.post('/password/reset', data)
+    return await api.post("/password/reset", data);
   } catch (error) {
-    return error.response
+    return error.response;
   }
-}
+};
 const verifyCouponAxios = async (data) => {
   try {
-    console.log(data, 'it is the data here')
-    return await api.post(`/user/checkout/verify/coupon`, { data })
-
+    console.log(data, "it is the data here");
+    return await api.post(`/user/checkout/verify/coupon`, { data });
   } catch (error) {
-    return error.response
+    return error.response;
   }
-}
-
+};
 
 const createRazorpayOrderAxios = async (orderId) => {
   try {
@@ -349,20 +333,18 @@ const verifyRazorpayPaymentAxios = async (data) => {
 
 const createRazorpayOrderWallletAxios = async (payload) => {
   try {
-    return await api.post('/api/payment/wallet/create-order', payload)
+    return await api.post("/api/payment/wallet/create-order", payload);
   } catch (error) {
-    return error.response
+    return error.response;
   }
-}
+};
 const verifyRazorpayPaymentWalletAxios = async (data) => {
   try {
-    return await api.post('/api/payment/wallet/verify-payment', data)
+    return await api.post("/api/payment/wallet/verify-payment", data);
   } catch (error) {
-    return error.response
+    return error.response;
   }
-}
-
-
+};
 
 export default {
   userSignupAxios,
@@ -395,7 +377,5 @@ export default {
   verifyRazorpayPaymentAxios,
   markPaymentFailedAxios,
   createRazorpayOrderWallletAxios,
-  verifyRazorpayPaymentWalletAxios
-
-
+  verifyRazorpayPaymentWalletAxios,
 };

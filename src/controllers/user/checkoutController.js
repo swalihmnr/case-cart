@@ -13,10 +13,10 @@ import variantModel from "../../models/admin/variantModel.js";
 const getCheckout = async (req, res) => {
   try {
     if (!req.session || !req.session.user || !req.session.user.id) {
-      return res.redirect('/login');
+      return res.redirect("/login");
     }
     let cartItems = [];
-    let subtotal = 0;              // ORIGINAL TOTAL
+    let subtotal = 0; // ORIGINAL TOTAL
     let offerDiscountTotal = 0;
     let finalAmount = 0;
     let shipping = 0;
@@ -26,13 +26,16 @@ const getCheckout = async (req, res) => {
     const userId = new mongoose.Types.ObjectId(req.session.user.id);
     const { type, variantId } = req.query;
 
-    coupons = await couponModel.find({ status: "active", usedBy: { $ne: userId } });
+    coupons = await couponModel.find({
+      status: "active",
+      usedBy: { $ne: userId },
+    });
 
     // ======================
     // CART FLOW
     // ======================
     if (type !== "buyNow") {
-      req.session.buyNow = false
+      req.session.buyNow = false;
       // Cart flow - Get items from user's cart
       cartItems = await cartModel.aggregate([
         { $match: { userId } },
@@ -61,11 +64,11 @@ const getCheckout = async (req, res) => {
                 $filter: {
                   input: "$product.productImages",
                   as: "img",
-                  cond: { $eq: ["$$img.isMain", true] }
-                }
-              }
-            }
-          }
+                  cond: { $eq: ["$$img.isMain", true] },
+                },
+              },
+            },
+          },
         },
         {
           $project: {
@@ -73,9 +76,9 @@ const getCheckout = async (req, res) => {
             variant: 1,
             quantity: 1,
             mainImage: 1,
-            orgPrice: "$variant.orgPrice"
-          }
-        }
+            orgPrice: "$variant.orgPrice",
+          },
+        },
       ]);
 
       if (!cartItems.length) return res.redirect("/cart");
@@ -83,8 +86,14 @@ const getCheckout = async (req, res) => {
       // Calculate offers for each cart item
       for (let item of cartItems) {
         // Validation Check: Stock, Listing, Product Block
-        if (!item.variant.isListed || item.product.isBlock || item.variant.stock < item.quantity) {
-          return res.redirect("/cart?error=Some items in your cart are currently unavailable or out of stock.");
+        if (
+          !item.variant.isListed ||
+          item.product.isBlock ||
+          item.variant.stock < item.quantity
+        ) {
+          return res.redirect(
+            "/cart?error=Some items in your cart are currently unavailable or out of stock.",
+          );
         }
 
         const orgTotal = item.variant.orgPrice * item.quantity;
@@ -103,7 +112,7 @@ const getCheckout = async (req, res) => {
           item.appliedOffer = {
             title: offerResult.bestOffer.title,
             value: offerResult.bestOffer.discountValue,
-            discount: totalItemDiscount
+            discount: totalItemDiscount,
           };
         } else {
           item.appliedOffer = null;
@@ -125,7 +134,7 @@ const getCheckout = async (req, res) => {
     // ======================
     else {
       // Get the variant with product details
-      req.session.buyNow = true
+      req.session.buyNow = true;
       const variantData = await variantModel.aggregate([
         { $match: { _id: new mongoose.Types.ObjectId(variantId) } },
         {
@@ -144,12 +153,12 @@ const getCheckout = async (req, res) => {
                 $filter: {
                   input: "$product.productImages",
                   as: "img",
-                  cond: { $eq: ["$$img.isMain", true] }
-                }
-              }
-            }
-          }
-        }
+                  cond: { $eq: ["$$img.isMain", true] },
+                },
+              },
+            },
+          },
+        },
       ]);
 
       if (!variantData.length) {
@@ -159,10 +168,14 @@ const getCheckout = async (req, res) => {
       const variant = variantData[0];
       // VALIDATION: Check product block, listing status, and stock
       if (variant.product.isBlock || !variant.isListed || variant.stock < 1) {
-        return res.redirect('/product/' + variant.product._id + '/detials?error=Product unavailable');
+        return res.redirect(
+          "/product/" +
+            variant.product._id +
+            "/detials?error=Product unavailable",
+        );
       }
 
-      req.session.variantId = variant._id
+      req.session.variantId = variant._id;
 
       // Create item object that EXACTLY matches cart flow structure
       const item = {
@@ -172,17 +185,17 @@ const getCheckout = async (req, res) => {
           salePrice: variant.salePrice,
           deviceModel: variant.deviceModel,
           stock: variant.stock,
-          _id: variant._id
+          _id: variant._id,
         },
         quantity: 1,
         mainImage: variant.mainImage,
-        orgPrice: variant.orgPrice
+        orgPrice: variant.orgPrice,
       };
 
-      console.log('Buy Now Item Structure:', {
+      console.log("Buy Now Item Structure:", {
         hasVariant: !!item.variant,
         variantOrgPrice: item.variant?.orgPrice,
-        productName: item.product?.name
+        productName: item.product?.name,
       });
 
       // Calculate original subtotal
@@ -192,7 +205,7 @@ const getCheckout = async (req, res) => {
       const offerResult = await calculateBestItemOffer({
         product: item.product,
         variant: item.variant,
-        quantity: 1
+        quantity: 1,
       });
 
       // Set item properties
@@ -204,12 +217,12 @@ const getCheckout = async (req, res) => {
         item.appliedOffer = {
           title: offerResult.bestOffer.title,
           value: offerResult.bestOffer.discountValue,
-          discount: offerResult.discountAmount  // Use discountAmount directly
+          discount: offerResult.discountAmount, // Use discountAmount directly
         };
-        console.log('Applied Offer Set:', item.appliedOffer);
+        console.log("Applied Offer Set:", item.appliedOffer);
       } else {
         item.appliedOffer = null;
-        console.log('No Applied Offer');
+        console.log("No Applied Offer");
       }
 
       // Update totals
@@ -225,11 +238,11 @@ const getCheckout = async (req, res) => {
       // Create cartItems array with the single item
       cartItems = [item];
     }
-    let cod=finalAmount>1000?true:false;
-    console.log('it is the coee'+cod)
-    let walletButton = false
-    if(walletBalance?.balance>finalAmount){
-      walletButton=true
+    let cod = finalAmount > 1000 ? true : false;
+    console.log("it is the coee" + cod);
+    let walletButton = false;
+    if (walletBalance?.balance > finalAmount) {
+      walletButton = true;
     }
 
     const addresses = await addressModel.find({ userId });
@@ -246,7 +259,10 @@ const getCheckout = async (req, res) => {
 
     if (cartItems.length > 0) {
       console.log("First Item Structure:");
-      console.log("  - Has variant.orgPrice:", !!cartItems[0].variant?.orgPrice);
+      console.log(
+        "  - Has variant.orgPrice:",
+        !!cartItems[0].variant?.orgPrice,
+      );
       console.log("  - variant.orgPrice:", cartItems[0].variant?.orgPrice);
       console.log("  - finalPrice:", cartItems[0].finalPrice);
       console.log("  - offerDiscount:", cartItems[0].offerDiscount);
@@ -254,7 +270,10 @@ const getCheckout = async (req, res) => {
       if (cartItems[0].appliedOffer) {
         console.log("  - appliedOffer.title:", cartItems[0].appliedOffer.title);
         console.log("  - appliedOffer.value:", cartItems[0].appliedOffer.value);
-        console.log("  - appliedOffer.discount:", cartItems[0].appliedOffer.discount);
+        console.log(
+          "  - appliedOffer.discount:",
+          cartItems[0].appliedOffer.discount,
+        );
       }
     }
     console.log("=================================");
@@ -268,14 +287,13 @@ const getCheckout = async (req, res) => {
       finalAmount,
       coupons,
       walletButton,
-      cod
+      cod,
     });
-
   } catch (err) {
     console.error("Checkout Error:", err);
     res.status(500).send("Checkout error");
   }
 };
-export default{
-    getCheckout
-}
+export default {
+  getCheckout,
+};

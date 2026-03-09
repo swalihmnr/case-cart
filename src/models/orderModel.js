@@ -54,7 +54,7 @@ const orderSchema = new Schema(
     },
     shipping: {
       type: Number,
-      default: 0
+      default: 0,
     },
     couponId: {
       type: Types.ObjectId,
@@ -64,7 +64,7 @@ const orderSchema = new Schema(
     couponDiscount: {
       type: Number,
       required: false,
-      default: 0
+      default: 0,
     },
     shippingAddress: {
       addressType: {
@@ -160,11 +160,11 @@ const orderSchema = new Schema(
       },
     ],
   },
-  { timestamps: true }
+  { timestamps: true },
 );
 
 // Pre-save hook example (optional) to ensure pinCode is stored correctly
-orderSchema.pre('save', function (next) {
+orderSchema.pre("save", function (next) {
   // If you need any specific logic before saving the order
   next();
 });

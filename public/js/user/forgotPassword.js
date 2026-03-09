@@ -1,11 +1,10 @@
 import api from "../api.js";
 
+document.querySelector("form").addEventListener("submit", async (event) => {
+  localStorage.removeItem("otpTimer");
+  localStorage.removeItem("otpExpire");
+  clearInterval(window.OtpTimer);
 
-document.querySelector("form").addEventListener("submit", async(event) => {
-    localStorage.removeItem('otpTimer');
-    localStorage.removeItem("otpExpire");  
-     clearInterval(window.OtpTimer);
-    
   event.preventDefault();
   let email = document.getElementById("email").value.trim();
   let Err_email = document.getElementById("emailErr");
@@ -20,21 +19,21 @@ document.querySelector("form").addEventListener("submit", async(event) => {
   }
   if (Err_flag) {
     console.log("Submitting signup form...");
-    const data={
-      email
-    }
-    let res=await api.forgotPassAxios(data)
-   
-    if(res.data.success){
-        window.location.href=res.data.redirectUrl
-    }else{
-         console.log(res.data.message)
-         Swal.fire({
-        icon: 'warning',
-        title: 'Signup',
+    const data = {
+      email,
+    };
+    let res = await api.forgotPassAxios(data);
+
+    if (res.data.success) {
+      window.location.href = res.data.redirectUrl;
+    } else {
+      console.log(res.data.message);
+      Swal.fire({
+        icon: "warning",
+        title: "Signup",
         text: res.data.message,
-        confirmButtonColor: '#667eea'
+        confirmButtonColor: "#667eea",
       });
     }
-  } 
+  }
 });

@@ -6,7 +6,7 @@ const validateResult = (req, res, next) => {
   if (!errors.isEmpty()) {
     return res.status(400).json({
       success: false,
-      message: errors.array()[0].msg
+      message: errors.array()[0].msg,
     });
   }
 
@@ -14,46 +14,43 @@ const validateResult = (req, res, next) => {
 };
 
 export const addCouponValidator = [
-
-
   body("title")
     .trim()
-    .notEmpty().withMessage("Title is required")
-    .isLength({ min: 3 }).withMessage("Title too short"),
+    .notEmpty()
+    .withMessage("Title is required")
+    .isLength({ min: 3 })
+    .withMessage("Title too short"),
 
   body("couponCode")
     .trim()
-    .notEmpty().withMessage("Coupon code required")
-    .isLength({ min: 4 }).withMessage("Coupon code too short"),
+    .notEmpty()
+    .withMessage("Coupon code required")
+    .isLength({ min: 4 })
+    .withMessage("Coupon code too short"),
 
-
-  body("description")
-    .trim()
-    .notEmpty().withMessage("Description required"),
+  body("description").trim().notEmpty().withMessage("Description required"),
 
   body("discountType")
-  .isIn(["percentage", "fixedamount"])
-  .withMessage("Invalid discount type"),
+    .isIn(["percentage", "fixedamount"])
+    .withMessage("Invalid discount type"),
 
-body("discountValue")
-  .toFloat()
-  .isFloat({ min: 1 })
-  .withMessage("Discount must be greater than 0"),
+  body("discountValue")
+    .toFloat()
+    .isFloat({ min: 1 })
+    .withMessage("Discount must be greater than 0"),
 
-body("minOrderValue")
-  .toFloat()
-  .isFloat({ min: 0 })
-  .withMessage("Invalid minimum order value"),
+  body("minOrderValue")
+    .toFloat()
+    .isFloat({ min: 0 })
+    .withMessage("Invalid minimum order value"),
 
-body("maximumDiscount")
-  .optional()
-  .toFloat()
-  .isFloat({ min: 0 })
-  .withMessage("Invalid maximum discount"),
+  body("maximumDiscount")
+    .optional()
+    .toFloat()
+    .isFloat({ min: 0 })
+    .withMessage("Invalid maximum discount"),
 
-  body("startDate")
-    .isISO8601()
-    .withMessage("Invalid start date"),
+  body("startDate").isISO8601().withMessage("Invalid start date"),
 
   body("endDate")
     .isISO8601()
@@ -65,10 +62,9 @@ body("maximumDiscount")
       return true;
     }),
 
-
   body("status")
-    .isIn(["active", "inactive","scheduled"])
+    .isIn(["active", "inactive", "scheduled"])
     .withMessage("Invalid status"),
 
-  validateResult
+  validateResult,
 ];

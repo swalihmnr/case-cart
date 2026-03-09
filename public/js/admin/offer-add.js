@@ -55,10 +55,10 @@ function initOfferPage() {
     { id: "maximumDiscountValue", err: "maximumDiscountValueErr" },
     { id: "applicableOn", err: "applicableOnErr", event: "change" },
     { id: "startDate", err: "startDateErr", event: "change" },
-    { id: "endDate", err: "endDateErr", event: "change" }
+    { id: "endDate", err: "endDateErr", event: "change" },
   ];
 
-  fields.forEach(f => {
+  fields.forEach((f) => {
     const el = document.getElementById(f.id);
     if (el) {
       el.addEventListener(f.event || "input", () => clearFieldError(f.err));
@@ -70,9 +70,9 @@ function initOfferPage() {
 }
 
 function initDateInputs() {
-  const today = new Date().toISOString().split('T')[0];
-  const startDateInput = document.getElementById('startDate');
-  const endDateInput = document.getElementById('endDate');
+  const today = new Date().toISOString().split("T")[0];
+  const startDateInput = document.getElementById("startDate");
+  const endDateInput = document.getElementById("endDate");
 
   // Only set minimum dates, not values
   if (startDateInput) {
@@ -89,15 +89,24 @@ function initDateInputs() {
 // ===============================
 function enableProductContextMode() {
   const applicableOn = document.getElementById("applicableOn");
-  const productContextMessage = document.getElementById("productContextMessage");
-  const productSelectorContainer = document.getElementById("productSelectorContainer");
-  const productDisplayContainer = document.getElementById("productDisplayContainer");
-  const categorySelectorContainer = document.getElementById("categorySelectorContainer");
+  const productContextMessage = document.getElementById(
+    "productContextMessage",
+  );
+  const productSelectorContainer = document.getElementById(
+    "productSelectorContainer",
+  );
+  const productDisplayContainer = document.getElementById(
+    "productDisplayContainer",
+  );
+  const categorySelectorContainer = document.getElementById(
+    "categorySelectorContainer",
+  );
   const productIdInput = document.getElementById("productIdFromUrl");
 
   productContextMessage?.classList.remove("hidden");
   if (productContextMessage) {
-    productContextMessage.querySelector('p').textContent = "You are creating an offer for a specific product.";
+    productContextMessage.querySelector("p").textContent =
+      "You are creating an offer for a specific product.";
   }
 
   applicableOn.value = "product";
@@ -115,11 +124,14 @@ function enableProductContextMode() {
 
 function enableCategoryContextMode() {
   const applicableOn = document.getElementById("applicableOn");
-  const productContextMessage = document.getElementById("productContextMessage");
+  const productContextMessage = document.getElementById(
+    "productContextMessage",
+  );
 
   if (productContextMessage) {
     productContextMessage.classList.remove("hidden");
-    productContextMessage.querySelector('p').textContent = "You are creating an offer for a specific category.";
+    productContextMessage.querySelector("p").textContent =
+      "You are creating an offer for a specific category.";
   }
 
   applicableOn.value = "category";
@@ -135,10 +147,10 @@ function enableCategoryContextMode() {
     if (checkbox) {
       checkbox.checked = true;
       checkbox.onclick = () => false;
-      checkbox.classList.add('cursor-not-allowed', 'opacity-80');
+      checkbox.classList.add("cursor-not-allowed", "opacity-80");
       // If there's a parent label, make that not-allowed too
       if (checkbox.parentElement) {
-        checkbox.parentElement.classList.add('cursor-not-allowed');
+        checkbox.parentElement.classList.add("cursor-not-allowed");
       }
     }
   }, 100);
@@ -146,7 +158,9 @@ function enableCategoryContextMode() {
 
 function enableNormalMode() {
   const applicableOn = document.getElementById("applicableOn");
-  const productContextMessage = document.getElementById("productContextMessage");
+  const productContextMessage = document.getElementById(
+    "productContextMessage",
+  );
 
   productContextMessage?.classList.add("hidden");
 
@@ -172,8 +186,8 @@ function handleApplicableOnChange() {
   productDisplayBox?.classList.add("hidden");
 
   // Clear errors when changing selection
-  clearFieldError('productSelectorErr');
-  clearFieldError('categorySelectorErr');
+  clearFieldError("productSelectorErr");
+  clearFieldError("categorySelectorErr");
 
   if (applicableOn === "product") {
     productBox?.classList.remove("hidden");
@@ -199,7 +213,7 @@ async function handleOfferSubmit(e) {
       icon: "error",
       title: "Validation Error",
       text: "Please fix the errors in the form before submitting.",
-      confirmButtonColor: "#7c3aed"
+      confirmButtonColor: "#7c3aed",
     });
     return;
   }
@@ -216,7 +230,7 @@ async function handleOfferSubmit(e) {
         text: res.data.message,
         timer: 1500,
         showConfirmButton: false,
-        timerProgressBar: true
+        timerProgressBar: true,
       }).then(() => {
         location.href = "/admin/offers";
       });
@@ -229,7 +243,7 @@ async function handleOfferSubmit(e) {
       icon: "error",
       title: "Server Error",
       text: err.message || "Something went wrong. Please try again.",
-      confirmButtonColor: "#7c3aed"
+      confirmButtonColor: "#7c3aed",
     });
   }
 }
@@ -243,11 +257,15 @@ function getFormData() {
     desc: document.getElementById("offerDesc")?.value.trim(),
     offerType: document.getElementById("offerType")?.value,
     offerValue: document.getElementById("offerValue")?.value.trim(),
-    maximumDiscountValue: document.getElementById("maximumDiscountValue")?.value.trim() ? document.getElementById("maximumDiscountValue").value.trim() : null,
+    maximumDiscountValue: document
+      .getElementById("maximumDiscountValue")
+      ?.value.trim()
+      ? document.getElementById("maximumDiscountValue").value.trim()
+      : null,
     applicableOn: document.getElementById("applicableOn")?.value,
     startDate: document.getElementById("startDate")?.value,
     endDate: document.getElementById("endDate")?.value,
-    status: document.getElementById("offerStatus")?.value
+    status: document.getElementById("offerStatus")?.value,
   };
 }
 
@@ -259,68 +277,77 @@ function validateOfferForm(data) {
 
   // Title Validation
   if (!data.title) {
-    showError('offerTitleErr', 'Title is required');
+    showError("offerTitleErr", "Title is required");
     isValid = false;
   } else if (data.title.length < 3) {
-    showError('offerTitleErr', 'Title must be at least 3 characters');
+    showError("offerTitleErr", "Title must be at least 3 characters");
     isValid = false;
   }
 
   // Description Validation
   if (!data.desc) {
-    showError('offerDescErr', 'Description is required');
+    showError("offerDescErr", "Description is required");
     isValid = false;
   } else if (data.desc.length < 10) {
-    showError('offerDescErr', 'Description must be at least 10 characters');
+    showError("offerDescErr", "Description must be at least 10 characters");
     isValid = false;
   }
 
   // Offer Type Validation
   if (!data.offerType) {
-    showError('offerTypeErr', 'Please select an offer type');
+    showError("offerTypeErr", "Please select an offer type");
     isValid = false;
   }
 
   // Offer Value Validation
   const discountVal = parseFloat(data.offerValue);
   if (!data.offerValue) {
-    showError('offerValueErr', 'Offer value is required');
+    showError("offerValueErr", "Offer value is required");
     isValid = false;
   } else if (isNaN(discountVal)) {
-    showError('offerValueErr', 'Offer value must be a valid number');
+    showError("offerValueErr", "Offer value must be a valid number");
     isValid = false;
-  } else if (data.offerType === 'percentage') {
+  } else if (data.offerType === "percentage") {
     if (discountVal <= 0 || discountVal > MAX_PERCENT) {
-      showError('offerValueErr', `Percentage must be between 1 and ${MAX_PERCENT}`);
+      showError(
+        "offerValueErr",
+        `Percentage must be between 1 and ${MAX_PERCENT}`,
+      );
       isValid = false;
     }
   }
 
   // Maximum Discount Value Validation
-  if (data.offerType === 'percentage' && data.maximumDiscountValue) {
+  if (data.offerType === "percentage" && data.maximumDiscountValue) {
     const maxDiscountVal = parseFloat(data.maximumDiscountValue);
     if (isNaN(maxDiscountVal) || maxDiscountVal <= 0) {
-      showError('maximumDiscountValueErr', 'Maximum discount must be a valid number > 0');
+      showError(
+        "maximumDiscountValueErr",
+        "Maximum discount must be a valid number > 0",
+      );
       isValid = false;
     }
   }
 
   // Applicable On Validation
   if (!data.applicableOn) {
-    showError('applicableOnErr', 'Please select where the offer applies');
+    showError("applicableOnErr", "Please select where the offer applies");
     isValid = false;
   } else {
     if (!isProductContext && !isCategoryContext) {
-      if (data.applicableOn === 'product') {
+      if (data.applicableOn === "product") {
         const selectedProducts = getSelectedProductIds();
         if (selectedProducts.length === 0) {
-          showError('productSelectorErr', 'Please select at least one product');
+          showError("productSelectorErr", "Please select at least one product");
           isValid = false;
         }
-      } else if (data.applicableOn === 'category') {
+      } else if (data.applicableOn === "category") {
         const selectedCategories = getSelectedCategoryIds();
         if (selectedCategories.length === 0) {
-          showError('categorySelectorErr', 'Please select at least one category');
+          showError(
+            "categorySelectorErr",
+            "Please select at least one category",
+          );
           isValid = false;
         }
       }
@@ -329,7 +356,7 @@ function validateOfferForm(data) {
 
   // Start Date Validation
   if (!data.startDate) {
-    showError('startDateErr', 'Start date is required');
+    showError("startDateErr", "Start date is required");
     isValid = false;
   } else {
     const startDate = new Date(data.startDate);
@@ -337,21 +364,21 @@ function validateOfferForm(data) {
     today.setHours(0, 0, 0, 0);
 
     if (startDate < today) {
-      showError('startDateErr', 'Start date cannot be in the past');
+      showError("startDateErr", "Start date cannot be in the past");
       isValid = false;
     }
   }
 
   // End Date Validation
   if (!data.endDate) {
-    showError('endDateErr', 'End date is required');
+    showError("endDateErr", "End date is required");
     isValid = false;
   } else if (data.startDate) {
     const startDate = new Date(data.startDate);
     const endDate = new Date(data.endDate);
 
     if (endDate <= startDate) {
-      showError('endDateErr', 'End date must be after start date');
+      showError("endDateErr", "End date must be after start date");
       isValid = false;
     }
   }
@@ -368,11 +395,14 @@ function buildPayload(data) {
     description: data.desc,
     offerType: data.offerType,
     offerValue: Number(data.offerValue),
-    maximumDiscountValue: data.maximumDiscountValue !== null ? Number(data.maximumDiscountValue) : null,
+    maximumDiscountValue:
+      data.maximumDiscountValue !== null
+        ? Number(data.maximumDiscountValue)
+        : null,
     applicableOn: data.applicableOn,
     startDate: data.startDate,
     endDate: data.endDate,
-    status: data.status || 'scheduled'
+    status: data.status || "scheduled",
   };
 
   if (isProductContext) {
@@ -397,13 +427,13 @@ function buildPayload(data) {
 // ===============================
 function getSelectedProductIds() {
   return [...document.querySelectorAll(".selected-product-item")]
-    .map(el => el.getAttribute("data-product-id"))
+    .map((el) => el.getAttribute("data-product-id"))
     .filter(Boolean);
 }
 
 function getSelectedCategoryIds() {
   return [...document.querySelectorAll(".category-checkbox:checked")]
-    .map(cb => cb.value)
+    .map((cb) => cb.value)
     .filter(Boolean);
 }
 
@@ -414,13 +444,13 @@ function showError(fieldId, message) {
   const errorElement = document.getElementById(fieldId);
   if (errorElement) {
     errorElement.textContent = message;
-    errorElement.classList.remove('hidden');
+    errorElement.classList.remove("hidden");
 
     // Add red border to the corresponding input
-    const inputField = document.getElementById(fieldId.replace('Err', ''));
+    const inputField = document.getElementById(fieldId.replace("Err", ""));
     if (inputField) {
-      inputField.classList.add('border-red-500', 'border-2');
-      inputField.classList.remove('border-gray-300');
+      inputField.classList.add("border-red-500", "border-2");
+      inputField.classList.remove("border-gray-300");
     }
   }
 }
@@ -428,29 +458,29 @@ function showError(fieldId, message) {
 function clearFieldError(fieldId) {
   const errorElement = document.getElementById(fieldId);
   if (errorElement) {
-    errorElement.textContent = '';
-    errorElement.classList.add('hidden');
+    errorElement.textContent = "";
+    errorElement.classList.add("hidden");
 
     // Remove red border from the corresponding input
-    const inputField = document.getElementById(fieldId.replace('Err', ''));
+    const inputField = document.getElementById(fieldId.replace("Err", ""));
     if (inputField) {
-      inputField.classList.remove('border-red-500', 'border-2');
-      inputField.classList.add('border-gray-300');
+      inputField.classList.remove("border-red-500", "border-2");
+      inputField.classList.add("border-gray-300");
     }
   }
 }
 
 function clearAllErrors() {
   // Clear all error messages
-  document.querySelectorAll('[id$="Err"]').forEach(el => {
-    el.textContent = '';
-    el.classList.add('hidden');
+  document.querySelectorAll('[id$="Err"]').forEach((el) => {
+    el.textContent = "";
+    el.classList.add("hidden");
   });
 
   // Remove all red borders
-  document.querySelectorAll('.border-red-500').forEach(el => {
-    el.classList.remove('border-red-500', 'border-2');
-    el.classList.add('border-gray-300');
+  document.querySelectorAll(".border-red-500").forEach((el) => {
+    el.classList.remove("border-red-500", "border-2");
+    el.classList.add("border-gray-300");
   });
 }
 
@@ -470,41 +500,46 @@ function handleProductSearch(e) {
 
   const ALL_PRODUCTS = window.ALL_PRODUCTS || [];
 
-  const filtered = ALL_PRODUCTS.filter(p =>
-    p.name?.toLowerCase().includes(term)
+  const filtered = ALL_PRODUCTS.filter((p) =>
+    p.name?.toLowerCase().includes(term),
   ).slice(0, 8);
 
   if (filtered.length === 0) {
-    container.innerHTML = '<div class="p-3 text-gray-500 text-sm">No products found</div>';
+    container.innerHTML =
+      '<div class="p-3 text-gray-500 text-sm">No products found</div>';
   } else {
-    container.innerHTML = filtered.map(p => `
+    container.innerHTML = filtered
+      .map(
+        (p) => `
       <div class="product-result-item p-3 hover:bg-gray-100 cursor-pointer border-b last:border-b-0"
         data-product-id="${p._id}"
         data-product-name="${p.name}">
         <div class="font-medium text-gray-900">${p.name}</div>
-        <div class="text-xs text-gray-500">${p.sku || 'No SKU'}</div>
+        <div class="text-xs text-gray-500">${p.sku || "No SKU"}</div>
       </div>
-    `).join('');
+    `,
+      )
+      .join("");
   }
 
   container.classList.remove("hidden");
 
   // Add click handlers to result items
-  document.querySelectorAll(".product-result-item").forEach(item => {
+  document.querySelectorAll(".product-result-item").forEach((item) => {
     item.onclick = () => {
       addSelectedProduct(item.dataset.productId, item.dataset.productName);
       container.classList.add("hidden");
       e.target.value = "";
-      clearFieldError('productSelectorErr');
+      clearFieldError("productSelectorErr");
     };
   });
 
   // Close dropdown when clicking outside
   setTimeout(() => {
-    document.addEventListener('click', function closeDropdown(event) {
+    document.addEventListener("click", function closeDropdown(event) {
       if (!container.contains(event.target) && event.target !== e.target) {
         container.classList.add("hidden");
-        document.removeEventListener('click', closeDropdown);
+        document.removeEventListener("click", closeDropdown);
       }
     });
   }, 100);
@@ -514,12 +549,15 @@ function addSelectedProduct(id, name) {
   const container = document.getElementById("selectedProducts");
 
   // Check if product already selected
-  if (document.querySelector(`.selected-product-item[data-product-id="${id}"]`)) {
+  if (
+    document.querySelector(`.selected-product-item[data-product-id="${id}"]`)
+  ) {
     return;
   }
 
   const div = document.createElement("div");
-  div.className = "selected-product-item flex justify-between items-center bg-gray-50 p-3 rounded-lg mb-2 border";
+  div.className =
+    "selected-product-item flex justify-between items-center bg-gray-50 p-3 rounded-lg mb-2 border";
   div.dataset.productId = id;
 
   div.innerHTML = `
@@ -542,7 +580,9 @@ function addSelectedProduct(id, name) {
 // ===============================
 async function loadProductDetails(productId) {
   try {
-    const product = (window.ALL_PRODUCTS || []).find(p => p._id === productId);
+    const product = (window.ALL_PRODUCTS || []).find(
+      (p) => p._id === productId,
+    );
 
     // If not in ALL_PRODUCTS, fetch from API
     let productData = product;
@@ -555,7 +595,8 @@ async function loadProductDetails(productId) {
 
     const box = document.getElementById("selectedProductDisplay");
     if (!box || !productData) {
-      box.innerHTML = '<div class="text-red-500 text-sm">Product not found</div>';
+      box.innerHTML =
+        '<div class="text-red-500 text-sm">Product not found</div>';
       return;
     }
 
@@ -563,8 +604,8 @@ async function loadProductDetails(productId) {
       <div class="flex justify-between items-center">
         <div>
           <p class="font-medium text-gray-900">${productData.name}</p>
-          <p class="text-sm text-gray-600">SKU: ${productData.sku || 'N/A'}</p>
-          <p class="text-sm text-gray-600">Price: $${productData.price || '0.00'}</p>
+          <p class="text-sm text-gray-600">SKU: ${productData.sku || "N/A"}</p>
+          <p class="text-sm text-gray-600">Price: $${productData.price || "0.00"}</p>
         </div>
         <span class="bg-green-100 text-green-800 text-xs font-medium px-2.5 py-0.5 rounded">Selected</span>
       </div>
@@ -573,7 +614,8 @@ async function loadProductDetails(productId) {
     console.error("Load product error:", err);
     const box = document.getElementById("selectedProductDisplay");
     if (box) {
-      box.innerHTML = '<div class="text-red-500 text-sm">Error loading product details</div>';
+      box.innerHTML =
+        '<div class="text-red-500 text-sm">Error loading product details</div>';
     }
   }
 }
@@ -585,11 +627,14 @@ function loadCategories() {
   if (!container) return;
 
   if (categories.length === 0) {
-    container.innerHTML = '<div class="text-gray-500 text-center p-4 border rounded-lg">No categories available</div>';
+    container.innerHTML =
+      '<div class="text-gray-500 text-center p-4 border rounded-lg">No categories available</div>';
     return;
   }
 
-  container.innerHTML = categories.map(cat => `
+  container.innerHTML = categories
+    .map(
+      (cat) => `
     <div class="flex items-center mb-3 p-2 hover:bg-gray-50 rounded">
       <input type="checkbox"
         class="category-checkbox mr-3 h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
@@ -600,7 +645,9 @@ function loadCategories() {
         ${cat.name}
       </label>
     </div>
-  `).join('');
+  `,
+    )
+    .join("");
 }
 
 // ===============================
@@ -618,6 +665,6 @@ function debounce(fn, delay) {
 window.clearFieldError = clearFieldError;
 
 function backButton() {
-  window.location.href = '/admin/offers'
+  window.location.href = "/admin/offers";
 }
-window.backButton = backButton
+window.backButton = backButton;

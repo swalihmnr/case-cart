@@ -5,25 +5,23 @@ const toggleStatsBtn = document.getElementById("toggle-stats-btn");
 const statsContainer = document.getElementById("stats-container");
 
 if (toggleStatsBtn) {
-    toggleStatsBtn.addEventListener("click", () => {
-        statsContainer.classList.toggle("expanded");
+  toggleStatsBtn.addEventListener("click", () => {
+    statsContainer.classList.toggle("expanded");
 
-        const text = toggleStatsBtn.querySelector("span");
-        const icon = toggleStatsBtn.querySelector("i");
+    const text = toggleStatsBtn.querySelector("span");
+    const icon = toggleStatsBtn.querySelector("i");
 
-        if (statsContainer.classList.contains("expanded")) {
-            text.textContent = "Hide Stats";
-            statsContainer.classList.add('hidden')
-            icon.classList.replace("fa-chevron-down", "fa-chevron-up");
-        } else {
-            text.textContent = "Show Stats";
-            statsContainer.classList.remove('hidden')
-            icon.classList.replace("fa-chevron-up", "fa-chevron-down");
-        }
-    });
+    if (statsContainer.classList.contains("expanded")) {
+      text.textContent = "Hide Stats";
+      statsContainer.classList.add("hidden");
+      icon.classList.replace("fa-chevron-down", "fa-chevron-up");
+    } else {
+      text.textContent = "Show Stats";
+      statsContainer.classList.remove("hidden");
+      icon.classList.replace("fa-chevron-up", "fa-chevron-down");
+    }
+  });
 }
-
-
 
 // ----------------- MODALS -----------------
 const customerDetailsModal = document.getElementById("customer-details-modal");
@@ -32,25 +30,24 @@ const unblockCustomerModal = document.getElementById("unblock-customer-modal");
 
 const closeModalButtons = document.querySelectorAll(".close-modal");
 
-closeModalButtons.forEach(btn => {
-    btn.addEventListener("click", () => {
-        customerDetailsModal.classList.add("hidden");
-    });
+closeModalButtons.forEach((btn) => {
+  btn.addEventListener("click", () => {
+    customerDetailsModal.classList.add("hidden");
+  });
 });
 
-
 // ----------------- VIEW CUSTOMER (POPUP) -----------------
-document.querySelectorAll(".view-customer-btn").forEach(btn => {
-    btn.addEventListener("click", () => {
+document.querySelectorAll(".view-customer-btn").forEach((btn) => {
+  btn.addEventListener("click", () => {
     const id = btn.dataset.customerId;
     const name = btn.dataset.name;
     const email = btn.dataset.email;
     const number = btn.dataset.number;
-    const createdAt = btn.dataset.createdat; 
-    const status = btn.dataset.status; 
-    console.log(status)       
+    const createdAt = btn.dataset.createdat;
+    const status = btn.dataset.status;
+    console.log(status);
 
-        document.getElementById("customer-details-content").innerHTML = `
+    document.getElementById("customer-details-content").innerHTML = `
             <div class="p-8">
                 <h1 class="text-3xl font-semibold text-gray-900 mb-8">Customer Details</h1>
                 
@@ -88,7 +85,7 @@ document.querySelectorAll(".view-customer-btn").forEach(btn => {
                             <div>
                                 <span class="text-gray-900 font-medium">Status : </span>
                                 <span id="customer-status" class="inline-block px-3 py-1 text-xs rounded bg-green-100 text-green-700">
-                                    ${status==="true"?"Block":"Active"}
+                                    ${status === "true" ? "Block" : "Active"}
                                 </span>
                             </div>
                         </div>
@@ -124,80 +121,60 @@ document.querySelectorAll(".view-customer-btn").forEach(btn => {
             </div>
         `;
 
-        customerDetailsModal.classList.remove("hidden");
-    });
+    customerDetailsModal.classList.remove("hidden");
+  });
 });
-
-
 
 // ----------------- BLOCK CUSTOMER -----------------
 // let selectedCustomerId = null ;
 // let selectedRow = null;
 
-document.querySelectorAll(".block-customer-btn").forEach(btn => {
-    btn.addEventListener("click", async () => {
-        try {
-            let selectedCustomerId = btn.dataset.customerId;
-            let statusmode = btn.dataset.statusmode;
-            if(statusmode==="block"){
-
-                Swal.fire({
-                 title: "Are you sure?",
-                 text: `Are you sure you want to block this customer? They will not
+document.querySelectorAll(".block-customer-btn").forEach((btn) => {
+  btn.addEventListener("click", async () => {
+    try {
+      let selectedCustomerId = btn.dataset.customerId;
+      let statusmode = btn.dataset.statusmode;
+      if (statusmode === "block") {
+        Swal.fire({
+          title: "Are you sure?",
+          text: `Are you sure you want to block this customer? They will not
                                 be able to place orders or access their account.`,
-                 icon: "warning",
-                 showCancelButton: true,
-                 confirmButtonColor: "#d33",
-                 cancelButtonColor: "#3085d6",
-                 confirmButtonText: "Yes, Continue",
-                  }).then(async(result)=>{
-                    if(result.isConfirmed){
-                        let res=await adminApi.blockCustomerAxios(selectedCustomerId)
-                        if(res.data.success){
-                            location.reload()
-                        }
-                    }
-    
-                  })
-            }else{
-                Swal.fire({
-                 title: "Are you sure?",
-                 text: `Are you sure you want to unblock this customer? They will 
-                                be able to place orders or access their account.`,
-                 icon: "warning",
-                 showCancelButton: true,
-                 confirmButtonColor: "#d33",
-                 cancelButtonColor: "#3085d6",
-                 confirmButtonText: "Yes, Continue",
-                  }).then(async(result)=>{
-                    if(result.isConfirmed){
-                        let res=await adminApi.blockCustomerAxios(selectedCustomerId)
-                        if(res.data.success){
-                            location.reload()
-                        }
-                    }
-    
-                  }) 
+          icon: "warning",
+          showCancelButton: true,
+          confirmButtonColor: "#d33",
+          cancelButtonColor: "#3085d6",
+          confirmButtonText: "Yes, Continue",
+        }).then(async (result) => {
+          if (result.isConfirmed) {
+            let res = await adminApi.blockCustomerAxios(selectedCustomerId);
+            if (res.data.success) {
+              location.reload();
             }
-
-        } catch (error) {
-            
-        }
-
-       
-    });
+          }
+        });
+      } else {
+        Swal.fire({
+          title: "Are you sure?",
+          text: `Are you sure you want to unblock this customer? They will 
+                                be able to place orders or access their account.`,
+          icon: "warning",
+          showCancelButton: true,
+          confirmButtonColor: "#d33",
+          cancelButtonColor: "#3085d6",
+          confirmButtonText: "Yes, Continue",
+        }).then(async (result) => {
+          if (result.isConfirmed) {
+            let res = await adminApi.blockCustomerAxios(selectedCustomerId);
+            if (res.data.success) {
+              location.reload();
+            }
+          }
+        });
+      }
+    } catch (error) {}
+  });
 });
-
-
-
-
 
 // ----------------- UNBLOCK CUSTOMER -----------------
 
-
-
 // ---------------------- DOM UPDATE FUNCTIONS ----------------------
-
-
-
-

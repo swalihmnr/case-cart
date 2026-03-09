@@ -1,14 +1,10 @@
-
-const input=document.getElementById('searchInput');
+const input = document.getElementById("searchInput");
 let timer;
-input.addEventListener('input',()=>{
-  clearTimeout(timer)
-  timer=setTimeout(()=>{
+input.addEventListener("input", () => {
+  clearTimeout(timer);
+  timer = setTimeout(() => {
+    let search = input.value.trim();
 
-   let search= input.value.trim()
-
-     window.location.href=`/admin/category?page=1&search=${search}`
-  
-  },500)
-})
-
+    window.location.href = `/admin/category?page=1&search=${search}`;
+  }, 500);
+});

@@ -20,7 +20,7 @@ const getCart = async (req, res) => {
       .populate("variantId")
       .populate({
         path: "productId",
-        populate: { path: "catgId", model: "Category" }
+        populate: { path: "catgId", model: "Category" },
       });
 
     let subtotal = 0;
@@ -29,7 +29,6 @@ const getCart = async (req, res) => {
     let shipping = 0;
 
     for (let item of cartItems) {
-
       const variant = item.variantId;
       const orgPrice = variant.orgPrice;
       const quantity = item.quantity;
@@ -43,9 +42,15 @@ const getCart = async (req, res) => {
         startDate: { $lte: new Date() },
         endDate: { $gte: new Date() },
         $or: [
-          { applicableOn: "product", productIds: { $in: [item.productId._id] } },
-          { applicableOn: "category", categoryIds: { $in: [item.productId.catgId._id] } }
-        ]
+          {
+            applicableOn: "product",
+            productIds: { $in: [item.productId._id] },
+          },
+          {
+            applicableOn: "category",
+            categoryIds: { $in: [item.productId.catgId._id] },
+          },
+        ],
       });
 
       let bestOffer = null;
@@ -54,7 +59,7 @@ const getCart = async (req, res) => {
       for (let offer of offers) {
         if (offer.offerType === "percentage") {
           // Calculate the discount as the difference between original price and percentage of price
-          let discount = orgPrice - ((orgPrice * offer.discountValue) / 100);
+          let discount = orgPrice - (orgPrice * offer.discountValue) / 100;
 
           // Apply maximumDiscount cap if explicitly set
           if (offer.maximumDiscount && offer.maximumDiscount > 0) {
@@ -75,18 +80,15 @@ const getCart = async (req, res) => {
       let usedDiscountPerUnit;
 
       if (bestOfferDiscountPerUnit > currentDiscountPerUnit) {
-
         finalUnitPrice = Math.floor(orgPrice - bestOfferDiscountPerUnit);
         usedDiscountPerUnit = Math.floor(bestOfferDiscountPerUnit);
 
         item.appliedOffer = {
           title: bestOffer.title,
           discount: usedDiscountPerUnit * quantity,
-          discountValue: bestOffer.discountValue
+          discountValue: bestOffer.discountValue,
         };
-
       } else {
-
         finalUnitPrice = Math.floor(variant.salePrice);
         usedDiscountPerUnit = Math.floor(currentDiscountPerUnit);
 
@@ -117,7 +119,6 @@ const getCart = async (req, res) => {
       totalDocs,
       shipping,
     });
-
   } catch (error) {
     console.log(error.message);
   }
@@ -135,7 +136,7 @@ const addCart = async (req, res) => {
       return res.status(401).json({
         success: false,
         message: "Please login to add items to your cart",
-        redirectUrl: "/login"
+        redirectUrl: "/login",
       });
     }
 
@@ -163,7 +164,9 @@ const addCart = async (req, res) => {
       });
     }
     const variantData = await variantModel.findById(varinatID);
-    const productData = await productModel.findById(productID).populate('catgId');
+    const productData = await productModel
+      .findById(productID)
+      .populate("catgId");
 
     if (!variantData || !productData) {
       return res.status(STATUS_CODES.NOT_FOUND).json({
@@ -307,8 +310,8 @@ const cartQuantityUpdate = async (req, res) => {
       .populate("productId");
     let subtotal = 0;
     cartItems.forEach((item) => {
-      console.log(item.variantId.salePrice, 'it is the salepirce in here')
-      subtotal += Math.round(item.quantity * item.variantId.salePrice)
+      console.log(item.variantId.salePrice, "it is the salepirce in here");
+      subtotal += Math.round(item.quantity * item.variantId.salePrice);
     });
     return res.status(200).json({
       success: true,
@@ -356,5 +359,5 @@ export default {
   getCart,
   addCart,
   cartQuantityUpdate,
-  remCart
-}
+  remCart,
+};

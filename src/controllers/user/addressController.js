@@ -62,9 +62,7 @@ const addAddress = async (req, res) => {
     console.log("not existing");
     //remove existing default address
     if (isDefault) {
-      await addressModel.updateMany({ userId },
-        { $set: { isDefault: false } }
-      )
+      await addressModel.updateMany({ userId }, { $set: { isDefault: false } });
     }
     await addressModel.create({
       userId,
@@ -121,11 +119,11 @@ const editAddress = async (req, res) => {
     let isChanged = false;
     for (let key in req.body.data) {
       if (req.body.data.isDefault === true) {
-        console.log('enter to address')
+        console.log("enter to address");
         await addressModel.updateMany(
           { userId },
-          { $set: { isDefault: false } }
-        )
+          { $set: { isDefault: false } },
+        );
       }
       console.log(`${address[key]}===${req.body.data[key]}`);
       if (
@@ -185,10 +183,10 @@ const deleteAddress = async (req, res) => {
   }
 };
 export default {
-    getAddressMngmnt,
-    addAddress,
-    geteditAddress,
-    editAddress,
-    getAddAddress,
-    deleteAddress
-}
+  getAddressMngmnt,
+  addAddress,
+  geteditAddress,
+  editAddress,
+  getAddAddress,
+  deleteAddress,
+};

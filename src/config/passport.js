@@ -30,13 +30,13 @@ passport.use(
 
           return done(null, newUser);
         }
-        console.log('existing user enter again')
+        console.log("existing user enter again");
         return done(null, existingUser);
       } catch (err) {
         return done(err, null);
       }
-    }
-  )
+    },
+  ),
 );
 
 passport.serializeUser((user, done) => {

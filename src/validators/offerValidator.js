@@ -7,7 +7,7 @@ const validateResult = (req, res, next) => {
   if (!errors.isEmpty()) {
     return res.status(400).json({
       success: false,
-      message: errors.array()[0].msg
+      message: errors.array()[0].msg,
     });
   }
 
@@ -15,17 +15,16 @@ const validateResult = (req, res, next) => {
 };
 
 export const addOfferValidator = [
-
-
   body("title")
     .trim()
-    .notEmpty().withMessage("Title is required")
-    .isLength({ min: 3 }).withMessage("Title must be at least 3 characters"),
+    .notEmpty()
+    .withMessage("Title is required")
+    .isLength({ min: 3 })
+    .withMessage("Title must be at least 3 characters"),
 
   body("offerType")
     .isIn(["percentage", "flat"])
     .withMessage("Invalid offer type"),
-
 
   body("offerValue")
     .toFloat()
@@ -48,10 +47,7 @@ export const addOfferValidator = [
     .isIn(["product", "category"])
     .withMessage("Invalid applicable type"),
 
-
-  body("startDate")
-    .isISO8601()
-    .withMessage("Invalid start date"),
+  body("startDate").isISO8601().withMessage("Invalid start date"),
 
   body("endDate")
     .isISO8601()
@@ -67,12 +63,11 @@ export const addOfferValidator = [
     .optional()
     .custom((value, { req }) => {
       if (req.body.applicableOn === "category") {
-
         if (!value || !Array.isArray(value) || value.length === 0) {
           throw new Error("Select at least one category");
         }
 
-        value.forEach(id => {
+        value.forEach((id) => {
           if (!mongoose.Types.ObjectId.isValid(id)) {
             throw new Error("Invalid category ID");
           }
@@ -85,12 +80,11 @@ export const addOfferValidator = [
     .optional()
     .custom((value, { req }) => {
       if (req.body.applicableOn === "product") {
-
         if (!value || !Array.isArray(value) || value.length === 0) {
           throw new Error("Select at least one product");
         }
 
-        value.forEach(id => {
+        value.forEach((id) => {
           if (!mongoose.Types.ObjectId.isValid(id)) {
             throw new Error("Invalid product ID");
           }
@@ -99,5 +93,5 @@ export const addOfferValidator = [
       return true;
     }),
 
-  validateResult
+  validateResult,
 ];

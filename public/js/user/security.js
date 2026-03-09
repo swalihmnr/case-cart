@@ -1,15 +1,18 @@
-import api from '../api.js';
+import api from "../api.js";
 
 document.addEventListener("DOMContentLoaded", () => {
-
   const form = document.getElementById("passwordForm");
 
   form.addEventListener("submit", async (event) => {
     event.preventDefault();
 
-    const currentPassword = document.getElementById("currentPassword").value.trim();
+    const currentPassword = document
+      .getElementById("currentPassword")
+      .value.trim();
     const newPassword = document.getElementById("newPassword").value.trim();
-    const confirmPassword = document.getElementById("confirmPassword").value.trim();
+    const confirmPassword = document
+      .getElementById("confirmPassword")
+      .value.trim();
 
     // Error elements (create spans in HTML if needed)
     const errCurrent = document.getElementById("currentPassErr");
@@ -48,10 +51,10 @@ document.addEventListener("DOMContentLoaded", () => {
     if (!isValid) return;
 
     try {
-        const data={
-            currentPassword,
-        newPassword
-        }
+      const data = {
+        currentPassword,
+        newPassword,
+      };
       const res = await api.changePasswordAxios(data);
 
       if (res.data.success) {
@@ -59,7 +62,7 @@ document.addEventListener("DOMContentLoaded", () => {
           icon: "success",
           title: "Password Updated",
           text: "Your password has been changed successfully",
-          confirmButtonColor: "#7c3aed" // purple
+          confirmButtonColor: "#7c3aed", // purple
         });
 
         form.reset();
@@ -68,17 +71,16 @@ document.addEventListener("DOMContentLoaded", () => {
           icon: "error",
           title: "Failed",
           text: res.data.message || "Unable to update password",
-          confirmButtonColor: "#ef4444" // red
+          confirmButtonColor: "#ef4444", // red
         });
       }
-
     } catch (error) {
       console.error(error);
       Swal.fire({
         icon: "error",
         title: "Error",
         text: "Something went wrong. Please try again later.",
-        confirmButtonColor: "#ef4444"
+        confirmButtonColor: "#ef4444",
       });
     }
   });

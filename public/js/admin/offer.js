@@ -1,4 +1,3 @@
-
 import api from "../adminApi.js";
 async function deleteOffer(offerId) {
   const confirm = await Swal.fire({
@@ -9,7 +8,7 @@ async function deleteOffer(offerId) {
     confirmButtonColor: "#7c3aed",
     cancelButtonColor: "#d33",
     confirmButtonText: "Yes, delete it!",
-    cancelButtonText: "Cancel"
+    cancelButtonText: "Cancel",
   });
 
   // If user clicks Cancel
@@ -17,14 +16,14 @@ async function deleteOffer(offerId) {
 
   try {
     const res = await api.deleteOfferAxios(offerId);
-    console.log(res)
+    console.log(res);
     if (res.data.success) {
       Swal.fire({
         icon: "success",
         title: "Deleted!",
         text: res.data.message || "Offer deleted successfully",
         showConfirmButton: false,
-        timer: 1500
+        timer: 1500,
       }).then(() => {
         location.href = "/admin/offers";
       });
@@ -32,7 +31,7 @@ async function deleteOffer(offerId) {
       Swal.fire({
         icon: "error",
         title: "Delete Failed",
-        text: res.data.message || "Something went wrong"
+        text: res.data.message || "Something went wrong",
       });
     }
   } catch (err) {
@@ -41,12 +40,12 @@ async function deleteOffer(offerId) {
     Swal.fire({
       icon: "error",
       title: "Server Error",
-      text: "Could not delete the offer. Try again later."
+      text: "Could not delete the offer. Try again later.",
     });
   }
 }
 
-window.deleteOffer=deleteOffer
+window.deleteOffer = deleteOffer;
 
 document.addEventListener("DOMContentLoaded", () => {
   const input = document.getElementById("search-offers");
@@ -56,7 +55,7 @@ document.addEventListener("DOMContentLoaded", () => {
   console.log("Initial filter:", currentFilter);
 
   // Update filter when clicking tabs
-  document.querySelectorAll("#filter-tabs a").forEach(link => {
+  document.querySelectorAll("#filter-tabs a").forEach((link) => {
     link.addEventListener("click", () => {
       currentFilter = link.dataset.filter;
       console.log("Filter changed to:", currentFilter);

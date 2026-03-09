@@ -171,7 +171,7 @@ const editProfileImg = async (req, res) => {
       });
     }
   } catch (error) {
-    console.log(error)
+    console.log(error);
     return res.status(STATUS_CODES.INTERNAL_SERVER_ERROR).json({
       success: false,
       message: "Internal Server Error !",
@@ -180,7 +180,7 @@ const editProfileImg = async (req, res) => {
 };
 
 export default {
-    getUserProfil,
-    editProfileImg,
-    editProfileInfo
-}
+  getUserProfil,
+  editProfileImg,
+  editProfileInfo,
+};

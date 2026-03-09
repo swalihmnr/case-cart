@@ -1,9 +1,8 @@
-
 import mongoose from "mongoose";
 import { STATUS_CODES } from "../../utils/statusCodes.js";
 import user from "../../models/userModel.js";
 import bcrypt from "bcrypt";
-import randomNumberGerator from '../../utils/randomNumberGerator.js'
+import randomNumberGerator from "../../utils/randomNumberGerator.js";
 import otpGeneratorTodb from "../../utils/otpGeneratorToDb.js";
 import modelOtp from "../../models/otpModel.js";
 
@@ -57,13 +56,11 @@ let postLogin = async (req, res) => {
               profileUrl: existing.profileImg,
             };
             console.log(req.session.user.profileUrl);
-            return res
-              .status(200)
-              .json({
-                success: true,
-                message: "login successfully..",
-                redirectUrl: "/",
-              });
+            return res.status(200).json({
+              success: true,
+              message: "login successfully..",
+              redirectUrl: "/",
+            });
           }
         } else {
           return res
@@ -82,7 +79,7 @@ let postLogin = async (req, res) => {
         .status(404)
         .json({ success: false, message: "user hasn't signup yet" });
     }
-  } catch (err) { }
+  } catch (err) {}
 };
 
 // ==============================
@@ -102,8 +99,9 @@ let getSignup = (req, res) => {
 // Generates OTP for email verification
 let register = async (req, res) => {
   try {
-    const { firstname, lastname, number, email, password, referralCode } = req.body;
-    console.log(referralCode)
+    const { firstname, lastname, number, email, password, referralCode } =
+      req.body;
+    console.log(referralCode);
     const existing = await user.findOne({ email });
     if (existing) {
       console.log(`user already exists on this email ${email}`);
@@ -111,9 +109,11 @@ let register = async (req, res) => {
     } else {
       let referralPerson = null;
       if (referralCode) {
-        const existingReferrer = await user.findOne({ referralCode: referralCode });
-        console.log('here is nothing')
-        console.log(existingReferrer, 'existingReferrer')
+        const existingReferrer = await user.findOne({
+          referralCode: referralCode,
+        });
+        console.log("here is nothing");
+        console.log(existingReferrer, "existingReferrer");
         if (existingReferrer) {
           referralPerson = existingReferrer._id;
         } else {
@@ -205,27 +205,35 @@ let OtpVerify = async (req, res) => {
 
           let newUserWallet = await wallet.findOne({ userId: User._id });
           if (!newUserWallet) {
-            newUserWallet = new wallet({ userId: User._id, balance: rewardAmount });
+            newUserWallet = new wallet({
+              userId: User._id,
+              balance: rewardAmount,
+            });
           } else {
             newUserWallet.balance += rewardAmount;
           }
           newUserWallet.transactions.push({
             amount: rewardAmount,
-            transactionType: 'credited',
-            description: 'Signup Referral Bonus'
+            transactionType: "credited",
+            description: "Signup Referral Bonus",
           });
           await newUserWallet.save();
 
-          let referrerWallet = await wallet.findOne({ userId: User.referredBy });
+          let referrerWallet = await wallet.findOne({
+            userId: User.referredBy,
+          });
           if (!referrerWallet) {
-            referrerWallet = new wallet({ userId: User.referredBy, balance: rewardAmount });
+            referrerWallet = new wallet({
+              userId: User.referredBy,
+              balance: rewardAmount,
+            });
           } else {
             referrerWallet.balance += rewardAmount;
           }
           referrerWallet.transactions.push({
             amount: rewardAmount,
-            transactionType: 'credited',
-            description: 'Referral Bonus for inviting a user'
+            transactionType: "credited",
+            description: "Referral Bonus for inviting a user",
           });
           await referrerWallet.save();
         }
@@ -426,7 +434,7 @@ const resetPass = async (req, res) => {
       message: "Password Updated.",
     });
   } catch (error) {
-    console.log(error)
+    console.log(error);
     return res.status(STATUS_CODES.INTERNAL_SERVER_ERROR).json({
       success: false,
       message: "Internal server Error!",
@@ -434,20 +442,19 @@ const resetPass = async (req, res) => {
   }
 };
 
-export default{
-    getLogin,
-    postLogin,
-    getSignup,
-    register,
-    getOtpVerify,
-    OtpVerify,
-    resendOtpVerify,
-    getResetPass,
-    postResetPass,
-    getForgetPassword,
-    PostForgetPassword,
-    logOut,
-    getSecurity,
-    resetPass
-
-}
+export default {
+  getLogin,
+  postLogin,
+  getSignup,
+  register,
+  getOtpVerify,
+  OtpVerify,
+  resendOtpVerify,
+  getResetPass,
+  postResetPass,
+  getForgetPassword,
+  PostForgetPassword,
+  logOut,
+  getSecurity,
+  resetPass,
+};

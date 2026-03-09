@@ -79,8 +79,8 @@ const postWishlist = async (req, res) => {
       success: true,
       message: "added to wishlist",
     });
-  } catch (error) { 
-    console.log(error)
+  } catch (error) {
+    console.log(error);
   }
 };
 
@@ -115,8 +115,8 @@ const remWishlist = async (req, res) => {
     });
   }
 };
- export default {
-    getWishlist,
-    postWishlist,
-    remWishlist
- }
+export default {
+  getWishlist,
+  postWishlist,
+  remWishlist,
+};

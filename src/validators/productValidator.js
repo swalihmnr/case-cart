@@ -1,40 +1,41 @@
-import { body ,validationResult } from "express-validator";
+import { body, validationResult } from "express-validator";
 const validateResult = (req, res, next) => {
   const errors = validationResult(req);
 
   if (!errors.isEmpty()) {
     return res.status(400).json({
       success: false,
-      message: errors.array()[0].msg   // first error only
+      message: errors.array()[0].msg, // first error only
     });
   }
 
   next();
 };
 export const addProductValidation = [
-
-
   body("productName")
     .trim()
-    .notEmpty().withMessage("Product name is required")
+    .notEmpty()
+    .withMessage("Product name is required")
     .isLength({ min: 3 })
     .withMessage("Product name must be at least 3 characters"),
 
-
   body("description")
     .trim()
-    .notEmpty().withMessage("Description is required")
+    .notEmpty()
+    .withMessage("Description is required")
     .isLength({ min: 10 })
     .withMessage("Description too short"),
 
   // CATEGORY ID
   body("category")
-    .notEmpty().withMessage("Category is required")
-    .isMongoId().withMessage("Invalid category ID"),
+    .notEmpty()
+    .withMessage("Category is required")
+    .isMongoId()
+    .withMessage("Invalid category ID"),
 
- 
   body("status")
-    .notEmpty().withMessage("Status required")
+    .notEmpty()
+    .withMessage("Status required")
     .isIn(["active", "inactive"])
     .withMessage("Invalid status"),
 
@@ -45,11 +46,10 @@ export const addProductValidation = [
     .isInt({ min: 0 })
     .withMessage("Invalid main image index"),
 
- 
   body("devices")
     .notEmpty()
     .withMessage("Variants required")
-    .custom(value => {
+    .custom((value) => {
       try {
         const parsed = JSON.parse(value);
 
@@ -57,7 +57,7 @@ export const addProductValidation = [
           throw new Error("Devices must be an array");
         }
 
-        parsed.forEach(v => {
+        parsed.forEach((v) => {
           if (!v.name || !v.originalPrice || !v.salePrice || !v.stock) {
             throw new Error("Invalid variant data");
           }
@@ -68,5 +68,5 @@ export const addProductValidation = [
         throw new Error("Invalid devices format");
       }
     }),
-    validateResult
+  validateResult,
 ];
