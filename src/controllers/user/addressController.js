@@ -91,21 +91,35 @@ const addAddress = async (req, res) => {
 // GET EDIT ADDRESS PAGE
 // ==============================
 const geteditAddress = async (req, res) => {
-  const addressId = req.params.id;
-if(!mongoose.Types.ObjectId.isValid(addressId)){
-  req.flash("error",'Invalid address Id')
-  return res.redirect('/address')
-}
-  delete req.session.adrsId;
-  req.session.adrsId = addressId;
-  const userID = new mongoose.Types.ObjectId(req.session.user.id);
-  const address = await addressModel.findOne({
-    userId: userID,
-    _id: addressId,
-  });
-  res.render("./user/edit-address", {
-    address,
-  });
+  try {
+    const addressId = req.params.id;
+    if (!mongoose.Types.ObjectId.isValid(addressId)) {
+      req.flash("error", "Invalid address Id");
+      return res.redirect("/address");
+    }
+
+    const userID = new mongoose.Types.ObjectId(req.session.user.id);
+    const address = await addressModel.findOne({
+      userId: userID,
+      _id: addressId,
+    });
+
+    if (!address) {
+      req.flash("error", "Address not found");
+      return res.redirect("/address");
+    }
+
+    delete req.session.adrsId;
+    req.session.adrsId = addressId;
+
+    res.render("user/edit-address", {
+      address,
+    });
+  } catch (error) {
+    console.error("Error in geteditAddress:", error);
+    req.flash("error", "Something went wrong while fetching the address");
+    res.redirect("/address");
+  }
 };
 
 // ==============================

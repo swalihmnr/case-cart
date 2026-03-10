@@ -91,17 +91,39 @@ const getAddproduct = async (req, res) => {
 // Fetch product details along with category & variants
 // Used to render edit-product page
 const getProductEdit = async (req, res) => {
-  const id = req.params.id;
-  const objectId = new mongoose.Types.ObjectId(id);
-  const product = await productModel
-    .findOne({ _id: objectId })
-    .populate("catgId")
-    .populate("variants");
-  const categories = await Category.find();
-  res.render("./admin/edit-product", {
-    product,
-    categories,
-  });
+  try {
+
+    const { id } = req.params;
+
+    // 1️⃣ Validate ObjectId
+    if (!mongoose.Types.ObjectId.isValid(id)) {
+      req.flash("error", "Invalid product ID.");
+      return res.redirect("/admin/product-list");
+    }
+
+    const [product, categories] = await Promise.all([
+      productModel.findById(id).populate(["catgId", "variants"]),
+      Category.find()
+    ]);
+
+    if (!product) {
+      req.flash("error", "Product not found.");
+      return res.redirect("/admin/product-list");
+    }
+
+  
+    res.render("admin/edit-product", {
+      product,
+      categories
+    });
+
+  } catch (error) {
+
+    console.error(error);
+
+    req.flash("error", "Something went wrong. Please try again.");
+    return res.redirect("/admin/product-list");
+  }
 };
 
 const getProduct = async (req, res) => {

@@ -23,6 +23,18 @@ const renderOffersPage = async (req, res) => {
     const productId = req.query.productId || null;
     const categoryId = req.query.categoryId || null;
 
+    // Validate productId
+    if (productId && !mongoose.Types.ObjectId.isValid(productId)) {
+      req.flash("error", "Invalid product selected.");
+      return res.redirect("/admin/offers");
+    }
+
+    // Validate categoryId
+    if (categoryId && !mongoose.Types.ObjectId.isValid(categoryId)) {
+      req.flash("error", "Invalid category selected.");
+      return res.redirect("/admin/offers");
+    }
+
     // =========================
     // PASS FROM URL DATA
     // =========================
@@ -264,9 +276,13 @@ const postOfferAdd = async (req, res) => {
 const renderOfferEdit = async (req, res) => {
   try {
     const response = {};
-    console.log(req.query);
-    console.log("body", req.query);
-    const offerId = new mongoose.Types.ObjectId(req.query.id);
+    const id = req.query.id;
+    if (!mongoose.Types.ObjectId.isValid(id)) {
+      req.flash("error", "Invalid offer ID.");
+      return res.redirect("/admin/offers");
+    }
+
+    const offerId = new mongoose.Types.ObjectId(id);
     response.type = null;
     response.data = null;
 

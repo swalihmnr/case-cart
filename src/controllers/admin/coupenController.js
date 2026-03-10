@@ -165,12 +165,26 @@ const postAddCoupen = async (req, res) => {
 };
 
 const renderEditCoupon = async (req, res) => {
-  const objectId = new mongoose.Types.ObjectId(req.params.id);
-  const coupon = await coupenModel.findById(objectId);
+  const { id } = req.params;
+
+  // Validate ID first
+  if (!mongoose.Types.ObjectId.isValid(id)) {
+    req.flash("error", "Invalid coupon ID");
+    return res.redirect("/admin/coupen");
+  }
+
+  const coupon = await coupenModel.findById(id);
+
+  if (!coupon) {
+    req.flash("error", "Coupon not found");
+    return res.redirect("/admin/coupen");
+  }
+
   res.render("./admin/coupen-edit", {
     coupon,
   });
 };
+
 
 const postEditCoupop = async (req, res) => {
   console.log(req.body);
