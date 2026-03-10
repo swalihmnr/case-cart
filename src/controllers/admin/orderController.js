@@ -92,6 +92,15 @@ const getOrderDetails = async (req, res) => {
   try {
     const orderId = req.params.orderId;
     const itemId = req.params.itemId;
+    if (!mongoose.Types.ObjectId.isValid(orderId)) {
+      req.flash("error", "Invalid order.");
+      return res.redirect("/admin/order");
+    }
+
+    if (!mongoose.Types.ObjectId.isValid(itemId)) {
+      req.flash("error", "Invalid order item.");
+      return res.redirect("/admin/order");
+    }
 
     const result = await orderModel.aggregate([
       { $match: { _id: new mongoose.Types.ObjectId(orderId) } },
@@ -138,9 +147,9 @@ const getOrderDetails = async (req, res) => {
     ]);
 
     if (!result || result.length === 0) {
-      return res.status(404).render("admin/404");
+      req.flash("error", "No records found.");
+      return res.redirect("/admin/order");
     }
-
     const order = result[0];
 
     res.render("./admin/order-details", {

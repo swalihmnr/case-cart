@@ -2,7 +2,7 @@ import express from "express";
 const router = express.Router();
 import upload from "../../middlewares/multer.js";
 import { addProductValidation } from "../../validators/productValidator.js";
-import productController from "../../controllers/user/productController.js";
+import productController from "../../controllers/admin/productController.js";
 import { requiredAdmin } from "../../middlewares/auth.js";
 router.use(requiredAdmin);
 router.get("/add-product", productController.getAddproduct);

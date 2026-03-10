@@ -98,8 +98,12 @@ const postAddCategory = async (req, res) => {
 // Used to hide or show category in user side
 const blockCategory = async (req, res) => {
   try {
-    console.log("hiilow");
+
     let id = req.params.id;
+      if (!mongoose.Types.ObjectId.isValid(id)) {
+      req.flash("error", "Invalid category.");
+      return res.redirect("/admin/category");
+    }
 
     const objectId = new mongoose.Types.ObjectId(id);
     const existing = await Category.findOne({ _id: objectId });
@@ -109,7 +113,7 @@ const blockCategory = async (req, res) => {
         message: "Not Founded",
       });
     } else {
-      console.log("testing");
+
       console.log(existing.isActive);
       if (existing.isActive) {
         existing.isActive = false;
@@ -135,8 +139,16 @@ const blockCategory = async (req, res) => {
 // Fetch category by ID and render edit page
 const editCategory = async (req, res) => {
   let id = req.params.id;
+    if (!mongoose.Types.ObjectId.isValid(id)) {
+      req.flash("error", "Invalid category.");
+      return res.redirect("/admin/category");
+    }
   const objectId = new mongoose.Types.ObjectId(id);
   let category = await Category.findOne({ _id: objectId });
+  if(!category){
+    req.flash("error","Category not found")
+    return res.redirect('/admin/category')
+  }
   res.render("admin/admin-edit-category", { category });
 };
 
@@ -150,6 +162,10 @@ const postEditCategory = async (req, res) => {
     console.log(req.body);
     const { categoryName, categoryDescription } = req.body;
     let id = req.params.id;
+      if (!mongoose.Types.ObjectId.isValid(id)) {
+      req.flash("error", "Invalid category.");
+      return res.redirect("/admin/category");
+    }
     console.log(id);
     const existing = await Category.findOne({ _id: id });
     if (existing) {

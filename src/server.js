@@ -7,6 +7,10 @@ import { fileURLToPath } from "url";
 import { dirname } from "path";
 import path from "path";
 import nocache from "nocache";
+import flash from 'connect-flash'
+
+let __filename = fileURLToPath(import.meta.url);
+let __dirname = dirname(__filename);
 
 import autherRouter from "../src/router/user/authRouter.js";
 import productRouter from "../src/router/user/productRouter.js";
@@ -40,6 +44,7 @@ import { attachAdmin } from "./middlewares/auth.js";
 import paymentRouter from "../src/router/paymentRouter.js";
 import MongoStore from "connect-mongo";
 
+app.use(express.static(path.join(__dirname, "../public")));
 app.use(
   session({
     secret: process.env.SECRET_KEY,
@@ -56,9 +61,15 @@ app.use(
     },
   }),
 );
+app.use(flash())
+app.use((req, res, next) => {
+  res.locals.success = req.flash("success");
+  res.locals.error = req.flash("error");
+  res.locals.warning = req.flash("warning");
+  res.locals.info = req.flash("info");
+  next();
+});
 
-let __filename = fileURLToPath(import.meta.url);
-let __dirname = dirname(__filename);
 app.set("view engine", "ejs");
 app.set("views", path.join(__dirname, "views"));
 
@@ -101,7 +112,7 @@ app.use("/", cartRouter);
 app.use("/", checkoutRouter);
 app.use("/", addressRouter);
 
-app.use(express.static(path.join(__dirname, "../public")));
+
 app.use((req, res) => {
   res.status(404).render("error");
 });

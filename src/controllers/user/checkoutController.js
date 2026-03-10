@@ -5,6 +5,7 @@ import cartModel from "../../models/cartModel.js";
 import calculateBestItemOffer from "../../utils/calculateBestOfferItem.js";
 import addressModel from "../../models/addressModel.js";
 import variantModel from "../../models/admin/variantModel.js";
+import { STATUS_CODES } from "../../utils/statusCodes.js";
 // ==============================
 // GET CHECKOUT PAGE
 // ==============================
@@ -26,11 +27,25 @@ const getCheckout = async (req, res) => {
     const userId = new mongoose.Types.ObjectId(req.session.user.id);
     const { type, variantId } = req.query;
 
+    // Validate type
+    if (!type) {
+      req.flash("error", "Type query parameter is required");
+      return res.redirect("/product");
+    }
+
+    // Validate variantId if provided
+    if (variantId && !mongoose.Types.ObjectId.isValid(variantId)) {
+      req.flash(
+        "error",
+        "The selected product option is invalid. Please try again.",
+      );
+      return res.redirect("/product");
+    }
+
     coupons = await couponModel.find({
       status: "active",
       usedBy: { $ne: userId },
     });
-
     // ======================
     // CART FLOW
     // ======================

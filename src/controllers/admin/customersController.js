@@ -181,6 +181,10 @@ const getCustomer = async (req, res) => {
 const blockCustomer = async (req, res) => {
   try {
     let id = req.params.id;
+      if (!mongoose.Types.ObjectId.isValid(id)) {
+          req.flash("error", "Invalid customer.");
+          return res.redirect("/admin/customers");
+        }
     const objectId = new mongoose.Types.ObjectId(id);
     const exsitng = await user.findOne({ _id: objectId });
     if (exsitng) {
