@@ -15,7 +15,6 @@ import productController from "../../controllers/user/productController.js";
 router.get("/product", productController.getProduct);
 router.get(
   "/product/:id/detials",
-  userAuth,
   blockUser,
   productController.getDetialProduct,
 );
