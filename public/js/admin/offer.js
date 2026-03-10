@@ -46,7 +46,25 @@ async function deleteOffer(offerId) {
 }
 
 window.deleteOffer = deleteOffer;
+function hideSelectionAlertInfo() {
+  const alert = document.getElementById("selectionAlertInfo");
 
+  if (alert) {
+    alert.classList.add("opacity-0", "-translate-y-10");
+
+    setTimeout(() => {
+      alert.style.display = "none";
+    }, 300);
+  }
+
+  // Remove query parameters from URL
+  const url = new URL(window.location);
+  url.search = "";
+
+  window.history.replaceState({}, document.title, url.pathname);
+}
+
+window.hideSelectionAlertInfo = hideSelectionAlertInfo;
 document.addEventListener("DOMContentLoaded", () => {
   const input = document.getElementById("search-offers");
   let currentFilter =
