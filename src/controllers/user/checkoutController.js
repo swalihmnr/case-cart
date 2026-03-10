@@ -26,7 +26,7 @@ const getCheckout = async (req, res) => {
     const FREE_SHIPPING_LIMIT = 1500;
     const userId = new mongoose.Types.ObjectId(req.session.user.id);
     const { type, variantId } = req.query;
-    
+
     // Validate variantId if provided
     if (variantId && !mongoose.Types.ObjectId.isValid(variantId)) {
       req.flash(
@@ -247,7 +247,7 @@ const getCheckout = async (req, res) => {
       // Create cartItems array with the single item
       cartItems = [item];
     }
-    let cod = finalAmount > 1000 ? true : false;
+    let cod = finalAmount < 1000 ? true : false;
     console.log("it is the coee" + cod);
     let walletButton = false;
     if (walletBalance?.balance > finalAmount) {
