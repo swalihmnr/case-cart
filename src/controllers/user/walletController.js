@@ -4,6 +4,10 @@ const getWallet = async (req, res) => {
   try {
     const wallet = await Wallet.findOne({ userId: req.session.user.id });
 
+    if (wallet && wallet.transactions) {
+      wallet.transactions.sort((a, b) => new Date(b.date) - new Date(a.date));
+    }
+
     res.render("user/wallet", {
       wallet,
     });
