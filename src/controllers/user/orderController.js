@@ -93,22 +93,30 @@ const getOrderMngmnt = async (req, res) => {
 // ==============================
 // Shows order details after successful checkout
 const getConfirmation = async (req, res) => {
-  const userId = req.session.user.id;
-  const orderId = req.params.id;
-  const order = await orderModel
-    .findOne({ _id: orderId })
-    .populate("orderItems.productId")
-    .populate("orderItems.variantId");
-  console.log("CONFIRMATION PAGE - Order Fetched:", {
-    id: order._id,
-    paymentStatus: order.paymentStatus,
-    paymentConfirmedAt: order.paymentConfirmedAt,
-    finalAmount: order.finalAmount,
-  });
-  console.log(order);
-  res.render("./user/ord-confirmation", {
-    order,
-  });
+  try {
+    const userId = req.session.user.id;
+    const orderId = req.params.id;
+    if(!mongoose.Types.ObjectId.isValid(orderId)){
+      req.flash("error","Invalid Order Id")
+      return res.redirect('/product')
+    }
+    const order = await orderModel
+      .findOne({ _id: orderId })
+      .populate("orderItems.productId")
+      .populate("orderItems.variantId");
+    console.log("CONFIRMATION PAGE - Order Fetched:", {
+      id: order._id,
+      paymentStatus: order.paymentStatus,
+      paymentConfirmedAt: order.paymentConfirmedAt,
+      finalAmount: order.finalAmount,
+    });
+    console.log(order);
+    res.render("./user/ord-confirmation", {
+      order,
+    });
+  } catch (error) {
+    console.log(error);
+  }
 };
 
 // ==============================
@@ -394,7 +402,7 @@ const ordConfirmation = async (req, res) => {
     console.log("Shipping:", shipping);
     console.log("Coupon discount:", couponDiscount);
     console.log("Final amount:", finalAmount);
-    console.log("💸 Total Savings:", totalSavings);
+    console.log(" Total Savings:", totalSavings);
     console.log("=======================================");
 
     // ==============================
@@ -585,6 +593,10 @@ const getOrder = async (req, res) => {
 // ==============================
 const getOrderDetails = async (req, res) => {
   try {
+    if(!mongoose.Types.ObjectId.isValid(req.params.id)){
+      req.flash("error","Invalid Order Id")
+      return res.redirect('/order')
+    }
     const orderId = new mongoose.Types.ObjectId(req.params.id);
     const order = await orderModel.aggregate([
       { $match: { _id: orderId } },
@@ -639,7 +651,10 @@ const getOrderDetails = async (req, res) => {
         },
       },
     ]);
-
+    if(!order){
+      req.flash("error","order not found")
+      return res.redirect('/order')
+    }
     if (!order || order.length === 0) {
       return res.status(404).render("error");
     }

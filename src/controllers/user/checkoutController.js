@@ -26,13 +26,7 @@ const getCheckout = async (req, res) => {
     const FREE_SHIPPING_LIMIT = 1500;
     const userId = new mongoose.Types.ObjectId(req.session.user.id);
     const { type, variantId } = req.query;
-
-    // Validate type
-    if (!type) {
-      req.flash("error", "Type query parameter is required");
-      return res.redirect("/product");
-    }
-
+    
     // Validate variantId if provided
     if (variantId && !mongoose.Types.ObjectId.isValid(variantId)) {
       req.flash(

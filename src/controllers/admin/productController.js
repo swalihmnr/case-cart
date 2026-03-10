@@ -95,7 +95,6 @@ const getProductEdit = async (req, res) => {
 
     const { id } = req.params;
 
-    // 1️⃣ Validate ObjectId
     if (!mongoose.Types.ObjectId.isValid(id)) {
       req.flash("error", "Invalid product ID.");
       return res.redirect("/admin/product-list");

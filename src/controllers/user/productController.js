@@ -258,6 +258,10 @@ const getProduct = async (req, res) => {
 const getDetialProduct = async (req, res) => {
   try {
     const id = req.params.id;
+    if(!mongoose.Types.ObjectId.isValid(id)){
+      req.flash("error","Product ID not valid")
+      return res.redirect('/product')
+    }
     const objectId = new mongoose.Types.ObjectId(id);
     const product = await productModel
       .findById(objectId)
