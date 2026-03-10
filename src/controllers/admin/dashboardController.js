@@ -156,6 +156,12 @@ const getDashboard = async (req, res) => {
             },
           ],
           lineChartData: [
+            { $match: { "orderItems.paymentStatus": "paid" } },
+
+            { $unwind: "$orderItems" },
+
+            { $match: { "orderItems.status": "delivered" } },
+
             {
               $group: {
                 _id: {
@@ -164,9 +170,10 @@ const getDashboard = async (req, res) => {
                     date: "$createdAt",
                   },
                 },
-                totalRevenue: { $sum: "$finalAmount" },
+                totalRevenue: { $sum: "$orderItems.itemTotal" },
               },
             },
+
             { $sort: { _id: 1 } },
           ],
         },
