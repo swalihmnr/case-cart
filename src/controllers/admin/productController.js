@@ -92,7 +92,6 @@ const getAddproduct = async (req, res) => {
 // Used to render edit-product page
 const getProductEdit = async (req, res) => {
   try {
-
     const { id } = req.params;
 
     if (!mongoose.Types.ObjectId.isValid(id)) {
@@ -102,7 +101,7 @@ const getProductEdit = async (req, res) => {
 
     const [product, categories] = await Promise.all([
       productModel.findById(id).populate(["catgId", "variants"]),
-      Category.find()
+      Category.find(),
     ]);
 
     if (!product) {
@@ -110,14 +109,11 @@ const getProductEdit = async (req, res) => {
       return res.redirect("/admin/product-list");
     }
 
-  
     res.render("admin/edit-product", {
       product,
-      categories
+      categories,
     });
-
   } catch (error) {
-
     console.error(error);
 
     req.flash("error", "Something went wrong. Please try again.");
@@ -668,8 +664,8 @@ const blockProduct = async (req, res) => {
       }
       console.log(existing.isBlock);
       return res.status(STATUS_CODES.OK).json({
-        success: true,
-        message: `${existing.isBlock ? "block" : "unblock"}`,
+        success: `${existing.isBlock ? "Blocked" : "Unblocked"}`,
+        status: existing.isBlock,
       });
     }
   } catch (error) {

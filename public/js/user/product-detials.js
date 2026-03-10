@@ -218,7 +218,8 @@ async function selectVariant(productId, variantId) {
   if (resVariant.data.disObject.isOffer) {
     badge.classList.remove("hidden");
     nameEl.innerText = resVariant.data.disObject.name;
-    discountEl.innerText = `${resVariant.data.disObject.discountTypeValue} ${resVariant.data.disObject.disType === "fixedAmount" ? "₹" : "%"} OFF`;
+    const type = resVariant.data.disObject.disType === "percentage" ? "%" : "₹";
+    discountEl.innerText = `${resVariant.data.disObject.discountTypeValue}${type} OFF`;
   } else {
     badge.classList.add("hidden");
   }
@@ -229,28 +230,81 @@ async function selectVariant(productId, variantId) {
 
   salePriceField.innerText = `₹${resVariant.data.salePrice}`;
   orgPriceField.innerText = `₹${resVariant.data.orgPrice}`;
+
+  const stockCountEl = document.getElementById("stock-count");
+  if (stockCountEl) {
+    if (resVariant.data.stock <= 0) {
+      stockCountEl.innerText = "Out of Stock";
+      stockCountEl.classList.add("text-red-500");
+      stockCountEl.classList.remove("text-green-600", "text-orange-500");
+    } else if (resVariant.data.stock <= 5) {
+      stockCountEl.innerText = `Only ${resVariant.data.stock} left in stock!`;
+      stockCountEl.classList.add("text-orange-500");
+      stockCountEl.classList.remove("text-green-600", "text-red-500");
+    } else {
+      stockCountEl.innerText = "In Stock";
+      stockCountEl.classList.add("text-green-600");
+      stockCountEl.classList.remove("text-orange-500", "text-red-500");
+    }
+  }
 }
 
 async function addToCart() {
-  console.log(productID, variantID);
-  const res = await api.addToCartAxios(productID, variantID);
-  if (res.data.success) {
-    Swal.fire({
-      icon: "success",
-      title: "added",
-      text: res.data.message,
-      confirmButtonColor: "#667eea",
-    }).then(() => {
-      location.reload();
-    });
-  } else {
-    Swal.fire({
-      icon: "warning",
-      text: res.data.message,
-      confirmButtonColor: "#667eea",
-    });
+  try {
+    const res = await api.addToCartAxios(productID, variantID);
+    if (res.data.success) {
+      // Update cart count in header
+      updateCartCount(res.data.cartCount);
+
+      Toastify({
+        text: "Item added to cart!",
+        duration: 3000,
+        gravity: "bottom",
+        position: "center",
+        style: {
+          background: "linear-gradient(to right, #667eea, #764ba2)",
+          borderRadius: "10px",
+        }
+      }).showToast();
+
+    } else {
+      Toastify({
+        text: res.data.message || "Something went wrong",
+        duration: 3000,
+        gravity: "bottom",
+        position: "center",
+        style: {
+          background: "linear-gradient(to right, #ff416c, #ff4b2b)",
+          borderRadius: "10px",
+        }
+      }).showToast();
+    }
+  } catch (error) {
+    console.log(error);
   }
 }
+
+function updateCartCount(count) {
+  const cartCountDesktop = document.getElementById('cart-count-desktop');
+  const cartCountMobile = document.getElementById('cart-count-mobile');
+
+  const updateElement = (el) => {
+    if (el) {
+      el.innerText = count;
+      if (count > 0) {
+        el.classList.remove('hidden');
+      } else {
+        el.classList.add('hidden');
+      }
+    }
+  };
+
+  updateElement(cartCountDesktop);
+  updateElement(cartCountMobile);
+}
+
+window.updateCartCount = updateCartCount;
+
 
 async function buyNow() {
   window.location.href = `/checkout?type=buyNow&productId=${productID}&variantId=${variantID}`;

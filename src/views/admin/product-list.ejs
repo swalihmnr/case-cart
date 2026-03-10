@@ -142,12 +142,13 @@
                                                             <i class="fas fa-edit"></i>
                                                         </button>
                                                     </a>
-                                                    <button
+                                                    <button id="product-block-btn-<%= product._id %>"
                                                         class="text-red-600 hover:text-red-800 text-xs block-btn flex items-center"
-                                                        data-id="<%= product._id %>">
-                                                        <i class="fas fa-ban mr-1"></i>
-                                                        <% if (product.isBlock) { %> unblock <% } else { %> Block <% }
-                                                                    %>
+                                                        data-id="<%= product._id %>"
+                                                        data-statusmode="<%= product.isBlock ? 'unblock' : 'block' %>">
+                                                        <i
+                                                            class="fas <%= product.isBlock ? 'fa-check' : 'fa-ban' %> mr-1"></i>
+                                                        <%= product.isBlock ? 'unblock' : 'Block' %>
                                                     </button>
                                                 </div>
                                             </td>

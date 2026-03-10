@@ -38,11 +38,18 @@ import walletRouter from "./router/user/walletRouter.js";
 import connectDB from "./config/db.js";
 import passport from "passport";
 import "./config/passport.js";
-import morgan from "morgan";
 import { attachUser } from "./middlewares/auth.js";
 import { attachAdmin } from "./middlewares/auth.js";
 import paymentRouter from "../src/router/paymentRouter.js";
 import MongoStore from "connect-mongo";
+import morgan from "morgan";
+import fs from 'fs'
+
+const logStream=fs.createWriteStream(
+  path.join(__dirname,"logs","access.log"),
+  {flags:"a"}
+)
+app.use(morgan("combined",{stream:logStream}))
 
 app.use(express.static(path.join(__dirname, "../public")));
 app.use(

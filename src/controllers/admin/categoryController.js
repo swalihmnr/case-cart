@@ -100,7 +100,7 @@ const blockCategory = async (req, res) => {
   try {
 
     let id = req.params.id;
-      if (!mongoose.Types.ObjectId.isValid(id)) {
+    if (!mongoose.Types.ObjectId.isValid(id)) {
       req.flash("error", "Invalid category.");
       return res.redirect("/admin/category");
     }
@@ -124,8 +124,8 @@ const blockCategory = async (req, res) => {
       }
       console.log(existing.isActive);
       return res.status(200).json({
-        success: true,
-        message: `${existing.isActive ? "block" : "unblock"}`,
+        success: `${existing.isActive ? "Unblocked" : "Blocked"}`,
+        status: existing.isActive,
       });
     }
   } catch (error) {
@@ -139,14 +139,14 @@ const blockCategory = async (req, res) => {
 // Fetch category by ID and render edit page
 const editCategory = async (req, res) => {
   let id = req.params.id;
-    if (!mongoose.Types.ObjectId.isValid(id)) {
-      req.flash("error", "Invalid category.");
-      return res.redirect("/admin/category");
-    }
+  if (!mongoose.Types.ObjectId.isValid(id)) {
+    req.flash("error", "Invalid category.");
+    return res.redirect("/admin/category");
+  }
   const objectId = new mongoose.Types.ObjectId(id);
   let category = await Category.findOne({ _id: objectId });
-  if(!category){
-    req.flash("error","Category not found")
+  if (!category) {
+    req.flash("error", "Category not found")
     return res.redirect('/admin/category')
   }
   res.render("admin/admin-edit-category", { category });
@@ -162,7 +162,7 @@ const postEditCategory = async (req, res) => {
     console.log(req.body);
     const { categoryName, categoryDescription } = req.body;
     let id = req.params.id;
-      if (!mongoose.Types.ObjectId.isValid(id)) {
+    if (!mongoose.Types.ObjectId.isValid(id)) {
       req.flash("error", "Invalid category.");
       return res.redirect("/admin/category");
     }
@@ -210,7 +210,7 @@ const postEditCategory = async (req, res) => {
         message: "User not founded",
       });
     }
-  } catch (error) {}
+  } catch (error) { }
 };
 
 export default {

@@ -5,6 +5,7 @@ import wishlistModel from "../../models/wishlistModel.js";
 import variantModel from "../../models/admin/variantModel.js";
 import mongoose from "mongoose";
 import { STATUS_CODES } from "../../utils/statusCodes.js";
+import discountChecker from "../../utils/calculateDiscount.js";
 
 // ==============================
 // GET ALL PRODUCTS (USER SIDE)
@@ -75,7 +76,12 @@ const getProduct = async (req, res) => {
             $filter: {
               input: "$variants",
               as: "v",
-              cond: { $gt: ["$$v.stock", 0] },
+              cond: {
+                $and: [
+                  { $gt: ["$$v.stock", 0] },
+                  { $eq: ["$$v.isListed", true] },
+                ],
+              },
             },
           },
         },
@@ -258,9 +264,9 @@ const getProduct = async (req, res) => {
 const getDetialProduct = async (req, res) => {
   try {
     const id = req.params.id;
-    if(!mongoose.Types.ObjectId.isValid(id)){
-      req.flash("error","Product ID not valid")
-      return res.redirect('/product')
+    if (!mongoose.Types.ObjectId.isValid(id)) {
+      req.flash("error", "Product ID not valid");
+      return res.redirect("/product");
     }
     const objectId = new mongoose.Types.ObjectId(id);
     const product = await productModel
@@ -272,30 +278,69 @@ const getDetialProduct = async (req, res) => {
       return res.redirect("/product");
     }
 
-    let relatedProducts = await productModel
+    const relatedProductsInitial = await productModel
       .find({ catgId: product.catgId, _id: { $ne: product._id } })
       .limit(4);
-    if (relatedProducts.length < 4) {
-      const remains = 4 - relatedProducts.length;
-      const excludeCatgIds = [
-        product._id,
-        ...relatedProducts.map((id) => id.catgId._id),
-      ];
-      const defCatgProduct = await productModel
-        .find({
-          catgId: { $ne: product.catgId },
-          _id: { $nin: excludeCatgIds },
-        })
-        .limit(remains);
-      relatedProducts = [...relatedProducts, ...defCatgProduct];
+
+    const relatedProducts = [
+      ...relatedProductsInitial,
+      ...(relatedProductsInitial.length < 4
+        ? await productModel
+            .find({
+              catgId: { $ne: product.catgId },
+              _id: {
+                $nin: [
+                  product._id,
+                  ...relatedProductsInitial.map((p) => p._id),
+                ],
+              },
+            })
+            .limit(4 - relatedProductsInitial.length)
+        : []),
+    ];
+
+    // INITIAL OFFER CALCULATION
+    const today = new Date();
+    const defaultVariant = product.variants[0];
+    let initialOffer = { bestDiscount: 0, isOffer: false };
+
+    if (defaultVariant) {
+      const offers = await offerModel.find({
+        status: "active",
+        startDate: { $lte: today },
+        endDate: { $gte: today },
+        $or: [
+          { applicableOn: "global" },
+          { applicableOn: "product", productIds: product._id },
+          { applicableOn: "category", categoryIds: product.catgId?._id },
+        ],
+      });
+
+      if (offers.length > 0) {
+        const bestOffer = await discountChecker(
+          offers,
+          offerModel,
+          defaultVariant.orgPrice,
+          "offerType",
+        );
+        if (bestOffer && bestOffer.bestDiscount > 0) {
+          initialOffer = {
+            ...bestOffer,
+            isOffer: true,
+            salePrice: defaultVariant.orgPrice - bestOffer.bestDiscount,
+          };
+        }
+      }
     }
 
     res.render("./user/product-detial", {
       product,
       relatedProducts,
+      initialOffer,
     });
   } catch (error) {
     console.log(error);
+    res.status(500).send("Internal Server Error");
   }
 };
 
@@ -307,87 +352,74 @@ const getVariantData = async (req, res) => {
     const today = new Date();
     const productId = req.params.id;
     const variantId = req.query.variantId;
-    let currentDiscount = 0;
+
     if (!productId || !variantId) {
       return res.status(STATUS_CODES.NOT_FOUND).json({
         success: false,
         message: "productId or variantId not provided",
       });
     }
-    const variant = await variantModel.findOne({ _id: variantId });
-    if (!variant) {
+
+    const variant = await variantModel.findById(variantId);
+    const product = await productModel.findById(productId);
+
+    if (!variant || !product) {
       return res.status(STATUS_CODES.NOT_FOUND).json({
         success: false,
-        message: "variant not founded",
+        message: "Product or Variant not found",
       });
     }
 
-    //offer showining in product detial page
-    const product = await productModel
-      .findById(productId)
-      .populate("catgId")
-      .populate("variants");
-    const offers = await offerModel.aggregate([
-      {
-        $match: {
-          status: "active",
-          startDate: { $lte: today },
-          endDate: { $gte: today },
-        },
-      },
-      {
-        $match: {
-          $or: [
-            { applicableOn: "global" },
-            {
-              applicableOn: "product",
-              productIds: product._id,
-            },
-            {
-              applicableOn: "category",
-              categoryIds: product.catgId?._id,
-            },
-          ],
-        },
-      },
-      {
-        $project: {
-          applicableOn: 1,
-          categoryIds: 1,
-          productIds: 1,
-        },
-      },
-    ]);
+    // Fetch all applicable offers
+    const offers = await offerModel.find({
+      status: "active",
+      startDate: { $lte: today },
+      endDate: { $gte: today },
+      $or: [
+        { applicableOn: "global" },
+        { applicableOn: "product", productIds: product._id },
+        { applicableOn: "category", categoryIds: product.catgId },
+      ],
+    });
 
-    currentDiscount = variant.orgPrice - variant.salePrice;
-    let bestDiscount = 0;
-    let isOffer = false;
-    let salePrice;
+    let disObject = { bestDiscount: 0, isOffer: false };
+    let salePrice = variant.salePrice;
 
-    // Direct calculation instead of using discountChecker if it's simpler or if we want to reduce dependencies
-    // But since it was using it, let's keep it if we can or just implement simple version
-    // For now, let's just do a simple version to match the previous logic without the extra utility if possible
+    if (offers.length > 0) {
+      const bestOffer = await discountChecker(
+        offers,
+        offerModel,
+        variant.orgPrice,
+        "offerType",
+      );
 
-    // (Wait, the user controller used a local discountChecker import, but I want to minimize complexity)
+      if (bestOffer && bestOffer.bestDiscount > 0) {
+        disObject = {
+          ...bestOffer,
+          isOffer: true,
+        };
+        // The salePrice returned should be the one from the best offer if it's better
+        salePrice = Math.min(
+          variant.salePrice,
+          variant.orgPrice - bestOffer.bestDiscount,
+        );
+      }
+    }
 
-    // Let's just keep the logic minimal.
-    salePrice = variant.salePrice;
-
-    // Note: I'm skipping the complex discountChecker call here to keep this file slim,
-    // but in a real scenario we'd want to preserve exact logic.
-    // Given this is a cleanup, I'll stick to the core functionality.
-
-    const orgPrice = variant.orgPrice;
     return res.status(STATUS_CODES.OK).json({
       success: true,
       message: "success",
       salePrice,
-      orgPrice,
-      disObject: { bestDiscount: currentDiscount, isOffer: false },
+      orgPrice: variant.orgPrice,
+      stock: variant.stock,
+      disObject,
     });
   } catch (error) {
     console.log(error);
-    return res.status(STATUS_CODES.INTERNAL_SERVER_ERROR);
+    return res.status(STATUS_CODES.INTERNAL_SERVER_ERROR).json({
+      success: false,
+      message: "Internal server error",
+    });
   }
 };
 
@@ -396,4 +428,3 @@ export default {
   getDetialProduct,
   getVariantData,
 };
-

@@ -14,5 +14,6 @@ router.use(cartCount);
 import wishlistController from "../../controllers/user/wishlistController.js";
 router.get("/wishlist", userAuth, blockUser, wishlistController.getWishlist);
 router.post("/product/wishlist/add", userAuth, wishlistController.postWishlist);
+router.post("/product/wishlist/toggle", userAuth, wishlistController.toggleWishlist);
 router.delete("/product/wishlist/:id/rem", wishlistController.remWishlist);
 export default router;

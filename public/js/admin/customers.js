@@ -132,46 +132,77 @@ document.querySelectorAll(".view-customer-btn").forEach((btn) => {
 document.querySelectorAll(".block-customer-btn").forEach((btn) => {
   btn.addEventListener("click", async () => {
     try {
-      let selectedCustomerId = btn.dataset.customerId;
-      let statusmode = btn.dataset.statusmode;
-      if (statusmode === "block") {
-        Swal.fire({
-          title: "Are you sure?",
-          text: `Are you sure you want to block this customer? They will not
-                                be able to place orders or access their account.`,
-          icon: "warning",
-          showCancelButton: true,
-          confirmButtonColor: "#d33",
-          cancelButtonColor: "#3085d6",
-          confirmButtonText: "Yes, Continue",
-        }).then(async (result) => {
-          if (result.isConfirmed) {
-            let res = await adminApi.blockCustomerAxios(selectedCustomerId);
-            if (res.data.success) {
-              location.reload();
+      const selectedCustomerId = btn.dataset.customerId;
+      const statusmode = btn.dataset.statusmode;
+      const isBlocking = statusmode === "block";
+
+      const confirmResult = await Swal.fire({
+        title: "Are you sure?",
+        text: isBlocking
+          ? "Are you sure you want to block this customer? They will not be able to place orders or access their account."
+          : "Are you sure you want to unblock this customer? They will be able to place orders and access their account.",
+        icon: "warning",
+        showCancelButton: true,
+        confirmButtonColor: isBlocking ? "#d33" : "#10B981",
+        cancelButtonColor: "#3085d6",
+        confirmButtonText: isBlocking ? "Yes, Block" : "Yes, Unblock",
+      });
+
+      if (confirmResult.isConfirmed) {
+        const res = await adminApi.blockCustomerAxios(selectedCustomerId);
+        // Backend returns { success: "Message string", status: boolean }
+        if (res.data.status !== undefined) {
+          const newStatus = res.data.status;
+
+          // Update the UI dynamically
+          const badge = document.getElementById(`status-badge-${selectedCustomerId}`);
+          const actionBtn = document.getElementById(`block-btn-${selectedCustomerId}`);
+
+          if (badge) {
+            badge.textContent = newStatus ? "blocked" : "active";
+            badge.className = `text-xs ${newStatus ? 'bg-red-100 text-red-700' : 'bg-green-100 text-green-700'} px-2 py-1 rounded-full`;
+          }
+
+          if (actionBtn) {
+            const icon = actionBtn.querySelector("i");
+            if (newStatus) {
+              // Now blocked, show unblock option
+              actionBtn.dataset.statusmode = "unblock";
+              actionBtn.className = "block-customer-btn text-green-600 hover:text-green-800 text-sm";
+              if (icon) icon.className = "fas fa-check";
+            } else {
+              // Now active, show block option
+              actionBtn.dataset.statusmode = "block";
+              actionBtn.className = "block-customer-btn text-red-600 hover:text-red-800 text-sm";
+              if (icon) icon.className = "fas fa-ban";
             }
           }
-        });
-      } else {
-        Swal.fire({
-          title: "Are you sure?",
-          text: `Are you sure you want to unblock this customer? They will 
-                                be able to place orders or access their account.`,
-          icon: "warning",
-          showCancelButton: true,
-          confirmButtonColor: "#d33",
-          cancelButtonColor: "#3085d6",
-          confirmButtonText: "Yes, Continue",
-        }).then(async (result) => {
-          if (result.isConfirmed) {
-            let res = await adminApi.blockCustomerAxios(selectedCustomerId);
-            if (res.data.success) {
-              location.reload();
+
+          Toastify({
+            text: res.data.success || `Customer ${newStatus ? 'blocked' : 'unblocked'} successfully`,
+            duration: 3000,
+            gravity: "bottom",
+            position: "center",
+            style: {
+              background: newStatus ? "linear-gradient(to right, #ff416c, #ff4b2b)" : "linear-gradient(to right, #667eea, #764ba2)",
+              borderRadius: "10px",
             }
-          }
-        });
+          }).showToast();
+        }
       }
-    } catch (error) {}
+    } catch (error) {
+      console.error(error);
+      Toastify({
+        text: "An error occurred while updating customer status",
+        duration: 3000,
+        gravity: "bottom",
+        position: "center",
+        style: {
+          background: "linear-gradient(to right, #ff416c, #ff4b2b)",
+          borderRadius: "10px",
+        }
+      }).showToast();
+    }
   });
 });
 

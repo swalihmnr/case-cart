@@ -219,9 +219,12 @@ const addCart = async (req, res) => {
         variantId: varinatID,
       });
 
+      const cartCount = await cartModel.countDocuments({ userId: userId._id });
+
       return res.status(STATUS_CODES.CREATED).json({
         success: true,
         message: "item added to cart",
+        cartCount: cartCount
       });
     }
   } catch (error) {
@@ -304,20 +307,101 @@ const cartQuantityUpdate = async (req, res) => {
       }
     }
     await cartItem.save();
+
+    // Recalculate all totals (subtotal, discount, finalAmount, shipping)
     const cartItems = await cartModel
       .find({ userId })
       .populate("variantId")
-      .populate("productId");
+      .populate({
+        path: "productId",
+        populate: { path: "catgId", model: "Category" },
+      });
+
     let subtotal = 0;
-    cartItems.forEach((item) => {
-      console.log(item.variantId.salePrice, "it is the salepirce in here");
-      subtotal += Math.round(item.quantity * item.variantId.salePrice);
-    });
+    let totalDiscount = 0;
+    let finalAmount = 0;
+    let shipping = 0;
+
+    for (let item of cartItems) {
+      const variant = item.variantId;
+      const orgPrice = variant.orgPrice;
+      const quantity = item.quantity;
+
+      const currentDiscountPerUnit = orgPrice - variant.salePrice;
+
+      // FIND BEST OFFER (Replicating getCart logic)
+      const offers = await offerModel.find({
+        status: "active",
+        startDate: { $lte: new Date() },
+        endDate: { $gte: new Date() },
+        $or: [
+          {
+            applicableOn: "product",
+            productIds: { $in: [item.productId._id] },
+          },
+          {
+            applicableOn: "category",
+            categoryIds: { $in: [item.productId.catgId._id] },
+          },
+        ],
+      });
+
+      let bestOfferDiscountPerUnit = 0;
+      for (let offer of offers) {
+        if (offer.offerType === "percentage") {
+          let discount = orgPrice - (orgPrice * offer.discountValue) / 100;
+          if (offer.maximumDiscount && offer.maximumDiscount > 0) {
+            if (discount > offer.maximumDiscount) {
+              discount = offer.maximumDiscount;
+            }
+          }
+          if (discount > bestOfferDiscountPerUnit) {
+            bestOfferDiscountPerUnit = discount;
+          }
+        }
+      }
+
+      let finalUnitPrice;
+      let usedDiscountPerUnit;
+
+      if (bestOfferDiscountPerUnit > currentDiscountPerUnit) {
+        finalUnitPrice = Math.floor(orgPrice - bestOfferDiscountPerUnit);
+        usedDiscountPerUnit = Math.floor(bestOfferDiscountPerUnit);
+      } else {
+        finalUnitPrice = Math.floor(variant.salePrice);
+        usedDiscountPerUnit = Math.floor(currentDiscountPerUnit);
+      }
+
+      const itemTotalOrg = orgPrice * quantity;
+      const itemFinalTotal = finalUnitPrice * quantity;
+      const itemDiscountTotal = usedDiscountPerUnit * quantity;
+
+      subtotal += itemTotalOrg;
+      totalDiscount += itemDiscountTotal;
+      finalAmount += itemFinalTotal;
+
+      // If this is the item being updated, capture its new final price
+      if (item._id.toString() === cartId.toString()) {
+        item.currentFinalPrice = itemFinalTotal;
+      }
+    }
+
+    if (finalAmount > 0 && finalAmount < 1500) {
+      shipping = 50;
+      finalAmount += shipping;
+    }
+
     return res.status(200).json({
       success: true,
       quantity: cartItem.quantity,
-      totalAmountPerPrdct: Math.round(cartItem.quantity * variant.salePrice),
+      totalAmountPerPrdct: cartItems.find(i => i._id.toString() === cartId.toString()).currentFinalPrice,
       subtotal,
+      totalDiscount,
+      shipping,
+      finalAmount,
+      isMax: cartItem.quantity >= variant.stock || cartItem.quantity >= 5,
+      isMin: cartItem.quantity <= 1,
+      maxType: cartItem.quantity >= variant.stock ? 'stock' : (cartItem.quantity >= 5 ? 'limit' : null)
     });
   } catch (error) {
     console.error(error);

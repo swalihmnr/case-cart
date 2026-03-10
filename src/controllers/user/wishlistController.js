@@ -3,12 +3,12 @@ import wishlistModel from "../../models/wishlistModel.js";
 import variantModel from "../../models/admin/variantModel.js";
 import cartModel from "../../models/cartModel.js";
 import { STATUS_CODES } from "../../utils/statusCodes.js";
+
 // ==============================
 // GET WISHLIST
 // ==============================
 const getWishlist = async (req, res) => {
   const userId = req.session.user.id;
-  console.log(userId);
   const userID = new mongoose.Types.ObjectId(userId);
   const products = await wishlistModel
     .find({ userId: userID })
@@ -70,7 +70,7 @@ const postWishlist = async (req, res) => {
         message: "user not founded",
       });
     }
-    let result = await wishlistModel.create({
+    await wishlistModel.create({
       userId: userId,
       productId: productId,
       variantId: Variant._id,
@@ -85,15 +85,69 @@ const postWishlist = async (req, res) => {
 };
 
 // ==============================
+// TOGGLE WISHLIST
+// ==============================
+const toggleWishlist = async (req, res) => {
+  try {
+    const { productId, variant } = req.body;
+    const userId = new mongoose.Types.ObjectId(req.session.user.id);
+    const variantId = new mongoose.Types.ObjectId(variant);
+
+    const existing = await wishlistModel.findOne({
+      userId,
+      productId,
+      variantId,
+    });
+
+    if (existing) {
+      await wishlistModel.findByIdAndDelete(existing._id);
+      return res.status(STATUS_CODES.OK).json({
+        success: true,
+        action: "removed",
+        message: "Removed from wishlist",
+      });
+    } else {
+      const existingCart = await cartModel.findOne({
+        variantId,
+        userId,
+        productId,
+      });
+
+      if (existingCart) {
+        return res.status(STATUS_CODES.CONFLICT).json({
+          success: false,
+          message: "Already exists in cart",
+        });
+      }
+
+      await wishlistModel.create({
+        userId,
+        productId,
+        variantId,
+      });
+
+      return res.status(STATUS_CODES.CREATED).json({
+        success: true,
+        action: "added",
+        message: "Added to wishlist",
+      });
+    }
+  } catch (error) {
+    console.error(error);
+    return res.status(STATUS_CODES.INTERNAL_SERVER_ERROR).json({
+      success: false,
+      message: "Internal server error",
+    });
+  }
+};
+
+// ==============================
 // REMOVE ITEM FROM WISHLIST
 // ==============================
-// Deletes a wishlist item for the logged-in user
-// Ensures user can remove only their own wishlist items
 const remWishlist = async (req, res) => {
   try {
     const id = req.params.id;
     const wishlistId = new mongoose.Types.ObjectId(id);
-    const userId = req.session.user.id;
     if (!wishlistId) {
       return res.status(STATUS_CODES.NOT_FOUND).json({
         success: false,
@@ -111,12 +165,14 @@ const remWishlist = async (req, res) => {
   } catch (error) {
     return res.status(STATUS_CODES.INTERNAL_SERVER_ERROR).json({
       success: false,
-      message: "indernal server error",
+      message: "Internal server error",
     });
   }
 };
+
 export default {
   getWishlist,
   postWishlist,
   remWishlist,
+  toggleWishlist,
 };

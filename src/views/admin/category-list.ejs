@@ -52,9 +52,10 @@
                         <i class="fas fa-edit mr-1"></i> Edit
                       </a>
 
-                      <button class="text-red-600 hover:text-red-800 text-xs block-btn flex items-center"
-                        data-id="<%= Category._id %>">
-                        <i class="fas fa-ban mr-1"></i>
+                      <button id="category-block-btn-<%= Category._id %>"
+                        class="text-red-600 hover:text-red-800 text-xs block-btn flex items-center"
+                        data-id="<%= Category._id %>" data-statusmode="<%= Category.isActive ? 'block' : 'unblock' %>">
+                        <i class="fas <%= Category.isActive ? 'fa-ban' : 'fa-check' %> mr-1"></i>
                         <% if (Category.isActive) { %> Block <% } else { %> Unblock <% } %>
                       </button>
                     </div>

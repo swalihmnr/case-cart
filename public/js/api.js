@@ -141,7 +141,7 @@ const resetPassAxios = async (data) => {
 const admnLoginAxios = async (data) => {
   try {
     return await api.post("/admin/login", data);
-  } catch (err) {}
+  } catch (err) { }
 };
 const userProfileAxios = async (data) => {
   try {
@@ -172,6 +172,12 @@ const userProfileImgUplaoderAxios = async (file) => {
 
 const addWishlistAxios = async (productId, variant) => {
   return await api.post("/product/wishlist/add", {
+    productId,
+    variant,
+  });
+};
+const toggleWishlistAxios = async (productId, variant) => {
+  return await api.post("/product/wishlist/toggle", {
     productId,
     variant,
   });
@@ -289,7 +295,7 @@ const orderInvoice = async (orderId, orderItemId) => {
   try {
     console.log(orderItemId, "it is the order Id");
     window.location.href = `/order/${orderItemId}/invoice?odrId=${orderId}`;
-  } catch (error) {}
+  } catch (error) { }
 };
 const changePasswordAxios = async (data) => {
   try {
@@ -357,6 +363,7 @@ export default {
   userProfileAxios,
   userProfileImgUplaoderAxios,
   addWishlistAxios,
+  toggleWishlistAxios,
   remWishlistAxios,
   addToCartAxios,
   quantityUpdateAxios,

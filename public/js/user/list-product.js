@@ -105,30 +105,90 @@ function applyFilters() {
 // ======================
 const addWishlist = async (productId, variantId) => {
   try {
-    const res = await api.addWishlistAxios(productId, variantId);
+    const res = await api.toggleWishlistAxios(productId, variantId);
 
     console.log(res);
 
-    Swal.fire({
-      icon: "success",
-      title: "Added to Wishlist",
-      text: res.data.message,
-      confirmButtonColor: "#667eea",
-      timer: 1200,
-      showConfirmButton: false,
-    });
+    if (res.data.success) {
+      const action = res.data.action; // 'added' or 'removed'
+      const heartIcon = document.getElementById(
+        `wish-icon-${productId}-${variantId}`,
+      );
 
-    setTimeout(() => location.reload(), 800);
+      if (action === "added") {
+        Toastify({
+          text: "Added to Wishlist",
+          duration: 3000,
+          gravity: "bottom",
+          position: "center",
+          style: {
+            background: "linear-gradient(to right, #667eea, #764ba2)",
+            borderRadius: "10px",
+          }
+        }).showToast();
+
+        if (heartIcon) {
+          heartIcon.classList.remove("text-gray-400");
+          heartIcon.classList.add("text-red-500");
+        }
+        updateWishlistCount(1);
+      } else {
+        Toastify({
+          text: "Removed from Wishlist",
+          duration: 3000,
+          gravity: "bottom",
+          position: "center",
+          style: {
+            background: "linear-gradient(to right, #667eea, #764ba2)",
+            borderRadius: "10px",
+          }
+        }).showToast();
+
+        if (heartIcon) {
+          heartIcon.classList.remove("text-red-500");
+          heartIcon.classList.add("text-gray-400");
+        }
+        updateWishlistCount(-1);
+      }
+    }
   } catch (error) {
     console.log(error.response);
 
-    Swal.fire({
-      icon: "info",
-      title: "Notice",
+    Toastify({
       text: error.response?.data?.message || "Something went wrong",
-      confirmButtonColor: "#667eea",
-    });
+      duration: 3000,
+      gravity: "bottom",
+      position: "center",
+      style: {
+        background: "linear-gradient(to right, #ff416c, #ff4b2b)",
+        borderRadius: "10px",
+      }
+    }).showToast();
   }
 };
+
+function updateWishlistCount(change) {
+  const desktopBadge = document.getElementById("wishlist-count-desktop");
+  const mobileBadge = document.getElementById("wishlist-count-mobile");
+  const dropdownBadge = document.getElementById("wishlist-count-dropdown");
+
+  const badges = [desktopBadge, mobileBadge, dropdownBadge];
+
+  badges.forEach((badge) => {
+    if (badge) {
+      let currentCount = parseInt(badge.textContent) || 0;
+      let newCount = currentCount + change;
+      if (newCount < 0) newCount = 0;
+
+      badge.textContent = newCount;
+
+      if (newCount > 0) {
+        badge.classList.remove("hidden");
+      } else {
+        badge.classList.add("hidden");
+      }
+    }
+  });
+}
 
 window.addWishlist = addWishlist;

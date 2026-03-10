@@ -19,9 +19,7 @@ export default async function discountChecker(
     console.log(promotion);
     const discValue = Number(promotion.discountValue) || 0;
     if (promotion[type] === "percentage") {
-      // User requested that 65% off 500 means a 175 discount (which results in a 325 final price),
-      // rather than a 325 discount (which results in a 175 final price).
-      discount = variantPrice - (discValue * variantPrice) / 100;
+      discount = (discValue * variantPrice) / 100;
     } else {
       discount = Math.min(discValue, variantPrice);
     }

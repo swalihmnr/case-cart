@@ -31,8 +31,8 @@ const calculateBestItemOffer = async (item) => {
 
   for (const offer of offers) {
     if (offer.offerType === "percentage") {
-      // Calculate percentage discount on orgPrice as requested mathematically
-      let discount = orgPrice - (orgPrice * offer.discountValue) / 100;
+      // Calculate percentage discount on orgPrice
+      let discount = (orgPrice * offer.discountValue) / 100;
       console.log(`Offer ${offer.title}: ${discount} discount`);
 
       // Apply max cap per unit ONLY if explicitly set on the offer
