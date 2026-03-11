@@ -131,7 +131,11 @@ const addWishlist = async (productId, variantId) => {
           heartIcon.classList.remove("text-gray-400");
           heartIcon.classList.add("text-red-500");
         }
-        updateWishlistCount(1);
+        if (res.data.wishlistCount !== undefined) {
+          updateWishlistCount(res.data.wishlistCount);
+        } else {
+          updateWishlistCount(); // Fallback if count not provided
+        }
       } else {
         Toastify({
           text: "Removed from Wishlist",
@@ -148,7 +152,11 @@ const addWishlist = async (productId, variantId) => {
           heartIcon.classList.remove("text-red-500");
           heartIcon.classList.add("text-gray-400");
         }
-        updateWishlistCount(-1);
+        if (res.data.wishlistCount !== undefined) {
+          updateWishlistCount(res.data.wishlistCount);
+        } else {
+          updateWishlistCount(); // Fallback if count not provided
+        }
       }
     }
   } catch (error) {
@@ -167,22 +175,26 @@ const addWishlist = async (productId, variantId) => {
   }
 };
 
-function updateWishlistCount(change) {
+function updateWishlistCount(count) {
   const desktopBadge = document.getElementById("wishlist-count-desktop");
   const mobileBadge = document.getElementById("wishlist-count-mobile");
-  const dropdownBadge = document.getElementById("wishlist-count-dropdown");
 
-  const badges = [desktopBadge, mobileBadge, dropdownBadge];
+  const badges = [desktopBadge, mobileBadge];
 
   badges.forEach((badge) => {
     if (badge) {
-      let currentCount = parseInt(badge.textContent) || 0;
-      let newCount = currentCount + change;
-      if (newCount < 0) newCount = 0;
+      if (count !== undefined) {
+        badge.textContent = count;
+      } else {
+        // Fallback: manually increment/decrement based on current visibility if count not passed
+        // This is primarily for backward compatibility if needed, but we prefer absolute counts.
+        let currentCount = parseInt(badge.textContent) || 0;
+        // This fallback part is tricky without knowing if we added or removed, 
+        // Better to just fetch or expect absolute count.
+      }
 
-      badge.textContent = newCount;
-
-      if (newCount > 0) {
+      const finalCount = parseInt(badge.textContent) || 0;
+      if (finalCount > 0) {
         badge.classList.remove("hidden");
       } else {
         badge.classList.add("hidden");

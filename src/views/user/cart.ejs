@@ -128,7 +128,9 @@
                                             <div
                                                 class="inline-flex items-center gap-1.5 bg-gradient-to-r from-green-50 to-emerald-50 text-green-700 text-xs font-medium px-3 py-1.5 rounded-full border border-green-200 shadow-sm">
                                                 <span>🎉 <strong>
-                                                        <%= product.appliedOffer.discountValue %>% OFF
+                                                        <%= product.appliedOffer.disType==='percentage' ?
+                                                            product.appliedOffer.discountValue + '%' : '₹' +
+                                                            product.appliedOffer.discountValue %> OFF
                                                     </strong> applied</span>
                                             </div>
                                         </div>

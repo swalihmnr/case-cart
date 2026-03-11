@@ -1,39 +1,53 @@
 import api from "../api.js";
 
-//user profile image
+// User profile image
 window.handleProfileUpload = handleProfileUpload;
 async function handleProfileUpload(event) {
   const file = event.target.files[0];
   if (!file) return;
 
   if (file.size > 2 * 1024 * 1024) {
-    alert("File size must be less than 2MB");
+    Swal.fire({
+      icon: "error",
+      title: "File too large",
+      text: "Profile picture must be less than 2MB",
+      confirmButtonColor: "#9333ea"
+    });
     return;
   }
 
-  const previewDiv = document.querySelector(".w-20.h-20");
-  const imageUrl = URL.createObjectURL(file);
-  console.log(file);
   const newForm = new FormData();
   newForm.append("image", file);
+
   try {
+    // Show loading state
+    Swal.fire({
+      title: "Uploading...",
+      didOpen: () => {
+        Swal.showLoading();
+      },
+      allowOutsideClick: false,
+      showConfirmButton: false
+    });
+
     let res = await api.userProfileImgUplaoderAxios(newForm);
     if (res.data.success) {
-      let alert_box = document.querySelector(".warning-box");
-      numberErr.classList.remove("text-red-500");
-      numberErr.classList.add("text-blue-500");
-      alert_box.classList.remove("hidden");
-      alert_box.innerText = res.data.message;
-    }
-    setTimeout(() => {
+      await Swal.fire({
+        icon: "success",
+        title: "Success",
+        text: res.data.message,
+        timer: 1500,
+        showConfirmButton: false
+      });
       window.location.reload();
-    }, 2000);
+    }
   } catch (error) {
-    let alert_box = document.querySelector(".warning-box");
-    numberErr.classList.remove("text-red-500");
-    numberErr.classList.add("text-blue-500");
-    alert_box.classList.remove("hidden");
-    alert_box.innerText = error.response.message;
+    Swal.fire({
+      icon: "error",
+      title: "Upload Failed",
+      text: error.response?.data?.message || "Something went wrong during upload",
+      confirmButtonColor: "#9333ea"
+    });
   }
 }
 
@@ -45,10 +59,10 @@ document.querySelector("form").addEventListener("submit", async function (e) {
   const email = document.getElementById("email").value.trim();
   const number = document.getElementById("number").value.trim();
 
-  let firstnameErr = document.getElementById("f-err");
-  let lastnameErr = document.getElementById("l-err");
-  let emailErr = document.getElementById("emailErr");
-  let numberErr = document.getElementById("numberErr");
+  const firstnameErr = document.getElementById("f-err");
+  const lastnameErr = document.getElementById("l-err");
+  const emailErr = document.getElementById("emailErr");
+  const numberErr = document.getElementById("numberErr");
 
   const namePattern = /^[A-Za-z\s]+$/;
   const emailPattern = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
@@ -56,73 +70,63 @@ document.querySelector("form").addEventListener("submit", async function (e) {
 
   let isValid = true;
 
-  firstnameErr.textContent = "";
-  lastnameErr.textContent = "";
-  emailErr.textContent = "";
-  numberErr.textContent = "";
+  // Reset errors
+  [firstnameErr, lastnameErr, emailErr, numberErr].forEach(err => err.textContent = "");
 
   if (!namePattern.test(firstName) || firstName.length < 2) {
-    firstnameErr.textContent = "Enter a valid first name";
+    firstnameErr.textContent = "First name must be at least 2 characters (alphabets only)";
     isValid = false;
   }
-  if (!namePattern.test(lastName) || lastName.length < 2) {
-    lastnameErr.textContent = "Enter a valid last name";
+  if (!namePattern.test(lastName) || lastName.length < 1) {
+    lastnameErr.textContent = "Last name is required (alphabets only)";
     isValid = false;
   }
-
   if (!emailPattern.test(email)) {
-    emailErr.textContent = "Enter a valid email address";
+    emailErr.textContent = "Please enter a valid email address";
     isValid = false;
   }
   if (!numberPattern.test(number)) {
-    numberErr.textContent =
-      "Enter your phone number to add it to your profile.";
+    numberErr.textContent = "Please enter a valid 10-digit phone number";
+    isValid = false;
   }
 
   if (isValid) {
-    const data = {
-      firstName: firstName,
-      lastName: lastName,
-      email: email,
-      number: number,
-    };
+    const data = { firstName, lastName, email, number };
     try {
       let res = await api.userProfileAxios(data);
 
       if (res.data.success) {
-        let alert_box = document.querySelector(".warning-box");
-        numberErr.classList.remove("text-red-500");
-        numberErr.classList.add("text-blue-500");
-        alert_box.classList.remove("hidden");
-        alert_box.innerText = res.data.message;
         if (res.data.otpVerify) {
-          console.log("here entered");
-          location.href = res.data.redirect;
+          window.location.href = res.data.redirect;
+          return;
+        }
+
+        await Swal.fire({
+          icon: "success",
+          title: "Profile Updated",
+          text: res.data.message,
+          timer: 1500,
+          showConfirmButton: false
+        });
+
+        if (res.data.isChanged) {
+          window.location.reload();
         }
       } else {
-        if (res.data.isGoogle) {
-          let alert_box = document.querySelector(".warning-box");
-          numberErr.classList.remove("text-red-500");
-          numberErr.classList.add("text-blue-500");
-          alert_box.classList.remove("hidden");
-          alert_box.innerText = res.data.message;
-        } else {
-          let alert_box = document.querySelector(".warning-box");
-          numberErr.classList.remove("text-red-500");
-          numberErr.classList.add("text-blue-500");
-          alert_box.classList.remove("hidden");
-          alert_box.innerText = res.data.message;
-        }
+        Swal.fire({
+          icon: "warning",
+          title: "Update Failed",
+          text: res.data.message || "Failed to update profile",
+          confirmButtonColor: "#9333ea"
+        });
       }
-      if (res.data.isChanged === false) {
-        setTimeout(() => {
-          window.location.reload();
-        }, 2000);
-      } else {
-        setTimeout(() => {
-          window.location.reload();
-        }, 2000);
-      }
-    } catch (error) {}
+    } catch (error) {
+      Swal.fire({
+        icon: "error",
+        title: "Error",
+        text: error.response?.data?.message || "An unexpected error occurred",
+        confirmButtonColor: "#dc2626"
+      });
+    }
   }
 });

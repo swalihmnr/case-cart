@@ -326,10 +326,9 @@
                             showConfirmButton: false,
                         });
                         if (heartIcon) {
-                            heartIcon.classList.remove("text-gray-400");
+                            heartIcon.classList.remove("text-white");
                             heartIcon.classList.add("text-red-500");
                         }
-                        updateWishlistCount(1);
                     } else {
                         Swal.fire({
                             icon: "success",
@@ -341,9 +340,12 @@
                         });
                         if (heartIcon) {
                             heartIcon.classList.remove("text-red-500");
-                            heartIcon.classList.add("text-gray-400");
+                            heartIcon.classList.add("text-white");
                         }
-                        updateWishlistCount(-1);
+                    }
+
+                    if (res.data.wishlistCount !== undefined) {
+                        updateWishlistCount(res.data.wishlistCount);
                     }
                 }
             } catch (error) {
@@ -356,19 +358,19 @@
             }
         };
 
-        function updateWishlistCount(change) {
+        function updateWishlistCount(count) {
             const badges = [
                 document.getElementById("wishlist-count-desktop"),
-                document.getElementById("wishlist-count-mobile"),
-                document.getElementById("wishlist-count-dropdown")
+                document.getElementById("wishlist-count-mobile")
             ];
 
             badges.forEach((badge) => {
                 if (badge) {
-                    let currentCount = parseInt(badge.textContent) || 0;
-                    let newCount = Math.max(0, currentCount + change);
-                    badge.textContent = newCount;
-                    if (newCount > 0) badge.classList.remove("hidden");
+                    if (count !== undefined) {
+                        badge.textContent = count;
+                    }
+                    const finalCount = parseInt(badge.textContent) || 0;
+                    if (finalCount > 0) badge.classList.remove("hidden");
                     else badge.classList.add("hidden");
                 }
             });

@@ -120,8 +120,9 @@ const getCheckout = async (req, res) => {
         if (offerResult.bestOffer) {
           item.appliedOffer = {
             title: offerResult.bestOffer.title,
-            value: offerResult.bestOffer.discountValue,
+            discountValue: offerResult.bestOffer.discountValue,
             discount: totalItemDiscount,
+            disType: offerResult.bestOffer.offerType === "percentage" ? "percentage" : "fixed",
           };
         } else {
           item.appliedOffer = null;
@@ -179,8 +180,8 @@ const getCheckout = async (req, res) => {
       if (variant.product.isBlock || !variant.isListed || variant.stock < 1) {
         return res.redirect(
           "/product/" +
-            variant.product._id +
-            "/detials?error=Product unavailable",
+          variant.product._id +
+          "/detials?error=Product unavailable",
         );
       }
 
@@ -225,8 +226,9 @@ const getCheckout = async (req, res) => {
       if (offerResult.bestOffer) {
         item.appliedOffer = {
           title: offerResult.bestOffer.title,
-          value: offerResult.bestOffer.discountValue,
+          discountValue: offerResult.bestOffer.discountValue,
           discount: offerResult.discountAmount, // Use discountAmount directly
+          disType: offerResult.bestOffer.offerType === "percentage" ? "percentage" : "fixed",
         };
         console.log("Applied Offer Set:", item.appliedOffer);
       } else {

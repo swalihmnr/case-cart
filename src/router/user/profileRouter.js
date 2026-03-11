@@ -13,13 +13,20 @@ import {
 router.use(wishlistCount);
 router.use(cartCount);
 import profileContorller from "../../controllers/user/profileContorller.js";
+import { profileValidator } from "../../validators/profileValidator.js";
+
 router.get(
   "/user-profile",
   userAuth,
   blockUser,
   profileContorller.getUserProfil,
 );
-router.post("/profile/info/edit", userAuth, profileContorller.editProfileInfo);
+router.post(
+  "/profile/info/edit",
+  userAuth,
+  profileValidator,
+  profileContorller.editProfileInfo,
+);
 router.patch(
   "/profile/edit/img",
   upload.single("image"),

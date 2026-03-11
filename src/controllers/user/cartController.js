@@ -5,6 +5,7 @@ import { STATUS_CODES } from "../../utils/statusCodes.js";
 import productModel from "../../models/admin/productModel.js";
 import wishlistModel from "../../models/wishlistModel.js";
 import offerModel from "../../models/admin/offerModel.js";
+import calculateBestItemOffer from "../../utils/calculateBestOfferItem.js";
 // ==============================
 // GET CART PAGE
 // ==============================
@@ -36,62 +37,25 @@ const getCart = async (req, res) => {
       // sale price discount
       const currentDiscountPerUnit = orgPrice - variant.salePrice;
 
-      // ---------- FIND BEST OFFER ----------
-      const offers = await offerModel.find({
-        status: "active",
-        startDate: { $lte: new Date() },
-        endDate: { $gte: new Date() },
-        $or: [
-          {
-            applicableOn: "product",
-            productIds: { $in: [item.productId._id] },
-          },
-          {
-            applicableOn: "category",
-            categoryIds: { $in: [item.productId.catgId._id] },
-          },
-        ],
+      const offerResult = await calculateBestItemOffer({
+        product: item.productId,
+        variant: item.variantId,
+        quantity: item.quantity,
       });
+      const finalUnitPrice = offerResult.finalPrice;
+      const usedDiscountPerUnit = offerResult.discountAmount;
 
-      let bestOffer = null;
-      let bestOfferDiscountPerUnit = 0;
-
-      for (let offer of offers) {
-        if (offer.offerType === "percentage") {
-          // Calculate the discount as the difference between original price and percentage of price
-          let discount = orgPrice - (orgPrice * offer.discountValue) / 100;
-
-          // Apply maximumDiscount cap if explicitly set
-          if (offer.maximumDiscount && offer.maximumDiscount > 0) {
-            if (discount > offer.maximumDiscount) {
-              discount = offer.maximumDiscount;
-            }
-          }
-
-          if (discount > bestOfferDiscountPerUnit) {
-            bestOfferDiscountPerUnit = discount;
-            bestOffer = offer;
-          }
-        }
-      }
-
-      // ---------- COMPARE SALE VS OFFER ----------
-      let finalUnitPrice;
-      let usedDiscountPerUnit;
-
-      if (bestOfferDiscountPerUnit > currentDiscountPerUnit) {
-        finalUnitPrice = Math.floor(orgPrice - bestOfferDiscountPerUnit);
-        usedDiscountPerUnit = Math.floor(bestOfferDiscountPerUnit);
-
+      if (offerResult.bestOffer) {
         item.appliedOffer = {
-          title: bestOffer.title,
+          title: offerResult.bestOffer.title,
           discount: usedDiscountPerUnit * quantity,
-          discountValue: bestOffer.discountValue,
+          discountValue: offerResult.bestOffer.discountValue,
+          disType:
+            offerResult.bestOffer.offerType === "percentage"
+              ? "percentage"
+              : "fixed",
         };
       } else {
-        finalUnitPrice = Math.floor(variant.salePrice);
-        usedDiscountPerUnit = Math.floor(currentDiscountPerUnit);
-
         item.appliedOffer = null;
       }
 
@@ -220,11 +184,15 @@ const addCart = async (req, res) => {
       });
 
       const cartCount = await cartModel.countDocuments({ userId: userId._id });
+      const wishlistCount = await wishlistModel.countDocuments({
+        userId: userId._id,
+      });
 
       return res.status(STATUS_CODES.CREATED).json({
         success: true,
         message: "item added to cart",
-        cartCount: cartCount
+        cartCount: cartCount,
+        wishlistCount: wishlistCount,
       });
     }
   } catch (error) {
@@ -329,48 +297,13 @@ const cartQuantityUpdate = async (req, res) => {
 
       const currentDiscountPerUnit = orgPrice - variant.salePrice;
 
-      // FIND BEST OFFER (Replicating getCart logic)
-      const offers = await offerModel.find({
-        status: "active",
-        startDate: { $lte: new Date() },
-        endDate: { $gte: new Date() },
-        $or: [
-          {
-            applicableOn: "product",
-            productIds: { $in: [item.productId._id] },
-          },
-          {
-            applicableOn: "category",
-            categoryIds: { $in: [item.productId.catgId._id] },
-          },
-        ],
+      const offerResult = await calculateBestItemOffer({
+        product: item.productId,
+        variant: item.variantId,
+        quantity: item.quantity,
       });
-
-      let bestOfferDiscountPerUnit = 0;
-      for (let offer of offers) {
-        if (offer.offerType === "percentage") {
-          let discount = orgPrice - (orgPrice * offer.discountValue) / 100;
-          if (offer.maximumDiscount && offer.maximumDiscount > 0) {
-            if (discount > offer.maximumDiscount) {
-              discount = offer.maximumDiscount;
-            }
-          }
-          if (discount > bestOfferDiscountPerUnit) {
-            bestOfferDiscountPerUnit = discount;
-          }
-        }
-      }
-
-      let finalUnitPrice;
-      let usedDiscountPerUnit;
-
-      if (bestOfferDiscountPerUnit > currentDiscountPerUnit) {
-        finalUnitPrice = Math.floor(orgPrice - bestOfferDiscountPerUnit);
-        usedDiscountPerUnit = Math.floor(bestOfferDiscountPerUnit);
-      } else {
-        finalUnitPrice = Math.floor(variant.salePrice);
-        usedDiscountPerUnit = Math.floor(currentDiscountPerUnit);
-      }
+      const finalUnitPrice = offerResult.finalPrice;
+      const usedDiscountPerUnit = offerResult.discountAmount;
 
       const itemTotalOrg = orgPrice * quantity;
       const itemFinalTotal = finalUnitPrice * quantity;
@@ -394,14 +327,21 @@ const cartQuantityUpdate = async (req, res) => {
     return res.status(200).json({
       success: true,
       quantity: cartItem.quantity,
-      totalAmountPerPrdct: cartItems.find(i => i._id.toString() === cartId.toString()).currentFinalPrice,
+      totalAmountPerPrdct: cartItems.find(
+        (i) => i._id.toString() === cartId.toString(),
+      ).currentFinalPrice,
       subtotal,
       totalDiscount,
       shipping,
       finalAmount,
       isMax: cartItem.quantity >= variant.stock || cartItem.quantity >= 5,
       isMin: cartItem.quantity <= 1,
-      maxType: cartItem.quantity >= variant.stock ? 'stock' : (cartItem.quantity >= 5 ? 'limit' : null)
+      maxType:
+        cartItem.quantity >= variant.stock
+          ? "stock"
+          : cartItem.quantity >= 5
+            ? "limit"
+            : null,
     });
   } catch (error) {
     console.error(error);

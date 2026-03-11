@@ -102,10 +102,12 @@ const toggleWishlist = async (req, res) => {
 
     if (existing) {
       await wishlistModel.findByIdAndDelete(existing._id);
+      const wishlistCount = await wishlistModel.countDocuments({ userId });
       return res.status(STATUS_CODES.OK).json({
         success: true,
         action: "removed",
         message: "Removed from wishlist",
+        wishlistCount: wishlistCount,
       });
     } else {
       const existingCart = await cartModel.findOne({
@@ -127,10 +129,13 @@ const toggleWishlist = async (req, res) => {
         variantId,
       });
 
+      const wishlistCount = await wishlistModel.countDocuments({ userId });
+
       return res.status(STATUS_CODES.CREATED).json({
         success: true,
         action: "added",
         message: "Added to wishlist",
+        wishlistCount: wishlistCount,
       });
     }
   } catch (error) {
@@ -159,9 +164,13 @@ const remWishlist = async (req, res) => {
       _id: wishlistId,
       userId: req.session.user.id,
     });
+    const wishlistCount = await wishlistModel.countDocuments({
+      userId: req.session.user.id,
+    });
     return res.status(STATUS_CODES.OK).json({
       success: true,
       message: "Removed from wishlist",
+      wishlistCount: wishlistCount,
     });
   } catch (error) {
     return res.status(STATUS_CODES.INTERNAL_SERVER_ERROR).json({

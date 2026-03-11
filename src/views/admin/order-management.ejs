@@ -1,165 +1,345 @@
-import adminApi from "../adminApi.js";
+<%- include('../partials/header') %>
 
-//search script
-const filterSelect = document.getElementById("statusFilter");
-const input = document.getElementById("orderSearch");
-let timer;
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
 
-if (input) {
-  input.addEventListener("input", () => {
-    clearTimeout(timer);
-    timer = setTimeout(() => {
-      const filter = filterSelect ? filterSelect.value.trim() : "all";
-      let search = input.value.trim();
-      window.location.href = `/admin/order?page=1&search=${search}&filter=${filter}`;
-    }, 500);
-  });
-}
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+            -webkit-font-smoothing: antialiased;
+            -moz-osx-font-smoothing: grayscale;
+        }
 
-if (filterSelect) {
-  filterSelect.addEventListener("change", () => {
-    const filter = filterSelect.value.trim();
-    const search = input ? input.value.trim() : "";
-    console.log(filter);
-    window.location.href = `/admin/order?page=1&search=${search}&filter=${filter}`;
-  });
-}
+        .order-card {
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
 
-window.updateOrderStatus = async function (
-  orderId,
-  orderItemId,
-  newStatus,
-  selectElement,
-) {
-  const previousValue = selectElement.getAttribute("data-prev-value") || "";
+        .order-card:hover {
+            transform: translateY(-2px);
+        }
 
-  const result = await Swal.fire({
-    title: "Are you sure?",
-    text: `Change order status to "${newStatus}"?`,
-    icon: "warning",
-    showCancelButton: true,
-    confirmButtonText: "Yes, update",
-    cancelButtonText: "Cancel",
-  });
+        .expand-icon {
+            transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
 
-  if (!result.isConfirmed) {
-    if (previousValue) {
-      selectElement.value = previousValue;
-    } else {
-      selectElement.selectedIndex = 0;
-    }
-    return;
-  }
+        .expand-icon.rotated {
+            transform: rotate(180deg);
+        }
 
-  setLoading(selectElement, true);
-  try {
-    const res = await adminApi.updateStatus(newStatus, orderId, orderItemId);
-    console.log(res);
+        .status-badge {
+            backdrop-filter: blur(10px);
+        }
+    </style>
 
-    if (res.data.success) {
-      selectElement.setAttribute("data-prev-value", newStatus);
-      Swal.fire({
-        icon: "success",
-        title: "Updated!",
-        text: "Order status updated successfully",
-        timer: 1500,
-        showConfirmButton: false,
-      });
+    <div class="flex min-h-screen bg-gray-50">
+        <%- include('../partials/sidebar') %>
 
-      setTimeout(() => location.reload(), 1200);
-    } else {
-      setLoading(selectElement, false);
-      if (previousValue) {
-        selectElement.value = previousValue;
-      } else {
-        selectElement.selectedIndex = 0;
-      }
-      Swal.fire("Error", res.data.message || "Update failed", "error");
-    }
-  } catch (error) {
-    setLoading(selectElement, false);
-    if (previousValue) {
-      selectElement.value = previousValue;
-    } else {
-      selectElement.selectedIndex = 0;
-    }
-    console.error(error.message);
-    Swal.fire("Error", "Something went wrong", "error");
-  }
-};
+            <!-- Main Content -->
+            <div class="flex-1 overflow-auto">
+                <!-- Page Header -->
+                <div class="bg-white border-b border-gray-200 sticky top-0 z-20 transition-all duration-300">
+                    <div class="px-6 sm:px-8 lg:px-10 py-6">
+                        <h1 class="text-3xl font-semibold text-gray-900 tracking-tight">Orders</h1>
+                    </div>
+                </div>
 
-window.approveReturn = async function (btn, orderId, itemId) {
-  const result = await Swal.fire({
-    title: "Are you sure?",
-    text: `Change Requast status to approve?`,
-    icon: "warning",
-    showCancelButton: true,
-    confirmButtonText: "Yes,approve",
-    cancelButtonText: "Cancel",
-  });
+                <div class="px-6 sm:px-8 lg:px-10 py-8">
+                    <!-- Search and Filter Bar -->
+                    <div class="mb-8">
+                        <div class="flex flex-col sm:flex-row gap-4">
+                            <!-- Search Input -->
+                            <div class="relative flex-1 max-w-md">
+                                <div class="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
+                                    <svg class="h-5 w-5 text-gray-400" fill="none" stroke="currentColor"
+                                        viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                            d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+                                    </svg>
+                                </div>
+                                <input type="text" id="orderSearch" placeholder="Search orders" value="<%= search %>"
+                                    onkeyup="filterOrders()"
+                                    class="block w-full pl-12 pr-4 py-3 border border-gray-300 rounded-xl text-sm placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all" />
+                            </div>
 
-  if (!result.isConfirmed) return;
+                            <!-- Status Filter -->
+                            <div class="relative">
+                                <select id="statusFilter" onchange="filterOrders()"
+                                    class="appearance-none bg-white border border-gray-300 rounded-xl px-4 py-3 pr-10 text-sm font-medium text-gray-700 hover:bg-gray-50 cursor-pointer focus:outline-none focus:ring-2 focus:ring-blue-500 transition-all">
 
-  setLoading(btn, true);
-  try {
-    const res = await adminApi.reqApproveAxios(orderId, itemId);
-    console.log(res);
+                                    <option value="all" <%=selectionFilter==='all' ? 'selected' : '' %>>
+                                        All Status
+                                    </option>
 
-    if (res.data.success) {
-      Swal.fire({
-        icon: "success",
-        title: "Approved!",
-        text: "Order Requast updated successfully",
-        timer: 1500,
-        showConfirmButton: false,
-      });
+                                    <option value="placed" <%=selectionFilter==='placed' ? 'selected' : '' %>>
+                                        Placed
+                                    </option>
 
-      setTimeout(() => location.reload(), 1200);
-    } else {
-      Swal.fire("Error", res.data.message || "Update failed", "error");
-    }
-  } catch (error) {
-    console.error(error.message);
-    Swal.fire("Error", "Something went wrong", "error");
-  } finally {
-    setLoading(btn, false);
-  }
-};
+                                    <option value="confirmed" <%=selectionFilter==='confirmed' ? 'selected' : '' %>>
+                                        Confirmed
+                                    </option>
 
-window.rejectReturn = async function (btn, orderId, itemId) {
-  const result = await Swal.fire({
-    title: "Are you sure?",
-    text: `Change Requast status to Reject?`,
-    icon: "warning",
-    showCancelButton: true,
-    confirmButtonText: "Yes,Reject",
-    cancelButtonText: "Cancel",
-  });
+                                    <option value="processing" <%=selectionFilter==='processing' ? 'selected' : '' %>>
+                                        Processing
+                                    </option>
 
-  if (!result.isConfirmed) return;
+                                    <option value="shipped" <%=selectionFilter==='shipped' ? 'selected' : '' %>>
+                                        Shipped
+                                    </option>
 
-  setLoading(btn, true);
-  try {
-    const res = await adminApi.reqRejectAxios(orderId, itemId);
-    console.log(res);
+                                    <option value="out_for_delivery" <%=selectionFilter==='out_for_delivery'
+                                        ? 'selected' : '' %>>
+                                        Out for Delivery
+                                    </option>
 
-    if (res.data.success) {
-      Swal.fire({
-        icon: "success",
-        title: "Rejected!",
-        text: "Order Requast Rejected Successfully",
-        timer: 1500,
-        showConfirmButton: false,
-      });
+                                    <option value="delivered" <%=selectionFilter==='delivered' ? 'selected' : '' %>>
+                                        Delivered
+                                    </option>
 
-      setTimeout(() => location.reload(), 1200);
-    } else {
-      Swal.fire("Error", res.data.message || "Update failed", "error");
-    }
-  } catch (error) {
-    console.error(error.message);
-    Swal.fire("Error", "Something went wrong", "error");
-  } finally {
-    setLoading(btn, false);
-  }
-};
+                                    <option value="cancelled" <%=selectionFilter==='cancelled' ? 'selected' : '' %>>
+                                        Cancelled
+                                    </option>
+
+                                    <option value="returned" <%=selectionFilter==='returned' ? 'selected' : '' %>>
+                                        Returned
+                                    </option>
+
+                                    <option value="return_req" <%=selectionFilter==='return_req' ? 'selected' : '' %>>
+                                        Return Requested
+                                    </option>
+
+                                </select>
+
+                                <div class="absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none">
+                                    <svg class="h-5 w-5 text-gray-400" fill="none" stroke="currentColor"
+                                        viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                            d="M19 9l-7 7-7-7" />
+                                    </svg>
+                                </div>
+                            </div>
+
+                            <!-- Clear Filters Button -->
+                            <!-- <button 
+                        id="clearFilters"
+                        onclick="clearFilters()"
+                        class="hidden px-4 py-3 text-sm font-medium text-gray-700 bg-gray-100 rounded-xl hover:bg-gray-200 transition-colors">
+                        Clear Filters
+                    </button> -->
+                        </div>
+
+                        <!-- Results Count -->
+                        <div id="resultsCount" class="mt-4 text-sm text-gray-600"></div>
+                    </div>
+
+                    <!-- Orders List -->
+                    <div class="space-y-3">
+                        <% orders.forEach((order, orderIndex)=> {
+
+                            let statusColor = 'bg-gray-100 text-gray-700';
+                            if (order.orderItems.status === 'placed') statusColor = 'bg-purple-50 text-purple-700';
+                            if (order.orderItems.status === 'confirmed') statusColor = 'bg-indigo-50 text-indigo-700';
+                            if (order.orderItems.status === 'processing') statusColor = 'bg-blue-50 text-blue-700';
+                            if (order.orderItems.status === 'shipped') statusColor = 'bg-orange-50 text-orange-700';
+                            if (order.orderItems.status === 'out_for_delivery') {
+                            statusColor = 'bg-yellow-50 text-yellow-700';
+                            }
+                            if (order.orderItems.status === 'delivered') statusColor = 'bg-green-50 text-green-700';
+                            if (order.orderItems.status === 'cancelled') statusColor = 'bg-red-50 text-red-700';
+                            if (order.orderItems.status === 'returned') statusColor = 'bg-gray-100 text-gray-700';
+                            if (order.orderItems.status === 'return_req') statusColor = 'bg-yellow-50 text-yellow-700';
+                            %>
+
+                            <div class="order-card bg-white rounded-2xl shadow-sm border border-gray-200 overflow-hidden"
+                                data-order-id="#<%= order.orderId %>"
+                                data-customer-name="<%= order.user.firstName %> <%= order.user.lastName %>"
+                                data-status="<%= order.orderItems.status %>">
+                                <!-- Order Header Link -->
+                                <a href="/admin/order/details/<%= order._id %>/<%= order.orderItems._id %>"
+                                    class="block w-full px-6 py-5 text-left hover:bg-gray-50 transition-colors">
+                                    <div class="flex items-center justify-between">
+                                        <div class="flex items-center space-x-4 flex-1 min-w-0">
+                                            <div class="flex-shrink-0">
+                                                <div
+                                                    class="w-12 h-12 bg-gray-100 rounded-xl flex items-center justify-center">
+                                                    <svg class="w-6 h-6 text-gray-600" fill="none" stroke="currentColor"
+                                                        viewBox="0 0 24 24">
+                                                        <path stroke-linecap="round" stroke-linejoin="round"
+                                                            stroke-width="2"
+                                                            d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z" />
+                                                    </svg>
+                                                </div>
+                                            </div>
+
+                                            <div class="flex-1 min-w-0">
+                                                <div class="flex items-center space-x-3 mb-1">
+                                                    <h3 class="text-base font-semibold text-gray-900">#<%= order.orderId
+                                                            %>
+                                                    </h3>
+                                                    <span
+                                                        class="<%= statusColor %> px-3 py-1 rounded-full text-xs font-medium status-badge">
+                                                        <%= order.orderItems.status %>
+                                                    </span>
+                                                </div>
+                                                <p class="text-sm text-gray-500">
+                                                    <%= order.user.firstName %>
+                                                        <%= order.user.lastName %>
+                                                </p>
+                                            </div>
+                                        </div>
+
+                                        <div class="flex items-center space-x-6 ml-4">
+                                            <div class="hidden sm:flex flex-col items-end">
+                                                <p class="text-base font-semibold text-gray-900">₹<%= order.finalAmount
+                                                        %>
+                                                </p>
+                                                <p class="text-xs text-gray-500">
+                                                    <%= new Date(order.createdAt).toLocaleDateString('en-IN') %>
+                                                </p>
+                                            </div>
+
+                                            <svg class="w-5 h-5 text-gray-400" fill="none" stroke="currentColor"
+                                                viewBox="0 0 24 24">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                                    d="M9 5l7 7-7 7" />
+                                            </svg>
+                                        </div>
+                                    </div>
+
+                                    <!-- Mobile Price -->
+                                    <div class="sm:hidden mt-3 flex justify-between items-center">
+                                        <p class="text-xs text-gray-500">
+                                            <%= new Date(order.createdAt).toLocaleDateString('en-IN') %>
+                                        </p>
+                                        <p class="text-base font-semibold text-gray-900">₹<%= order.orderItems.price %>
+                                        </p>
+                                    </div>
+                                </a>
+                            </div>
+                            <% }) %>
+                    </div>
+                    <div
+                        class="flex flex-col sm:flex-row justify-between items-center mt-8 pt-6 border-t border-gray-200 gap-4">
+                        <div class="text-sm text-gray-600">
+                            Showing <span class="font-medium text-gray-900">
+                                <%= (currentPage ) %>
+                            </span> to <span class="font-medium text-gray-900">
+                                <%= totalPages %>
+                            </span> <span class="font-medium text-gray-900"></span>
+                        </div>
+
+                        <nav aria-label="Page navigation" class="flex justify-center">
+                            <ul class="flex items-center space-x-1">
+                                <% const qSearch=typeof search !=='undefined' ? `&search=${search}` : '' ; %>
+                                    <% const qStatus=typeof statusFilter !=='undefined' ? `&status=${statusFilter}` : ''
+                                        ; %>
+
+                                        <li>
+                                            <a href="<%= currentPage === 1 ? '#' : `/admin/order?page=${currentPage - 1}${qSearch}${qStatus}` %>"
+                                                class="px-3 py-2 rounded-lg border border-gray-300 text-sm font-medium <%= currentPage === 1 ? 'text-gray-300 cursor-not-allowed bg-gray-50' : 'text-gray-700 bg-white hover:bg-gray-50' %> transition-colors">
+                                                Previous
+                                            </a>
+                                        </li>
+
+                                        <% for (let i=1; i <=totalPages; i++) { %>
+                                            <% if (i===1 || i===totalPages || (i>= currentPage - 1 && i <= currentPage +
+                                                    1)) { %>
+                                                    <li>
+                                                        <a href="/admin/order?page=<%= i %><%= qSearch %><%= qStatus %>"
+                                                            class="px-3 py-2 rounded-lg text-sm font-medium <%= currentPage === i ? 'bg-blue-600 text-white shadow-sm border border-transparent' : 'bg-white text-gray-700 border border-gray-300 hover:bg-gray-50' %> transition-all">
+                                                            <%= i %>
+                                                        </a>
+                                                    </li>
+                                                    <% } else if (i===currentPage - 2 || i===currentPage + 2) { %>
+                                                        <li class="px-2 text-gray-400">...</li>
+                                                        <% } %>
+                                                            <% } %>
+
+                                                                <li>
+                                                                    <a href="<%= currentPage === totalPages ? '#' : `/admin/order?page=${currentPage + 1}${qSearch}${qStatus}` %>"
+                                                                        class="px-3 py-2 rounded-lg border border-gray-300 text-sm font-medium <%= currentPage === totalPages ? 'text-gray-300 cursor-not-allowed bg-gray-50' : 'text-gray-700 bg-white hover:bg-gray-50' %> transition-colors">
+                                                                        Next
+                                                                    </a>
+                                                                </li>
+                            </ul>
+                        </nav>
+                    </div>
+                </div>
+            </div>
+
+    </div>
+
+    <script>
+        function toggleOrder(orderId) {
+            const orderDetails = document.getElementById(orderId);
+            const icon = document.getElementById('icon-' + orderId);
+
+            if (orderDetails && icon) {
+                if (orderDetails.classList.contains('hidden')) {
+                    orderDetails.classList.remove('hidden');
+                    icon.classList.add('rotated');
+                } else {
+                    orderDetails.classList.add('hidden');
+                    icon.classList.remove('rotated');
+                }
+            }
+        }
+
+        function filterOrders() {
+            const searchInput = document.getElementById('orderSearch').value.toLowerCase();
+            const statusFilter = document.getElementById('statusFilter').value;
+            const orderCards = document.querySelectorAll('.order-card');
+            const clearButton = document.getElementById('clearFilters');
+            const resultsCount = document.getElementById('resultsCount');
+
+            let visibleCount = 0;
+            let totalCount = orderCards.length;
+
+            orderCards.forEach(card => {
+                const orderId = card.getAttribute('data-order-id').toLowerCase();
+                const customerName = card.getAttribute('data-customer-name').toLowerCase();
+                const status = card.getAttribute('data-status');
+
+                // Search filter
+                const matchesSearch = orderId.includes(searchInput) || customerName.includes(searchInput);
+
+                // Status filter
+                const matchesStatus = statusFilter === 'all' || status === statusFilter;
+
+                // Show/hide card based on both filters
+                if (matchesSearch && matchesStatus) {
+                    card.style.display = '';
+                    visibleCount++;
+                } else {
+                    card.style.display = 'none';
+                }
+            });
+
+            // Show/hide clear button
+            if (searchInput !== '' || statusFilter !== 'all') {
+                clearButton.classList.remove('hidden');
+            } else {
+                clearButton.classList.add('hidden');
+            }
+
+            // Update results count
+            if (visibleCount === totalCount) {
+                resultsCount.textContent = `Showing all ${totalCount} orders`;
+            } else {
+                resultsCount.textContent = `Showing ${visibleCount} of ${totalCount} orders`;
+            }
+        }
+
+        function clearFilters() {
+            document.getElementById('orderSearch').value = '';
+            document.getElementById('statusFilter').value = 'all';
+            filterOrders();
+        }
+
+        // Initialize results count on page load
+        document.addEventListener('DOMContentLoaded', function () {
+            filterOrders();
+        });
+    </script>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <script type="module" src="/js/admin/order-management.js"></script>
+
+    <%- include('../partials/footer') %>

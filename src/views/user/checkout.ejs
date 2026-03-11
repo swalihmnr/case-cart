@@ -448,8 +448,10 @@
                             <div class="space-y-4 sm:space-y-5 mb-4 sm:mb-6 pb-4 sm:pb-6 border-b border-gray-200">
                                 <% cartItems.forEach((item, index)=> {
                                     const originalPrice = item.variant ? item.variant.salePrice : item.salePrice;
-                                    // Use the true discount amount from the backend, divided by quantity for the per-item display
-                                    const savingsPerItem = item.appliedOffer ? (item.appliedOffer.discount / (item.quantity || 1)) : 0;
+                                    // Use the true discount amount from the backend, divided by quantity for the
+                                    // per-item display
+                                    const savingsPerItem = item.appliedOffer ? (item.appliedOffer.discount /
+                                    (item.quantity || 1)) : 0;
                                     %>
                                     <div
                                         class="bg-white rounded-lg border border-gray-200 p-3 sm:p-4 hover:shadow-sm transition-shadow">
@@ -519,7 +521,9 @@
                                                         Offer Applied
                                                     </span>
                                                     <span class="text-xs font-medium text-blue-600">
-                                                        <%= item.appliedOffer.value || '' %>% Off
+                                                        <%= item.appliedOffer.disType==='percentage' ?
+                                                            item.appliedOffer.discountValue + '%' : '₹' +
+                                                            item.appliedOffer.discountValue %> Off
                                                     </span>
                                                 </div>
                                                 <% if (savingsPerItem> 0) { %>

@@ -22,6 +22,7 @@ const calculateBestItemOffer = async (item) => {
     startDate: { $lte: new Date() },
     endDate: { $gte: new Date() },
     $or: [
+      
       { applicableOn: "product", productIds: { $in: [item.product._id] } },
       { applicableOn: "category", categoryIds: { $in: [item.product.catgId] } },
     ],
@@ -46,8 +47,15 @@ const calculateBestItemOffer = async (item) => {
         bestOfferDiscountPerUnit = discount;
         bestOffer = offer;
       }
+    } else if (offer.offerType === "fixedamount") {
+      let discount = Math.min(offer.discountValue, orgPrice);
+      console.log(`Offer ${offer.title}: ${discount} fixed discount`);
+
+      if (discount > bestOfferDiscountPerUnit) {
+        bestOfferDiscountPerUnit = discount;
+        bestOffer = offer;
+      }
     }
-    // Add other offer types if needed (fixed amount, etc.)
   }
 
   // Compare current discount vs best offer discount

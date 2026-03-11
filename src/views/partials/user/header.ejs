@@ -147,24 +147,20 @@
                             <a href="/wishlist"
                                 class="p-2 text-gray-700 hover:text-purple-600 transition-colors relative group">
                                 <i class="far fa-heart text-xl sm:text-2xl"></i>
-                                <% if (wishlistcount> 0) { %>
-                                    <span id="wishlist-count-desktop"
-                                        class="absolute top-1 right-1 bg-red-500 text-white text-[10px] font-bold rounded-full w-4 h-4 sm:w-5 sm:h-5 flex items-center justify-center border-2 border-white">
-                                        <%= wishlistcount %>
-                                    </span>
-                                    <% } %>
+                                <span id="wishlist-count-desktop"
+                                    class="absolute top-1 right-1 bg-red-500 text-white text-[10px] font-bold rounded-full w-4 h-4 sm:w-5 sm:h-5 flex items-center justify-center border-2 border-white <%= (wishlistcount > 0) ? '' : 'hidden' %>">
+                                    <%= wishlistcount %>
+                                </span>
                             </a>
 
                             <!-- Cart -->
                             <a href="/cart"
                                 class="p-2 text-gray-700 hover:text-purple-600 transition-colors relative group">
                                 <i class="fas fa-shopping-bag text-xl sm:text-2xl"></i>
-                                <% if (cartCount> 0) { %>
-                                    <span id="cart-count-desktop"
-                                        class="absolute top-1 right-1 bg-purple-600 text-white text-[10px] font-bold rounded-full w-4 h-4 sm:w-5 sm:h-5 flex items-center justify-center border-2 border-white">
-                                        <%= cartCount %>
-                                    </span>
-                                    <% } %>
+                                <span id="cart-count-desktop"
+                                    class="absolute top-1 right-1 bg-purple-600 text-white text-[10px] font-bold rounded-full w-4 h-4 sm:w-5 sm:h-5 flex items-center justify-center border-2 border-white <%= (cartCount > 0) ? '' : 'hidden' %>">
+                                    <%= cartCount %>
+                                </span>
                             </a>
                         </div>
 
@@ -181,11 +177,16 @@
                                         <button
                                             class="flex items-center space-x-2 focus:outline-none group p-1 rounded-full hover:bg-gray-100 transition">
                                             <div
-                                                class="w-10 h-10 gradient-bg rounded-full flex items-center justify-center text-white font-bold text-base border-2 border-white shadow-sm">
-                                                <%= fName %>
-                                                    <% if(lName) { %>
-                                                        <%= lName %>
-                                                            <% } %>
+                                                class="w-10 h-10 gradient-bg rounded-full flex items-center justify-center text-white font-bold text-base border-2 border-white shadow-sm overflow-hidden">
+                                                <% if (user.profileUrl) { %>
+                                                    <img src="<%= user.profileUrl %>" alt="Profile"
+                                                        class="w-full h-full object-cover">
+                                                    <% } else { %>
+                                                        <%= fName %>
+                                                            <% if(lName) { %>
+                                                                <%= lName %>
+                                                                    <% } %>
+                                                                        <% } %>
                                             </div>
                                             <i
                                                 class="fas fa-chevron-down text-gray-400 text-[10px] transition-transform group-hover:rotate-180"></i>
@@ -257,11 +258,15 @@
             <% if (user) { %>
                 <div class="flex items-center space-x-4 pb-6 border-b border-gray-50">
                     <div
-                        class="w-16 h-16 gradient-bg rounded-2xl flex items-center justify-center text-white font-bold text-2xl shadow-xl">
-                        <%= fName %>
-                            <% if(lName) { %>
-                                <%= lName %>
-                                    <% } %>
+                        class="w-16 h-16 gradient-bg rounded-2xl flex items-center justify-center text-white font-bold text-2xl shadow-xl overflow-hidden">
+                        <% if (user.profileUrl) { %>
+                            <img src="<%= user.profileUrl %>" alt="Profile" class="w-full h-full object-cover">
+                            <% } else { %>
+                                <%= fName %>
+                                    <% if(lName) { %>
+                                        <%= lName %>
+                                            <% } %>
+                                                <% } %>
                     </div>
                     <div class="flex-1 min-w-0">
                         <h3 class="font-bold text-2xl text-gray-900 truncate">
@@ -295,8 +300,26 @@
                         </a>
                         <a href="/wishlist"
                             class="flex items-center justify-between group transition-transform hover:translate-x-2">
-                            <span
-                                class="text-2xl font-black text-gray-900 group-hover:text-purple-600 transition">WISHLIST</span>
+                            <div class="flex items-center space-x-3">
+                                <span
+                                    class="text-2xl font-black text-gray-900 group-hover:text-purple-600 transition">WISHLIST</span>
+                                <span id="wishlist-count-mobile"
+                                    class="bg-red-500 text-white text-xs font-bold rounded-full w-6 h-6 flex items-center justify-center <%= (wishlistcount > 0) ? '' : 'hidden' %>">
+                                    <%= wishlistcount %>
+                                </span>
+                            </div>
+                            <i class="fas fa-arrow-right text-gray-200 group-hover:text-purple-600 transition"></i>
+                        </a>
+                        <a href="/cart"
+                            class="flex items-center justify-between group transition-transform hover:translate-x-2">
+                            <div class="flex items-center space-x-3">
+                                <span
+                                    class="text-2xl font-black text-gray-900 group-hover:text-purple-600 transition">CART</span>
+                                <span id="cart-count-mobile"
+                                    class="bg-purple-600 text-white text-xs font-bold rounded-full w-6 h-6 flex items-center justify-center <%= (cartCount > 0) ? '' : 'hidden' %>">
+                                    <%= cartCount %>
+                                </span>
+                            </div>
                             <i class="fas fa-arrow-right text-gray-200 group-hover:text-purple-600 transition"></i>
                         </a>
                     </nav>

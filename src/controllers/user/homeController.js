@@ -60,9 +60,9 @@ let getHome = async (req, res) => {
     const products = await productModel.aggregate(pipeline);
 
     let wishlistItems = [];
-    let user = false;
+    let user = null;
     if (req.session.user?.id) {
-      user = true;
+      user = req.session.user;
       wishlistItems = await wishlistModel.find({ userId: req.session.user.id });
     }
 

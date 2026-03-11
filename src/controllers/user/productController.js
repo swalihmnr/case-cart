@@ -6,6 +6,7 @@ import variantModel from "../../models/admin/variantModel.js";
 import mongoose from "mongoose";
 import { STATUS_CODES } from "../../utils/statusCodes.js";
 import discountChecker from "../../utils/calculateDiscount.js";
+import calculateBestItemOffer from "../../utils/calculateBestOfferItem.js";
 
 // ==============================
 // GET ALL PRODUCTS (USER SIDE)
@@ -148,84 +149,19 @@ const getProduct = async (req, res) => {
 
     const products = await Promise.all(
       result[0].data.map(async (p) => {
-        const offers = await offerModel.aggregate([
-          {
-            $match: {
-              status: "active",
-              startDate: { $lte: today },
-              endDate: { $gte: today },
-            },
-          },
-          {
-            $match: {
-              $or: [
-                { applicableOn: "global" },
-                {
-                  applicableOn: "product",
-                  productIds: { $in: [p._id] },
-                },
-                {
-                  applicableOn: "category",
-                  categoryIds: { $in: [p.catgId._id] },
-                },
-              ],
-            },
-          },
-          {
-            $project: {
-              discountValue: 1,
-              offerType: 1,
-              title: 1,
-              categoryIds: 1,
-              productIds: 1,
-              applicableOn: 1,
-              minimumOrderValue: 1,
-            },
-          },
-        ]);
-
-        const price = p.minVariant.orgPrice;
-        const currentDiscount = price - p.minVariant.salePrice;
-
-        let bestOfferDiscount = 0;
-        let bestOffer = null;
-
-        for (let offer of offers) {
-          if (offer.discountValue >= price) continue;
-          let discountAmount = 0;
-          if (offer.offerType === "percentage") {
-            discountAmount = price - price * (offer.discountValue / 100);
-
-            // Apply maximumDiscount cap if explicitly set
-            if (offer.maximumDiscount && offer.maximumDiscount > 0) {
-              if (discountAmount > offer.maximumDiscount) {
-                discountAmount = offer.maximumDiscount;
-              }
-            }
-          } else {
-            discountAmount = Math.min(offer.discountValue, price);
-          }
-
-          if (discountAmount > bestOfferDiscount) {
-            bestOfferDiscount = discountAmount;
-            bestOffer = offer;
-          }
-        }
-
-        let appliedDiscount = currentDiscount;
-        if (bestOfferDiscount > currentDiscount) {
-          appliedDiscount = bestOfferDiscount;
-        } else {
-          bestOffer = null; // Discard offer if it doesn't beat the existing sale price
-        }
+        const offerResult = await calculateBestItemOffer({
+          product: p,
+          variant: p.minVariant,
+          quantity: 1,
+        });
 
         return {
           ...p,
-          offerType: bestOffer?.offerType || null,
-          offerValue: bestOffer?.discountValue || 0,
-          offerName: bestOffer?.title || null,
-          bestDiscount: appliedDiscount,
-          salePrice: price - appliedDiscount,
+          offerType: offerResult.bestOffer?.offerType || null,
+          offerValue: offerResult.bestOffer?.discountValue || 0,
+          offerName: offerResult.bestOffer?.title || null,
+          bestDiscount: offerResult.discountAmount,
+          salePrice: offerResult.finalPrice,
         };
       }),
     );
@@ -250,7 +186,7 @@ const getProduct = async (req, res) => {
       currentPage: page,
       totalPages,
       wishlistItems,
-      user,
+      user:req.session.user
     });
   } catch (err) {
     console.log(err);
@@ -286,16 +222,16 @@ const getDetialProduct = async (req, res) => {
       ...relatedProductsInitial,
       ...(relatedProductsInitial.length < 4
         ? await productModel
-            .find({
-              catgId: { $ne: product.catgId },
-              _id: {
-                $nin: [
-                  product._id,
-                  ...relatedProductsInitial.map((p) => p._id),
-                ],
-              },
-            })
-            .limit(4 - relatedProductsInitial.length)
+          .find({
+            catgId: { $ne: product.catgId },
+            _id: {
+              $nin: [
+                product._id,
+                ...relatedProductsInitial.map((p) => p._id),
+              ],
+            },
+          })
+          .limit(4 - relatedProductsInitial.length)
         : []),
     ];
 
@@ -317,17 +253,20 @@ const getDetialProduct = async (req, res) => {
       });
 
       if (offers.length > 0) {
-        const bestOffer = await discountChecker(
-          offers,
-          offerModel,
-          defaultVariant.orgPrice,
-          "offerType",
-        );
-        if (bestOffer && bestOffer.bestDiscount > 0) {
+        const offerResult = await calculateBestItemOffer({
+          product,
+          variant: defaultVariant,
+          quantity: 1,
+        });
+
+        if (offerResult.bestOffer) {
           initialOffer = {
-            ...bestOffer,
+            bestDiscount: offerResult.discountAmount,
             isOffer: true,
-            salePrice: defaultVariant.orgPrice - bestOffer.bestDiscount,
+            name: offerResult.bestOffer.title,
+            disType: offerResult.bestOffer.offerType === "percentage" ? "percentage" : "fixed",
+            discountTypeValue: offerResult.bestOffer.discountValue,
+            salePrice: offerResult.finalPrice,
           };
         }
       }
@@ -386,23 +325,21 @@ const getVariantData = async (req, res) => {
     let salePrice = variant.salePrice;
 
     if (offers.length > 0) {
-      const bestOffer = await discountChecker(
-        offers,
-        offerModel,
-        variant.orgPrice,
-        "offerType",
-      );
+      const offerResult = await calculateBestItemOffer({
+        product,
+        variant,
+        quantity: 1,
+      });
 
-      if (bestOffer && bestOffer.bestDiscount > 0) {
+      if (offerResult.bestOffer) {
         disObject = {
-          ...bestOffer,
+          bestDiscount: offerResult.discountAmount,
           isOffer: true,
+          name: offerResult.bestOffer.title,
+          disType: offerResult.bestOffer.offerType === "percentage" ? "percentage" : "fixed",
+          discountTypeValue: offerResult.bestOffer.discountValue,
         };
-        // The salePrice returned should be the one from the best offer if it's better
-        salePrice = Math.min(
-          variant.salePrice,
-          variant.orgPrice - bestOffer.bestDiscount,
-        );
+        salePrice = offerResult.finalPrice;
       }
     }
 
