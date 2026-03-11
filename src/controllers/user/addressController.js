@@ -12,6 +12,7 @@ const getAddressMngmnt = async (req, res) => {
   ]);
   res.render("./user/user-address-management", {
     addresses,
+    activeTab: "address",
   });
 };
 

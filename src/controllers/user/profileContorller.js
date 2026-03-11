@@ -9,7 +9,7 @@ const getUserProfil = async (req, res) => {
   req.session.isKey = false;
   let User = await user.findOne({ email: req.session.user.email });
 
-  res.render("./user/user-profile", { User });
+  res.render("./user/user-profile", { User, activeTab: "profile" });
 };
 
 // ==============================

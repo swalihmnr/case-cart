@@ -96,9 +96,9 @@ const getConfirmation = async (req, res) => {
   try {
     const userId = req.session.user.id;
     const orderId = req.params.id;
-    if(!mongoose.Types.ObjectId.isValid(orderId)){
-      req.flash("error","Invalid Order Id")
-      return res.redirect('/product')
+    if (!mongoose.Types.ObjectId.isValid(orderId)) {
+      req.flash("error", "Invalid Order Id");
+      return res.redirect("/product");
     }
     const order = await orderModel
       .findOne({ _id: orderId })
@@ -585,6 +585,8 @@ const getOrder = async (req, res) => {
     currentPage,
     totalItems,
     status,
+    limit,
+    activeTab: "orders",
   });
 };
 
@@ -593,9 +595,9 @@ const getOrder = async (req, res) => {
 // ==============================
 const getOrderDetails = async (req, res) => {
   try {
-    if(!mongoose.Types.ObjectId.isValid(req.params.id)){
-      req.flash("error","Invalid Order Id")
-      return res.redirect('/order')
+    if (!mongoose.Types.ObjectId.isValid(req.params.id)) {
+      req.flash("error", "Invalid Order Id");
+      return res.redirect("/order");
     }
     const orderId = new mongoose.Types.ObjectId(req.params.id);
     const order = await orderModel.aggregate([
@@ -651,9 +653,9 @@ const getOrderDetails = async (req, res) => {
         },
       },
     ]);
-    if(!order){
-      req.flash("error","order not found")
-      return res.redirect('/order')
+    if (!order) {
+      req.flash("error", "order not found");
+      return res.redirect("/order");
     }
     if (!order || order.length === 0) {
       return res.status(404).render("error");

@@ -12,5 +12,5 @@ import {
 router.use(wishlistCount);
 router.use(cartCount);
 import homeController from "../../controllers/user/homeController.js";
-router.get("/", homeController.getHome);
+router.get("/", blockUser,homeController.getHome);
 export default router;

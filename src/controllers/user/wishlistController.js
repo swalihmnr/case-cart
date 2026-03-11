@@ -16,6 +16,7 @@ const getWishlist = async (req, res) => {
     .populate("productId");
   res.render("./user/wishlist", {
     products,
+    activeTab: "wishlist",
   });
 };
 

@@ -1,80 +1,135 @@
- <aside class="lg:col-span-1">
-                <div class="bg-white rounded-2xl shadow-md p-6 sticky top-24">
-                    
-                    <!-- Profile Summary -->
-                    <div class="text-center mb-6 pb-6 border-b">
-                        <img src="<%= user.profileUrl  %>" class="w-20 h-20  from-purple-600 to-pink-600 rounded-full flex items-center justify-center text-white text-3xl font-bold mx-auto mb-3">
-                         
-                        <h3 class="font-bold text-lg"><%= user.name %></h3>
-                        <p class="text-sm text-gray-600"><%= user.email %></p>
-                       
-                    </div>
+<!-- Sidebar/Account Navigation -->
+<aside class="lg:col-span-1 border-b lg:border-none mb-6 lg:mb-0 w-full overflow-hidden min-w-0">
+    <div class="bg-transparent lg:bg-white lg:rounded-2xl lg:shadow-md p-0 lg:p-6 lg:sticky lg:top-24">
 
-                    <!-- Navigation Menu -->
-                    <nav class="space-y-2">
-                        <a href="/user-profile">
-                            <button  id="nav-profile" class="tab-active w-full flex items-center gap-3 px-4 py-3 rounded-lg font-medium transition text-left">
-                                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"></path>
-                                </svg>
-                                Profile
-                            </button>
-                            
-                        </a>
-                        <a href="/order">
-                            <button  id="nav-orders" class="w-full flex items-center gap-3 px-4 py-3 text-gray-700 hover:bg-gray-50 rounded-lg font-medium transition text-left">
-                                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z"></path>
-                                </svg>
-                                Orders
-                            </button>        
-                        </a>
-                        
-                        <a href="   /wallet">
-    <button id="nav-wallet"
-        class="w-full flex items-center gap-3 px-4 py-3 text-gray-700 hover:bg-gray-50 rounded-lg font-medium transition text-left">
+        <!-- Profile Summary (Hidden on Mobile) -->
+        <div class="hidden lg:block text-center mb-6 pb-6 border-b">
+            <img src="<%= user.profileUrl %>"
+                class="w-20 h-20 rounded-full flex items-center justify-center text-white text-3xl font-bold mx-auto mb-3 object-cover shadow-sm">
+            <h3 class="font-bold text-lg">
+                <%= user.name %>
+            </h3>
+            <p class="text-sm text-gray-600 truncate px-2">
+                <%= user.email %>
+            </p>
+        </div>
 
-        <!-- Wallet Icon -->
-        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                d="M21 12V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2h14a2 2 0 002-2v-5M16 12h5m0 0l-2-2m2 2l-2 2" />
-        </svg>
+        <!-- Navigation Menu - Perfectly horizontal scrollable on mobile -->
+        <nav
+            class="flex lg:flex-col overflow-x-auto lg:overflow-x-visible snap-x snap-mandatory no-scrollbar pb-2 lg:pb-0 gap-3 lg:space-y-2 w-full">
+            <a href="/user-profile" class="flex-shrink-0 lg:w-full snap-start">
+                <button id="nav-profile"
+                    class="whitespace-nowrap w-full flex items-center justify-center lg:justify-start gap-2 lg:gap-3 px-6 lg:px-4 py-2.5 lg:py-3 rounded-full lg:rounded-lg font-bold transition-all text-sm lg:text-base border shadow-sm lg:shadow-none <%= typeof activeTab === 'undefined' || activeTab === 'profile' ? 'bg-purple-600 text-white border-purple-600' : 'bg-white lg:bg-transparent text-gray-600 border-gray-100 hover:bg-gray-50 lg:border-none' %>">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"></path>
+                    </svg>
+                    Profile
+                </button>
+            </a>
+            <a href="/address" class="flex-shrink-0 lg:w-full snap-start">
+                <button id="nav-addresses"
+                    class="whitespace-nowrap w-full flex items-center justify-center lg:justify-start gap-2 lg:gap-3 px-6 lg:px-4 py-2.5 lg:py-3 rounded-full lg:rounded-lg font-bold transition-all text-sm lg:text-base border shadow-sm lg:shadow-none <%= typeof activeTab !== 'undefined' && activeTab === 'address' ? 'bg-purple-600 text-white border-purple-600' : 'bg-white lg:bg-transparent text-gray-600 border-gray-100 hover:bg-gray-50 lg:border-none' %>">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" 
+                            d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" 
+                            d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
+                    </svg>
+                    Addresses
+                </button>
+            </a>
 
-        Wallet
-    </button>
-</a>
+            <a href="/order" class="flex-shrink-0 lg:w-full snap-start">
+                <button id="nav-orders"
+                    class="whitespace-nowrap w-full flex items-center justify-center lg:justify-start gap-2 lg:gap-3 px-6 lg:px-4 py-2.5 lg:py-3 rounded-full lg:rounded-lg font-bold transition-all text-sm lg:text-base border shadow-sm lg:shadow-none <%= typeof activeTab !== 'undefined' && activeTab === 'orders' ? 'bg-purple-600 text-white border-purple-600' : 'bg-white lg:bg-transparent text-gray-600 border-gray-100 hover:bg-gray-50 lg:border-none' %>">
+                    <svg class="w-4 h-4 cursor-pointer" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z"></path>
+                    </svg>
+                    Orders
+                </button>
+            </a>
 
-                        
-                        <a href="/wishlist">
-                            
-                            <button  id="nav-wishlist" class="w-full flex items-center gap-3 px-4 py-3 text-gray-700 hover:bg-gray-50 rounded-lg font-medium transition text-left">
-                                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z"></path>
-                                </svg>
-                                Wishlist
-                            </button>
-                        </a>
-                        <a href="/security">
-                            
-                            <button onclick="switchSection('security')" id="nav-security" class="w-full flex items-center gap-3 px-4 py-3 text-gray-700 hover:bg-gray-50 rounded-lg font-medium transition text-left">
-                                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"></path>
-                                </svg>
-                                Security
-                            </button>
-                        </a>
-                        <a href="/logout">
-                            
-                            <div class="pt-4 mt-4 border-t">
-                                <button class="w-full flex items-center gap-3 px-4 py-3 text-red-600 hover:bg-red-50 rounded-lg font-medium transition text-left">
-                                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"></path>
-                                    </svg>
-                                    Logout
-                                </button>
-                        </a>
-                        
-                        </div>
-                    </nav>
-                </div>
-            </aside>
+            <a href="/wallet" class="flex-shrink-0 lg:w-full snap-start">
+                <button id="nav-wallet"
+                    class="whitespace-nowrap w-full flex items-center justify-center lg:justify-start gap-2 lg:gap-3 px-6 lg:px-4 py-2.5 lg:py-3 rounded-full lg:rounded-lg font-bold transition-all text-sm lg:text-base border shadow-sm lg:shadow-none <%= typeof activeTab !== 'undefined' && activeTab === 'wallet' ? 'bg-purple-600 text-white border-purple-600' : 'bg-white lg:bg-transparent text-gray-600 border-gray-100 hover:bg-gray-50 lg:border-none' %>">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M21 12V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2h14a2 2 0 002-2v-5M16 12h5m0 0l-2-2m2 2l-2 2" />
+                    </svg>
+                    Wallet
+                </button>
+            </a>
+
+            <a href="/wishlist" class="flex-shrink-0 lg:w-full snap-start">
+                <button id="nav-wishlist"
+                    class="whitespace-nowrap w-full flex items-center justify-center lg:justify-start gap-2 lg:gap-3 px-6 lg:px-4 py-2.5 lg:py-3 rounded-full lg:rounded-lg font-bold transition-all text-sm lg:text-base border shadow-sm lg:shadow-none <%= typeof activeTab !== 'undefined' && activeTab === 'wishlist' ? 'bg-purple-600 text-white border-purple-600' : 'bg-white lg:bg-transparent text-gray-600 border-gray-100 hover:bg-gray-50 lg:border-none' %>">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z">
+                        </path>
+                    </svg>
+                    Wishlist
+                </button>
+            </a>
+
+            <a href="/security" class="flex-shrink-0 lg:w-full snap-start">
+                <button id="nav-security"
+                    class="whitespace-nowrap w-full flex items-center justify-center lg:justify-start gap-2 lg:gap-3 px-6 lg:px-4 py-2.5 lg:py-3 rounded-full lg:rounded-lg font-bold transition-all text-sm lg:text-base border shadow-sm lg:shadow-none <%= typeof activeTab !== 'undefined' && activeTab === 'security' ? 'bg-purple-600 text-white border-purple-600' : 'bg-white lg:bg-transparent text-gray-600 border-gray-100 hover:bg-gray-50 lg:border-none' %>">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z">
+                        </path>
+                    </svg>
+                    Security
+                </button>
+            </a>
+
+            <a href="/logout" class="flex-shrink-0 lg:w-full lg:border-t lg:mt-4 lg:pt-4 snap-start">
+                <button
+                    class="whitespace-nowrap w-full flex items-center justify-center lg:justify-start gap-2 lg:gap-3 px-6 lg:px-4 py-2.5 lg:py-3 rounded-full lg:rounded-lg font-bold transition-all text-sm lg:text-base text-red-600 bg-white lg:bg-transparent hover:bg-red-50 border border-red-100 lg:border-none shadow-sm lg:shadow-none">
+                    <svg class="w-4 h-4 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1">
+                        </path>
+                    </svg>
+                    Logout
+                </button>
+            </a>
+        </nav>
+
+        <!-- Refined scroll indicator for mobile (Now inside the aside container) -->
+        <div class="lg:hidden flex items-center justify-center gap-2 mt-4 pb-2">
+            <div class="flex gap-1">
+                <div class="w-1 h-1 rounded-full bg-purple-600 animate-bounce"></div>
+                <div class="w-1 h-1 rounded-full bg-purple-400 animate-bounce" style="animation-delay: 0.1s"></div>
+                <div class="w-1 h-1 rounded-full bg-purple-200 animate-bounce" style="animation-delay: 0.2s"></div>
+            </div>
+            <span class="text-[10px] uppercase tracking-widest font-bold text-gray-400">Swipe to navigate</span>
+            <div class="flex gap-1">
+                <div class="w-1 h-1 rounded-full bg-purple-200 animate-bounce" style="animation-delay: 0.2s"></div>
+                <div class="w-1 h-1 rounded-full bg-purple-400 animate-bounce" style="animation-delay: 0.1s"></div>
+                <div class="w-1 h-1 rounded-full bg-purple-600 animate-bounce"></div>
+            </div>
+        </div>
+    </div>
+</aside>
+
+<style>
+    .no-scrollbar::-webkit-scrollbar {
+        display: none;
+    }
+
+    .no-scrollbar {
+        -ms-overflow-style: none;
+        scrollbar-width: none;
+    }
+
+    /* Fixed: Removed mask-image to prevent "cut-off" look and ensure full buttons are visible */
+    @media (max-width: 1023px) {
+        nav {
+            position: relative;
+        }
+    }
+</style>

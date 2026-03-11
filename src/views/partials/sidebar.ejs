@@ -1,57 +1,85 @@
-<aside id="sidebar" class="sticky lg:sticky top-0 left-0 h-screen w-64 bg-white shadow-lg transform -translate-x-full lg:translate-x-0 transition-transform duration-300 z-40 overflow-y-auto">
-    <nav class="p-4 mt-14 lg:mt-0">
+<!-- Overlay for mobile -->
+<div id="sidebarOverlay" class="fixed inset-0 bg-black/50 z-30 lg:hidden hidden transition-opacity duration-300"></div>
+
+<aside id="sidebar"
+    class="fixed lg:sticky top-0 left-0 h-screen w-64 bg-white shadow-lg transform -translate-x-full lg:translate-x-0 transition-transform duration-300 z-40 overflow-y-auto">
+    <div class="flex items-center justify-between p-4 border-b lg:hidden">
+        <span class="font-bold text-gray-800">Menu</span>
+        <button id="closeSidebar" class="text-gray-500 hover:text-red-600 p-1">
+            <i class="fas fa-times text-xl"></i>
+        </button>
+    </div>
+
+    <nav class="p-4 mt-0">
         <ul class="space-y-1">
             <li>
-                <a href="/admin/dashboard" class="nav-link flex items-center space-x-3 px-3 py-2 text-gray-600 hover:bg-gray-50 rounded-lg transition" data-page="dashboard">
+                <a href="/admin/dashboard"
+                    class="nav-link flex items-center space-x-3 px-3 py-2 text-gray-600 hover:bg-gray-50 rounded-lg transition"
+                    data-page="dashboard">
                     <i class="fas fa-chart-line w-5"></i>
                     <span class="text-sm">Dashboard</span>
                 </a>
             </li>
             <li>
-                <a href="/admin/product-list" class="nav-link flex items-center space-x-3 px-3 py-2 text-gray-600 hover:bg-gray-50 rounded-lg transition" data-page="products">
+                <a href="/admin/product-list"
+                    class="nav-link flex items-center space-x-3 px-3 py-2 text-gray-600 hover:bg-gray-50 rounded-lg transition"
+                    data-page="products">
                     <i class="fas fa-box w-5"></i>
                     <span class="text-sm">Products</span>
                 </a>
             </li>
             <li>
-                <a href="/admin/order" class="nav-link flex items-center space-x-3 px-3 py-2 text-gray-600 hover:bg-gray-50 rounded-lg transition" data-page="orders">
+                <a href="/admin/order"
+                    class="nav-link flex items-center space-x-3 px-3 py-2 text-gray-600 hover:bg-gray-50 rounded-lg transition"
+                    data-page="orders">
                     <i class="fas fa-shopping-cart w-5"></i>
                     <span class="text-sm">Orders</span>
                 </a>
             </li>
             <li>
-                <a href="/admin/customers" class="nav-link flex items-center space-x-3 px-3 py-2 text-gray-600 hover:bg-gray-50 rounded-lg transition" data-page="customers">
+                <a href="/admin/customers"
+                    class="nav-link flex items-center space-x-3 px-3 py-2 text-gray-600 hover:bg-gray-50 rounded-lg transition"
+                    data-page="customers">
                     <i class="fas fa-users w-5"></i>
                     <span class="text-sm">Customers</span>
                 </a>
             </li>
             <li>
-                <a href="/admin/category" class="nav-link flex items-center space-x-3 px-3 py-2 text-gray-600 hover:bg-gray-50 rounded-lg transition" data-page="categories">
+                <a href="/admin/category"
+                    class="nav-link flex items-center space-x-3 px-3 py-2 text-gray-600 hover:bg-gray-50 rounded-lg transition"
+                    data-page="categories">
                     <i class="fas fa-tags w-5"></i>
                     <span class="text-sm">Categories</span>
                 </a>
             </li>
             <li>
-                <a href="/admin/offers" class="nav-link flex items-center space-x-3 px-3 py-2 text-gray-600 hover:bg-gray-50 rounded-lg transition" data-page="offers">
+                <a href="/admin/offers"
+                    class="nav-link flex items-center space-x-3 px-3 py-2 text-gray-600 hover:bg-gray-50 rounded-lg transition"
+                    data-page="offers">
                     <i class="fas fa-percentage w-5"></i>
                     <span class="text-sm">Offers</span>
                 </a>
             </li>
             <li>
-                <a href="/admin/coupen" class="nav-link flex items-center space-x-3 px-3 py-2 text-gray-600 hover:bg-gray-50 rounded-lg transition" data-page="coupons">
+                <a href="/admin/coupen"
+                    class="nav-link flex items-center space-x-3 px-3 py-2 text-gray-600 hover:bg-gray-50 rounded-lg transition"
+                    data-page="coupons">
                     <i class="fas fa-ticket-alt w-5"></i>
                     <span class="text-sm">Coupons</span>
                 </a>
             </li>
             <li>
-                <a href="/admin/sales/report" class="nav-link flex items-center space-x-3 px-3 py-2 text-gray-600 hover:bg-gray-50 rounded-lg transition" data-page="reports">
+                <a href="/admin/sales/report"
+                    class="nav-link flex items-center space-x-3 px-3 py-2 text-gray-600 hover:bg-gray-50 rounded-lg transition"
+                    data-page="reports">
                     <i class="fas fa-chart-bar w-5"></i>
                     <span class="text-sm">Reports</span>
                 </a>
             </li>
-          
+
             <li class="pt-3 mt-3 border-t border-gray-200">
-                <a href="/admin/logout" class="flex items-center space-x-3 px-3 py-2 text-red-600 hover:bg-red-50 rounded-lg transition">
+                <a href="/admin/logout"
+                    class="flex items-center space-x-3 px-3 py-2 text-red-600 hover:bg-red-50 rounded-lg transition">
                     <i class="fas fa-sign-out-alt w-5"></i>
                     <span class="text-sm">Logout</span>
                 </a>

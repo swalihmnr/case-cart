@@ -79,7 +79,9 @@ let postLogin = async (req, res) => {
         .status(404)
         .json({ success: false, message: "user hasn't signup yet" });
     }
-  } catch (err) {}
+  } catch (err) { 
+    console.log(err)
+  }
 };
 
 // ==============================
@@ -400,7 +402,7 @@ const logOut = (req, res) => {
 // GET SECURITY PAGE
 // ==============================
 const getSecurity = (req, res) => {
-  res.render("./user/security");
+  res.render("./user/security", { activeTab: "security" });
 };
 
 // ==============================

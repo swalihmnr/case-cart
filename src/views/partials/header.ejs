@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -10,26 +11,27 @@
 
     <!-- Font Awesome -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-       <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/toastify-js/src/toastify.min.css">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/toastify-js/src/toastify.min.css">
     <script src="https://cdn.jsdelivr.net/npm/toastify-js"></script>
+    <script type="module" src="/js/ui-helpers.js"></script>
 
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
-        
+
         body {
             font-family: 'Inter', sans-serif;
         }
-        
+
         /* Smooth transitions */
         .transition-all {
             transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
         }
-        
+
         /* Subtle shadow for depth */
         .shadow-subtle {
             box-shadow: 0 1px 3px 0 rgb(0 0 0 / 0.1), 0 1px 2px -1px rgb(0 0 0 / 0.1);
         }
-        
+
         /* Custom gradient text */
         .gradient-text {
             background: linear-gradient(135deg, #7c3aed 0%, #db2777 100%);
@@ -37,101 +39,138 @@
             -webkit-text-fill-color: transparent;
             background-clip: text;
         }
-        
+
         /* Custom gradient background */
         .gradient-bg {
             background: linear-gradient(135deg, #7c3aed 0%, #db2777 100%);
         }
-        
+
         /* Hover effects */
         .hover-lift {
             transition: transform 0.2s ease, box-shadow 0.2s ease;
         }
+
         .hover-lift:hover {
             transform: translateY(-2px);
             box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1);
         }
+
+        /* Loading Spinner */
+        @keyframes spin {
+            to {
+                transform: rotate(360deg);
+            }
+        }
+
+        .spinner {
+            display: inline-block;
+            width: 1.25rem;
+            height: 1.25rem;
+            border: 2px solid rgba(255, 255, 255, 0.3);
+            border-radius: 50%;
+            border-top-color: #fff;
+            animation: spin 0.6s linear infinite;
+        }
+
+        .btn-loading {
+            position: relative;
+            color: transparent !important;
+            pointer-events: none;
+        }
+
+        .btn-loading .spinner {
+            position: absolute;
+            left: 50%;
+            top: 50%;
+            margin-left: -0.625rem;
+            margin-top: -0.625rem;
+        }
     </style>
 </head>
+
 <body class="bg-gray-50">
 
-<!-- Admin Header -->
-<!-- Admin Header Partial -->
-<header class="bg-white shadow-lg sticky top-0 z-50 border-b border-gray-100">
-    <div class="px-4 sm:px-6 py-3">
-        <div class="flex items-center justify-between">
+    <!-- Admin Header -->
+    <!-- Admin Header Partial -->
+    <header class="bg-white shadow-lg sticky top-0 z-50 border-b border-gray-100">
+        <div class="px-4 sm:px-6 py-3">
+            <div class="flex items-center justify-between">
 
-            <!-- Left Section: Logo & Mobile Menu -->
-            <div class="flex items-center space-x-3 sm:space-x-4">
-                <!-- Mobile Menu Toggle -->
-                <button 
-                    id="sidebarToggle" 
-                    class="lg:hidden text-gray-600 hover:text-purple-600 p-2 rounded-lg hover:bg-gray-100 transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:ring-offset-2"
-                    aria-label="Toggle navigation menu"
-                    aria-expanded="false"
-                >
-                    <i class="fas fa-bars text-lg"></i>
-                </button>
+                <!-- Left Section: Logo & Mobile Menu -->
+                <div class="flex items-center space-x-3 sm:space-x-4">
+                    <!-- Mobile Menu Toggle -->
+                    <button id="sidebarToggle"
+                        class="lg:hidden text-gray-600 hover:text-purple-600 p-2 rounded-lg hover:bg-gray-100 transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:ring-offset-2"
+                        aria-label="Toggle navigation menu" aria-expanded="false">
+                        <i class="fas fa-bars text-lg"></i>
+                    </button>
 
-                <!-- Brand Logo -->
-                <div class="flex items-center space-x-2 sm:space-x-3 group cursor-pointer">
-                    <div class="w-9 h-9 bg-gradient-to-br from-purple-600 to-pink-600 rounded-lg flex items-center justify-center shadow-md group-hover:shadow-lg transition-shadow duration-300">
-                        <i class="fas fa-mobile-alt text-white text-sm"></i>
-                    </div>
-                    <div>
-                        <h1 class="text-lg sm:text-xl font-bold bg-gradient-to-r from-purple-600 to-pink-600 bg-clip-text text-transparent leading-tight">
-                            CaseCart
-                        </h1>
-                        <p class="text-xs text-gray-500 font-medium tracking-wide">
-                            Admin Dashboard
-                        </p>
+                    <!-- Brand Logo -->
+                    <div class="flex items-center space-x-2 sm:space-x-3 group cursor-pointer">
+                        <div
+                            class="w-9 h-9 bg-gradient-to-br from-purple-600 to-pink-600 rounded-lg flex items-center justify-center shadow-md group-hover:shadow-lg transition-shadow duration-300">
+                            <i class="fas fa-mobile-alt text-white text-sm"></i>
+                        </div>
+                        <div>
+                            <h1
+                                class="text-lg sm:text-xl font-bold bg-gradient-to-r from-purple-600 to-pink-600 bg-clip-text text-transparent leading-tight">
+                                CaseCart
+                            </h1>
+                            <p class="text-xs text-gray-500 font-medium tracking-wide">
+                                Admin Dashboard
+                            </p>
+                        </div>
                     </div>
                 </div>
-            </div>
 
-            <!-- Right Section: Actions & Profile -->
-            <div class="flex items-center space-x-2 sm:space-x-4">
-                
-                <!-- Admin Profile -->
-                <div class="flex items-center space-x-2 sm:space-x-3 group cursor-pointer relative">
-                    <!-- Profile Avatar -->
-                    <div class="relative">
-                        <div class="w-8 h-8 sm:w-9 sm:h-9 bg-gradient-to-br from-purple-600 to-pink-600 rounded-full flex items-center justify-center text-white font-semibold text-sm shadow-md">
-                            <% if (admin.email) { %>
-                                <%= admin.email.charAt(0).toUpperCase() %>
-                            <% } else { %>
-                                A
-                            <% } %>
-                        </div>
-                        <!-- Online Status Indicator -->
-                        <div class="absolute -bottom-0.5 -right-0.5 w-3 h-3 bg-green-500 rounded-full border-2 border-white"></div>
-                    </div>
+                <!-- Right Section: Actions & Profile -->
+                <div class="flex items-center space-x-2 sm:space-x-4">
 
-                    <!-- Profile Details (Hidden on mobile) -->
-                    <div class="hidden sm:block">
-                        <p class="font-semibold text-gray-900 text-sm leading-tight">
-                            <%= admin.name || 'Admin User' %>
-                        </p>
-                        <p class="text-xs text-gray-500 truncate max-w-[160px]">
-                            <%= admin?.email || 'admin@casecart.com' %>
-                        </p>
-                    </div>
-
-                    <!-- Dropdown Arrow -->
-                    <i class="fas fa-chevron-down text-gray-400 text-xs hidden sm:block group-hover:text-purple-600 transition-colors duration-200"></i>
-
-                    <!-- Profile Dropdown Menu -->
-                    <div class="absolute right-0 top-full mt-2 w-48 bg-white rounded-lg shadow-xl border border-gray-200 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 z-50">
-                        <div class="py-2">
-                            <div class="px-4 py-2 border-b border-gray-100">
-                                <p class="text-sm font-semibold text-gray-900 truncate">
-                                    <%= admin.name || 'Admin User' %>
-                                </p>
-                                <p class="text-xs text-gray-500 truncate">
-                                    <%= admin?.email || 'admin@casecart.com' %>
-                                </p>
+                    <!-- Admin Profile -->
+                    <div class="flex items-center space-x-2 sm:space-x-3 group cursor-pointer relative">
+                        <!-- Profile Avatar -->
+                        <div class="relative">
+                            <div
+                                class="w-8 h-8 sm:w-9 sm:h-9 bg-gradient-to-br from-purple-600 to-pink-600 rounded-full flex items-center justify-center text-white font-semibold text-sm shadow-md">
+                                <% if (admin.email) { %>
+                                    <%= admin.email.charAt(0).toUpperCase() %>
+                                        <% } else { %>
+                                            A
+                                            <% } %>
                             </div>
-                            <!-- <a href="/admin/profile" class="flex items-center px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 hover:text-purple-600 transition-colors duration-150">
+                            <!-- Online Status Indicator -->
+                            <div
+                                class="absolute -bottom-0.5 -right-0.5 w-3 h-3 bg-green-500 rounded-full border-2 border-white">
+                            </div>
+                        </div>
+
+                        <!-- Profile Details (Hidden on mobile) -->
+                        <div class="hidden sm:block">
+                            <p class="font-semibold text-gray-900 text-sm leading-tight">
+                                <%= admin.name || 'Admin User' %>
+                            </p>
+                            <p class="text-xs text-gray-500 truncate max-w-[160px]">
+                                <%= admin?.email || 'admin@casecart.com' %>
+                            </p>
+                        </div>
+
+                        <!-- Dropdown Arrow -->
+                        <i
+                            class="fas fa-chevron-down text-gray-400 text-xs hidden sm:block group-hover:text-purple-600 transition-colors duration-200"></i>
+
+                        <!-- Profile Dropdown Menu -->
+                        <div
+                            class="absolute right-0 top-full mt-2 w-48 bg-white rounded-lg shadow-xl border border-gray-200 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 z-50">
+                            <div class="py-2">
+                                <div class="px-4 py-2 border-b border-gray-100">
+                                    <p class="text-sm font-semibold text-gray-900 truncate">
+                                        <%= admin.name || 'Admin User' %>
+                                    </p>
+                                    <p class="text-xs text-gray-500 truncate">
+                                        <%= admin?.email || 'admin@casecart.com' %>
+                                    </p>
+                                </div>
+                                <!-- <a href="/admin/profile" class="flex items-center px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 hover:text-purple-600 transition-colors duration-150">
                                 <i class="fas fa-user-circle mr-3 text-gray-400"></i>
                                 Profile Settings
                             </a>
@@ -139,95 +178,105 @@
                                 <i class="fas fa-cog mr-3 text-gray-400"></i>
                                 System Settings
                             </a> -->
-                            <div class="border-t border-gray-100 my-1"></div>
-                            <a href="/admin/logout" class="flex items-center px-4 py-2 text-sm text-red-600 hover:bg-red-50 hover:text-red-700 transition-colors duration-150">
-                                <i class="fas fa-sign-out-alt mr-3"></i>
-                                Logout
-                            </a>
+                                <div class="border-t border-gray-100 my-1"></div>
+                                <a href="/admin/logout"
+                                    class="flex items-center px-4 py-2 text-sm text-red-600 hover:bg-red-50 hover:text-red-700 transition-colors duration-150">
+                                    <i class="fas fa-sign-out-alt mr-3"></i>
+                                    Logout
+                                </a>
+                            </div>
                         </div>
                     </div>
+
+                    <!-- Logout Button (Mobile only) -->
+                    <a href="/admin/logout"
+                        class="sm:hidden text-gray-600 hover:text-red-600 transition-colors duration-200 p-2 rounded-lg hover:bg-red-50 focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-2"
+                        aria-label="Logout" title="Logout">
+                        <i class="fas fa-sign-out-alt text-lg"></i>
+                    </a>
+
                 </div>
 
-                <!-- Logout Button (Mobile only) -->
-                <a href="/admin/logout" 
-                   class="sm:hidden text-gray-600 hover:text-red-600 transition-colors duration-200 p-2 rounded-lg hover:bg-red-50 focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-2"
-                   aria-label="Logout"
-                   title="Logout">
-                    <i class="fas fa-sign-out-alt text-lg"></i>
-                </a>
-
-            </div>
-
-        </div>
-    </div>
-
-    <!-- Current Page Indicator -->
-    <div class="bg-gradient-to-r from-purple-50 to-pink-50 border-t border-gray-200">
-        <div class="px-4 sm:px-6 py-1">
-            <div class="flex items-center text-xs text-gray-600">
-                <a href="/admin/dashboard" class="hover:text-purple-600 transition-colors duration-150">
-                    <i class="fas fa-home mr-1"></i>
-                    Dashboard
-                </a>
-                <i class="fas fa-chevron-right mx-2 text-gray-400"></i>
-                <span class="text-purple-600 font-medium" id="currentPageTitle">Overview</span>
             </div>
         </div>
-    </div>
-</header>
 
-<!-- JavaScript for interactive elements -->
-<script>
-    document.addEventListener('DOMContentLoaded', function() {
-        // Sidebar toggle functionality
-        const sidebarToggle = document.getElementById('sidebarToggle');
-        const sidebar = document.querySelector('#sidebar'); // Assuming you have a sidebar element
-        
-        if (sidebarToggle && sidebar) {
-            sidebarToggle.addEventListener('click', function() {
-                sidebar.classList.toggle('-translate-x-full');
-                sidebarToggle.setAttribute('aria-expanded', 
-                    sidebar.classList.contains('-translate-x-full') ? 'false' : 'true'
-                );
-            });
-        }
+        <!-- Current Page Indicator -->
+        <div class="bg-gradient-to-r from-purple-50 to-pink-50 border-t border-gray-200">
+            <div class="px-4 sm:px-6 py-1">
+                <div class="flex items-center text-xs text-gray-600">
+                    <a href="/admin/dashboard" class="hover:text-purple-600 transition-colors duration-150">
+                        <i class="fas fa-home mr-1"></i>
+                        Dashboard
+                    </a>
+                    <i class="fas fa-chevron-right mx-2 text-gray-400"></i>
+                    <span class="text-purple-600 font-medium" id="currentPageTitle">Overview</span>
+                </div>
+            </div>
+        </div>
+    </header>
 
-        // Update current page title dynamically
-        function updatePageTitle() {
-            const pageTitle = document.title.replace('CaseCart - ', '') || 'Overview';
-            const currentPageTitle = document.getElementById('currentPageTitle');
-            if (currentPageTitle) {
-                currentPageTitle.textContent = pageTitle;
-            }
-        }
+    <!-- JavaScript for interactive elements -->
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            // Sidebar toggle functionality
+            const sidebarToggle = document.getElementById('sidebarToggle');
+            const closeSidebar = document.getElementById('closeSidebar');
+            const sidebarOverlay = document.getElementById('sidebarOverlay');
+            const sidebar = document.getElementById('sidebar');
 
-        // Initialize page title
-        updatePageTitle();
-
-        // Add click outside to close dropdowns
-        document.addEventListener('click', function(event) {
-            const dropdowns = document.querySelectorAll('.group');
-            dropdowns.forEach(dropdown => {
-                if (!dropdown.contains(event.target)) {
-                    const dropdownMenu = dropdown.querySelector('.absolute');
-                    if (dropdownMenu) {
-                        dropdownMenu.classList.add('opacity-0', 'invisible');
+            function toggleSidebar() {
+                if (sidebar) {
+                    sidebar.classList.toggle('-translate-x-full');
+                    if (sidebarOverlay) {
+                        sidebarOverlay.classList.toggle('hidden');
+                    }
+                    const isExpanded = !sidebar.classList.contains('-translate-x-full');
+                    if (sidebarToggle) {
+                        sidebarToggle.setAttribute('aria-expanded', isExpanded);
                     }
                 }
-            });
-        });
+            }
 
-        // Mark notifications as read
-        const notificationBtn = document.querySelector('button[aria-label="View notifications"]');
-        if (notificationBtn) {
-            notificationBtn.addEventListener('click', function() {
-                const badge = this.querySelector('.bg-red-500');
-                if (badge) {
-                    badge.style.display = 'none';
-                    // Here you would typically make an API call to mark notifications as read
+            if (sidebarToggle) sidebarToggle.addEventListener('click', toggleSidebar);
+            if (closeSidebar) closeSidebar.addEventListener('click', toggleSidebar);
+            if (sidebarOverlay) sidebarOverlay.addEventListener('click', toggleSidebar);
+
+            // Update current page title dynamically
+            function updatePageTitle() {
+                const pageTitle = document.title.replace('CaseCart - ', '') || 'Overview';
+                const currentPageTitle = document.getElementById('currentPageTitle');
+                if (currentPageTitle) {
+                    currentPageTitle.textContent = pageTitle;
                 }
+            }
+
+            // Initialize page title
+            updatePageTitle();
+
+            // Add click outside to close dropdowns
+            document.addEventListener('click', function (event) {
+                const dropdowns = document.querySelectorAll('.group');
+                dropdowns.forEach(dropdown => {
+                    if (!dropdown.contains(event.target)) {
+                        const dropdownMenu = dropdown.querySelector('.absolute');
+                        if (dropdownMenu) {
+                            dropdownMenu.classList.add('opacity-0', 'invisible');
+                        }
+                    }
+                });
             });
-        }
-    });
-</script>
-<%- include("../partials/flash") %>
+
+            // Mark notifications as read
+            const notificationBtn = document.querySelector('button[aria-label="View notifications"]');
+            if (notificationBtn) {
+                notificationBtn.addEventListener('click', function () {
+                    const badge = this.querySelector('.bg-red-500');
+                    if (badge) {
+                        badge.style.display = 'none';
+                        // Here you would typically make an API call to mark notifications as read
+                    }
+                });
+            }
+        });
+    </script>
+    <%- include("../partials/flash") %>

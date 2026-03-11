@@ -120,6 +120,16 @@
             height: auto !important;
         }
 
+        /* Force table for PDF regardless of screen size */
+        .pdf-mode .desktop-invoice-table {
+            display: table !important;
+            width: 100% !important;
+        }
+
+        .pdf-mode .mobile-invoice-items {
+            display: none !important;
+        }
+
         /* Mobile responsiveness */
         @media (max-width: 768px) {
             .mobile-stack {
@@ -170,7 +180,7 @@
                 <span>Go Back</span>
             </button>
 
-            
+
         </div>
     </div>
 
@@ -263,10 +273,12 @@
                 </div>
             </div>
 
-            <!-- Order Items Table -->
+            <!-- Order Items Section -->
             <div class="mb-8">
                 <h3 class="text-lg font-semibold text-gray-900 mb-4 border-b pb-2">Order Items</h3>
-                <div class="overflow-x-auto">
+
+                <!-- Desktop Table View (Hidden on Mobile) -->
+                <div class="desktop-invoice-table hidden md:block overflow-x-auto">
                     <table class="w-full border border-gray-200 rounded-lg overflow-hidden"
                         style="table-layout: fixed; width: 100%;">
                         <thead class="bg-gray-50">
@@ -290,12 +302,7 @@
                                         <div class="relative w-20 h-20 flex-shrink-0 mr-4">
                                             <img src="<%= order.product.productImages.find(img=>img.isMain).url %>"
                                                 class="w-full h-full rounded-lg object-cover border border-gray-200"
-                                                onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';"
                                                 alt="<%= order.product.name %>">
-                                            <div
-                                                class="w-full h-full bg-gradient-to-r from-purple-400 to-pink-500 rounded-lg flex items-center justify-center text-white font-bold hidden">
-                                                <i class="fas fa-box text-xl"></i>
-                                            </div>
                                         </div>
                                         <div class="pdf-break">
                                             <div class="font-medium text-gray-900 text-lg">
@@ -309,8 +316,8 @@
                                     <%= order.variant.deviceModel %>
                                 </td>
                                 <td class="px-6 py-4 border-r border-gray-200 font-medium text-lg">
-                                    <div class="flex flex-col">
-                                        <% const originalUnitPrice=order.orderItem.finalPrice/order.orderItem.quantity %>
+                                    <% const originalUnitPrice=order.orderItem.finalPrice/order.orderItem.quantity %>
+                                        <div class="flex flex-col">
                                             <span>₹<%= originalUnitPrice.toFixed(2) %></span>
                                             <% if (order.orderItem.offer && order.orderItem.offer.discountAmount> 0) {
                                                 %>
@@ -322,29 +329,64 @@
                                                             order.orderItem.quantity).toFixed(2) %>)
                                                 </span>
                                                 <% } %>
-                                    </div>
+                                        </div>
                                 </td>
                                 <td class="px-6 py-4 border-r border-gray-200 font-medium text-lg">
                                     <%= order.orderItem.quantity %>
                                 </td>
                                 <td class="px-6 py-4 font-bold text-lg">
-                                    <div class="flex flex-col">
-                                        <span>₹<%= (order.orderItem.quantity * originalUnitPrice).toFixed(2) %></span>
-                                        <% if (order.orderItem.offer && order.orderItem.offer.discountAmount> 0) { %>
-                                            <span class="text-xs text-red-500 line-through font-normal">
-                                             
-                                            </span>
-                                            <span class="text-sm text-green-700">
-                                             
-                                            </span>
-                                            <% } else { %>
-                                                <span>₹<%= (order.orderItem.itemTotal).toFixed(2) %></span>
-                                                <% } %>
-                                    </div>
+                                    ₹<%= (order.orderItem.itemTotal).toFixed(2) %>
                                 </td>
                             </tr>
                         </tbody>
                     </table>
+                </div>
+
+                <!-- Mobile Card View (Shown on Mobile) -->
+                <div class="mobile-invoice-items md:hidden space-y-4">
+                    <div class="bg-white border rounded-xl p-4 shadow-sm">
+                        <div class="flex gap-4 mb-4">
+                            <div class="w-20 h-20 flex-shrink-0">
+                                <img src="<%= order.product.productImages.find(img=>img.isMain).url %>"
+                                    class="w-full h-full rounded-lg object-cover border border-gray-100"
+                                    alt="<%= order.product.name %>">
+                            </div>
+                            <div class="flex-1">
+                                <h4 class="font-bold text-gray-900 text-lg leading-tight mb-1">
+                                    <%= order.product.name %>
+                                </h4>
+                                <p
+                                    class="text-sm text-purple-600 font-bold bg-purple-50 inline-block px-2 py-0.5 rounded-md">
+                                    <%= order.variant.deviceModel %>
+                                </p>
+                            </div>
+                        </div>
+
+                        <div class="grid grid-cols-2 gap-y-3 border-t pt-4 text-sm mt-2">
+                            <div class="text-gray-500">Unit Price</div>
+                            <div class="text-right font-medium">₹<%=
+                                    (order.orderItem.finalPrice/order.orderItem.quantity).toFixed(2) %>
+                            </div>
+
+                            <div class="text-gray-500">Quantity</div>
+                            <div class="text-right font-medium">x <%= order.orderItem.quantity %>
+                            </div>
+
+                            <% if (order.orderItem.offer && order.orderItem.offer.discountAmount> 0) { %>
+                                <div class="text-green-600">Total Discount</div>
+                                <div class="text-right text-green-600 font-medium">-₹<%=
+                                        order.orderItem.offer.discountAmount.toFixed(2) %>
+                                </div>
+                                <% } %>
+
+                                    <div class="text-gray-900 font-bold text-base mt-1 pt-3 border-t col-span-1">Total
+                                    </div>
+                                    <div
+                                        class="text-right text-gray-900 font-black text-lg mt-1 pt-3 border-t col-span-1">
+                                        ₹<%= order.orderItem.itemTotal.toFixed(2) %>
+                                    </div>
+                        </div>
+                    </div>
                 </div>
             </div>
 
@@ -588,6 +630,9 @@
                     watermark.style.zIndex = '9999';
                 }
 
+                // Add pdf-mode class for CSS targeting
+                element.classList.add('pdf-mode');
+
                 // Wait a moment for styles to apply
                 await new Promise(resolve => setTimeout(resolve, 100));
 
@@ -632,6 +677,9 @@
                 element.style.margin = originalMargin;
                 element.style.display = originalDisplay;
                 element.style.position = originalPosition;
+
+                // Remove pdf-mode class
+                element.classList.remove('pdf-mode');
 
                 // Hide watermark again
                 if (watermark) {
