@@ -274,6 +274,40 @@
                                         <p class="text-xs sm:text-sm text-red-500 mt-1" id="pincodeError"></p>
                                     </div>
                                 </div>
+
+                                <!-- Save Address Option -->
+                                <div class="pt-2 border-t border-gray-100">
+                                    <div class="flex items-start mb-3">
+                                        <div class="flex items-center h-5">
+                                            <input id="saveAddressCheckbox" name="saveAddress" type="checkbox"
+                                                class="w-4 h-4 text-purple-600 border-gray-300 rounded focus:ring-purple-500 cursor-pointer">
+                                        </div>
+                                        <div class="ml-3 text-sm">
+                                            <label for="saveAddressCheckbox"
+                                                class="font-medium text-gray-700 cursor-pointer">Save this
+                                                address for future use</label>
+                                        </div>
+                                    </div>
+
+                                    <div id="addressTypeContainer" class="hidden ml-7 space-y-2">
+                                        <p class="text-xs font-semibold text-gray-500 uppercase tracking-wider">Address
+                                            Type</p>
+                                        <div class="flex gap-4">
+                                            <label class="flex items-center cursor-pointer group">
+                                                <input type="radio" name="addressType" value="Home" checked
+                                                    class="w-4 h-4 text-purple-600 border-gray-300 focus:ring-purple-500 cursor-pointer">
+                                                <span
+                                                    class="ml-2 text-sm text-gray-600 group-hover:text-purple-600 transition-colors">Home</span>
+                                            </label>
+                                            <label class="flex items-center cursor-pointer group">
+                                                <input type="radio" name="addressType" value="Work"
+                                                    class="w-4 h-4 text-purple-600 border-gray-300 focus:ring-purple-500 cursor-pointer">
+                                                <span
+                                                    class="ml-2 text-sm text-gray-600 group-hover:text-purple-600 transition-colors">Work</span>
+                                            </label>
+                                        </div>
+                                    </div>
+                                </div>
                             </form>
                         </div>
 

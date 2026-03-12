@@ -667,6 +667,41 @@ const getOrderDetails = async (req, res) => {
     res.status(500).render("500");
   }
 };
+
+// ==============================
+// CHECK ORDER STATUS (API)
+// ==============================
+const checkOrderStatus = async (req, res) => {
+  try {
+    const orderId = req.params.id;
+    if (!mongoose.Types.ObjectId.isValid(orderId)) {
+      return res.status(STATUS_CODES.BAD_REQUEST).json({
+        success: false,
+        message: "Invalid Order ID",
+      });
+    }
+
+    const order = await orderModel.findById(orderId);
+    if (!order) {
+      return res.status(STATUS_CODES.NOT_FOUND).json({
+        success: false,
+        message: "Order not found",
+      });
+    }
+
+    return res.json({
+      success: true,
+      paymentStatus: order.paymentStatus,
+      status: order.status,
+    });
+  } catch (error) {
+    console.error("Check status error:", error);
+    return res.status(STATUS_CODES.INTERNAL_SERVER_ERROR).json({
+      success: false,
+      message: "Internal server error",
+    });
+  }
+};
 // ==============================
 // CHANGE ORDER ITEM STATUS
 // ==============================
@@ -1121,6 +1156,7 @@ const reqApprove = async (req, res) => {
     // ======================
     // REFUND (ONLY IF PAID)
     // ======================
+    // Check both order-level and item-level payment status (important for COD)
     if (existing.paymentStatus === "paid" || item.paymentStatus === "paid") {
       let Wallet = await wallet.findOne({
         userId: existing.userId,
@@ -1209,4 +1245,5 @@ export default {
   orderStatusChanger,
   reqApprove,
   reqReject,
+  checkOrderStatus,
 };

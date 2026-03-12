@@ -141,7 +141,7 @@ const resetPassAxios = async (data) => {
 const admnLoginAxios = async (data) => {
   try {
     return await api.post("/admin/login", data);
-  } catch (err) { }
+  } catch (err) {}
 };
 const userProfileAxios = async (data) => {
   try {
@@ -295,7 +295,7 @@ const orderInvoice = async (orderId, orderItemId) => {
   try {
     console.log(orderItemId, "it is the order Id");
     window.location.href = `/order/${orderItemId}/invoice?odrId=${orderId}`;
-  } catch (error) { }
+  } catch (error) {}
 };
 const changePasswordAxios = async (data) => {
   try {
@@ -352,6 +352,14 @@ const verifyRazorpayPaymentWalletAxios = async (data) => {
   }
 };
 
+const checkOrderStatusAxios = async (orderId) => {
+  try {
+    return await api.get(`/order/${orderId}/status`);
+  } catch (error) {
+    return error.response;
+  }
+};
+
 export default {
   userSignupAxios,
   userOtpAxios,
@@ -385,4 +393,5 @@ export default {
   markPaymentFailedAxios,
   createRazorpayOrderWallletAxios,
   verifyRazorpayPaymentWalletAxios,
+  checkOrderStatusAxios,
 };

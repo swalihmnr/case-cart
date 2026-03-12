@@ -212,16 +212,24 @@ function showToast(message) {
   }, 3000);
 }
 async function removeFromCart(productId, variantId) {
-  const res = await api.removeFromCartAxios(productId, variantId);
-  if (res.data.success) {
-    Swal.fire({
-      icon: "warning",
-      title: "Deleting",
-      text: res.data.message,
-      confirmButtonColor: "#667eea",
-    }).then((re) => {
-      location.reload();
-    });
+  showGlobalLoading();
+  try {
+    const res = await api.removeFromCartAxios(productId, variantId);
+    if (res.data.success) {
+      Swal.fire({
+        icon: "warning",
+        title: "Deleting",
+        text: res.data.message,
+        confirmButtonColor: "#667eea",
+      }).then((re) => {
+        location.reload();
+      });
+    }
+  } catch (error) {
+    console.error("Remove from cart error:", error);
+    showToast(error.response?.data?.message || "Failed to remove item", "error");
+  } finally {
+    hideGlobalLoading();
   }
 }
 

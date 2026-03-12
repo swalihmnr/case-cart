@@ -195,6 +195,22 @@ const orderStatusChanger = async (req, res) => {
             },
           },
         );
+
+        // Check if all items in the order are paid or cancelled
+        const orderAfterUpdate = await orderModel.findById(orderId);
+        const allPaidOrCancelled = orderAfterUpdate.orderItems.every(
+          (item) =>
+            item.paymentStatus === "paid" || item.status === "cancelled",
+        );
+
+        if (allPaidOrCancelled && orderAfterUpdate.paymentStatus !== "paid") {
+          await orderModel.updateOne(
+            { _id: orderId },
+            {
+              $set: { paymentStatus: "paid", paymentConfirmedAt: new Date() },
+            },
+          );
+        }
       } else {
         await orderModel.updateOne(
           { _id: orderId, "orderItems._id": orderItemID },
@@ -271,7 +287,8 @@ const reqApprove = async (req, res) => {
     // ======================
     // REFUND (ONLY IF PAID)
     // ======================
-    if (existing.paymentStatus === "paid") {
+    // Check both order-level and item-level payment status (important for COD)
+    if (existing.paymentStatus === "paid" || item.paymentStatus === "paid") {
       let Wallet = await wallet.findOne({
         userId: existing.userId,
       });

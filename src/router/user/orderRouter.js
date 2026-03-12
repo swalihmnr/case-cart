@@ -30,5 +30,11 @@ router.patch(
 );
 router.patch("/order/:id/cancel", orderController.orderCancel);
 router.patch("/order/:id/return", orderController.returnReq);
+router.get(
+  "/order/:id/status",
+  userAuth,
+  blockUser,
+  orderController.checkOrderStatus,
+);
 router.get("/order/:id/invoice", userAuth, blockUser, orderController.invoice);
 export default router;

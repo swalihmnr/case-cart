@@ -37,6 +37,7 @@ document.addEventListener("DOMContentLoaded", function () {
   initFormValidation();
   checkUrlForCoupon();
   initPaymentSelection();
+  initAddressSaving();
 
   // Check for failed payment in URL
   const urlParams = new URLSearchParams(window.location.search);
@@ -176,6 +177,22 @@ function initSavedAddresses() {
   );
   if (defaultChecked) {
     handleAddressSelection(defaultChecked);
+  }
+}
+
+// Initialize address saving
+function initAddressSaving() {
+  const saveCheckbox = document.getElementById("saveAddressCheckbox");
+  const addressTypeContainer = document.getElementById("addressTypeContainer");
+
+  if (saveCheckbox && addressTypeContainer) {
+    saveCheckbox.addEventListener("change", function () {
+      if (this.checked) {
+        addressTypeContainer.classList.remove("hidden");
+      } else {
+        addressTypeContainer.classList.add("hidden");
+      }
+    });
   }
 }
 
@@ -625,6 +642,16 @@ function populateAddressForm(radioElement) {
 
   document.getElementById("pincode").value = addressData.pincode || "";
 
+  // Hide save address option when using saved address
+  const saveOption = document
+    .getElementById("saveAddressCheckbox")
+    ?.closest(".pt-2");
+  if (saveOption) saveOption.classList.add("hidden");
+  const addressTypeContainer = document.getElementById("addressTypeContainer");
+  if (addressTypeContainer) addressTypeContainer.classList.add("hidden");
+  const saveCheckbox = document.getElementById("saveAddressCheckbox");
+  if (saveCheckbox) saveCheckbox.checked = false;
+
   updateAddressButtonText("✓ Address Selected");
 
   const dropdown = document.getElementById("addressDropdown");
@@ -639,6 +666,12 @@ function clearAddressForm() {
   if (form) {
     form.reset();
   }
+
+  // Show save address option for manual entry
+  const saveOption = document
+    .getElementById("saveAddressCheckbox")
+    ?.closest(".pt-2");
+  if (saveOption) saveOption.classList.remove("hidden");
 }
 
 // Show selected coupon
@@ -868,39 +901,30 @@ async function placeOrder() {
     }
 
     showGlobalLoading();
-    if (paymentMethod === "razorpay") {
+    try {
       const res = await api.confirmationAxios(payload);
-      hideGlobalLoading();
 
       if (res.data.success) {
-        currentOrderId = res.data.orderId;
-        const url = new URL(window.location);
-        url.searchParams.set("orderId", currentOrderId);
-        window.history.replaceState({}, "", url);
-        showGlobalLoading();
-        await initiateRazorpayPayment(currentOrderId);
-        hideGlobalLoading();
+        if (paymentMethod === "razorpay") {
+          currentOrderId = res.data.orderId;
+          const url = new URL(window.location);
+          url.searchParams.set("orderId", currentOrderId);
+          window.history.replaceState({}, "", url);
+          await initiateRazorpayPayment(currentOrderId);
+        } else {
+          showToast("Order placed successfully!", "success");
+          setTimeout(() => {
+            window.location.href = `/order/confirm/${res.data.orderId}`;
+          }, 1500);
+        }
       } else {
         handleOrderFailure(res);
         if (orderButton) {
           setLoading(orderButton, false);
         }
       }
-    } else {
-      const res = await api.confirmationAxios(payload);
+    } finally {
       hideGlobalLoading();
-
-      if (res.data.success) {
-        showToast("Order placed successfully!", "success");
-        setTimeout(() => {
-          window.location.href = `/order/confirm/${res.data.orderId}`;
-        }, 1500);
-      } else {
-        handleOrderFailure(res);
-        if (orderButton) {
-          setLoading(orderButton, false);
-        }
-      }
     }
   } catch (error) {
     console.error("Order placement error:", error);
@@ -908,7 +932,9 @@ async function placeOrder() {
       error.response?.data?.message || "An error occurred while placing order",
       "error",
     );
-    setLoading(orderButton, false);
+    if (orderButton) {
+      setLoading(orderButton, false);
+    }
     hideGlobalLoading();
   }
 }
@@ -1048,7 +1074,6 @@ async function verifyPayment(paymentDetails, orderId) {
 
     console.log("Sending verification data:", data);
 
-    // Show loading state
     if (typeof Swal !== "undefined") {
       Swal.fire({
         title: "Verifying Payment",
@@ -1060,13 +1085,15 @@ async function verifyPayment(paymentDetails, orderId) {
       });
     }
 
-    const res = await api.verifyRazorpayPaymentAxios(data);
-    console.log("Verification response:", res);
-    console.log("Response data:", res.data);
-
-    // Close loading modal
-    if (typeof Swal !== "undefined") {
-      Swal.close();
+    let res;
+    try {
+      res = await api.verifyRazorpayPaymentAxios(data);
+      console.log("Verification response:", res);
+    } finally {
+      // Close loading modal
+      if (typeof Swal !== "undefined") {
+        Swal.close();
+      }
     }
 
     // Check for success in various response formats
