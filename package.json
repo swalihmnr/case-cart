@@ -21,6 +21,7 @@
     "ejs": "^3.0.2",
     "exceljs": "^4.4.0",
     "express": "^5.1.0",
+    "express-rate-limit": "^8.3.1",
     "express-session": "^1.18.2",
     "express-validator": "^7.3.1",
     "html2canvas": "^1.4.1",
@@ -35,6 +36,7 @@
     "passport": "^0.7.0",
     "passport-google-oauth20": "^2.0.0",
     "pdfkit-table": "^0.1.99",
+    "rate-limit": "^0.1.1",
     "razorpay": "^2.9.6",
     "streamifier": "^0.1.1"
   },
