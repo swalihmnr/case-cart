@@ -1,16 +1,16 @@
-import api from '../api.js';
- clearInterval(window.OtpTimer);
-window.resendBtn = document.getElementById('resend-btn');
-window.verifyBtn = document.getElementById('verify-btn');
-const userEmailDisplay = document.getElementById('user-email');
-  
- 
+import api from "../api.js";
+import { showGlobalLoading, hideGlobalLoading } from "../ui-helpers.js";
+clearInterval(window.OtpTimer);
+window.resendBtn = document.getElementById("resend-btn");
+window.verifyBtn = document.getElementById("verify-btn");
+const userEmailDisplay = document.getElementById("user-email");
+
 // OTP input handling functions
 window.moveToNext = moveToNext;
 
 function moveToNext(current, currentIndex) {
   // Only allow numbers
-  current.value = current.value.replace(/[^0-9]/g, '');
+  current.value = current.value.replace(/[^0-9]/g, "");
 
   if (current.value.length === 1 && currentIndex < 6) {
     const nextInput = document.getElementById(`otp-${currentIndex + 1}`);
@@ -21,14 +21,14 @@ function moveToNext(current, currentIndex) {
 window.handleBackspace = handleBackspace;
 
 function handleBackspace(event, currentIndex) {
-  if (event.key === 'Backspace') {
+  if (event.key === "Backspace") {
     const current = document.getElementById(`otp-${currentIndex}`);
 
-    if (current.value === '' && currentIndex > 1) {
+    if (current.value === "" && currentIndex > 1) {
       const prevInput = document.getElementById(`otp-${currentIndex - 1}`);
       if (prevInput) {
         prevInput.focus();
-        prevInput.value = '';
+        prevInput.value = "";
       }
     }
   }
@@ -37,91 +37,96 @@ function handleBackspace(event, currentIndex) {
 // ====== OTP Verification ======
 window.verifyOTP = async function verifyOTP(event) {
   event.preventDefault();
-  
 
-  let otp = '';
+  let otp = "";
 
   for (let i = 1; i <= 6; i++) {
     const input = document.getElementById(`otp-${i}`);
-    
+
     if (!input.value) {
       Swal.fire({
-        icon: 'error',
-        title: 'Incomplete OTP',
-        text: 'Please enter all 6 digits',
-        confirmButtonColor: '#667eea'
+        icon: "error",
+        title: "Incomplete OTP",
+        text: "Please enter all 6 digits",
+        confirmButtonColor: "#667eea",
       });
-      
+
       input.focus();
       return;
     }
-    
+
     otp += input.value;
   }
 
   window.otp = otp;
-  console.log('User entered OTP:', otp);
+  console.log("User entered OTP:", otp);
 
-  Swal.fire({
-    title: 'Verifying OTP...',
-    didOpen: () => Swal.showLoading(),
-    timer:"2000"
-  });
+  showGlobalLoading();
+  try {
+    const res = await api.userOtpAxios(otp);
+    console.log(res);
+    if (res.data.success) {
+      // Clear timer data on successful verification
+      localStorage.removeItem("otpTimer");
+      localStorage.removeItem("otpExpire");
+      clearInterval(window.OtpTimer);
 
-  const res = await api.userOtpAxios(otp);
-  Swal.close();
-console.log(res)
-  if (res.data.success) {
-    // Clear timer data on successful verification
-    localStorage.removeItem('otpTimer');
-    localStorage.removeItem('otpExpire');
-    clearInterval(window.OtpTimer);
-    
+      Swal.fire({
+        icon: "success",
+        title: "OTP Verified!",
+        text: res.data.message,
+        confirmButtonColor: "#667eea",
+      }).then(() => {
+        const loginUrl = sessionStorage.getItem("urlLoginPage");
+        console.log(loginUrl);
+        window.location.href = loginUrl || "/login";
+      });
+    } else {
+      Swal.fire({
+        icon: "error",
+        title: "Invalid OTP",
+        text: "Please try again.",
+        confirmButtonColor: "#667eea",
+      });
+    }
+  } catch (error) {
+    console.error(error);
     Swal.fire({
-      icon: 'success',
-      title: 'OTP Verified!',
-      text: res.data.message,
-      confirmButtonColor: '#667eea'
-    }).then(() => {
-      const loginUrl = sessionStorage.getItem('urlLoginPage');
-      console.log(loginUrl)
-      window.location.href = loginUrl || '/login';
+      icon: "error",
+      title: "Error",
+      text: "Something went wrong during verification",
+      confirmButtonColor: "#667eea",
     });
-  } else {
-    Swal.fire({
-      icon: 'error',
-      title: 'Invalid OTP',
-      text: 'Please try again.',
-      confirmButtonColor: '#667eea'
-    });
+  } finally {
+    hideGlobalLoading();
   }
 };
 
-window.addEventListener('DOMContentLoaded', () => {
-  userEmailDisplay.textContent = sessionStorage.getItem('email');
-  
-  const savedExpire = localStorage.getItem('otpExpire') === 'true';
-  
+window.addEventListener("DOMContentLoaded", () => {
+  userEmailDisplay.textContent = sessionStorage.getItem("email");
+
+  const savedExpire = localStorage.getItem("otpExpire") === "true";
+
   if (savedExpire) {
     handleExpiredOTP();
     return;
   }
 
-  const savedTimer = localStorage.getItem('otpTimer');
+  const savedTimer = localStorage.getItem("otpTimer");
   if (!savedTimer) {
-    startTimer('timer', 2);
+    startTimer("timer", 2);
   } else {
-    startTimer('timer', 0);
+    startTimer("timer", 0);
   }
 
-  document.getElementById('otp-1').focus();
+  document.getElementById("otp-1").focus();
 });
 
 // ==== Expired Handler ===
 function handleExpiredOTP() {
   clearInterval(window.OtpTimer);
 
-  const display = document.getElementById('timer');
+  const display = document.getElementById("timer");
   display.textContent = "Expired";
   display.classList.add("text-red-500");
 
@@ -131,12 +136,12 @@ function handleExpiredOTP() {
   verifyBtn.disabled = true;
   verifyBtn.classList.add("btn-disabled");
 
-  localStorage.setItem('otpExpire', 'true');
+  localStorage.setItem("otpExpire", "true");
 
   Swal.fire({
-    icon: 'error',
-    title: 'OTP Expired',
-    text: 'Please request a new OTP.'
+    icon: "error",
+    title: "OTP Expired",
+    text: "Please request a new OTP.",
   });
 }
 
@@ -144,7 +149,7 @@ function handleExpiredOTP() {
 window.startTimer = function startTimer(elementId, minutes) {
   clearInterval(window.OtpTimer);
 
-  const savedTimer = localStorage.getItem('otpTimer');
+  const savedTimer = localStorage.getItem("otpTimer");
   let totalSeconds;
 
   if (savedTimer) {
@@ -153,16 +158,19 @@ window.startTimer = function startTimer(elementId, minutes) {
     totalSeconds = timerData.totalSeconds - elapsed;
 
     if (totalSeconds <= 0) {
-      localStorage.removeItem('otpTimer');
+      localStorage.removeItem("otpTimer");
       handleTimerExpiration(elementId);
       return;
     }
   } else {
     totalSeconds = minutes * 60;
-    localStorage.setItem('otpTimer', JSON.stringify({
-      startTime: Date.now(),
-      totalSeconds
-    }));
+    localStorage.setItem(
+      "otpTimer",
+      JSON.stringify({
+        startTime: Date.now(),
+        totalSeconds,
+      }),
+    );
   }
 
   const display = document.getElementById(elementId);
@@ -170,21 +178,24 @@ window.startTimer = function startTimer(elementId, minutes) {
   window.OtpTimer = setInterval(() => {
     if (totalSeconds <= 0) {
       clearInterval(window.OtpTimer);
-      localStorage.removeItem('otpTimer');
+      localStorage.removeItem("otpTimer");
       handleTimerExpiration(elementId);
       return;
     }
 
-    const formattedMinutes = Math.floor(totalSeconds / 60); 
-    const formattedSeconds = totalSeconds % 60; 
-    const formatted = `${String(formattedMinutes).padStart(2, '0')}:${String(formattedSeconds).padStart(2, '0')}`;
+    const formattedMinutes = Math.floor(totalSeconds / 60);
+    const formattedSeconds = totalSeconds % 60;
+    const formatted = `${String(formattedMinutes).padStart(2, "0")}:${String(formattedSeconds).padStart(2, "0")}`;
     display.textContent = formatted;
     totalSeconds--;
 
-    localStorage.setItem('otpTimer', JSON.stringify({
-      startTime: Date.now(),
-      totalSeconds
-    }));
+    localStorage.setItem(
+      "otpTimer",
+      JSON.stringify({
+        startTime: Date.now(),
+        totalSeconds,
+      }),
+    );
   }, 1000);
 };
 
@@ -200,43 +211,55 @@ function handleTimerExpiration(elementId) {
   resendBtn.classList.remove("btn-disabled");
 
   Swal.fire({
-    icon: 'error',
-    title: 'OTP Expired',
-    text: 'Please request a new OTP.'
+    icon: "error",
+    title: "OTP Expired",
+    text: "Please request a new OTP.",
   });
 
-  localStorage.setItem('otpExpire', 'true');
+  localStorage.setItem("otpExpire", "true");
 }
 
 // ===================== Resend =====================
-window.resendOTP = async function() {
-  window.display = document.getElementById('timer');
+window.resendOTP = async function () {
+  window.display = document.getElementById("timer");
   display.classList.remove("text-red-500");
-  localStorage.removeItem('otpTimer');
-  localStorage.removeItem('otpExpire');
+  localStorage.removeItem("otpTimer");
+  localStorage.removeItem("otpExpire");
   clearInterval(window.OtpTimer);
-  
+
   verifyBtn.classList.remove("btn-disabled");
   verifyBtn.disabled = false;
   resendBtn.disabled = true;
   resendBtn.classList.add("btn-disabled");
 
-  await api.resendOtpAxios(true);
+  showGlobalLoading();
+  try {
+    await api.resendOtpAxios(true);
 
-  Swal.fire({
-    icon: 'success',
-    title: 'OTP Resent!',
-    text: 'Check your email.',
-    timer: 2000,
-    showConfirmButton: false
-  });
-
-  for (let i = 1; i <= 6; i++) {
-    document.getElementById(`otp-${i}`).value = '';
+    Swal.fire({
+      icon: "success",
+      title: "OTP Resent!",
+      text: "Check your email.",
+      timer: 2000,
+      showConfirmButton: false,
+    });
+  } catch (error) {
+    console.error(error);
+    Swal.fire({
+      icon: "error",
+      title: "Error",
+      text: "Failed to resend OTP",
+    });
+  } finally {
+    hideGlobalLoading();
   }
 
-  startTimer('timer', 2);
-  document.getElementById('otp-1').focus();
+  for (let i = 1; i <= 6; i++) {
+    document.getElementById(`otp-${i}`).value = "";
+  }
+
+  startTimer("timer", 2);
+  document.getElementById("otp-1").focus();
 
   setTimeout(() => {
     resendBtn.disabled = false;
@@ -245,17 +268,22 @@ window.resendOTP = async function() {
 };
 
 // ====== Paste OTP Functionality ======
-document.getElementById('otp-1').addEventListener('paste', (e) => {
+document.getElementById("otp-1").addEventListener("paste", (e) => {
   e.preventDefault();
-  const pastedData = e.clipboardData.getData('text').replace(/[^0-9]/g, '').slice(0, 6);
-  
+  const pastedData = e.clipboardData
+    .getData("text")
+    .replace(/[^0-9]/g, "")
+    .slice(0, 6);
+
   for (let i = 0; i < pastedData.length && i < 6; i++) {
     document.getElementById(`otp-${i + 1}`).value = pastedData[i];
   }
-  
+
   if (pastedData.length === 6) {
-    document.getElementById('otp-6').focus();
+    document.getElementById("otp-6").focus();
   } else if (pastedData.length > 0) {
-    document.getElementById(`otp-${Math.min(pastedData.length + 1, 6)}`).focus();
+    document
+      .getElementById(`otp-${Math.min(pastedData.length + 1, 6)}`)
+      .focus();
   }
 });

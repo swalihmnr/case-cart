@@ -1,4 +1,4 @@
-import api from '../adminApi.js';
+import api from "../adminApi.js";
 
 const url = new URL(window.location.href);
 
@@ -12,7 +12,7 @@ const patterns = {
   title: /^.{3,}$/,
   description: /^.{10,}$/,
   couponCode: /^[A-Z0-9]{3,20}$/,
-  amount: /^[1-9]\d*$/
+  amount: /^[1-9]\d*$/,
 };
 
 // -------------------------------
@@ -22,7 +22,7 @@ if (url.searchParams.get("created") === "true") {
   Swal.fire({
     icon: "success",
     title: "Success",
-    text: "Coupon created successfully!"
+    text: "Coupon created successfully!",
   });
 }
 
@@ -58,10 +58,10 @@ const fieldsToClear = [
   { input: "maximumDiscount", error: "maximumDiscountErr" },
   { input: "minOrderValue", error: "minOrderValueErr" },
   { input: "startDate", error: "startDateErr", event: "change" },
-  { input: "endDate", error: "endDateErr", event: "change" }
+  { input: "endDate", error: "endDateErr", event: "change" },
 ];
 
-fieldsToClear.forEach(field => {
+fieldsToClear.forEach((field) => {
   const inputEl = document.getElementById(field.input);
   const errorEl = document.getElementById(field.error);
   if (inputEl && errorEl) {
@@ -153,7 +153,10 @@ document.querySelector("#couponForm")?.addEventListener("submit", async (e) => {
   if (!patterns.amount.test(data.discountValue)) {
     valueErr.innerText = "Amount must be greater than 0";
     valid = false;
-  } else if (data.discountType === 'percentage' && Number(data.discountValue) > 70) {
+  } else if (
+    data.discountType === "percentage" &&
+    Number(data.discountValue) > 70
+  ) {
     valueErr.innerText = "Percentage cannot exceed 70%";
     valid = false;
   }
@@ -161,13 +164,22 @@ document.querySelector("#couponForm")?.addEventListener("submit", async (e) => {
   if (data.minOrderValue === "" || Number(data.minOrderValue) < 0) {
     minErr.innerText = "Enter valid minimum order value";
     valid = false;
-  } else if (data.discountType === 'fixedamount' && Number(data.discountValue) >= Number(data.minOrderValue)) {
-    valueErr.innerText = "Discount amount must be less than minimum order value";
+  } else if (
+    data.discountType === "fixedamount" &&
+    Number(data.discountValue) >= Number(data.minOrderValue)
+  ) {
+    valueErr.innerText =
+      "Discount amount must be less than minimum order value";
     valid = false;
   }
 
-  if (data.maximumDiscount !== "" && (!patterns.amount.test(data.maximumDiscount) && Number(data.maximumDiscount) !== 0)) {
-    if (maxDiscErr) maxDiscErr.innerText = "Max discount must be a positive number";
+  if (
+    data.maximumDiscount !== "" &&
+    !patterns.amount.test(data.maximumDiscount) &&
+    Number(data.maximumDiscount) !== 0
+  ) {
+    if (maxDiscErr)
+      maxDiscErr.innerText = "Max discount must be a positive number";
     valid = false;
   }
 
@@ -192,6 +204,7 @@ document.querySelector("#couponForm")?.addEventListener("submit", async (e) => {
   // SUBMIT
   // -----------------
   if (valid) {
+    const submitBtn = e.target.querySelector('button[type="submit"]');
     const payload = {
       title: data.title,
       couponCode: data.couponCode,
@@ -202,34 +215,42 @@ document.querySelector("#couponForm")?.addEventListener("submit", async (e) => {
       minOrderValue: Number(data.minOrderValue),
       startDate: data.startDate,
       endDate: data.endDate,
-      status: data.status
+      status: data.status,
     };
 
     console.log("SENDING PAYLOAD:", payload);
 
     try {
+      if (submitBtn) window.setLoading(submitBtn, true);
+      window.showGlobalLoading();
+
       let res = await api.createCouponAxios(payload);
 
       if (res.data.success) {
+        window.hideGlobalLoading();
         Swal.fire({
           icon: "success",
           title: "Coupon Created",
-          text: res.data.message
+          text: res.data.message,
         }).then(() => {
           window.location.href = "/admin/coupen";
         });
       } else {
+        if (submitBtn) window.setLoading(submitBtn, false);
+        window.hideGlobalLoading();
         Swal.fire({
           icon: "warning",
           title: "Error",
-          text: res.data.message
+          text: res.data.message,
         });
       }
     } catch (error) {
+      if (submitBtn) window.setLoading(submitBtn, false);
+      window.hideGlobalLoading();
       Swal.fire({
         icon: "error",
         title: "Failed!",
-        text: error.response?.data?.message || "Something went wrong"
+        text: error.response?.data?.message || "Something went wrong",
       });
     }
   }
@@ -265,6 +286,6 @@ function getFormData() {
     minOrderValue: document.getElementById("minOrderValue")?.value.trim(),
     startDate: document.getElementById("startDate")?.value,
     endDate: document.getElementById("endDate")?.value,
-    status: document.getElementById("couponStatus")?.value
+    status: document.getElementById("couponStatus")?.value,
   };
 }

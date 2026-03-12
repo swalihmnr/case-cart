@@ -1,6 +1,5 @@
-
 import api from "../adminApi.js";
-async function deleteOffer(offerId) {
+async function deleteOffer(offerId, btn) {
   const confirm = await Swal.fire({
     title: "Are you sure?",
     text: "This offer will be permanently deleted!",
@@ -9,22 +8,24 @@ async function deleteOffer(offerId) {
     confirmButtonColor: "#7c3aed",
     cancelButtonColor: "#d33",
     confirmButtonText: "Yes, delete it!",
-    cancelButtonText: "Cancel"
+    cancelButtonText: "Cancel",
   });
 
   // If user clicks Cancel
   if (!confirm.isConfirmed) return;
 
   try {
+    if (btn) window.setLoading(btn, true);
     const res = await api.deleteOfferAxios(offerId);
-    console.log(res)
+    if (btn) window.setLoading(btn, false);
+    console.log(res);
     if (res.data.success) {
       Swal.fire({
         icon: "success",
         title: "Deleted!",
         text: res.data.message || "Offer deleted successfully",
         showConfirmButton: false,
-        timer: 1500
+        timer: 1500,
       }).then(() => {
         location.href = "/admin/offers";
       });
@@ -32,22 +33,27 @@ async function deleteOffer(offerId) {
       Swal.fire({
         icon: "error",
         title: "Delete Failed",
-        text: res.data.message || "Something went wrong"
+        text: res.data.message || "Something went wrong",
       });
     }
   } catch (err) {
+    if (btn) window.setLoading(btn, false);
     console.error("Delete failed:", err);
 
     Swal.fire({
       icon: "error",
       title: "Server Error",
-      text: "Could not delete the offer. Try again later."
+      text: "Could not delete the offer. Try again later.",
     });
   }
 }
 
-window.deleteOffer=deleteOffer
+window.deleteOffer = deleteOffer;
+function hideSelectionAlertInfo() {
+  window.location.href = "/admin/offers";
+}
 
+window.hideSelectionAlertInfo = hideSelectionAlertInfo;
 document.addEventListener("DOMContentLoaded", () => {
   const input = document.getElementById("search-offers");
   let currentFilter =
@@ -56,7 +62,7 @@ document.addEventListener("DOMContentLoaded", () => {
   console.log("Initial filter:", currentFilter);
 
   // Update filter when clicking tabs
-  document.querySelectorAll("#filter-tabs a").forEach(link => {
+  document.querySelectorAll("#filter-tabs a").forEach((link) => {
     link.addEventListener("click", () => {
       currentFilter = link.dataset.filter;
       console.log("Filter changed to:", currentFilter);

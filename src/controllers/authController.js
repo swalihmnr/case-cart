@@ -1,14 +1,14 @@
 import passport from "passport";
 
 const googleAuth = passport.authenticate("google", {
-    scope: ["profile", "email"]
+  scope: ["profile", "email"],
 });
 
 const googleAuthCallback = passport.authenticate("google", {
-    failureRedirect: "/login"
+  failureRedirect: "/login",
 });
 
 export default {
-    googleAuth,
-    googleAuthCallback,
+  googleAuth,
+  googleAuthCallback,
 };

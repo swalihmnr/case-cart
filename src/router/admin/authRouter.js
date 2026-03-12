@@ -1,0 +1,10 @@
+import express from "express";
+const router = express.Router();
+import { loginValidator } from "../../validators/loginValidator.js";
+import authController from "../../controllers/admin/authController.js";
+import { requiredAdmin } from "../../middlewares/auth.js";
+router.get("/login", authController.getLogin);
+router.post("/login", loginValidator, authController.postLogin);
+router.use(requiredAdmin);
+router.get("/logout", authController.adminLogout);
+export default router;

@@ -1,55 +1,57 @@
 import mongoose from "mongoose";
-let produtSchema=new  mongoose.Schema({
-    name:{
-        type:String,
-        required:true
+let produtSchema = new mongoose.Schema(
+  {
+    name: {
+      type: String,
+      required: true,
     },
-    description:{
-        type:String,
-        required:true
+    description: {
+      type: String,
+      required: true,
     },
-    productStatus:{
-        type:String,
-        default:true,
+    productStatus: {
+      type: String,
+      default: true,
     },
-    descount:{
-        type:Number,
-        default:0
+    descount: {
+      type: Number,
+      default: 0,
     },
-    isBlock:{
-        type:Boolean,
-        default:false
+    isBlock: {
+      type: Boolean,
+      default: false,
     },
-    catgId:{
-        type:mongoose.Types.ObjectId,
-        ref:"Category",
-        required:false
+    catgId: {
+      type: mongoose.Types.ObjectId,
+      ref: "Category",
+      required: false,
     },
-    variants:[{
-        type:mongoose.Types.ObjectId,
-        ref:"variant",
-        required:true
-    }],
-    productImages:[{
-        url:{
-            type:String,
-            required:true
+    variants: [
+      {
+        type: mongoose.Types.ObjectId,
+        ref: "variant",
+        required: true,
+      },
+    ],
+    productImages: [
+      {
+        url: {
+          type: String,
+          required: true,
         },
-        publicId:{
-            type:String,
-            required:true
+        publicId: {
+          type: String,
+          required: true,
         },
-        isMain:{
-            type:Boolean,
-            default:false
-        }
-
-    }
-    ]
-    
-},
-{timestamps:true}
-)
+        isMain: {
+          type: Boolean,
+          default: false,
+        },
+      },
+    ],
+  },
+  { timestamps: true },
+);
 produtSchema.index({ name: "text", description: "text" });
 
-export default mongoose.model('product',produtSchema)
+export default mongoose.model("product", produtSchema);

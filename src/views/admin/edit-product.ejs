@@ -1,36 +1,43 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Admin - Product Details</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/toastify-js/src/toastify.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/toastify-js"></script>
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/cropperjs@1.5.12/dist/cropper.min.css">
     <style>
         .image-container {
             position: relative;
             overflow: hidden;
         }
+
         .image-overlay {
             position: absolute;
             top: 0;
             left: 0;
             right: 0;
             bottom: 0;
-            background: rgba(0,0,0,0.7);
+            background: rgba(0, 0, 0, 0.7);
             display: flex;
             align-items: center;
             justify-content: center;
             opacity: 0;
             transition: opacity 0.3s;
         }
+
         .image-container:hover .image-overlay {
             opacity: 1;
         }
+
         .main-image {
             border: 2px solid #3b82f6;
         }
+
         .cropper-container {
             direction: ltr;
             font-size: 0;
@@ -39,13 +46,92 @@
             touch-action: none;
             user-select: none;
         }
+
         .edit-mode {
             border: 1px dashed #3b82f6;
             background-color: #f0f9ff;
         }
+
+        /* Loading Spinner */
+        @keyframes spin {
+            to {
+                transform: rotate(360deg);
+            }
+        }
+
+        .spinner {
+            display: inline-block;
+            width: 1.25rem;
+            height: 1.25rem;
+            border: 2px solid rgba(0, 0, 0, 0.1);
+            border-radius: 50%;
+            border-top-color: currentColor;
+            animation: spin 0.6s linear infinite;
+        }
+
+        .btn-loading {
+            position: relative;
+            color: transparent !important;
+            pointer-events: none;
+        }
+
+        .btn-loading .spinner {
+            position: absolute;
+            left: 50%;
+            top: 50%;
+            margin-left: -0.625rem;
+            margin-top: -0.625rem;
+        }
+
+        /* Global Loading Overlay */
+        #global-loading-overlay {
+            position: fixed;
+            inset: 0;
+            background: rgba(255, 255, 255, 0.7);
+            backdrop-filter: blur(4px);
+            z-index: 999;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: opacity 0.3s ease;
+        }
+
+        .loader-glow {
+            width: 48px;
+            height: 48px;
+            border: 4px solid #3b82f6;
+            border-bottom-color: transparent;
+            border-radius: 50%;
+            display: inline-block;
+            box-sizing: border-box;
+            animation: rotation 1s linear infinite;
+        }
+
+        @keyframes rotation {
+            0% {
+                transform: rotate(0deg);
+            }
+
+            100% {
+                transform: rotate(360deg);
+            }
+        }
+
+        .hidden-overlay {
+            opacity: 0;
+            pointer-events: none;
+        }
     </style>
 </head>
+
 <body class="bg-gray-50">
+    <!-- Global Loading Overlay -->
+    <div id="global-loading-overlay" class="hidden-overlay">
+        <div class="flex flex-col items-center">
+            <span class="loader-glow"></span>
+            <p class="mt-4 text-blue-900 font-bold text-sm tracking-widest animate-pulse">PROCESSING...</p>
+        </div>
+    </div>
     <!-- Header -->
     <header class="bg-white shadow-sm border-b">
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
@@ -56,155 +142,193 @@
                     </button>
                     <h1 class="text-2xl font-bold text-gray-900">Product Details</h1>
                 </div>
-               
-                   <a href="/admin/product-list">
 
-                       <i class="fas fa-arrow-left mr-2"></i>Back to Products
-                   </a>
-                  
-               
-                </div>
+                <a href="/admin/product-list">
+
+                    <i class="fas fa-arrow-left mr-2"></i>Back to Products
+                </a>
+
+
             </div>
         </div>
+        </div>
     </header>
+    <%- include("../partials/flash") %>
 
-    <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
-            <!-- Left Column - Product Images & Details -->
-            <div class="lg:col-span-2 space-y-6">
-                <!-- Product Images -->
-                <div class="bg-white rounded-lg shadow-sm p-6">
-                    <div class="flex items-center justify-between mb-4">
-                        <h2 class="text-lg font-semibold text-gray-900">Product Images</h2>
-                        <button onclick="openImageUploader(this)" data-btnmode="add" class="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition text-sm">
-                            <i class="fas fa-plus mr-2"></i>Add Images
-                        </button>
+        <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+            <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                <!-- Left Column - Product Images & Details -->
+                <div class="lg:col-span-2 space-y-6">
+                    <!-- Product Images -->
+                    <div class="bg-white rounded-lg shadow-sm p-6">
+                        <div class="flex items-center justify-between mb-4">
+                            <h2 class="text-lg font-semibold text-gray-900">Product Images</h2>
+                            <button onclick="openImageUploader(this)" data-btnmode="add"
+                                class="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition text-sm">
+                                <i class="fas fa-plus mr-2"></i>Add Images
+                            </button>
+                        </div>
+                        <div class="grid grid-cols-4 gap-4" id="productImagesContainer">
+                            <!-- Images will be dynamically added here -->
+                        </div>
                     </div>
-                    <div class="grid grid-cols-4 gap-4" id="productImagesContainer">
-                        <!-- Images will be dynamically added here -->
+
+                    <!-- Basic Information -->
+                    <div class="bg-white rounded-lg shadow-sm p-6" id="basicInfoSection">
+                        <div class="flex items-center justify-between mb-4">
+                            <h2 class="text-lg font-semibold text-gray-900">Basic Information</h2>
+                            <button id="editBasicInfoBtn"
+                                class="px-3 py-1 bg-blue-600 text-white text-sm rounded hover:bg-blue-700 transition">
+                                <i class="fas fa-edit mr-1"></i>Edit
+                            </button>
+                        </div>
+                        <div class="space-y-4">
+                            <div>
+                                <label class="text-sm font-medium text-gray-600">Product Name</label>
+                                <p id="productNameDisplay" class="text-gray-900 mt-1">
+                                    <%= product.name %>
+                                </p>
+                                <input id="productNameEdit" type="text"
+                                    class="hidden w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                                    value="Gradient Dream Case">
+                            </div>
+
+                            <div>
+                                <label class="text-sm font-medium text-gray-600">Category</label>
+                                <p id="categoryDisplay" class="text-gray-900 mt-1">
+                                    <%= product.catgId ? product.catgId.name : 'No Category' %>
+                                </p>
+                                <select id="categoryEdit"
+                                    class="hidden w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500">
+                                    <% categories.forEach(category=> { %>
+                                        <option value="<%= category._id %>" selected>
+                                            <%= category.name %>
+                                        </option>
+                                        <% }) %>
+
+
+                                </select>
+                            </div>
+                            <div>
+                                <label class="text-sm font-medium text-gray-600">Product Description</label>
+                                <p id="descriptionDisplay" class="text-gray-700 mt-1 leading-relaxed">
+                                    <%= product.description %>
+                                </p>
+                                <textarea id="descriptionEdit"
+                                    class="hidden w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                                    rows="4"><%= product.description %></textarea>
+                            </div>
+                        </div>
+                        <div id="basicInfoActions" class="hidden mt-4 flex justify-end space-x-3">
+                            <button id="cancelBasicInfoBtn"
+                                class="px-4 py-2 border border-gray-300 text-gray-700 rounded-md hover:bg-gray-50 transition">
+                                Cancel
+                            </button>
+                            <button id="saveBasicInfoBtn"
+                                class="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition">
+                                Save Changes
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Pricing & Stock -->
+
+
+                    <!-- Variants -->
+                    <div class="bg-white rounded-lg shadow-sm p-6">
+                        <div class="flex items-center justify-between mb-4">
+                            <h2 class="text-lg font-semibold text-gray-900">Product Variants</h2>
+                            <div class="flex items-center space-x-2">
+
+                            </div>
+                        </div>
+                        <div class="overflow-x-auto">
+                            <table class="min-w-full divide-y divide-gray-200">
+                                <thead class="bg-gray-50">
+                                    <tr>
+
+                                        <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">
+                                            Model</th>
+                                        <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">
+                                            Stock</th>
+                                        <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">
+                                            Original Price</th>
+                                        <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Sale
+                                            Price</th>
+                                        <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">
+                                            Status</th>
+                                        <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">
+                                            Actions</th>
+                                    </tr>
+                                </thead>
+                                <tbody class="bg-white divide-y divide-gray-200">
+                                    <% product.variants.forEach(veriant=> { %>
+                                        <tr class="hover:bg-gray-50" data-variant-id="variant-2">
+
+                                            <td class="px-4 py-3 text-sm text-gray-900 variant-model">
+                                                <%= veriant.deviceModel %>
+                                            </td>
+                                            <td class="px-4 py-3 text-sm text-gray-700 variant-stock">
+                                                <%= veriant.stock %>
+                                            </td>
+                                            <td class="px-4 py-3 text-sm text-gray-700 variant-original-price">₹<%=
+                                                    veriant.orgPrice %>
+                                            </td>
+                                            <td class="px-4 py-3 text-sm text-gray-700 variant-sale-price">₹<%=
+                                                    veriant.salePrice %>
+                                            </td>
+                                            <td class="px-4 py-3" id="status-variant-4">
+                                                <% if (veriant.stock> 20) { %>
+                                                    <span
+                                                        class="px-2 py-1 text-xs font-medium rounded-full bg-green-100 text-green-800">
+                                                        In Stock
+                                                    </span>
+                                                    <% } else if (veriant.stock> 0) { %>
+                                                        <span
+                                                            class="px-2 py-1 text-xs font-medium rounded-full bg-yellow-100 text-yellow-800">
+                                                            Low Stock
+                                                        </span>
+                                                        <% } else { %>
+                                                            <span
+                                                                class="px-2 py-1 text-xs font-medium rounded-full bg-red-100 text-red-800">
+                                                                Out of Stock
+                                                            </span>
+                                                            <% } %>
+
+                                            </td>
+                                            <td class="px-4 py-3 flex space-x-2">
+                                                <button onclick="editVariant('<%= veriant._id %>')"
+                                                    class="px-3 py-1 bg-blue-600 text-white text-xs rounded hover:bg-blue-700 transition">
+                                                    <i class="fas fa-edit mr-1"></i>Edit
+                                                </button>
+                                                <% if (veriant.isListed===true) { %>
+                                                    <button onclick="toggleListUnlist('<%= veriant._id %>')"
+                                                        class="px-3 py-1 bg-green-600 text-white text-xs rounded hover:bg-gray-700 transition">
+                                                        <i class="fas fa-eye mr-1"></i>List
+                                                    </button>
+                                                    <% } else { %>
+
+                                                        <button onclick="toggleListUnlist('<%= veriant._id %>')"
+                                                            class="px-3 py-1 bg-gray-600 text-white text-xs rounded hover:bg-gray-700 transition">
+                                                            <i class="fas fa-eye-slash mr-1"></i>Unlist
+
+                                                        </button>
+
+
+                                                        <% } %>
+                                            </td>
+                                        </tr>
+                                        <% }) %>
+
+
+                                </tbody>
+                            </table>
+                        </div>
                     </div>
                 </div>
 
-                <!-- Basic Information -->
-                <div class="bg-white rounded-lg shadow-sm p-6" id="basicInfoSection">
-                    <div class="flex items-center justify-between mb-4">
-                        <h2 class="text-lg font-semibold text-gray-900">Basic Information</h2>
-                        <button id="editBasicInfoBtn" class="px-3 py-1 bg-blue-600 text-white text-sm rounded hover:bg-blue-700 transition">
-                            <i class="fas fa-edit mr-1"></i>Edit
-                        </button>
-                    </div>
-                    <div class="space-y-4">
-                        <div>
-                            <label class="text-sm font-medium text-gray-600">Product Name</label>
-                            <p id="productNameDisplay" class="text-gray-900 mt-1"><%= product.name %></p>
-                            <input id="productNameEdit" type="text" class="hidden w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500" value="Gradient Dream Case">
-                        </div>
-                        
-                        <div>
-                            <label class="text-sm font-medium text-gray-600">Category</label>
-                            <p id="categoryDisplay" class="text-gray-900 mt-1"><%= product.catgId.name%></p>
-                            <select id="categoryEdit" class="hidden w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500">
-                                <% categories.forEach(category => { %>
-                                    <option value="<%= category._id %>" selected><%= category.name %></option>
-                                <% }) %>
-                                
-                               
-                            </select>
-                        </div>
-                        <div>
-                            <label class="text-sm font-medium text-gray-600">Product Description</label>
-                            <p id="descriptionDisplay" class="text-gray-700 mt-1 leading-relaxed"><%= product.description %></p>
-                            <textarea id="descriptionEdit" class="hidden w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500" rows="4"><%= product.description %></textarea>
-                        </div>
-                    </div>
-                    <div id="basicInfoActions" class="hidden mt-4 flex justify-end space-x-3">
-                        <button id="cancelBasicInfoBtn" class="px-4 py-2 border border-gray-300 text-gray-700 rounded-md hover:bg-gray-50 transition">
-                            Cancel
-                        </button>
-                        <button id="saveBasicInfoBtn" class="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition">
-                            Save Changes
-                        </button>
-                    </div>
-                </div>
-
-                <!-- Pricing & Stock -->
-                
-
-                <!-- Variants -->
-                <div class="bg-white rounded-lg shadow-sm p-6">
-                    <div class="flex items-center justify-between mb-4">
-                        <h2 class="text-lg font-semibold text-gray-900">Product Variants</h2>
-                        <div class="flex items-center space-x-2">
-                           
-                        </div>
-                    </div>
-                    <div class="overflow-x-auto">
-                        <table class="min-w-full divide-y divide-gray-200">
-                            <thead class="bg-gray-50">
-                                <tr>
-                                   
-                                    <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Model</th>
-                                    <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Stock</th>
-                                    <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Original Price</th>
-                                    <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Sale Price</th>
-                                    <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Status</th>
-                                    <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Actions</th>
-                                </tr>
-                            </thead>
-                            <tbody class="bg-white divide-y divide-gray-200">
-                                <% product.variants.forEach(veriant=> { %>
-                                 <tr class="hover:bg-gray-50" data-variant-id="variant-2">
-                                    
-                                    <td class="px-4 py-3 text-sm text-gray-900 variant-model"><%= veriant.deviceModel %></td>
-                                    <td class="px-4 py-3 text-sm text-gray-700 variant-stock"><%= veriant.stock %></td>
-                                    <td class="px-4 py-3 text-sm text-gray-700 variant-original-price">₹<%= veriant.orgPrice %></td>
-                                    <td class="px-4 py-3 text-sm text-gray-700 variant-sale-price">₹<%= veriant.salePrice %></td>
-                                    <td class="px-4 py-3" id="status-variant-4">
-                                        <% if (veriant.stock > 20) { %>
-                                             <span class="px-2 py-1 text-xs font-medium rounded-full bg-green-100 text-green-800">
-                                                 In Stock
-                                             </span>
-                                         <% } else if (veriant.stock > 0) { %>
-                                             <span class="px-2 py-1 text-xs font-medium rounded-full bg-yellow-100 text-yellow-800">
-                                                 Low Stock
-                                             </span>
-                                         <% } else { %>
-                                             <span class="px-2 py-1 text-xs font-medium rounded-full bg-red-100 text-red-800">
-                                                 Out of Stock
-                                             </span>
-                                         <% } %>
-                                         
-                                                                             </td>
-                                    <td class="px-4 py-3 flex space-x-2">
-                                        <button onclick="editVariant('<%= veriant._id %>')" class="px-3 py-1 bg-blue-600 text-white text-xs rounded hover:bg-blue-700 transition">
-                                            <i class="fas fa-edit mr-1"></i>Edit
-                                        </button>
-                                        <% if (veriant.isListed===true) { %>
-                                        <button  onclick="toggleListUnlist('<%= veriant._id %>')" class="px-3 py-1 bg-green-600 text-white text-xs rounded hover:bg-gray-700 transition">
-                                                <i class="fas fa-eye mr-1"></i>List
-                                            </button>
-                                        <% } else { %>
-
-                                        <button  onclick="toggleListUnlist('<%= veriant._id %>')" class="px-3 py-1 bg-gray-600 text-white text-xs rounded hover:bg-gray-700 transition">
-                                            <i class="fas fa-eye-slash mr-1"></i>Unlist
-                                                
-                                        </button>
-                                                    
-                                              
-                                        <% } %>
-                                    </td>
-                                </tr>
-                                <% }) %>
-                                
-                                
-                            </tbody>
-                        </table>
-                    </div>
-                </div>
-            </div>
-
-            <!-- Right Column - Stats & Actions -->
-            <!-- <div class="space-y-6">
+                <!-- Right Column - Stats & Actions -->
+                <!-- <div class="space-y-6">
                 
                 <div class="bg-white rounded-lg shadow-sm p-6">
                     <h2 class="text-lg font-semibold text-gray-900 mb-4">Quick Stats</h2>
@@ -228,148 +352,179 @@
 
                 
             </div> -->
-        </div>
-    </main>
+            </div>
+        </main>
 
-    <!-- Edit Variant Modal -->
-    <div id="editVariantModal" class="hidden fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-        <div class="bg-white rounded-lg shadow-xl w-full max-w-md">
-            <div class="px-6 py-4 border-b border-gray-200">
-                <h3 class="text-lg font-semibold text-gray-900">Edit Variant</h3>
-            </div>
-            <div class="px-6 py-4 space-y-4">
-                <div>
-                    <label for="editVariantModel" class="block text-sm font-medium text-gray-700 mb-1">Model Name</label>
-                    <input type="text" id="editVariantModel" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500">
+        <!-- Edit Variant Modal -->
+        <div id="editVariantModal"
+            class="hidden fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+            <div class="bg-white rounded-lg shadow-xl w-full max-w-md">
+                <div class="px-6 py-4 border-b border-gray-200">
+                    <h3 class="text-lg font-semibold text-gray-900">Edit Variant</h3>
                 </div>
-                <div>
-                    <label for="editVariantStock" class="block text-sm font-medium text-gray-700 mb-1">Stock Quantity</label>
-                    <input type="number" id="editVariantStock" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500">
-                </div>
-                <div>
-                    <label for="editVariantOriginalPrice" class="block text-sm font-medium text-gray-700 mb-1">Original Price (₹)</label>
-                    <input type="number" step="0.01" id="editVariantOriginalPrice" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500">
-                </div>
-                <div>
-                    <label for="editVariantSalePrice" class="block text-sm font-medium text-gray-700 mb-1">Sale Price (₹)</label>
-                    <input type="number" step="0.01" id="editVariantSalePrice" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500">
-                </div>
-            </div>
-            <div class="px-6 py-4 border-t border-gray-200 flex justify-end space-x-3">
-                <button onclick="closeModal()" class="px-4 py-2 border border-gray-300 text-gray-700 rounded-md hover:bg-gray-50 transition">
-                    Cancel
-                </button>
-                <button onclick="saveVariantChanges()" class="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition">
-                    Save Changes
-                </button>
-            </div>
-        </div>
-    </div>
-
-    <!-- Add Images Modal -->
-    <div id="addImagesModal" class="hidden fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-        <div class="bg-white rounded-lg shadow-xl w-full max-w-2xl">
-            <div class="px-6 py-4 border-b border-gray-200">
-                <h3 class="text-lg font-semibold text-gray-900">Add Product Images</h3>
-            </div>
-            <div class="px-6 py-4">
-                <input type="file" id="productImages" accept="image/*" multiple class="hidden" onchange="handleImagesUpload(event)">
-                <div onclick="document.getElementById('productImages').click()" class="border-2 border-dashed border-gray-300 rounded-lg p-8 text-center hover:border-purple-400 transition-colors cursor-pointer mb-4">
-                    <svg class="mx-auto text-gray-400 mb-2" width="32" height="32" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12"></path>
-                    </svg>
-                    <p class="text-sm font-medium text-gray-700">Upload Product Images</p>
-                    <p class="text-xs text-gray-500 mt-1">PNG, JPG up to 5MB each (Multiple files)</p>
-                    <p class="text-xs text-purple-600 mt-1">First image will be the main image</p>
-                </div>
-                
-                <!-- Images Preview Grid -->
-                <div id="imagesPreview" class="grid grid-cols-2 gap-3"></div>
-            </div>
-            <div class="px-6 py-4 border-t border-gray-200 flex justify-end space-x-3">
-                <button onclick="closeModal()" class="px-4 py-2 border border-gray-300 text-gray-700 rounded-md hover:bg-gray-50 transition">
-                    Cancel
-                </button>
-                <button onclick="saveImages()" class="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition">
-                    Save Changes
-                </button>
-            </div>
-        </div>
-    </div>
-
-    <!-- Crop Modal -->
-    <div id="cropModal" class="hidden fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-        <div class="bg-white rounded-xl shadow-xl p-6 max-w-4xl w-full">
-            <div class="flex items-center justify-between mb-4">
-                <h2 class="text-xl font-bold text-gray-900">Crop Image</h2>
-                <button onclick="closeCropModal()" class="text-gray-400 hover:text-gray-600">
-                    <svg width="24" height="24" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
-                    </svg>
-                </button>
-            </div>
-
-            <!-- Cropper Container -->
-            <div class="w-full flex">
-                <div class="w-2/3 pr-4">
-                    <div class="border rounded-lg overflow-hidden" style="height: 400px;">
-                        <img id="cropImage" class="block" style="max-width: 100%; max-height: 100%;" />
+                <div class="px-6 py-4 space-y-4">
+                    <div>
+                        <label for="editVariantModel" class="block text-sm font-medium text-gray-700 mb-1">Model
+                            Name</label>
+                        <input type="text" id="editVariantModel"
+                            class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500">
+                    </div>
+                    <div>
+                        <label for="editVariantStock" class="block text-sm font-medium text-gray-700 mb-1">Stock
+                            Quantity</label>
+                        <input type="number" id="editVariantStock"
+                            class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500">
+                    </div>
+                    <div>
+                        <label for="editVariantOriginalPrice"
+                            class="block text-sm font-medium text-gray-700 mb-1">Original Price (₹)</label>
+                        <input type="number" step="0.01" id="editVariantOriginalPrice"
+                            class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500">
+                    </div>
+                    <div>
+                        <label for="editVariantSalePrice" class="block text-sm font-medium text-gray-700 mb-1">Sale
+                            Price (₹)</label>
+                        <input type="number" step="0.01" id="editVariantSalePrice"
+                            class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500">
                     </div>
                 </div>
-                <div class="w-1/3 pl-4">
-                    <h3 class="font-medium text-gray-900 mb-3">Crop Options</h3>
-                    <div class="space-y-4">
-                        <div>
-                            <label class="block text-sm font-medium text-gray-700 mb-1">Aspect Ratio</label>
-                            <select id="aspectRatio" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500" onchange="updateAspectRatio()">
-                                <option value="1">Square (1:1)</option>
-                                <option value="4/3">Standard (4:3)</option>
-                                <option value="16/9">Widescreen (16:9)</option>
-                                <option value="0">Free</option>
-                            </select>
+                <div class="px-6 py-4 border-t border-gray-200 flex justify-end space-x-3">
+                    <button onclick="closeModal()"
+                        class="px-4 py-2 border border-gray-300 text-gray-700 rounded-md hover:bg-gray-50 transition">
+                        Cancel
+                    </button>
+                    <button onclick="saveVariantChanges()"
+                        class="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition">
+                        Save Changes
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Add Images Modal -->
+        <div id="addImagesModal"
+            class="hidden fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+            <div class="bg-white rounded-lg shadow-xl w-full max-w-2xl">
+                <div class="px-6 py-4 border-b border-gray-200">
+                    <h3 class="text-lg font-semibold text-gray-900">Add Product Images</h3>
+                </div>
+                <div class="px-6 py-4">
+                    <input type="file" id="productImages" accept="image/*" multiple class="hidden"
+                        onchange="handleImagesUpload(event)">
+                    <div onclick="document.getElementById('productImages').click()"
+                        class="border-2 border-dashed border-gray-300 rounded-lg p-8 text-center hover:border-purple-400 transition-colors cursor-pointer mb-4">
+                        <svg class="mx-auto text-gray-400 mb-2" width="32" height="32" fill="none" stroke="currentColor"
+                            viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12">
+                            </path>
+                        </svg>
+                        <p class="text-sm font-medium text-gray-700">Upload Product Images</p>
+                        <p class="text-xs text-gray-500 mt-1">PNG, JPG up to 5MB each (Multiple files)</p>
+                        <p class="text-xs text-purple-600 mt-1">First image will be the main image</p>
+                    </div>
+
+                    <!-- Images Preview Grid -->
+                    <div id="imagesPreview" class="grid grid-cols-2 gap-3"></div>
+                </div>
+                <div class="px-6 py-4 border-t border-gray-200 flex justify-end space-x-3">
+                    <button onclick="closeModal()"
+                        class="px-4 py-2 border border-gray-300 text-gray-700 rounded-md hover:bg-gray-50 transition">
+                        Cancel
+                    </button>
+                    <button onclick="saveImages()"
+                        class="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition">
+                        Save Changes
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Crop Modal -->
+        <div id="cropModal"
+            class="hidden fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+            <div class="bg-white rounded-xl shadow-xl p-6 max-w-4xl w-full">
+                <div class="flex items-center justify-between mb-4">
+                    <h2 class="text-xl font-bold text-gray-900">Crop Image</h2>
+                    <button onclick="closeCropModal()" class="text-gray-400 hover:text-gray-600">
+                        <svg width="24" height="24" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                d="M6 18L18 6M6 6l12 12"></path>
+                        </svg>
+                    </button>
+                </div>
+
+                <!-- Cropper Container -->
+                <div class="w-full flex">
+                    <div class="w-2/3 pr-4">
+                        <div class="border rounded-lg overflow-hidden" style="height: 400px;">
+                            <img id="cropImage" class="block" style="max-width: 100%; max-height: 100%;" />
                         </div>
-                        <div>
-                            <label class="block text-sm font-medium text-gray-700 mb-1">Rotation</label>
-                            <div class="flex items-center space-x-2">
-                                <button onclick="rotateImage(-90)" class="p-2 border border-gray-300 rounded-md hover:bg-gray-50">
-                                    <i class="fas fa-undo"></i>
-                                </button>
-                                <button onclick="rotateImage(90)" class="p-2 border border-gray-300 rounded-md hover:bg-gray-50">
-                                    <i class="fas fa-redo"></i>
-                                </button>
+                    </div>
+                    <div class="w-1/3 pl-4">
+                        <h3 class="font-medium text-gray-900 mb-3">Crop Options</h3>
+                        <div class="space-y-4">
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-1">Aspect Ratio</label>
+                                <select id="aspectRatio"
+                                    class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                                    onchange="updateAspectRatio()">
+                                    <option value="1">Square (1:1)</option>
+                                    <option value="4/3">Standard (4:3)</option>
+                                    <option value="16/9">Widescreen (16:9)</option>
+                                    <option value="0">Free</option>
+                                </select>
+                            </div>
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-1">Rotation</label>
+                                <div class="flex items-center space-x-2">
+                                    <button onclick="rotateImage(-90)"
+                                        class="p-2 border border-gray-300 rounded-md hover:bg-gray-50">
+                                        <i class="fas fa-undo"></i>
+                                    </button>
+                                    <button onclick="rotateImage(90)"
+                                        class="p-2 border border-gray-300 rounded-md hover:bg-gray-50">
+                                        <i class="fas fa-redo"></i>
+                                    </button>
+                                </div>
+                            </div>
+                            <div class="bg-blue-50 p-3 rounded-lg">
+                                <p class="text-sm text-blue-700">Drag the corners to adjust the crop area. The preview
+                                    will show how your image will look.</p>
                             </div>
                         </div>
-                        <div class="bg-blue-50 p-3 rounded-lg">
-                            <p class="text-sm text-blue-700">Drag the corners to adjust the crop area. The preview will show how your image will look.</p>
-                        </div>
+                    </div>
+                </div>
+
+                <div class="flex justify-between items-center mt-6">
+                    <div class="text-sm text-gray-500">
+                        Editing: <span id="editingImageName" class="font-medium">New Image</span>
+                    </div>
+                    <div class="flex gap-3">
+                        <button onclick="closeCropModal()"
+                            class="px-4 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors">Cancel</button>
+                        <button onclick="cropAndSave()"
+                            class="px-4 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition-colors">Apply
+                            Crop</button>
                     </div>
                 </div>
             </div>
-
-            <div class="flex justify-between items-center mt-6">
-                <div class="text-sm text-gray-500">
-                    Editing: <span id="editingImageName" class="font-medium">New Image</span>
-                </div>
-                <div class="flex gap-3">
-                    <button onclick="closeCropModal()" class="px-4 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors">Cancel</button>
-                    <button onclick="cropAndSave()" class="px-4 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition-colors">Apply Crop</button>
-                </div>
-            </div>
         </div>
-    </div>
-  <script>
-    // This inserts a JSON string literal which must be parsed client-side.
-    // Example output: window.productImagesString = '[{"id": 1}, {"id": 2}]';
-    
-    const productImagesString = '<%- JSON.stringify(product.productImages) %>';
-     const product = '<%- JSON.stringify(product) %>';
-     window.product = JSON.parse(product);
-    // Parse the string into a usable array/object.
-    window.productImages = JSON.parse(productImagesString);
-</script>
+        <script>
+            // This inserts a JSON string literal which must be parsed client-side.
+            // Example output: window.productImagesString = '[{"id": 1}, {"id": 2}]';
 
-    <script src="https://cdn.jsdelivr.net/npm/cropperjs@1.5.12/dist/cropper.min.js"></script>
-     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
- <script type="module" src="/js/admin/view-product.js"></script>
+            const productImagesString = '<%- JSON.stringify(product.productImages) %>';
+            const product = '<%- JSON.stringify(product) %>';
+            window.product = JSON.parse(product);
+            // Parse the string into a usable array/object.
+            window.productImages = JSON.parse(productImagesString);
+        </script>
+
+        <script src="https://cdn.jsdelivr.net/npm/cropperjs@1.5.12/dist/cropper.min.js"></script>
+        <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+        <script type="module" src="/js/ui-helpers.js"></script>
+        <script type="module" src="/js/admin/view-product.js"></script>
 </body>
+
 </html>

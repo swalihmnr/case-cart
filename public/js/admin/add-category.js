@@ -36,8 +36,12 @@ async function submitCategory(event) {
   if (!categoryDescription) {
     errDes.innerText = "Category Description is required.";
     flag = false;
-  } else if (categoryDescription.length < 10 || categoryDescription.length > 500) {
-    errDes.innerText = "Category Description must be between 10 and 500 characters.";
+  } else if (
+    categoryDescription.length < 10 ||
+    categoryDescription.length > 500
+  ) {
+    errDes.innerText =
+      "Category Description must be between 10 and 500 characters.";
     flag = false;
   } else if (categoryDescription.trim().length === 0) {
     errDes.innerText = "Category Description cannot be just spaces.";
@@ -50,11 +54,16 @@ async function submitCategory(event) {
       categoryName,
       categoryDescription,
     };
-    if (mode === "edit") {
+    const btn = event.currentTarget;
+    if (data.mode === "edit") {
       try {
+        if (btn) window.setLoading(btn, true);
+        window.showGlobalLoading();
         let res = await adminApi.editCategoryAxios(id, data);
         console.log(res);
         if (res.data.success) {
+          if (btn) window.setLoading(btn, false);
+          window.hideGlobalLoading();
           Swal.fire({
             icon: "success",
             title: "Updated!",
@@ -64,25 +73,30 @@ async function submitCategory(event) {
           }).then(() => {
             window.location.href = res.data.redirectUrl;
           });
-
         }
       } catch (error) {
-
+        if (btn) window.setLoading(btn, false);
+        window.hideGlobalLoading();
         Swal.fire({
           icon: "warning",
           title: "not Updated!",
-          text: error.response?.data?.message || error.response?.statusText || "Something went wrong",
+          text:
+            error.response?.data?.message ||
+            error.response?.statusText ||
+            "Something went wrong",
           timer: 1800,
           showConfirmButton: false,
-        })
-
+        });
       }
-
     } else {
       try {
+        if (btn) window.setLoading(btn, true);
+        window.showGlobalLoading();
         let res = await adminApi.addCategoryAxios(data);
-        console.log(res, 'nothing')
+        console.log(res, "nothing");
         if (res.data.success) {
+          if (btn) window.setLoading(btn, false);
+          window.hideGlobalLoading();
           Swal.fire({
             icon: "success",
             title: "product added!",
@@ -93,20 +107,26 @@ async function submitCategory(event) {
             window.location.href = res.data.redirectUrl;
           });
         } else {
+          if (btn) window.setLoading(btn, false);
+          window.hideGlobalLoading();
           Swal.fire({
             icon: "warning",
             title: "not added!",
             text: res.data.message,
             timer: 1800,
             showConfirmButton: false,
-          })
+          });
         }
       } catch (error) {
-        console.log(error)
-
+        if (btn) window.setLoading(btn, false);
+        window.hideGlobalLoading();
+        console.log(error);
+        Swal.fire({
+          icon: "error",
+          title: "Error",
+          text: error.response?.data?.message || "Something went wrong",
+        });
       }
-
     }
   }
 }
-

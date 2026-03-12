@@ -1,4 +1,5 @@
 import api from "../api.js";
+import { showGlobalLoading, hideGlobalLoading } from "../ui-helpers.js";
 
 const within7Days = (date) => {
   const now = new Date();
@@ -9,9 +10,9 @@ const within7Days = (date) => {
 };
 
 window.showOrderDetails = function (orderId, productId, orderItemId) {
-  const order = ordersData.find(o => o.orderItems._id === orderItemId);
+  const order = ordersData.find((o) => o.orderItems._id === orderItemId);
   if (!order) return;
-  console.log(order, 'it is the status');
+  console.log(order, "it is the status");
 
   // Format dates
   let shippingTextContent = order.shipping;
@@ -21,13 +22,14 @@ window.showOrderDetails = function (orderId, productId, orderItemId) {
     year: "numeric",
     hour: "2-digit",
     minute: "2-digit",
-    hour12: true
+    hour12: true,
   });
 
   // Set modal content
-  document.getElementById('orderIdDetail').textContent = `Order # ${order.orderId}`;
+  document.getElementById("orderIdDetail").textContent =
+    `Order # ${order.orderId}`;
 
-  document.getElementById('modalContent').innerHTML = `
+  document.getElementById("modalContent").innerHTML = `
     <div class="mb-6">
       <div class="flex items-center space-x-2 mb-4">
         <div class="w-3 h-3 bg-green-500 rounded-full"></div>
@@ -44,157 +46,191 @@ window.showOrderDetails = function (orderId, productId, orderItemId) {
         
         <!-- Order Placed -->
         <div class="text-center">
-          <div class="w-8 h-8 rounded-full ${
-            order.orderItems.status === 'cancelled'
-            ? 'bg-gray-300'
-            : 'bg-green-500'
-          } flex items-center justify-center mx-auto mb-1">
-            <svg class="w-4 h-4 ${
-              order.orderItems.status === 'cancelled'
-              ? 'text-gray-400'
-              : 'text-white'
-            }" fill="currentColor" viewBox="0 0 20 20">
+          <div class="w-8 h-8 rounded-full ${order.orderItems.status === "cancelled"
+      ? "bg-gray-300"
+      : "bg-green-500"
+    } flex items-center justify-center mx-auto mb-1">
+            <svg class="w-4 h-4 ${order.orderItems.status === "cancelled"
+      ? "text-gray-400"
+      : "text-white"
+    }" fill="currentColor" viewBox="0 0 20 20">
               <path d="M16.7 5.3l-8 8-4-4"/>
             </svg>
           </div>
-          <p class="text-xs ${
-            order.orderItems.status === 'cancelled'
-            ? 'text-gray-500'
-            : 'text-green-600'
-          }">Order Placed</p>
+          <p class="text-xs ${order.orderItems.status === "cancelled"
+      ? "text-gray-500"
+      : "text-green-600"
+    }">Order Placed</p>
         </div>
         
-        <div class="flex-1 h-1 ${
-          order.orderItems.status === 'cancelled'
-          ? 'bg-gray-200'
-          : 'bg-green-200'
-        }"></div>
+        <div class="flex-1 h-1 ${order.orderItems.status === "cancelled"
+      ? "bg-gray-200"
+      : "bg-green-200"
+    }"></div>
         
         <!-- Processing -->
         <div class="text-center">
-          <div class="w-8 h-8 rounded-full ${
-            ['processing','shipped','out_for_delivery','delivered','return_req'].includes(order.orderItems.status)
-            ? 'bg-green-500'
-            : 'bg-gray-300'
-          } flex items-center justify-center mx-auto mb-1">
-            <svg class="w-4 h-4 ${
-              ['processing','shipped','out_for_delivery','delivered','return_req'].includes(order.orderItems.status)
-              ? 'text-white'
-              : 'text-gray-400'
-            }" fill="currentColor" viewBox="0 0 20 20">
+          <div class="w-8 h-8 rounded-full ${[
+      "processing",
+      "shipped",
+      "out_for_delivery",
+      "delivered",
+      "return_req",
+    ].includes(order.orderItems.status)
+      ? "bg-green-500"
+      : "bg-gray-300"
+    } flex items-center justify-center mx-auto mb-1">
+            <svg class="w-4 h-4 ${[
+      "processing",
+      "shipped",
+      "out_for_delivery",
+      "delivered",
+      "return_req",
+    ].includes(order.orderItems.status)
+      ? "text-white"
+      : "text-gray-400"
+    }" fill="currentColor" viewBox="0 0 20 20">
               <circle cx="10" cy="10" r="8"/>
             </svg>
           </div>
-          <p class="text-xs ${
-            ['processing','shipped','out_for_delivery','delivered','return_req'].includes(order.orderItems.status)
-            ? 'text-green-600'
-            : 'text-gray-500'
-          }">Processing</p>
+          <p class="text-xs ${[
+      "processing",
+      "shipped",
+      "out_for_delivery",
+      "delivered",
+      "return_req",
+    ].includes(order.orderItems.status)
+      ? "text-green-600"
+      : "text-gray-500"
+    }">Processing</p>
         </div>
         
-        <div class="flex-1 h-1 ${
-          ['shipped','out_for_delivery','delivered','return_req'].includes(order.orderItems.status)
-          ? 'bg-green-200'
-          : 'bg-gray-200'
-        }"></div>
+        <div class="flex-1 h-1 ${["shipped", "out_for_delivery", "delivered", "return_req"].includes(
+      order.orderItems.status,
+    )
+      ? "bg-green-200"
+      : "bg-gray-200"
+    }"></div>
         
         <!-- Shipped -->
         <div class="text-center">
-          <div class="w-8 h-8 rounded-full ${
-            ['shipped','out_for_delivery','delivered','return_req'].includes(order.orderItems.status)
-            ? 'bg-green-500'
-            : 'bg-gray-300'
-          } flex items-center justify-center mx-auto mb-1">
-            <svg class="w-4 h-4 ${
-              ['shipped','out_for_delivery','delivered','return_req'].includes(order.orderItems.status)
-              ? 'text-white'
-              : 'text-gray-400'
-            }" fill="currentColor" viewBox="0 0 20 20">
+          <div class="w-8 h-8 rounded-full ${["shipped", "out_for_delivery", "delivered", "return_req"].includes(
+      order.orderItems.status,
+    )
+      ? "bg-green-500"
+      : "bg-gray-300"
+    } flex items-center justify-center mx-auto mb-1">
+            <svg class="w-4 h-4 ${[
+      "shipped",
+      "out_for_delivery",
+      "delivered",
+      "return_req",
+    ].includes(order.orderItems.status)
+      ? "text-white"
+      : "text-gray-400"
+    }" fill="currentColor" viewBox="0 0 20 20">
               <rect x="3" y="6" width="14" height="8"/>
             </svg>
           </div>
-          <p class="text-xs ${
-            ['shipped','out_for_delivery','delivered','return_req'].includes(order.orderItems.status)
-            ? 'text-green-600'
-            : 'text-gray-500'
-          }">Shipped</p>
+          <p class="text-xs ${["shipped", "out_for_delivery", "delivered", "return_req"].includes(
+      order.orderItems.status,
+    )
+      ? "text-green-600"
+      : "text-gray-500"
+    }">Shipped</p>
         </div>
         
-        <div class="flex-1 h-1 ${
-          ['out_for_delivery','delivered','return_req'].includes(order.orderItems.status)
-          ? 'bg-green-200'
-          : 'bg-gray-200'
-        }"></div>
+        <div class="flex-1 h-1 ${["out_for_delivery", "delivered", "return_req"].includes(
+      order.orderItems.status,
+    )
+      ? "bg-green-200"
+      : "bg-gray-200"
+    }"></div>
         
         <!-- Out for Delivery -->
         <div class="text-center">
-          <div class="w-8 h-8 rounded-full ${
-            ['out_for_delivery','delivered','return_req','returned'].includes(order.orderItems.status)
-            ? 'bg-green-500'
-            : 'bg-gray-300'
-          } flex items-center justify-center mx-auto mb-1">
-            <svg class="w-4 h-4 ${
-              ['out_for_delivery','delivered','return_req','returned'].includes(order.orderItems.status)
-              ? 'text-white'
-              : 'text-gray-400'
-            }" fill="currentColor" viewBox="0 0 20 20">
+          <div class="w-8 h-8 rounded-full ${[
+      "out_for_delivery",
+      "delivered",
+      "return_req",
+      "returned",
+    ].includes(order.orderItems.status)
+      ? "bg-green-500"
+      : "bg-gray-300"
+    } flex items-center justify-center mx-auto mb-1">
+            <svg class="w-4 h-4 ${[
+      "out_for_delivery",
+      "delivered",
+      "return_req",
+      "returned",
+    ].includes(order.orderItems.status)
+      ? "text-white"
+      : "text-gray-400"
+    }" fill="currentColor" viewBox="0 0 20 20">
               <path d="M13 6l3 3-3 3M7 6l-3 3 3 3"/>
             </svg>
           </div>
-          <p class="text-xs ${
-            ['out_for_delivery','delivered','return_req','returned'].includes(order.orderItems.status)
-            ? 'text-green-600'
-            : 'text-gray-500'
-          }">Out for Delivery</p>
+          <p class="text-xs ${[
+      "out_for_delivery",
+      "delivered",
+      "return_req",
+      "returned",
+    ].includes(order.orderItems.status)
+      ? "text-green-600"
+      : "text-gray-500"
+    }">Out for Delivery</p>
         </div>
         
-        <div class="flex-1 h-1 ${
-          order.orderItems.status === 'delivered' || order.orderItems.status === 'return_req' || order.orderItems.status === 'returned'
-          ? 'bg-green-200'
-          : 'bg-gray-200'
-        }"></div>
+        <div class="flex-1 h-1 ${order.orderItems.status === "delivered" ||
+      order.orderItems.status === "return_req" ||
+      order.orderItems.status === "returned"
+      ? "bg-green-200"
+      : "bg-gray-200"
+    }"></div>
         
         <!-- Delivered -->
         <div class="text-center">
-          <div class="w-8 h-8 rounded-full ${
-            ['delivered','return_req','returned'].includes(order.orderItems.status)
-            ? 'bg-green-500'
-            : 'bg-gray-300'
-          } flex items-center justify-center mx-auto mb-1">
-            <svg class="w-4 h-4 ${
-              ['delivered','return_req','returned'].includes(order.orderItems.status)
-              ? 'text-white'
-              : 'text-gray-400'
-            }" fill="currentColor" viewBox="0 0 20 20">
+          <div class="w-8 h-8 rounded-full ${["delivered", "return_req", "returned"].includes(
+      order.orderItems.status,
+    )
+      ? "bg-green-500"
+      : "bg-gray-300"
+    } flex items-center justify-center mx-auto mb-1">
+            <svg class="w-4 h-4 ${["delivered", "return_req", "returned"].includes(
+      order.orderItems.status,
+    )
+      ? "text-white"
+      : "text-gray-400"
+    }" fill="currentColor" viewBox="0 0 20 20">
               <path d="M2 10l8-8 8 8"/>
             </svg>
           </div>
-          <p class="text-xs ${
-            ['delivered','return_req','returned'].includes(order.orderItems.status)
-            ? 'text-green-600'
-            : 'text-gray-500'
-          }">Delivered</p>
+          <p class="text-xs ${["delivered", "return_req", "returned"].includes(
+      order.orderItems.status,
+    )
+      ? "text-green-600"
+      : "text-gray-500"
+    }">Delivered</p>
         </div>
         
       </div>
       
-      ${
-        order.orderItems.status === 'cancelled'
-        ? `<p class="text-sm text-red-600 font-semibold text-center mt-2">
+      ${order.orderItems.status === "cancelled"
+      ? `<p class="text-sm text-red-600 font-semibold text-center mt-2">
             ❌ Order Cancelled
            </p>`
-        : order.orderItems.status === 'return_req'
+      : order.orderItems.status === "return_req"
         ? `<p class="text-sm text-red-600 font-semibold text-center mt-2">
               Order Return Requested
            </p>`
-        : ''
-      }
+        : ""
+    }
     </div>
 
     <div class="mb-6">
       <h4 class="font-semibold text-gray-800 mb-4">ORDER ITEM</h4>
       <div class="flex items-start space-x-4 bg-gray-50 p-4 rounded-lg">
-        <img src="${order.product.productImages.find(img => img.isMain).url}" 
+        <img src="${order.product.productImages.find((img) => img.isMain).url}" 
              class="w-16 h-16 object-cover rounded-lg flex-shrink-0">
         <div class="flex-1">
           <h5 class="font-medium text-gray-800">${order.product.name}</h5>
@@ -247,12 +283,15 @@ window.showOrderDetails = function (orderId, productId, orderItemId) {
         </div>
 
         <!-- Shipping - Only show if finalAmount > 1500 -->
-        ${order.finalAmount < 1500 ? `
+        ${order.finalAmount < 1500
+      ? `
           <div class="flex justify-between text-gray-600">
             <span>Shipping</span>
             <span>${shippingTextContent}</span>
           </div>
-        ` : ''}
+        `
+      : ""
+    }
 
         <!-- Total -->
         <div class="flex justify-between font-semibold text-gray-800 text-lg pt-2 border-t border-gray-200">
@@ -272,30 +311,30 @@ window.showOrderDetails = function (orderId, productId, orderItemId) {
 
     <div class="flex justify-between">
       ${
-        // ❌ Cancelled / Return Requested / Returned
-        ['cancelled', 'return_req', 'returned'].includes(order.orderItems.status)
-          ? `
+    // ❌ Cancelled / Return Requested / Returned
+    ["cancelled", "return_req", "returned"].includes(
+      order.orderItems.status,
+    )
+      ? `
             <button 
               disabled
               class="px-6 py-2 border border-gray-300 text-gray-400 cursor-not-allowed rounded-lg">
               Not Available
             </button>
           `
-
-        // ❌ Return rejected by admin
-        : order.orderItems.status === 'delivered'
-          && order.orderItems.isReject === true
-          ? `
+      : // ❌ Return rejected by admin
+      order.orderItems.status === "delivered" &&
+        order.orderItems.isReject === true
+        ? `
             <button 
               disabled
               class="px-6 py-2 border border-red-300 text-red-400 cursor-not-allowed rounded-lg">
               Return Rejected
             </button>
           `
-
-        // 🔄 Delivered + within 7 days → Return allowed
-        : order.orderItems.status === 'delivered'
-          && within7Days(order.orderItems.deliveredAt)
+        : // 🔄 Delivered + within 7 days → Return allowed
+        order.orderItems.status === "delivered" &&
+          within7Days(order.orderItems.deliveredAt)
           ? `
             <button 
               onclick="showReturnModal('${order.orderId}','${order._id}','${order.orderItems._id}')"
@@ -303,36 +342,35 @@ window.showOrderDetails = function (orderId, productId, orderItemId) {
               Return Order
             </button>
           `
-
-        // ❌ Delivered but return window expired
-        : order.orderItems.status === 'delivered'
-          ? `
+          : // ❌ Delivered but return window expired
+          order.orderItems.status === "delivered"
+            ? `
             <button 
               disabled
               class="px-6 py-2 border border-gray-300 text-gray-400 cursor-not-allowed rounded-lg">
               Return Period Expired
             </button>
           `
-
-        // ❌ Shipped or Out for Delivery
-        : ['shipped', 'out_for_delivery'].includes(order.orderItems.status)
-          ? `
+            : // ❌ Shipped or Out for Delivery
+            ["shipped", "out_for_delivery"].includes(
+              order.orderItems.status,
+            )
+              ? `
             <button 
               disabled
               class="px-6 py-2 border border-gray-300 text-gray-400 cursor-not-allowed rounded-lg">
               Cannot Cancel Now
             </button>
           `
-
-        // ✅ Before shipping → Cancel allowed
-        : `
+              : // ✅ Before shipping → Cancel allowed
+              `
             <button 
               onclick="showCancelModal('${order.orderId}','${order._id}','${order.orderItems._id}')"
               class="px-6 py-2 border border-gray-300 rounded-lg text-gray-600 hover:bg-gray-50">
               Cancel Order
             </button>
           `
-      }
+    }
 
       <button 
         onclick="invoice('${order.orderId}','${order._id}','${order.orderItems._id}')" 
@@ -343,15 +381,15 @@ window.showOrderDetails = function (orderId, productId, orderItemId) {
   `;
 
   // Show modal
-  document.getElementById('orderDetailsModal').classList.remove('hidden');
-  document.getElementById('modalOverlay').classList.remove('hidden');
-  document.body.style.overflow = 'hidden';
+  document.getElementById("orderDetailsModal").classList.remove("hidden");
+  document.getElementById("modalOverlay").classList.remove("hidden");
+  document.body.style.overflow = "hidden";
 };
 
 window.closeOrderDetails = function () {
-  document.getElementById('orderDetailsModal').classList.add('hidden');
-  document.getElementById('modalOverlay').classList.add('hidden');
-  document.body.style.overflow = 'auto';
+  document.getElementById("orderDetailsModal").classList.add("hidden");
+  document.getElementById("modalOverlay").classList.add("hidden");
+  document.body.style.overflow = "auto";
 };
 
 window.closeAllModals = function () {
@@ -360,54 +398,62 @@ window.closeAllModals = function () {
 
 window.showCancelModal = function (orderId, orderID, orderItemId) {
   Swal.fire({
-    title: 'Cancel Order?',
+    title: "Cancel Order?",
     text: `Are you sure you want to cancel order #${orderId}?`,
-    icon: 'warning',
+    icon: "warning",
 
-    input: 'textarea',
-    inputLabel: 'Reason for cancellation',
-    inputPlaceholder: 'Enter your reason...',
+    input: "textarea",
+    inputLabel: "Reason for cancellation",
+    inputPlaceholder: "Enter your reason...",
     inputAttributes: {
-      'aria-label': 'Reason for cancellation'
+      "aria-label": "Reason for cancellation",
     },
 
     showCancelButton: true,
-    confirmButtonColor: '#dc2626',
-    cancelButtonColor: '#6b7280',
-    confirmButtonText: 'Yes, cancel it!',
-    cancelButtonText: 'No, keep it',
+    confirmButtonColor: "#dc2626",
+    cancelButtonColor: "#6b7280",
+    confirmButtonText: "Yes, cancel it!",
+    cancelButtonText: "No, keep it",
 
     preConfirm: (reason) => {
       if (!reason || !reason.trim()) {
-        Swal.showValidationMessage('Please provide a reason for cancellation');
+        Swal.showValidationMessage("Please provide a reason for cancellation");
         return false;
       }
       return reason.trim();
-    }
+    },
   }).then(async (result) => {
     if (result.isConfirmed) {
       const reason = result.value;
       const data = {
         orderId: orderID,
-        reason
+        reason,
       };
-      let res = await api.ordCancelAxios(data, orderItemId);
-      if (res.data.success) {
-        Swal.fire(
-          'Cancelled!',
-          `Order #${orderId} has been cancelled.`,
-          'success'
-        ).then(() => {
-          location.reload();
-        });
-      } else {
-        Swal.fire(
-          'Something Went wrong!',
-          `Order #${orderId} not has been cancelled.`,
-          'success'
-        ).then(() => {
-          location.reload();
-        });
+      showGlobalLoading();
+      try {
+        let res = await api.ordCancelAxios(data, orderItemId);
+        if (res.data.success) {
+          Swal.fire(
+            "Cancelled!",
+            `Order #${orderId} has been cancelled.`,
+            "success",
+          ).then(() => {
+            location.reload();
+          });
+        } else {
+          Swal.fire(
+            "Something Went wrong!",
+            `Order #${orderId} not has been cancelled.`,
+            "warning",
+          ).then(() => {
+            location.reload();
+          });
+        }
+      } catch (error) {
+        console.error(error);
+        Swal.fire("Error", "Something went wrong during cancellation", "error");
+      } finally {
+        hideGlobalLoading();
       }
     }
   });
@@ -415,67 +461,75 @@ window.showCancelModal = function (orderId, orderID, orderItemId) {
 
 window.showReturnModal = function (orderId, orderID, orderItemId) {
   Swal.fire({
-    title: 'Return Order?',
+    title: "Return Order?",
     text: `Are you sure you want to return order #${orderId}?`,
-    icon: 'warning',
+    icon: "warning",
 
-    input: 'textarea',
-    inputLabel: 'Reason for Return',
-    inputPlaceholder: 'Enter your reason...',
+    input: "textarea",
+    inputLabel: "Reason for Return",
+    inputPlaceholder: "Enter your reason...",
     inputAttributes: {
-      'aria-label': 'Reason for return '
+      "aria-label": "Reason for return ",
     },
 
     showCancelButton: true,
-    confirmButtonColor: '#dc2626',
-    cancelButtonColor: '#6b7280',
-    confirmButtonText: 'Yes, cancel it!',
-    cancelButtonText: 'No, keep it',
+    confirmButtonColor: "#dc2626",
+    cancelButtonColor: "#6b7280",
+    confirmButtonText: "Yes, cancel it!",
+    cancelButtonText: "No, keep it",
 
     preConfirm: (reason) => {
       if (!reason || !reason.trim()) {
-        Swal.showValidationMessage('Please provide a reason for cancellation');
+        Swal.showValidationMessage("Please provide a reason for cancellation");
         return false;
       }
       return reason.trim();
-    }
+    },
   }).then(async (result) => {
     if (result.isConfirmed) {
       const reason = result.value;
       const data = {
         orderId: orderID,
-        reason
+        reason,
       };
-      let res = await api.ordReturnAxios(data, orderItemId);
-      if (res.data.success) {
-        Swal.fire(
-          'Returned requast Success!',
-          `Order #${orderId} has been Returned.`,
-          'success'
-        ).then(() => {
-          location.reload();
-        });
-      } else {
-        Swal.fire(
-          'Something Went wrong!',
-          `Order #${orderId} not has been Returned.`,
-          'success'
-        ).then(() => {
-          location.reload();
-        });
+      showGlobalLoading();
+      try {
+        let res = await api.ordReturnAxios(data, orderItemId);
+        if (res.data.success) {
+          Swal.fire(
+            "Returned requast Success!",
+            `Order #${orderId} has been Returned.`,
+            "success",
+          ).then(() => {
+            location.reload();
+          });
+        } else {
+          Swal.fire(
+            "Something Went wrong!",
+            `Order #${orderId} not has been Returned.`,
+            "warning",
+          ).then(() => {
+            location.reload();
+          });
+        }
+      } catch (error) {
+        console.error(error);
+        Swal.fire("Error", "Something went wrong during return", "error");
+      } finally {
+        hideGlobalLoading();
       }
     }
   });
 };
 
 window.invoice = async function (orderId, orderID, orderItemId) {
-  console.log(orderItemId, 'it is printing here');
+  console.log(orderItemId, "it is printing here");
   await api.orderInvoice(orderID, orderItemId);
   Swal.fire({
-    title: 'Download Invoice',
+    title: "Download Invoice",
     text: `Invoice for order #${orderId} will be downloaded.`,
-    icon: 'info',
-    confirmButtonColor: '#8b5cf6',
-    confirmButtonText: 'Download'
+    icon: "info",
+    confirmButtonColor: "#8b5cf6",
+    confirmButtonText: "Download",
   });
 };

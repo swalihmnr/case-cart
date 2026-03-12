@@ -1,387 +1,440 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>CaseCart - Premium Phone Cases for All Brands</title>
-    <meta name="description" content="Shop premium phone cases for iPhone, Samsung, OnePlus, Xiaomi and more. Free shipping on orders over $50. 30-day returns guaranteed.">
+    <meta name="description"
+        content="Shop premium phone cases for iPhone, Samsung, OnePlus, Xiaomi and more. Free shipping on orders over $50. 30-day returns guaranteed.">
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/toastify-js/src/toastify.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/toastify-js"></script>
+    <script type="module" src="/js/ui-helpers.js"></script>
     <style>
-        @keyframes fadeInUp {
-            from {
-                opacity: 0;
-                transform: translateY(30px);
-            }
-            to {
-                opacity: 1;
-                transform: translateY(0);
-            }
-        }
-        .fade-in-up {
-            animation: fadeInUp 0.8s ease-out forwards;
-        }
-        .gradient-bg {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-        }
-        .product-card {
-            transition: transform 0.3s ease, box-shadow 0.3s ease;
-        }
-        .product-card:hover {
-            transform: translateY(-8px);
-            box-shadow: 0 20px 40px rgba(0,0,0,0.15);
-        }
-        .category-card {
-            transition: all 0.3s ease;
-        }
-        .category-card:hover {
-            transform: scale(1.05);
-        }
-        .nav-link {
-            position: relative;
-            transition: color 0.3s ease;
-        }
-        .nav-link::after {
-            content: '';
-            position: absolute;
-            width: 0;
-            height: 2px;
-            bottom: -4px;
-            left: 0;
-            background-color: #667eea;
-            transition: width 0.3s ease;
-        }
-        .nav-link:hover::after {
-            width: 100%;
-        }
-        .product-image {
-            height: 250px;
-            object-fit: cover;
-            background-color: #f8fafc;
-        }
-        .brand-logo {
-            height: 60px;
-            width: 60px;
-            object-fit: contain;
-            margin: 0 auto 16px;
-        }
-        
-        /* User Profile Dropdown */
-        .user-profile-dropdown {
-            display: none;
-            position: absolute;
-            top: 100%;
-            right: 0;
-            width: 280px;
-            background: white;
-            border-radius: 12px;
-            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.15);
-            padding: 20px;
-            z-index: 1000;
-            margin-top: 12px;
-            animation: fadeIn 0.2s ease-out;
-            border: 1px solid #e5e7eb;
-        }
-        
         @keyframes fadeIn {
             from {
                 opacity: 0;
                 transform: translateY(-10px);
             }
+
             to {
                 opacity: 1;
                 transform: translateY(0);
             }
         }
-        
-        .user-profile-dropdown::before {
+
+        .animate-fadeIn {
+            animation: fadeIn 0.3s ease-out forwards;
+        }
+
+        .user-profile-dropdown {
+            display: none;
+            position: absolute;
+            top: calc(100% + 10px);
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 20px 50px rgba(0, 0, 0, 0.1);
+            padding: 12px;
+            z-index: 1000;
+            border: 1px solid rgba(0, 0, 0, 0.05);
+        }
+
+        .user-profile:hover .user-profile-dropdown,
+        .user-profile:focus-within .user-profile-dropdown {
+            display: block;
+            animation: fadeIn 0.2s ease-out;
+        }
+
+        .nav-link {
+            position: relative;
+            padding-bottom: 4px;
+        }
+
+        .nav-link::after {
             content: '';
             position: absolute;
-            top: -8px;
-            right: 20px;
-            width: 16px;
-            height: 16px;
-            background: white;
-            transform: rotate(45deg);
-            border-left: 1px solid #e5e7eb;
-            border-top: 1px solid #e5e7eb;
-        }
-        
-        .user-profile:hover .user-profile-dropdown {
-            display: block;
-        }
-        
-        /* Mobile menu improvements */
-        #mobileMenu {
+            bottom: 0;
+            left: 50%;
+            width: 0;
+            height: 2px;
+            background: #9333ea;
             transition: all 0.3s ease;
+            transform: translateX(-50%);
+        }
+
+        .nav-link:hover::after {
+            width: 100%;
+        }
+
+        .gradient-bg {
+            background: linear-gradient(135deg, #9333ea 0%, #6366f1 100%);
+        }
+
+        .max-width-container {
+            max-width: 1400px;
+        }
+
+        /* Loading Spinner */
+        @keyframes spin {
+            to {
+                transform: rotate(360deg);
+            }
+        }
+
+        .spinner {
+            display: inline-block;
+            width: 1.25rem;
+            height: 1.25rem;
+            border: 2px solid rgba(255, 255, 255, 0.3);
+            border-radius: 50%;
+            border-top-color: #fff;
+            animation: spin 0.6s linear infinite;
+        }
+
+        .btn-loading {
+            position: relative;
+            color: transparent !important;
+            pointer-events: none;
+        }
+
+        .btn-loading .spinner {
+            position: absolute;
+            left: 50%;
+            top: 50%;
+            margin-left: -0.625rem;
+            margin-top: -0.625rem;
+        }
+        /* Global Loading Overlay */
+        #global-loading-overlay {
+            position: fixed;
+            inset: 0;
+            background: rgba(255, 255, 255, 0.7);
+            backdrop-filter: blur(4px);
+            z-index: 9999;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: opacity 0.3s ease;
+        }
+
+        .loader-glow {
+            width: 48px;
+            height: 48px;
+            border: 4px solid #9333ea;
+            border-bottom-color: transparent;
+            border-radius: 50%;
+            display: inline-block;
+            box-sizing: border-box;
+            animation: rotation 1s linear infinite;
+        }
+
+        @keyframes rotation {
+            0% {
+                transform: rotate(0deg);
+            }
+
+            100% {
+                transform: rotate(360deg);
+            }
+        }
+
+        .hidden-overlay {
+            opacity: 0;
+            pointer-events: none;
         }
     </style>
 </head>
-<body class="bg-gray-50">
+
+<body class="bg-white font-sans antialiased text-gray-900">
+    <!-- Global Loading Overlay -->
+    <div id="global-loading-overlay" class="hidden-overlay">
+        <div class="flex flex-col items-center">
+            <span class="loader-glow"></span>
+            <p class="mt-4 text-purple-900 font-bold text-sm tracking-widest animate-pulse">PROCESSING...</p>
+        </div>
+    </div>
     <!-- Navigation -->
-    <nav class="bg-white shadow-md sticky top-0 z-50">
-        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-            <div class="flex justify-between items-center h-16">
-                <!-- Logo -->
-                <div class="flex items-center">
-                    <a href="/home" class="flex items-center space-x-2">
-                        <div class="w-10 h-10 gradient-bg rounded-lg flex items-center justify-center">
-                            <span class="text-white font-bold text-xl">CC</span>
-                        </div>
-                        <span class="text-2xl font-bold text-gray-800">CaseCart</span>
-                    </a>
-                </div>
-
-                <!-- Desktop Navigation -->
-                <div class="hidden md:flex items-center space-x-8">
-                    <a href="/home" class="nav-link text-gray-700 hover:text-purple-600 font-medium">Home</a>
-                    <a href="/product" class="nav-link text-gray-700 hover:text-purple-600 font-medium">Products</a>
-                    <a href="/order" class="nav-link text-gray-700 hover:text-purple-600 font-medium">Orders</a>
-                </div>
-
-                <!-- Right Side Icons -->
-                <div class="flex items-center space-x-6">
-                    <!-- Wishlist -->
-                    <a href="/wishlist" class="text-gray-700 hover:text-purple-600 transition relative group">
-                        <i class="fas fa-heart text-xl"></i>
-                        <% if (wishlistcount > 0) { %>
-                            <span class="absolute -top-2 -right-2 bg-red-500 text-white text-xs rounded-full w-5 h-5 flex items-center justify-center"><%= wishlistcount %></span>
-                        <% } %>
-                        <div class="absolute -bottom-8 left-1/2 transform -translate-x-1/2 bg-gray-800 text-white text-xs px-2 py-1 rounded opacity-0 group-hover:opacity-100 transition whitespace-nowrap">
-                            Wishlist
-                        </div>
-                    </a>
-                    
-                    <!-- Cart -->
-                    <a href="/cart" class="text-gray-700 hover:text-purple-600 transition relative group">
-                        <i class="fas fa-shopping-cart text-xl"></i>
-                        <% if (cartCount > 0) { %>
-                            <span class="absolute -top-2 -right-2 bg-purple-600 text-white text-xs rounded-full w-5 h-5 flex items-center justify-center"><%= cartCount %></span>
-                        <% } %>
-                        <div class="absolute -bottom-8 left-1/2 transform -translate-x-1/2 bg-gray-800 text-white text-xs px-2 py-1 rounded opacity-0 group-hover:opacity-100 transition whitespace-nowrap">
-                            Cart
-                        </div>
-                    </a>
-                    
-                    <!-- User Profile -->
-                    <% if (!user) { %>
-                        <a href="/login" class="hidden md:flex items-center space-x-2 bg-purple-600 text-white px-6 py-2.5 rounded-xl hover:bg-purple-700 transition font-medium shadow-md hover:shadow-lg">
-                            <i class="fas fa-sign-in-alt"></i>
-                            <span>Login</span>
+    <nav class="bg-white/80 backdrop-blur-md sticky top-0 z-[100] border-b border-gray-100">
+        <% let fName='' ; let lName='' ; if (typeof user !=='undefined' && user) { fName=user.firstName ?
+            user.firstName.charAt(0).toUpperCase() : (user.name ? user.name.charAt(0).toUpperCase() : 'U' );
+            lName=user.lastName ? user.lastName.charAt(0).toUpperCase() : '' ; } %>
+            <div class="max-width-container mx-auto px-4 sm:px-6 lg:px-8">
+                <div class="flex justify-between items-center h-16 sm:h-20">
+                    <!-- Logo -->
+                    <div class="flex-shrink-0">
+                        <a href="/" class="flex items-center space-x-2">
+                            <div
+                                class="w-9 h-9 sm:w-10 sm:h-10 gradient-bg rounded-lg flex items-center justify-center shadow-lg transition-transform hover:scale-105">
+                                <span class="text-white font-bold text-lg sm:text-xl">CC</span>
+                            </div>
+                            <span
+                                class="hidden lg:block text-xl sm:text-2xl font-black text-gray-900 tracking-tight">CaseCart</span>
                         </a>
-                    <% } else { %>
-                        <div class="relative user-profile">
-                            <!-- Profile Trigger -->
-                            <button class="flex items-center space-x-3 focus:outline-none group">
-                                <div class="relative">
-                                    <div class="w-10 h-10 gradient-bg rounded-full flex items-center justify-center text-white font-bold text-lg">
-                                        <% 
-                                        // Safely get initials with null checks
-                                        const firstNameInitial = user && user.firstName ? user.firstName.charAt(0).toUpperCase() : 'U';
-                                        const lastNameInitial = user && user.lastName ? user.lastName.charAt(0).toUpperCase() : '';
-                                        %>
-                                        <%= firstNameInitial %><%= lastNameInitial %>
-                                    </div>
-                                    <div class="absolute -bottom-1 -right-1 w-4 h-4 bg-green-500 rounded-full border-2 border-white"></div>
-                                </div>
-                                <div class="hidden md:flex flex-col items-start">
-                                    <span class="text-gray-800 font-semibold text-sm">
-                                        Hi, <%= user.name %>
-                                    </span>
-                                    <span class="text-gray-500 text-xs">
-                                        <%= user && user.email ? user.email : '' %>
-                                    </span>
-                                </div>
-                                <i class="fas fa-chevron-down text-gray-500 text-sm transition-transform group-hover:rotate-180"></i>
-                            </button>
-                            
-                            <!-- Dropdown Menu -->
-                            <div class="user-profile-dropdown">
-                                <!-- User Info -->
-                                <div class="flex items-center space-x-3 mb-4 pb-4 border-b border-gray-100">
-                                    <div class="w-14 h-14 gradient-bg rounded-full flex items-center justify-center text-white font-bold text-xl">
-                                        <%= firstNameInitial %><%= lastNameInitial %>
-                                    </div>
-                                    <div>
-                                        <h3 class="font-bold text-gray-800">
-                                            <%= user && user.firstName ? user.firstName : '' %> 
-                                            <%= user && user.lastName ? user.lastName : '' %>
-                                        </h3>
-                                        <p class="text-sm text-gray-500"><%= user && user.email ? user.email : '' %></p>
-                                        
-                                    </div>
-                                </div>
-                                
-                                <!-- Menu Links -->
-                                <div class="space-y-2 mb-4">
-                                    <a href="/user-profile" class="flex items-center space-x-3 p-2 rounded-lg hover:bg-gray-50 transition">
-                                        <div class="w-8 h-8 bg-purple-100 rounded-lg flex items-center justify-center text-purple-600">
-                                            <i class="fas fa-user text-sm"></i>
+                    </div>
+
+                    <!-- Desktop Navigation (Center) -->
+                    <div class="hidden md:flex items-center space-x-8">
+                        <a href="/"
+                            class="nav-link text-gray-700 hover:text-purple-600 font-semibold text-sm uppercase tracking-wider">Home</a>
+                        <a href="/product"
+                            class="nav-link text-gray-700 hover:text-purple-600 font-semibold text-sm uppercase tracking-wider">Products</a>
+                        <a href="/order"
+                            class="nav-link text-gray-700 hover:text-purple-600 font-semibold text-sm uppercase tracking-wider">Orders</a>
+                    </div>
+
+                    <!-- Right Side Actions -->
+                    <div class="flex items-center space-x-2 sm:space-x-5">
+                        <!-- Desktop View Search/Wishlist/Cart -->
+                        <div class="flex items-center space-x-2 sm:space-x-5">
+                            <!-- Wishlist -->
+                            <a href="/wishlist"
+                                class="p-2 text-gray-700 hover:text-purple-600 transition-colors relative group">
+                                <i class="far fa-heart text-xl sm:text-2xl"></i>
+                                <span id="wishlist-count-desktop"
+                                    class="absolute top-1 right-1 bg-red-500 text-white text-[10px] font-bold rounded-full w-4 h-4 sm:w-5 sm:h-5 flex items-center justify-center border-2 border-white <%= (wishlistcount > 0) ? '' : 'hidden' %>">
+                                    <%= wishlistcount %>
+                                </span>
+                            </a>
+
+                            <!-- Cart -->
+                            <a href="/cart"
+                                class="p-2 text-gray-700 hover:text-purple-600 transition-colors relative group">
+                                <i class="fas fa-shopping-bag text-xl sm:text-2xl"></i>
+                                <span id="cart-count-desktop"
+                                    class="absolute top-1 right-1 bg-purple-600 text-white text-[10px] font-bold rounded-full w-4 h-4 sm:w-5 sm:h-5 flex items-center justify-center border-2 border-white <%= (cartCount > 0) ? '' : 'hidden' %>">
+                                    <%= cartCount %>
+                                </span>
+                            </a>
+                        </div>
+
+                        <!-- User Profile / Login -->
+                        <div class="hidden md:block">
+                            <% if (!user) { %>
+                                <a href="/login"
+                                    class="inline-flex items-center space-x-2 bg-gray-900 text-white px-5 py-2.5 rounded-xl hover:bg-purple-600 transition font-bold text-sm shadow-md">
+                                    <i class="fas fa-user-circle"></i>
+                                    <span>Login</span>
+                                </a>
+                                <% } else { %>
+                                    <div class="relative user-profile">
+                                        <button
+                                            class="flex items-center space-x-2 focus:outline-none group p-1 rounded-full hover:bg-gray-100 transition">
+                                            <div
+                                                class="w-10 h-10 gradient-bg rounded-full flex items-center justify-center text-white font-bold text-base border-2 border-white shadow-sm overflow-hidden">
+                                                <% if (user.profileUrl) { %>
+                                                    <img src="<%= user.profileUrl %>" alt="Profile"
+                                                        class="w-full h-full object-cover">
+                                                    <% } else { %>
+                                                        <%= fName %>
+                                                            <% if(lName) { %>
+                                                                <%= lName %>
+                                                                    <% } %>
+                                                                        <% } %>
+                                            </div>
+                                            <i
+                                                class="fas fa-chevron-down text-gray-400 text-[10px] transition-transform group-hover:rotate-180"></i>
+                                        </button>
+
+                                        <!-- Dropdown -->
+                                        <div class="user-profile-dropdown right-0 w-64">
+                                            <div class="px-2 py-3 border-b border-gray-50 mb-2">
+                                                <p
+                                                    class="text-xs text-gray-400 uppercase font-bold tracking-widest mb-1">
+                                                    Account</p>
+                                                <p class="text-sm font-bold text-gray-900 truncate">
+                                                    <%= user.name %>
+                                                </p>
+                                                <p class="text-xs text-gray-500 truncate">
+                                                    <%= user.email %>
+                                                </p>
+                                            </div>
+                                            <div class="space-y-1">
+                                                <a href="/user-profile"
+                                                    class="flex items-center space-x-3 p-2.5 rounded-xl hover:bg-purple-50 hover:text-purple-600 transition group">
+                                                    <i
+                                                        class="fas fa-user-circle text-gray-400 group-hover:text-purple-600 w-5 text-center"></i>
+                                                    <span class="text-sm font-semibold">My Profile</span>
+                                                </a>
+                                                <a href="/order"
+                                                    class="flex items-center space-x-3 p-2.5 rounded-xl hover:bg-purple-50 hover:text-purple-600 transition group">
+                                                    <i
+                                                        class="fas fa-box text-gray-400 group-hover:text-purple-600 w-5 text-center"></i>
+                                                    <span class="text-sm font-semibold">My Orders</span>
+                                                </a>
+                                                <a href="/logout"
+                                                    class="flex items-center space-x-3 p-2.5 rounded-xl hover:bg-red-50 text-red-500 transition group mt-2 pt-2 border-t border-gray-50">
+                                                    <i class="fas fa-sign-out-alt w-5 text-center"></i>
+                                                    <span class="text-sm font-bold">Logout</span>
+                                                </a>
+                                            </div>
                                         </div>
-                                        <span class="text-gray-700 font-medium">My Profile</span>
-                                    </a>
-                                    <a href="/order" class="flex items-center space-x-3 p-2 rounded-lg hover:bg-gray-50 transition">
-                                        <div class="w-8 h-8 bg-blue-100 rounded-lg flex items-center justify-center text-blue-600">
-                                            <i class="fas fa-shopping-bag text-sm"></i>
-                                        </div>
-                                        <span class="text-gray-700 font-medium">My Orders</span>
-                                    </a>
-                                    <a href="/wishlist" class="flex items-center space-x-3 p-2 rounded-lg hover:bg-gray-50 transition">
-                                        <div class="w-8 h-8 bg-red-100 rounded-lg flex items-center justify-center text-red-600">
-                                            <i class="fas fa-heart text-sm"></i>
-                                        </div>
-                                        <span class="text-gray-700 font-medium">Wishlist</span>
-                                        <% if (wishlistcount > 0) { %>
-                                            <span class="ml-auto bg-red-500 text-white text-xs px-2 py-1 rounded-full"><%= wishlistcount %></span>
-                                        <% } %>
-                                    </a>
-                                    <a href="/address" class="flex items-center space-x-3 p-2 rounded-lg hover:bg-gray-50 transition">
-                                        <div class="w-8 h-8 bg-green-100 rounded-lg flex items-center justify-center text-green-600">
-                                            <i class="fas fa-map-marker-alt text-sm"></i>
-                                        </div>
-                                        <span class="text-gray-700 font-medium">Addresses</span>
-                                    </a>
-                                </div>
-                                
-                                <!-- Stats -->
-                                <!-- <div class="grid grid-cols-2 gap-3 mb-4 pb-4 border-b border-gray-100">
-                                    <div class="text-center p-2 bg-gray-50 rounded-lg">
-                                        <div class="text-lg font-bold text-purple-600">12</div>
-                                        <div class="text-xs text-gray-500">Orders</div>
                                     </div>
-                                    <div class="text-center p-2 bg-gray-50 rounded-lg">
-                                        <div class="text-lg font-bold text-purple-600">₹8,450</div>
-                                        <div class="text-xs text-gray-500">Spent</div>
-                                    </div>
-                                </div> -->
-                                
-                                <!-- Logout -->
-                                <a href="/logout" class="flex items-center justify-center space-x-2 w-full bg-red-50 text-red-600 px-4 py-3 rounded-lg hover:bg-red-100 transition font-medium">
-                                    <i class="fas fa-sign-out-alt"></i>
-                                    <span>Logout</span>
+                                    <% } %>
+                        </div>
+
+                        <!-- Mobile Menu Toggle -->
+                        <button
+                            class="md:hidden ml-1 p-2 rounded-xl bg-gray-50 text-gray-900 hover:bg-purple-600 hover:text-white transition shadow-sm"
+                            onclick="toggleMobileMenu()">
+                            <i id="mobileMenuIcon" class="fas fa-bars text-xl"></i>
+                        </button>
+                    </div>
+                </div>
+
+            </div>
+    </nav>
+
+    <!-- Mobile Menu (Full Overlay) -->
+    <div id="mobileMenu"
+        class="hidden fixed inset-0 z-[999] bg-white pt-6 px-6 overflow-y-auto animate-fadeIn w-full h-full">
+        <div class="flex justify-between items-center mb-10">
+            <div class="w-10 h-10 gradient-bg rounded-lg flex items-center justify-center shadow-lg">
+                <span class="text-white font-bold text-xl">CC</span>
+            </div>
+            <button onclick="toggleMobileMenu()"
+                class="p-2 rounded-xl bg-gray-50 text-gray-900 shadow-sm border border-gray-100">
+                <i class="fas fa-times text-2xl"></i>
+            </button>
+        </div>
+
+        <div class="space-y-10">
+            <% if (user) { %>
+                <div class="flex items-center space-x-4 pb-6 border-b border-gray-50">
+                    <div
+                        class="w-16 h-16 gradient-bg rounded-2xl flex items-center justify-center text-white font-bold text-2xl shadow-xl overflow-hidden">
+                        <% if (user.profileUrl) { %>
+                            <img src="<%= user.profileUrl %>" alt="Profile" class="w-full h-full object-cover">
+                            <% } else { %>
+                                <%= fName %>
+                                    <% if(lName) { %>
+                                        <%= lName %>
+                                            <% } %>
+                                                <% } %>
+                    </div>
+                    <div class="flex-1 min-w-0">
+                        <h3 class="font-bold text-2xl text-gray-900 truncate">
+                            <%= user.name %>
+                        </h3>
+                        <p class="text-sm text-gray-500 truncate">
+                            <%= user.email %>
+                        </p>
+                    </div>
+                </div>
+                <% } %>
+
+                    <nav class="grid gap-6">
+                        <a href="/"
+                            class="flex items-center justify-between group transition-transform hover:translate-x-2">
+                            <span
+                                class="text-2xl font-black text-gray-900 group-hover:text-purple-600 transition">HOME</span>
+                            <i class="fas fa-arrow-right text-gray-200 group-hover:text-purple-600 transition"></i>
+                        </a>
+                        <a href="/product"
+                            class="flex items-center justify-between group transition-transform hover:translate-x-2">
+                            <span
+                                class="text-2xl font-black text-gray-900 group-hover:text-purple-600 transition">SHOP</span>
+                            <i class="fas fa-arrow-right text-gray-200 group-hover:text-purple-600 transition"></i>
+                        </a>
+                        <a href="/order"
+                            class="flex items-center justify-between group transition-transform hover:translate-x-2">
+                            <span
+                                class="text-2xl font-black text-gray-900 group-hover:text-purple-600 transition">ORDERS</span>
+                            <i class="fas fa-arrow-right text-gray-200 group-hover:text-purple-600 transition"></i>
+                        </a>
+                        <a href="/wishlist"
+                            class="flex items-center justify-between group transition-transform hover:translate-x-2">
+                            <div class="flex items-center space-x-3">
+                                <span
+                                    class="text-2xl font-black text-gray-900 group-hover:text-purple-600 transition">WISHLIST</span>
+                                <span id="wishlist-count-mobile"
+                                    class="bg-red-500 text-white text-xs font-bold rounded-full w-6 h-6 flex items-center justify-center <%= (wishlistcount > 0) ? '' : 'hidden' %>">
+                                    <%= wishlistcount %>
+                                </span>
+                            </div>
+                            <i class="fas fa-arrow-right text-gray-200 group-hover:text-purple-600 transition"></i>
+                        </a>
+                        <a href="/cart"
+                            class="flex items-center justify-between group transition-transform hover:translate-x-2">
+                            <div class="flex items-center space-x-3">
+                                <span
+                                    class="text-2xl font-black text-gray-900 group-hover:text-purple-600 transition">CART</span>
+                                <span id="cart-count-mobile"
+                                    class="bg-purple-600 text-white text-xs font-bold rounded-full w-6 h-6 flex items-center justify-center <%= (cartCount > 0) ? '' : 'hidden' %>">
+                                    <%= cartCount %>
+                                </span>
+                            </div>
+                            <i class="fas fa-arrow-right text-gray-200 group-hover:text-purple-600 transition"></i>
+                        </a>
+                    </nav>
+
+                    <div class="py-8 border-t border-gray-50">
+                        <% if (user) { %>
+                            <div class="grid grid-cols-1 gap-4">
+                                <a href="/user-profile"
+                                    class="flex items-center space-x-4 p-4 rounded-2xl bg-gray-50 text-gray-800 font-bold hover:bg-purple-50 hover:text-purple-600 transition">
+                                    <i class="fas fa-user-circle text-xl"></i>
+                                    <span>My Account</span>
+                                </a>
+                                <a href="/address"
+                                    class="flex items-center space-x-4 p-4 rounded-2xl bg-gray-50 text-gray-800 font-bold hover:bg-purple-50 hover:text-purple-600 transition">
+                                    <i class="fas fa-map-marker-alt text-xl"></i>
+                                    <span>My Addresses</span>
+                                </a>
+                                <a href="/logout"
+                                    class="flex items-center justify-center space-x-4 p-4 rounded-2xl bg-red-50 text-red-500 font-bold hover:bg-red-100 transition mt-4">
+                                    <i class="fas fa-power-off text-xl"></i>
+                                    <span>LOGOUT</span>
                                 </a>
                             </div>
-                        </div>
-                    <% } %>
-                    
-                    <!-- Mobile Menu Button -->
-                    <button class="md:hidden text-gray-700 hover:text-purple-600 transition" onclick="toggleMobileMenu()">
-                        <i class="fas fa-bars text-xl"></i>
-                    </button>
-                </div>
-            </div>
-
-            <!-- Mobile Menu -->
-            <div id="mobileMenu" class="hidden md:hidden pb-4 border-t border-gray-100 mt-2">
-                <div class="space-y-1 py-2">
-                    <a href="/home" class="flex items-center space-x-3 py-3 px-4 text-gray-700 hover:text-purple-600 hover:bg-gray-50 rounded-lg transition">
-                        <i class="fas fa-home w-5"></i>
-                        <span>Home</span>
-                    </a>
-                    <a href="/product" class="flex items-center space-x-3 py-3 px-4 text-gray-700 hover:text-purple-600 hover:bg-gray-50 rounded-lg transition">
-                        <i class="fas fa-box w-5"></i>
-                        <span>Products</span>
-                    </a>
-                    <a href="#categories" class="flex items-center space-x-3 py-3 px-4 text-gray-700 hover:text-purple-600 hover:bg-gray-50 rounded-lg transition">
-                        <i class="fas fa-th-large w-5"></i>
-                        <span>Categories</span>
-                    </a>
-                </div>
-                
-                <% if (!user) { %>
-                    <div class="px-4 py-3">
-                        <a href="/login" class="flex items-center justify-center space-x-2 bg-purple-600 text-white px-6 py-3 rounded-xl hover:bg-purple-700 transition font-medium w-full">
-                            <i class="fas fa-sign-in-alt"></i>
-                            <span>Login to Account</span>
-                        </a>
-                    </div>
-                <% } else { %>
-                    <!-- Mobile User Info -->
-                    <div class="px-4 py-3 border-t border-gray-100">
-                        <div class="flex items-center space-x-3 mb-4">
-                            <div class="w-12 h-12 gradient-bg rounded-full flex items-center justify-center text-white font-bold text-lg">
-                               
-                            </div>
-                            <div>
-                                <h3 class="font-bold text-gray-800">
-                                    <%= user && user.firstName ? user.firstName : '' %> 
-                                    <%= user && user.lastName ? user.lastName : '' %>
-                                </h3>
-                                <p class="text-sm text-gray-500"><%= user && user.email ? user.email : '' %></p>
-                            </div>
-                        </div>
-                        
-                        <div class="space-y-2">
-                            <a href="/profile" class="flex items-center space-x-3 py-3 px-4 text-gray-700 hover:text-purple-600 hover:bg-gray-50 rounded-lg transition">
-                                <i class="fas fa-user w-5"></i>
-                                <span>My Profile</span>
-                            </a>
-                            <a href="/orders" class="flex items-center space-x-3 py-3 px-4 text-gray-700 hover:text-purple-600 hover:bg-gray-50 rounded-lg transition">
-                                <i class="fas fa-shopping-bag w-5"></i>
-                                <span>My Orders</span>
-                            </a>
-                            <a href="/wishlist" class="flex items-center space-x-3 py-3 px-4 text-gray-700 hover:text-purple-600 hover:bg-gray-50 rounded-lg transition">
-                                <i class="fas fa-heart w-5"></i>
-                                <span>Wishlist</span>
-                                <% if (wishlistcount > 0) { %>
-                                    <span class="ml-auto bg-red-500 text-white text-xs px-2 py-1 rounded-full"><%= wishlistcount %></span>
+                            <% } else { %>
+                                <a href="/login"
+                                    class="flex items-center justify-center space-x-3 bg-gray-900 text-white px-8 py-5 rounded-2xl font-black text-xl shadow-2xl hover:bg-purple-600 transition">
+                                    <i class="fas fa-sign-in-alt"></i>
+                                    <span>LOGIN TO ACCOUNT</span>
+                                </a>
                                 <% } %>
-                            </a>
-                            <a href="/address" class="flex items-center space-x-3 py-3 px-4 text-gray-700 hover:text-purple-600 hover:bg-gray-50 rounded-lg transition">
-                                <i class="fas fa-map-marker-alt w-5"></i>
-                                <span>Addresses</span>
-                            </a>
-                        </div>
-                        
-                        <div class="mt-4 pt-4 border-t border-gray-100">
-                            <a href="/logout" class="flex items-center justify-center space-x-2 w-full bg-red-50 text-red-600 px-4 py-3 rounded-lg hover:bg-red-100 transition font-medium">
-                                <i class="fas fa-sign-out-alt"></i>
-                                <span>Logout</span>
-                            </a>
-                        </div>
                     </div>
-                <% } %>
-            </div>
         </div>
+    </div>
     </nav>
-     <script>
+    <script>
         function toggleMobileMenu() {
             const mobileMenu = document.getElementById('mobileMenu');
-            mobileMenu.classList.toggle('hidden');
-        }
-        
-        // Close dropdown when clicking outside
-        document.addEventListener('click', function(event) {
-            const userProfile = document.querySelector('.user-profile');
-            const dropdown = document.querySelector('.user-profile-dropdown');
-            
-            if (userProfile && dropdown) {
-                if (!userProfile.contains(event.target)) {
-                    dropdown.style.display = 'none';
-                }
+            const isHidden = mobileMenu.classList.contains('hidden');
+
+            if (isHidden) {
+                mobileMenu.classList.remove('hidden');
+                document.body.style.overflow = 'hidden';
+            } else {
+                mobileMenu.classList.add('hidden');
+                document.body.style.overflow = '';
             }
-        });
-        
-        // Toggle dropdown on click (for mobile touch)
-        document.addEventListener('DOMContentLoaded', function() {
+        }
+
+        // Handle Profile Dropdown for Touch
+        document.addEventListener('DOMContentLoaded', function () {
             const profileTrigger = document.querySelector('.user-profile button');
             const dropdown = document.querySelector('.user-profile-dropdown');
-            
+
             if (profileTrigger && dropdown) {
-                profileTrigger.addEventListener('click', function(e) {
-                    e.stopPropagation();
-                    const isVisible = dropdown.style.display === 'block';
-                    dropdown.style.display = isVisible ? 'none' : 'block';
+                profileTrigger.addEventListener('click', function (e) {
+                    if (window.innerWidth < 1024) { // Only force toggle on mobile/tablet
+                        e.preventDefault();
+                        e.stopPropagation();
+                        const isVisible = window.getComputedStyle(dropdown).display === 'block';
+                        dropdown.style.display = isVisible ? 'none' : 'block';
+                    }
                 });
-            }
-            
-            // Close dropdown when clicking on a link
-            if (dropdown) {
-                document.querySelectorAll('.user-profile-dropdown a').forEach(link => {
-                    link.addEventListener('click', () => {
-                        dropdown.style.display = 'none';
-                    });
+
+                document.addEventListener('click', function (e) {
+                    if (!profileTrigger.contains(e.target)) {
+                        dropdown.style.display = '';
+                    }
                 });
             }
         });
     </script>
+
+    <%- include("../flash") %>

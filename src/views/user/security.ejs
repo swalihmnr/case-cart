@@ -1,158 +1,146 @@
 <%- include('../partials/user/header') %>
 
-<!-- Main Container with Responsive Layout -->
-<div class="min-h-screen bg-gray-50">
-  <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 sm:py-6 lg:py-12">
-    <div class="flex flex-col lg:flex-row gap-4 lg:gap-8">
-      
-      <!-- Sidebar - Responsive -->
-      <%- include('../partials/user/sidebar') %>
-      
-      <!-- Main Content Area - Responsive -->
-      <main class="flex-1 w-full">
-        <div class="bg-white rounded-lg shadow-sm p-4 sm:p-6 lg:p-8">
-          <div class="max-w-2xl mx-auto lg:mx-0">
-            
-            <!-- Page Title - Responsive -->
-            <div class="mb-6 sm:mb-8">
-              <h3 class="text-xl sm:text-2xl lg:text-3xl font-bold text-gray-900">
-                Security Settings
-              </h3>
-              <p class="text-sm sm:text-base text-gray-600 mt-2 hidden sm:block">
-                Manage your password and security preferences
-              </p>
-            </div>
-            
-            <!-- Change Password Form -->
-            <form id="passwordForm" class="space-y-4 sm:space-y-6">
-              <div>
-                <h4 class="text-base sm:text-lg font-semibold text-gray-900 mb-3 sm:mb-4">
-                  Change Password
-                </h4>
-                
-                <div class="space-y-3 sm:space-y-4">
-                  
-                  <!-- Current Password -->
-                  <div>
-                    <label for="currentPassword" class="block text-xs sm:text-sm font-medium text-gray-700 mb-1.5 sm:mb-2">
-                      Current Password
-                    </label>
-                    <div class="relative">
-                      <input 
-                        type="password" 
-                        id="currentPassword" 
-                        name="currentPassword"
-                        placeholder="Enter current password"
-                        class="w-full px-3 sm:px-4 py-2.5 sm:py-3 text-sm sm:text-base border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent outline-none transition"
-                      >
-                      <button 
-                        type="button" 
-                        class="absolute right-3 top-1/2 -translate-y-1/2 text-gray-500 hover:text-gray-700 toggle-password"
-                        data-target="currentPassword"
-                      >
-                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path>
-                          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"></path>
-                        </svg>
-                      </button>
-                    </div>
-                    <span id="currentPassErr" class="text-red-500 text-xs sm:text-sm block mt-1"></span>
-                  </div>
-                  
-                  <!-- New Password -->
-                  <div>
-                    <label for="newPassword" class="block text-xs sm:text-sm font-medium text-gray-700 mb-1.5 sm:mb-2">
-                      New Password
-                    </label>
-                    <div class="relative">
-                      <input 
-                        type="password" 
-                        id="newPassword" 
-                        name="newPassword"
-                        placeholder="Enter new password"
-                        class="w-full px-3 sm:px-4 py-2.5 sm:py-3 text-sm sm:text-base border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent outline-none transition"
-                      >
-                      <button 
-                        type="button" 
-                        class="absolute right-3 top-1/2 -translate-y-1/2 text-gray-500 hover:text-gray-700 toggle-password"
-                        data-target="newPassword"
-                      >
-                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path>
-                          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"></path>
-                        </svg>
-                      </button>
-                    </div>
-                    <span id="newPassErr" class="text-red-500 text-xs sm:text-sm block mt-1"></span>
-                    
-                    <!-- Password Strength Indicator -->
-                    <div class="mt-2 hidden" id="passwordStrength">
-                      <div class="flex gap-1 mb-1">
-                        <div class="h-1.5 flex-1 bg-gray-200 rounded strength-bar"></div>
-                        <div class="h-1.5 flex-1 bg-gray-200 rounded strength-bar"></div>
-                        <div class="h-1.5 flex-1 bg-gray-200 rounded strength-bar"></div>
-                        <div class="h-1.5 flex-1 bg-gray-200 rounded strength-bar"></div>
-                      </div>
-                      <p class="text-xs text-gray-600" id="strengthText">Password strength</p>
-                    </div>
-                    
-                    <!-- Password Requirements -->
-                    
-                  </div>
-                  
-                  <!-- Confirm Password -->
-                  <div>
-                    <label for="confirmPassword" class="block text-xs sm:text-sm font-medium text-gray-700 mb-1.5 sm:mb-2">
-                      Confirm New Password
-                    </label>
-                    <div class="relative">
-                      <input 
-                        type="password" 
-                        id="confirmPassword" 
-                        name="confirmPassword"
-                        placeholder="Re-enter new password"
-                        class="w-full px-3 sm:px-4 py-2.5 sm:py-3 text-sm sm:text-base border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent outline-none transition"
-                      >
-                      <button 
-                        type="button" 
-                        class="absolute right-3 top-1/2 -translate-y-1/2 text-gray-500 hover:text-gray-700 toggle-password"
-                        data-target="confirmPassword"
-                      >
-                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path>
-                          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"></path>
-                        </svg>
-                      </button>
-                    </div>
-                    <span id="confirmPassErr" class="text-red-500 text-xs sm:text-sm block mt-1"></span>
-                  </div>
-                  
+  <div class="min-h-screen bg-gray-50/50">
+    <main class="max-w-7xl mx-auto px-4 py-6 md:py-12">
+      <div class="mb-6 md:mb-10 fade-in">
+        <h1 class="text-2xl md:text-4xl font-black text-gray-900 mb-1 md:mb-2 italic">My Account</h1>
+        <p class="text-gray-500 text-sm md:text-base font-medium">Manage your settings and preferences</p>
+      </div>
+
+      <div class="grid lg:grid-cols-4 gap-4 md:gap-8">
+        <%- include('../partials/user/sidebar') %>
+          <div class="lg:col-span-3 space-y-6">
+            <div class="bg-white rounded-2xl shadow-sm border border-gray-200 overflow-hidden">
+              <div class="max-w-2xl mx-auto lg:mx-0">
+
+                <!-- Page Title - Responsive -->
+                <div class="mb-6 sm:mb-8">
+                  <h3 class="text-xl sm:text-2xl lg:text-3xl font-bold text-gray-900">
+                    Security Settings
+                  </h3>
+                  <p class="text-sm sm:text-base text-gray-600 mt-2 hidden sm:block">
+                    Manage your password and security preferences
+                  </p>
                 </div>
-              </div>
-              
-              <!-- Submit Button - Responsive -->
-              <div class="flex flex-col sm:flex-row gap-3 sm:gap-4 pt-2">
-                <button 
-                  type="submit" 
-                  class="w-full sm:w-auto bg-purple-600 text-white px-6 py-2.5 sm:py-3 text-sm sm:text-base rounded-lg font-medium hover:bg-purple-700 active:bg-purple-800 transition focus:outline-none focus:ring-2 focus:ring-purple-500 focus:ring-offset-2"
-                >
-                  Update Password
-                </button>
-                <a href="/user-profile">
-                <button 
-                  type="button" 
-                  id="cancelBtn"
-                  class="w-full sm:w-auto bg-gray-100 text-gray-700 px-6 py-2.5 sm:py-3 text-sm sm:text-base rounded-lg font-medium hover:bg-gray-200 active:bg-gray-300 transition focus:outline-none focus:ring-2 focus:ring-gray-400 focus:ring-offset-2"
-                >
-                  Cancel
-                </button>
-                </a>
-              </div>
-              
-            </form>
-            
-            <!-- Additional Security Options - Mobile Friendly -->
-            <!-- <div class="mt-8 pt-6 border-t border-gray-200">
+
+                <!-- Change Password Form -->
+                <form id="passwordForm" class="space-y-4 sm:space-y-6">
+                  <div>
+                    <h4 class="text-base sm:text-lg font-semibold text-gray-900 mb-3 sm:mb-4">
+                      Change Password
+                    </h4>
+
+                    <div class="space-y-3 sm:space-y-4">
+
+                      <!-- Current Password -->
+                      <div>
+                        <label for="currentPassword"
+                          class="block text-xs sm:text-sm font-medium text-gray-700 mb-1.5 sm:mb-2">
+                          Current Password
+                        </label>
+                        <div class="relative">
+                          <input type="password" id="currentPassword" name="currentPassword"
+                            placeholder="Enter current password"
+                            class="w-full px-3 sm:px-4 py-2.5 sm:py-3 text-sm sm:text-base border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent outline-none transition">
+                          <button type="button"
+                            class="absolute right-3 top-1/2 -translate-y-1/2 text-gray-500 hover:text-gray-700 toggle-password"
+                            data-target="currentPassword">
+                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path>
+                              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z">
+                              </path>
+                            </svg>
+                          </button>
+                        </div>
+                        <span id="currentPassErr" class="text-red-500 text-xs sm:text-sm block mt-1"></span>
+                      </div>
+
+                      <!-- New Password -->
+                      <div>
+                        <label for="newPassword"
+                          class="block text-xs sm:text-sm font-medium text-gray-700 mb-1.5 sm:mb-2">
+                          New Password
+                        </label>
+                        <div class="relative">
+                          <input type="password" id="newPassword" name="newPassword" placeholder="Enter new password"
+                            class="w-full px-3 sm:px-4 py-2.5 sm:py-3 text-sm sm:text-base border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent outline-none transition">
+                          <button type="button"
+                            class="absolute right-3 top-1/2 -translate-y-1/2 text-gray-500 hover:text-gray-700 toggle-password"
+                            data-target="newPassword">
+                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path>
+                              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z">
+                              </path>
+                            </svg>
+                          </button>
+                        </div>
+                        <span id="newPassErr" class="text-red-500 text-xs sm:text-sm block mt-1"></span>
+
+                        <!-- Password Strength Indicator -->
+                        <div class="mt-2 hidden" id="passwordStrength">
+                          <div class="flex gap-1 mb-1">
+                            <div class="h-1.5 flex-1 bg-gray-200 rounded strength-bar"></div>
+                            <div class="h-1.5 flex-1 bg-gray-200 rounded strength-bar"></div>
+                            <div class="h-1.5 flex-1 bg-gray-200 rounded strength-bar"></div>
+                            <div class="h-1.5 flex-1 bg-gray-200 rounded strength-bar"></div>
+                          </div>
+                          <p class="text-xs text-gray-600" id="strengthText">Password strength</p>
+                        </div>
+
+                        <!-- Password Requirements -->
+
+                      </div>
+
+                      <!-- Confirm Password -->
+                      <div>
+                        <label for="confirmPassword"
+                          class="block text-xs sm:text-sm font-medium text-gray-700 mb-1.5 sm:mb-2">
+                          Confirm New Password
+                        </label>
+                        <div class="relative">
+                          <input type="password" id="confirmPassword" name="confirmPassword"
+                            placeholder="Re-enter new password"
+                            class="w-full px-3 sm:px-4 py-2.5 sm:py-3 text-sm sm:text-base border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent outline-none transition">
+                          <button type="button"
+                            class="absolute right-3 top-1/2 -translate-y-1/2 text-gray-500 hover:text-gray-700 toggle-password"
+                            data-target="confirmPassword">
+                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path>
+                              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z">
+                              </path>
+                            </svg>
+                          </button>
+                        </div>
+                        <span id="confirmPassErr" class="text-red-500 text-xs sm:text-sm block mt-1"></span>
+                      </div>
+
+                    </div>
+                  </div>
+
+                  <!-- Submit Button - Responsive -->
+                  <div class="flex flex-col sm:flex-row gap-3 sm:gap-4 pt-2">
+                    <button type="submit"
+                      class="w-full sm:w-auto bg-purple-600 text-white px-6 py-2.5 sm:py-3 text-sm sm:text-base rounded-lg font-medium hover:bg-purple-700 active:bg-purple-800 transition focus:outline-none focus:ring-2 focus:ring-purple-500 focus:ring-offset-2">
+                      Update Password
+                    </button>
+                    <a href="/user-profile">
+                      <button type="button" id="cancelBtn"
+                        class="w-full sm:w-auto bg-gray-100 text-gray-700 px-6 py-2.5 sm:py-3 text-sm sm:text-base rounded-lg font-medium hover:bg-gray-200 active:bg-gray-300 transition focus:outline-none focus:ring-2 focus:ring-gray-400 focus:ring-offset-2">
+                        Cancel
+                      </button>
+                    </a>
+                  </div>
+
+                </form>
+
+                <!-- Additional Security Options - Mobile Friendly -->
+                <!-- <div class="mt-8 pt-6 border-t border-gray-200">
               <h4 class="text-base sm:text-lg font-semibold text-gray-900 mb-3 sm:mb-4">
                 Additional Security
               </h4>
@@ -186,43 +174,42 @@
                 </div>
               </div>
             </div> -->
-            
+
+              </div>
+            </div>
           </div>
-        </div>
-      </main>
-      
-    </div>
+      </div>
+    </main>
   </div>
-</div>
-<script>
+  <script>
     // Toggle password visibility
-document.querySelectorAll('.toggle-password').forEach(button => {
-  button.addEventListener('click', function() {
-    const targetId = this.getAttribute('data-target');
-    const input = document.getElementById(targetId);
-    
-    if (input.type === 'password') {
-      input.type = 'text';
-      this.innerHTML = `
+    document.querySelectorAll('.toggle-password').forEach(button => {
+      button.addEventListener('click', function () {
+        const targetId = this.getAttribute('data-target');
+        const input = document.getElementById(targetId);
+
+        if (input.type === 'password') {
+          input.type = 'text';
+          this.innerHTML = `
         <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
           <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13.875 18.825A10.05 10.05 0 0112 19c-4.478 0-8.268-2.943-9.543-7a9.97 9.97 0 011.563-3.029m5.858.908a3 3 0 114.243 4.243M9.878 9.878l4.242 4.242M9.88 9.88l-3.29-3.29m7.532 7.532l3.29 3.29M3 3l3.59 3.59m0 0A9.953 9.953 0 0112 5c4.478 0 8.268 2.943 9.543 7a10.025 10.025 0 01-4.132 5.411m0 0L21 21"></path>
         </svg>
       `;
-    } else {
-      input.type = 'password';
-      this.innerHTML = `
+        } else {
+          input.type = 'password';
+          this.innerHTML = `
         <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
           <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path>
           <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"></path>
         </svg>
       `;
-    }
-  });
-});
+        }
+      });
+    });
 
-</script>
+  </script>
 
-<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
-<script type="module" src="/js/user/security.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+  <script type="module" src="/js/user/security.js"></script>
 
-<%- include('../partials/user/footer') %>
+  <%- include('../partials/user/footer') %>

@@ -1,4 +1,3 @@
-
 import api from "../adminApi.js";
 document.addEventListener("DOMContentLoaded", () => {
   const input = document.getElementById("search-coupon");
@@ -21,8 +20,8 @@ document.addEventListener("DOMContentLoaded", () => {
   });
 });
 
-async function deleteCoupon(id){
-    Swal.fire({
+async function deleteCoupon(id, btn) {
+  Swal.fire({
     title: "Are you sure?",
     text: "This coupon will be permanently deleted!",
     icon: "warning",
@@ -30,31 +29,34 @@ async function deleteCoupon(id){
     confirmButtonColor: "#e3342f",
     cancelButtonColor: "#6b7280",
     confirmButtonText: "Yes, delete it",
-    cancelButtonText: "Cancel"
+    cancelButtonText: "Cancel",
   }).then(async (result) => {
     if (result.isConfirmed) {
       try {
+        if (btn) window.setLoading(btn, true);
         const res = await api.deleteCouponAxios(id);
 
         if (res.data.success) {
+          if (btn) window.setLoading(btn, false);
           Swal.fire({
             icon: "success",
             title: "Deleted!",
             text: "Coupon has been deleted.",
             timer: 1200,
-            showConfirmButton: false
+            showConfirmButton: false,
           }).then(() => {
             window.location.reload();
           });
         }
       } catch (err) {
+        if (btn) window.setLoading(btn, false);
         Swal.fire({
           icon: "error",
           title: "Error",
-          text: err.response?.data?.message || "Delete failed"
+          text: err.response?.data?.message || "Delete failed",
         });
       }
-       }
-         });
+    }
+  });
 }
-window.deleteCoupon=deleteCoupon
+window.deleteCoupon = deleteCoupon;

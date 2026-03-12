@@ -55,7 +55,7 @@ document.addEventListener("DOMContentLoaded", () => {
     const cleanId = normalizeId(id);
 
     const exists = [...selectedBox.children].some(
-      el => normalizeId(el.dataset.productId) === cleanId
+      (el) => normalizeId(el.dataset.productId) === cleanId,
     );
 
     if (exists) return;
@@ -77,7 +77,7 @@ document.addEventListener("DOMContentLoaded", () => {
   // =====================
   // REMOVE PRODUCT
   // =====================
-  selectedBox.addEventListener("click", e => {
+  selectedBox.addEventListener("click", (e) => {
     const btn = e.target.closest(".remove-product");
     if (!btn) return;
     btn.closest(".selected-product-item").remove();
@@ -91,7 +91,7 @@ document.addEventListener("DOMContentLoaded", () => {
     refreshUI();
 
     const product = ALL_PRODUCTS.find(
-      p => normalizeId(p._id) === normalizeId(specificItem.data._id)
+      (p) => normalizeId(p._id) === normalizeId(specificItem.data._id),
     );
 
     if (product) {
@@ -104,7 +104,7 @@ document.addEventListener("DOMContentLoaded", () => {
     refreshUI();
 
     const checkbox = document.querySelector(
-      `.category-checkbox[value="${specificItem.data._id}"]`
+      `.category-checkbox[value="${specificItem.data._id}"]`,
     );
 
     if (checkbox) checkbox.checked = true;
@@ -113,7 +113,7 @@ document.addEventListener("DOMContentLoaded", () => {
   // =====================
   // PRODUCT SEARCH
   // =====================
-  search.addEventListener("input", e => {
+  search.addEventListener("input", (e) => {
     const term = e.target.value.toLowerCase();
 
     if (term.length < 2) {
@@ -121,23 +121,27 @@ document.addEventListener("DOMContentLoaded", () => {
       return;
     }
 
-    const filtered = ALL_PRODUCTS.filter(p =>
-      p.name.toLowerCase().includes(term)
+    const filtered = ALL_PRODUCTS.filter((p) =>
+      p.name.toLowerCase().includes(term),
     ).slice(0, 8);
 
     results.innerHTML = filtered.length
-      ? filtered.map(p => `
+      ? filtered
+        .map(
+          (p) => `
           <div class="product-result-item p-2 hover:bg-gray-100 cursor-pointer"
             data-id="${p._id}"
             data-name="${p.name}">
             ${p.name}
           </div>
-        `).join("")
+        `,
+        )
+        .join("")
       : `<div class="p-2 text-gray-500 text-sm">No products found</div>`;
 
     results.classList.remove("hidden");
 
-    document.querySelectorAll(".product-result-item").forEach(item => {
+    document.querySelectorAll(".product-result-item").forEach((item) => {
       item.onclick = () => {
         addProduct(item.dataset.id, item.dataset.name);
         results.classList.add("hidden");
@@ -170,8 +174,10 @@ document.addEventListener("DOMContentLoaded", () => {
       if (payload.offerValue < 1 || payload.offerValue > MAX_PERCENT) {
         return `Percentage must be between 1 and ${MAX_PERCENT}`;
       }
+      if (payload.maximumDiscountValue && payload.maximumDiscountValue <= 0) {
+        return "Maximum discount must be greater than 0";
+      }
     }
-
 
     // Dates
     if (!payload.startDate || !payload.endDate) {
@@ -183,11 +189,17 @@ document.addEventListener("DOMContentLoaded", () => {
     }
 
     // Selection Rules
-    if (payload.applicableOn === "product" && (!payload.productIds || payload.productIds.length === 0)) {
+    if (
+      payload.applicableOn === "product" &&
+      (!payload.productIds || payload.productIds.length === 0)
+    ) {
       return "Select at least one product";
     }
 
-    if (payload.applicableOn === "category" && (!payload.categoryIds || payload.categoryIds.length === 0)) {
+    if (
+      payload.applicableOn === "category" &&
+      (!payload.categoryIds || payload.categoryIds.length === 0)
+    ) {
       return "Select at least one category";
     }
 
@@ -197,31 +209,38 @@ document.addEventListener("DOMContentLoaded", () => {
   // =====================
   // SUBMIT
   // =====================
-  form.addEventListener("submit", async e => {
+  form.addEventListener("submit", async (e) => {
     e.preventDefault();
+
+    const submitBtn = e.target.querySelector('button[type="submit"]');
 
     const payload = {
       offerId: offerId._id,
-      title: offerTitle.value.trim(),
-      description: offerDesc.value.trim(),
-      offerType: offerType.value,
-      offerValue: Number(offerValue.value),
+      title: document.getElementById("offerTitle").value.trim(),
+      description: document.getElementById("offerDesc").value.trim(),
+      offerType: document.getElementById("offerType").value,
+      offerValue: Number(document.getElementById("offerValue").value),
+      maximumDiscountValue: document
+        .getElementById("maximumDiscountValue")
+        ?.value.trim()
+        ? Number(document.getElementById("maximumDiscountValue").value)
+        : null,
       applicableOn: applicableOn.value,
-      startDate: startDate.value,
-      endDate: endDate.value,
-      status: offerStatus.value
+      startDate: document.getElementById("startDate").value,
+      endDate: document.getElementById("endDate").value,
+      status: offerStatus.value,
     };
 
     if (payload.applicableOn === "product") {
       payload.productIds = [...selectedBox.children].map(
-        el => el.dataset.productId
+        (el) => el.dataset.productId,
       );
     }
 
     if (payload.applicableOn === "category") {
       payload.categoryIds = [
-        ...document.querySelectorAll(".category-checkbox:checked")
-      ].map(cb => cb.value);
+        ...document.querySelectorAll(".category-checkbox:checked"),
+      ].map((cb) => cb.value);
     }
 
     // 🔥 VALIDATE BEFORE API CALL
@@ -230,38 +249,46 @@ document.addEventListener("DOMContentLoaded", () => {
       Swal.fire({
         icon: "error",
         title: "Validation Error",
-        text: error
+        text: error,
       });
       return;
     }
 
     try {
+      if (submitBtn) window.setLoading(submitBtn, true);
+      window.showGlobalLoading();
+
       const res = await api.offerEditAxios(payload);
 
       if (res.data.success) {
+        window.hideGlobalLoading();
         Swal.fire({
           icon: "success",
           title: "Offer Updated",
           text: res.data.message,
           showConfirmButton: false,
-          timer: 1500
+          timer: 1500,
         }).then(() => {
           location.href = "/admin/offers";
         });
       } else {
+        if (submitBtn) window.setLoading(submitBtn, false);
+        window.hideGlobalLoading();
         Swal.fire({
           icon: "error",
           title: "Update Failed",
-          text: res.data.message || "Something went wrong"
+          text: res.data.message || "Something went wrong",
         });
       }
     } catch (err) {
+      if (submitBtn) window.setLoading(submitBtn, false);
+      window.hideGlobalLoading();
       console.error("Update failed:", err);
 
       Swal.fire({
         icon: "error",
         title: "Server Error",
-        text: "Could not update the offer. Try again later."
+        text: "Could not update the offer. Try again later.",
       });
     }
   });

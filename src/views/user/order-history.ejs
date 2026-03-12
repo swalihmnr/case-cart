@@ -1,202 +1,243 @@
-<!DOCTYPE html>
-<html lang="en">
+<%- include('../partials/user/header') %>
 
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>My Orders - CaseCart</title>
-    <script src="https://cdn.tailwindcss.com"></script>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <style>
-        .product-image {
-            width: 80px;
-            height: 80px;
-            object-fit: contain;
-            border-radius: 4px;
-            border: 1px solid #e5e7eb;
-            background-color: #f9fafb;
-        }
-    </style>
-</head>
-
-<body class="bg-gray-50">
-    <%- include('../partials/user/header') %>
-
-        <!-- Breadcrumb -->
-        <div class="bg-white border-b">
-            <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-3">
-                <div class="flex items-center space-x-2 text-sm">
-                    <a href="/" class="text-gray-600 hover:text-purple-600">Home</a>
-                    <span class="text-gray-400">/</span>
-                    <a href="/profile" class="text-gray-600 hover:text-purple-600">My Account</a>
-                    <span class="text-gray-400">/</span>
-                    <span class="text-gray-800 font-medium">My Orders</span>
-                </div>
-            </div>
-        </div>
-
+    <div class="min-h-screen bg-gray-50/50">
         <!-- Main Content -->
-        <div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
-            <!-- Page Title -->
-            <h1 class="text-2xl font-bold text-gray-900 mb-6" id="pageTitle">My Orders</h1>
-
-            <!-- Filter Section -->
-            <div class="mb-6 flex justify-end">
-                <form class="flex items-center gap-2" method="GET" action="/order">
-                    <select name="status" onchange="this.form.submit()"
-                        class="px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-purple-500">
-                        <option value="">All Orders</option>
-                        <option value="pending" <%=status==='pending' ? 'selected' : '' %>>Pending</option>
-                        <option value="delivered" <%=status==='delivered' ? 'selected' : '' %>>Delivered</option>
-                        <option value="cancelled" <%=status==='cancelled' ? 'selected' : '' %>>Cancelled</option>
-                    </select>
-                </form>
+        <main class="max-w-7xl mx-auto px-4 py-6 md:py-12">
+            <div class="mb-6 md:mb-10 fade-in">
+                <h1 class="text-2xl md:text-4xl font-black text-gray-900 mb-1 md:mb-2 italic">My Account</h1>
+                <p class="text-gray-500 text-sm md:text-base font-medium">Manage your settings and preferences</p>
             </div>
 
-            <!-- Orders List View -->
-            <div id="ordersListView" class="space-y-4">
-                <% if (orders && orders.length> 0) { %>
-                    <% orders.forEach(order=> { %>
-                        <div
-                            class="bg-white rounded-lg border border-gray-200 overflow-hidden order-card hover:shadow-md transition-shadow">
-                            <!-- Order Header -->
-                            <div class="bg-gray-50 px-4 py-3 border-b border-gray-200">
-                                <div class="flex flex-wrap items-center justify-between gap-2">
-                                    <div class="flex flex-wrap items-center gap-6 text-sm">
-                                        <div>
-                                            <span class="text-gray-500 text-xs block">ORDER ID</span>
-                                            <span class="font-medium text-gray-900">#<%= order.orderId %></span>
-                                        </div>
-                                        <div>
-                                            <span class="text-gray-500 text-xs block">ORDER DATE</span>
-                                            <span class="font-medium text-gray-900">
-                                                <%= new Date(order.createdAt).toLocaleDateString() %>
-                                            </span>
-                                        </div>
-                                        <div>
-                                            <span class="text-gray-500 text-xs block">TOTAL AMOUNT</span>
-                                            <span class="font-medium text-gray-900">₹<%= order.totalPrice %></span>
-                                        </div>
-                                        <div>
-                                            <div>
-                                                <% // Determine overall status based on items let
-                                                    overallStatus='Processing' ; if (order.paymentStatus==='Failed' ||
-                                                    order.paymentStatus==='failed' ) { overallStatus='Payment Failed' ;
-                                                    } else if (order.orderItems.every(i=> i.status
-                                                    === 'cancelled')) {
-                                                    overallStatus = 'Cancelled';
-                                                    } else if (order.orderItems.some(i => i.status === 'delivered')) {
-                                                    overallStatus = 'Delivered';
-                                                    } else if (order.orderItems.some(i => i.status === 'shipped')) {
-                                                    overallStatus = 'Shipped';
-                                                    }
-                                                    %>
-                                                    <span class="text-gray-500 text-xs block">STATUS</span>
-                                                    <span
-                                                        class="font-medium <%= overallStatus === 'Cancelled' ? 'text-red-600' : overallStatus === 'Payment Failed' ? 'text-red-600' : overallStatus === 'Delivered' ? 'text-green-600' : 'text-blue-600' %>">
-                                                        <%= overallStatus %>
-                                                    </span>
-                                            </div>
-                                        </div>
-                                    </div>
-                                </div>
+            <div class="grid lg:grid-cols-4 gap-4 md:gap-8">
+                <%- include('../partials/user/sidebar') %>
 
-                                <!-- Order Items with Images (Preview) -->
-                                <div class="p-4 space-y-4 cursor-pointer"
-                                    onclick="window.location.href='/order/<%= order._id %>'">
-                                    <% order.orderItems.slice(0, 3).forEach(item=> { %>
-                                        <div class="flex items-center gap-4">
-                                            <img src="<%= item.product.productImages[0].url %>"
-                                                alt="<%= item.product.name %>"
-                                                class="w-16 h-16 object-contain border border-gray-200 rounded-md bg-gray-50">
-                                            <div class="flex-1">
-                                                <div class="flex items-center justify-between">
-                                                    <div>
-                                                        <p
-                                                            class="font-medium text-gray-900 hover:text-purple-600 transition">
-                                                            <%= item.product.name %>
-                                                        </p>
-                                                        <p class="text-sm text-gray-500">
-                                                            Qty: <%= item.quantity %>
-                                                        </p>
-                                                    </div>
-                                                    <span class="font-medium text-gray-900">₹<%= item.finalPrice %>
-                                                    </span>
-                                                </div>
-                                            </div>
-                                        </div>
-                                        <% }); %>
-                                            <% if (order.orderItems.length> 3) { %>
-                                                <div
-                                                    class="text-center text-sm text-gray-500 pt-2 border-t border-dashed">
-                                                    + <%= order.orderItems.length - 3 %> more items
-                                                </div>
-                                                <% } %>
-                                </div>
-
-                                <!-- Order Actions -->
-                                <div class="px-4 py-3 bg-gray-50 border-t border-gray-200 flex justify-end gap-3">
-                                    <a href="/order/<%= order._id %>"
-                                        class="px-4 py-2 text-sm border border-purple-600 text-purple-600 rounded-lg hover:bg-purple-50 font-medium transition">
-                                        View Details
-                                    </a>
-                                </div>
-                            </div>
-                            <% }); %>
-                                <% } else { %>
-                                    <div class="text-center py-12">
-                                        <div
-                                            class="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-4">
-                                            <i class="fas fa-box-open text-gray-400 text-3xl"></i>
-                                        </div>
-                                        <h3 class="text-lg font-medium text-gray-900">No orders found</h3>
-                                        <p class="text-gray-500 mt-1">Start shopping to see your orders here.</p>
-                                        <a href="/product"
-                                            class="inline-block mt-4 text-purple-600 font-medium hover:underline">Browse
-                                            Products</a>
-                                    </div>
-                                    <% } %>
+                    <div class="lg:col-span-3 space-y-6">
+                        <!-- Page Title -->
+                        <div class="flex items-center justify-between mb-2">
+                            <h3 class="text-2xl font-bold text-gray-900" id="pageTitle">My Orders</h3>
                         </div>
 
-                        <!-- Pagination -->
-                        <% if (totalPages> 1) { %>
-                            <div class="mt-8 flex justify-center">
-                                <nav class="flex items-center gap-2">
-                                    <% if (currentPage> 1) { %>
-                                        <a href="/order?page=<%= currentPage - 1 %><%= status ? '&status=' + status : '' %>"
-                                            class="px-3 py-2 border rounded-lg hover:bg-gray-50 transition text-sm">Previous</a>
-                                        <% } else { %>
-                                            <span
-                                                class="px-3 py-2 border rounded-lg text-gray-400 cursor-not-allowed text-sm">Previous</span>
-                                            <% } %>
+                        <!-- Filter Section -->
+                        <div class="mb-6 flex justify-end">
+                            <form class="flex items-center gap-2" method="GET" action="/order">
+                                <select name="status" onchange="this.form.submit()"
+                                    class="px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-purple-500">
+                                    <option value="">All Orders</option>
+                                    <option value="pending" <%=status==='pending' ? 'selected' : '' %>>Pending
+                                    </option>
+                                    <option value="delivered" <%=status==='delivered' ? 'selected' : '' %>>Delivered
+                                    </option>
+                                    <option value="cancelled" <%=status==='cancelled' ? 'selected' : '' %>>Cancelled
+                                    </option>
+                                </select>
+                            </form>
+                        </div>
 
-                                                <% for(let i=1; i <=totalPages; i++) { %>
-                                                    <% if (i===currentPage) { %>
+                        <!-- Orders List View -->
+                        <div id="ordersListView" class="space-y-4">
+                            <% if (orders && orders.length> 0) { %>
+                                <% orders.forEach(order=> { %>
+                                    <div
+                                        class="bg-white rounded-lg border border-gray-200 overflow-hidden order-card hover:shadow-md transition-shadow">
+                                        <!-- Order Header -->
+                                        <div class="bg-gray-50 px-4 py-4 border-b border-gray-200">
+                                            <div class="flex flex-col gap-4">
+                                                <!-- Top Row: ID and Status (Mobile focused) -->
+                                                <div
+                                                    class="flex flex-wrap items-center justify-between gap-2 border-b border-gray-100 pb-3 sm:border-none sm:pb-0">
+                                                    <div>
                                                         <span
-                                                            class="px-3 py-2 bg-purple-600 text-white rounded-lg text-sm">
-                                                            <%= i %>
+                                                            class="text-[10px] text-gray-400 font-black uppercase tracking-widest block mb-0.5">ORDER
+                                                            ID</span>
+                                                        <span class="font-bold text-gray-900 text-sm">#<%= order.orderId
+                                                                %></span>
+                                                    </div>
+                                                    <div class="sm:hidden">
+                                                        <% // Determine overall status based on items let
+                                                            overallStatus='Processing' ; if
+                                                            (order.paymentStatus==='Failed' ||
+                                                            order.paymentStatus==='failed' ) {
+                                                            overallStatus='Payment Failed' ; } else if
+                                                            (order.orderItems.every(i=> i.status === 'cancelled')) {
+                                                            overallStatus = 'Cancelled';
+                                                            } else if (order.orderItems.some(i => i.status ===
+                                                            'delivered')) {
+                                                            overallStatus = 'Delivered';
+                                                            } else if (order.orderItems.some(i => i.status ===
+                                                            'shipped')) {
+                                                            overallStatus = 'Shipped';
+                                                            }
+                                                            %>
+                                                            <span
+                                                                class="text-[10px] text-gray-400 font-black uppercase tracking-widest block mb-0.5 text-right">STATUS</span>
+                                                            <span
+                                                                class="px-2.5 py-1 rounded-full text-[10px] font-black uppercase tracking-wider <%= overallStatus === 'Cancelled' || overallStatus === 'Payment Failed' ? 'bg-red-50 text-red-600' : overallStatus === 'Delivered' ? 'bg-green-50 text-green-600' : 'bg-blue-50 text-blue-600' %>">
+                                                                <%= overallStatus %>
+                                                            </span>
+                                                    </div>
+                                                </div>
+
+                                                <!-- Bottom Row: Date and Total -->
+                                                <div
+                                                    class="flex flex-wrap items-center gap-x-8 gap-y-4 text-xs sm:text-sm">
+                                                    <div>
+                                                        <span
+                                                            class="text-[10px] text-gray-400 font-black uppercase tracking-widest block mb-0.5">DATE</span>
+                                                        <span class="font-bold text-gray-800">
+                                                            <%= new Date(order.createdAt).toLocaleDateString() %>
                                                         </span>
-                                                        <% } else { %>
-                                                            <a href="/order?page=<%= i %><%= status ? '&status=' + status : '' %>"
-                                                                class="px-3 py-2 border rounded-lg hover:bg-gray-50 transition text-sm">
-                                                                <%= i %>
-                                                            </a>
-                                                            <% } %>
+                                                    </div>
+                                                    <div>
+                                                        <span
+                                                            class="text-[10px] text-gray-400 font-black uppercase tracking-widest block mb-0.5">TOTAL</span>
+                                                        <span class="font-bold text-gray-900">₹<%= order.totalPrice %>
+                                                                </span>
+                                                    </div>
+                                                    <div class="hidden sm:block ml-auto text-right">
+                                                        <% /* Re-use overallStatus if defined above, logic is identical
+                                                            */ %>
+                                                            <span
+                                                                class="text-[10px] text-gray-400 font-black uppercase tracking-widest block mb-0.5">STATUS</span>
+                                                            <span
+                                                                class="px-3 py-1.5 rounded-full text-[11px] font-black uppercase tracking-wider <%= overallStatus === 'Cancelled' || overallStatus === 'Payment Failed' ? 'bg-red-50 text-red-600' : overallStatus === 'Delivered' ? 'bg-green-50 text-green-600' : 'bg-blue-50 text-blue-600' %>">
+                                                                <%= overallStatus %>
+                                                            </span>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+
+                                        <!-- Order Items with Images (Preview) -->
+                                        <div class="p-4 space-y-4 cursor-pointer"
+                                            onclick="window.location.href='/order/<%= order._id %>'">
+                                            <% order.orderItems.slice(0, 3).forEach(item=> { %>
+                                                <div class="flex items-center gap-4">
+                                                    <img src="<%= item.product.productImages[0].url %>"
+                                                        alt="<%= item.product.name %>"
+                                                        class="w-16 h-16 object-contain border border-gray-200 rounded-md bg-gray-50">
+                                                    <div class="flex-1">
+                                                        <div class="flex items-center justify-between">
+                                                            <div>
+                                                                <p
+                                                                    class="font-medium text-gray-900 hover:text-purple-600 transition">
+                                                                    <%= item.product.name %>
+                                                                </p>
+                                                                <p class="text-sm text-gray-500">
+                                                                    Qty: <%= item.quantity %>
+                                                                </p>
+                                                            </div>
+                                                            <span class="font-medium text-gray-900">₹<%= item.finalPrice
+                                                                    %>
+                                                            </span>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                                <% }); %>
+                                                    <% if (order.orderItems.length> 3) { %>
+                                                        <div
+                                                            class="text-center text-sm text-gray-500 pt-2 border-t border-dashed">
+                                                            + <%= order.orderItems.length - 3 %> more items
+                                                        </div>
+                                                        <% } %>
+                                        </div>
+
+                                        <!-- Order Actions -->
+                                        <div
+                                            class="px-4 py-3 bg-gray-50 border-t border-gray-200 flex justify-end gap-3">
+                                            <a href="/order/<%= order._id %>"
+                                                class="px-4 py-2 text-sm border border-purple-600 text-purple-600 rounded-lg hover:bg-purple-50 font-medium transition">
+                                                View Details
+                                            </a>
+                                        </div>
+                                    </div>
+                                    <% }); %>
+                                        <% } else { %>
+                                            <div class="text-center py-12">
+                                                <div
+                                                    class="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                                                    <i class="fas fa-box-open text-gray-400 text-3xl"></i>
+                                                </div>
+                                                <h3 class="text-lg font-medium text-gray-900">No orders found
+                                                </h3>
+                                                <p class="text-gray-500 mt-1">Start shopping to see your orders
+                                                    here.</p>
+                                                <a href="/product"
+                                                    class="inline-block mt-4 text-purple-600 font-medium hover:underline">Browse
+                                                    Products</a>
+                                            </div>
+                                            <% } %>
+                        </div>
+
+                        <!-- Modern Pagination -->
+                        <% if (totalPages> 1) { %>
+                            <div
+                                class="flex flex-col sm:flex-row items-center justify-between gap-4 border-t border-gray-100 pt-8">
+                                <p class="text-sm text-gray-500 font-medium order-2 sm:order-1">
+                                    Showing <span class="text-gray-900 font-bold">
+                                        <%= (currentPage - 1) * limit + 1 %>
+                                    </span>
+                                    to <span class="text-gray-900 font-bold">
+                                        <%= Math.min(currentPage * limit, totalItems) %>
+                                    </span>
+                                    of <span class="text-gray-900 font-bold">
+                                        <%= totalItems %>
+                                    </span> orders
+                                </p>
+
+                                <nav class="flex items-center gap-1 order-1 sm:order-2">
+                                    <% if (currentPage> 1) { %>
+                                        <a href="?page=<%= currentPage - 1 %><%= status ? '&status=' + status : '' %>"
+                                            class="w-10 h-10 flex items-center justify-center rounded-xl border border-gray-200 text-gray-600 hover:bg-purple-600 hover:text-white hover:border-purple-600 transition-all duration-300 shadow-sm">
+                                            <i class="fas fa-chevron-left text-xs"></i>
+                                        </a>
+                                        <% } %>
+
+                                            <% let startPage=Math.max(1, currentPage - 1); let
+                                                endPage=Math.min(totalPages, startPage + 2); if (endPage - startPage <
+                                                2) startPage=Math.max(1, endPage - 2); if (startPage> 1) { %>
+                                                <a href="?page=1<%= status ? '&status=' + status : '' %>"
+                                                    class="w-10 h-10 flex items-center justify-center rounded-xl border border-gray-200 text-gray-600 hover:bg-purple-600 hover:text-white transition-all shadow-sm font-bold text-sm">1</a>
+                                                <% if (startPage> 2) { %>
+                                                    <span
+                                                        class="w-10 h-10 flex items-center justify-center text-gray-400">...</span>
+                                                    <% } %>
+                                                        <% } %>
+
+                                                            <% for(let i=startPage; i <=endPage; i++) { %>
+                                                                <a href="?page=<%= i %><%= status ? '&status=' + status : '' %>"
+                                                                    class="w-10 h-10 flex items-center justify-center rounded-xl border <%= i === currentPage ? 'bg-purple-600 border-purple-600 text-white shadow-purple-200' : 'border-gray-200 text-gray-600 hover:bg-purple-50 hover:text-purple-600 hover:border-purple-200' %> transition-all duration-300 shadow-sm font-bold text-sm">
+                                                                    <%= i %>
+                                                                </a>
                                                                 <% } %>
 
-                                                                    <% if (currentPage < totalPages) { %>
-                                                                        <a href="/order?page=<%= currentPage + 1 %><%= status ? '&status=' + status : '' %>"
-                                                                            class="px-3 py-2 border rounded-lg hover:bg-gray-50 transition text-sm">Next</a>
-                                                                        <% } else { %>
+                                                                    <% if (endPage < totalPages) { %>
+                                                                        <% if (endPage < totalPages - 1) { %>
                                                                             <span
-                                                                                class="px-3 py-2 border rounded-lg text-gray-400 cursor-not-allowed text-sm">Next</span>
+                                                                                class="w-10 h-10 flex items-center justify-center text-gray-400">...</span>
                                                                             <% } %>
+                                                                                <a href="?page=<%= totalPages %><%= status ? '&status=' + status : '' %>"
+                                                                                    class="w-10 h-10 flex items-center justify-center rounded-xl border border-gray-200 text-gray-600 hover:bg-purple-600 hover:text-white transition-all shadow-sm font-bold text-sm">
+                                                                                    <%= totalPages %>
+                                                                                </a>
+                                                                                <% } %>
+
+                                                                                    <% if (currentPage < totalPages) {
+                                                                                        %>
+                                                                                        <a href="?page=<%= currentPage + 1 %><%= status ? '&status=' + status : '' %>"
+                                                                                            class="w-10 h-10 flex items-center justify-center rounded-xl border border-gray-200 text-gray-600 hover:bg-purple-600 hover:text-white hover:border-purple-600 transition-all duration-300 shadow-sm">
+                                                                                            <i
+                                                                                                class="fas fa-chevron-right text-xs"></i>
+                                                                                        </a>
+                                                                                        <% } %>
                                 </nav>
                             </div>
                             <% } %>
+                    </div>
             </div>
+    </div>
+    </main>
 
-            <%- include('../partials/footer') %>
-</body>
+    <%- include('../partials/footer') %>
+        </body>
 
-</html>
+        </html>

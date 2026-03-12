@@ -1,0 +1,46 @@
+<script>
+
+<% if (typeof success !== 'undefined' && success.length > 0) { %>
+    Toastify({
+      text: "<%= success %>",
+      duration: 3000,
+      gravity: "top",
+      position: "right",
+      backgroundColor: "#28a745"
+    }).showToast();
+<% } %>
+
+
+<% if (typeof error !== 'undefined' && error.length > 0) { %>
+    Toastify({
+      text: "<%= error %>",
+      duration: 3000,
+      gravity: "top",
+      position: "right",
+      backgroundColor: "#dc3545"
+    }).showToast();
+<% } %>
+
+
+<% if (typeof warning !== 'undefined' && warning.length > 0) { %>
+    Toastify({
+      text: "<%= warning %>",
+      duration: 3000,
+      gravity: "top",
+      position: "right",
+      backgroundColor: "#ffc107"
+    }).showToast();
+<% } %>
+
+
+<% if (typeof info !== 'undefined' && info.length > 0) { %>
+    Toastify({
+      text: "<%= info %>",
+      duration: 3000,
+      gravity: "top",
+      position: "right",
+      backgroundColor: "#17a2b8"
+    }).showToast();
+<% } %>
+
+</script>

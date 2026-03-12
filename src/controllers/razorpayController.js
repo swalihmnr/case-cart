@@ -1,6 +1,6 @@
 import razorpayInstance from "../config/razorpayConfig.js";
-import env from 'dotenv';
-import crypto from 'crypto';
+import env from "dotenv";
+import crypto from "crypto";
 import orderModel from "../models/orderModel.js";
 import variantModel from "../models/admin/variantModel.js";
 import cartModel from "../models/cartModel.js";
@@ -16,7 +16,7 @@ export const createRazorpayOrder = async (req, res) => {
     if (!orderId) {
       return res.status(STATUS_CODES.BAD_REQUEST).json({
         success: false,
-        message: "Order ID is required"
+        message: "Order ID is required",
       });
     }
 
@@ -24,7 +24,7 @@ export const createRazorpayOrder = async (req, res) => {
     if (!order) {
       return res.status(STATUS_CODES.NOT_FOUND).json({
         success: false,
-        message: "Order not found"
+        message: "Order not found",
       });
     }
 
@@ -39,14 +39,13 @@ export const createRazorpayOrder = async (req, res) => {
     res.json({
       success: true,
       order: razorpayOrder,
-      key: process.env.RAZORPAY_KEY_ID
+      key: process.env.RAZORPAY_KEY_ID,
     });
-
   } catch (error) {
     console.error("Error creating Razorpay order:", error);
     res.status(STATUS_CODES.INTERNAL_SERVER_ERROR).json({
       success: false,
-      message: "Failed to create payment order"
+      message: "Failed to create payment order",
     });
   }
 };
@@ -57,7 +56,7 @@ export const verifyRazorpayPayment = async (req, res) => {
       razorpay_payment_id,
       razorpay_order_id,
       razorpay_signature,
-      orderId
+      orderId,
     } = req.body;
 
     const body = razorpay_order_id + "|" + razorpay_payment_id;
@@ -74,26 +73,26 @@ export const verifyRazorpayPayment = async (req, res) => {
       if (!order) {
         return res.status(STATUS_CODES.NOT_FOUND).json({
           success: false,
-          message: "Order not found"
+          message: "Order not found",
         });
       }
 
       // Check if this order was already paid/processed to prevent duplicate stock reduction
-      if (order.paymentStatus === 'paid') {
+      if (order.paymentStatus === "paid") {
         return res.json({
           success: true,
-          message: "Payment already verified successfully"
+          message: "Payment already verified successfully",
         });
       }
 
       // Update order status
       await orderModel.findByIdAndUpdate(orderId, {
-        paymentStatus: 'paid',
-        paymentMethod: 'razorpay',
+        paymentStatus: "paid",
+        paymentMethod: "razorpay",
         transactionId: razorpay_payment_id,
         paymentConfirmedAt: new Date(),
-        'orderItems.$[].paymentStatus': 'paid',
-        'orderItems.$[].status': 'placed' // Ensure items are marked as placed
+        "orderItems.$[].paymentStatus": "paid",
+        "orderItems.$[].status": "placed", // Ensure items are marked as placed
       });
 
       // ==============================
@@ -102,7 +101,7 @@ export const verifyRazorpayPayment = async (req, res) => {
       for (const item of order.orderItems) {
         await variantModel.updateOne(
           { _id: item.variantId, stock: { $gte: item.quantity } },
-          { $inc: { stock: -item.quantity } }
+          { $inc: { stock: -item.quantity } },
         );
       }
 
@@ -110,36 +109,37 @@ export const verifyRazorpayPayment = async (req, res) => {
       // CLEAR CART
       // ==============================
       // We remove only the bought items from the cart matching the user.
-      const variantIds = order.orderItems.map(item => item.variantId);
-      await cartModel.deleteMany({ userId: order.userId, variantId: { $in: variantIds } });
+      const variantIds = order.orderItems.map((item) => item.variantId);
+      await cartModel.deleteMany({
+        userId: order.userId,
+        variantId: { $in: variantIds },
+      });
 
       // ==============================
       // MARK COUPON AS USED
       // ==============================
       if (order.couponId) {
-        await couponModel.findByIdAndUpdate(
-          order.couponId,
-          { $addToSet: { usedBy: order.userId } }
-        );
+        await couponModel.findByIdAndUpdate(order.couponId, {
+          $addToSet: { usedBy: order.userId },
+        });
       }
 
       return res.json({
         success: true,
-        message: "Payment verified successfully"
+        message: "Payment verified successfully",
       });
     } else {
       // Signature mismatch
       return res.status(STATUS_CODES.BAD_REQUEST).json({
         success: false,
-        message: "Invalid signature"
+        message: "Invalid signature",
       });
     }
-
   } catch (error) {
     console.error("Error verifying payment:", error);
     res.status(STATUS_CODES.INTERNAL_SERVER_ERROR).json({
       success: false,
-      message: "Payment verification failed"
+      message: "Payment verification failed",
     });
   }
 };
