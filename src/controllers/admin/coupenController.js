@@ -118,22 +118,22 @@ const postAddCoupen = async (req, res) => {
     } else {
       const existing = await coupenModel.findOne({
         $or: [
-          { title: title.trim() },
-          { couponCode: couponCode.toUpperCase().trim() },
+          { title: { $regex: new RegExp(`^${title.trim()}$`, "i") } },
+          { couponCode: { $regex: new RegExp(`^${couponCode.trim()}$`, "i") } },
         ],
       });
 
       if (existing) {
-        if (title === existing.title) {
+        if (title.trim().toLowerCase() === existing.title.toLowerCase()) {
           return res.status(STATUS_CODES.CONFLICT).json({
             success: false,
-            message: "Title aready exist",
+            message: "Coupon title already exists",
           });
         }
-        if (couponCode === existing.couponCode) {
+        if (couponCode.trim().toUpperCase() === existing.couponCode) {
           return res.status(STATUS_CODES.CONFLICT).json({
             success: false,
-            message: "Coupen code aready exist",
+            message: "Coupon code already exists",
           });
         }
       }
@@ -220,13 +220,23 @@ const postEditCoupop = async (req, res) => {
       });
     } else {
       const existing = await coupenModel.findOne({
-        couponCode: couponCode,
         _id: { $ne: new mongoose.Types.ObjectId(couponId) },
+        $or: [
+          { title: { $regex: new RegExp(`^${title.trim()}$`, "i") } },
+          { couponCode: { $regex: new RegExp(`^${couponCode.trim()}$`, "i") } }
+        ]
       });
+
       if (existing) {
+        if (title.trim().toLowerCase() === existing.title.toLowerCase()) {
+          return res.status(STATUS_CODES.CONFLICT).json({
+            success: false,
+            message: "Another coupon with this title already exists"
+          });
+        }
         return res.status(STATUS_CODES.CONFLICT).json({
           success: false,
-          message: "Coupon Code already exist",
+          message: "Another coupon with this code already exists"
         });
       }
       const coupon = await coupenModel.findById(

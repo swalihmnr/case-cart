@@ -20,7 +20,7 @@ document.addEventListener("DOMContentLoaded", () => {
   });
 });
 
-async function deleteCoupon(id) {
+async function deleteCoupon(id, btn) {
   Swal.fire({
     title: "Are you sure?",
     text: "This coupon will be permanently deleted!",
@@ -33,9 +33,11 @@ async function deleteCoupon(id) {
   }).then(async (result) => {
     if (result.isConfirmed) {
       try {
+        if (btn) window.setLoading(btn, true);
         const res = await api.deleteCouponAxios(id);
 
         if (res.data.success) {
+          if (btn) window.setLoading(btn, false);
           Swal.fire({
             icon: "success",
             title: "Deleted!",
@@ -47,6 +49,7 @@ async function deleteCoupon(id) {
           });
         }
       } catch (err) {
+        if (btn) window.setLoading(btn, false);
         Swal.fire({
           icon: "error",
           title: "Error",

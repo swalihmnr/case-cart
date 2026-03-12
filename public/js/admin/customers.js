@@ -45,7 +45,8 @@ document.querySelectorAll(".view-customer-btn").forEach((btn) => {
     const number = btn.dataset.number;
     const createdAt = btn.dataset.createdat;
     const status = btn.dataset.status;
-    console.log(status);
+    const orders = btn.dataset.orders || 0;
+    const spent = btn.dataset.spent || 0;
 
     document.getElementById("customer-details-content").innerHTML = `
             <div class="p-8">
@@ -60,7 +61,7 @@ document.querySelectorAll(".view-customer-btn").forEach((btn) => {
                         <div class="space-y-3">
                             <div>
                                 <span class="text-gray-900 font-medium">CustomerID :</span>
-                                <span class="text-gray-900" id="customer-name">${id}</span>
+                                <span class="text-gray-900" id="customer-id">${id}</span>
                             </div>
                             <div>
                                 <span class="text-gray-900 font-medium">Name : </span>
@@ -84,15 +85,10 @@ document.querySelectorAll(".view-customer-btn").forEach((btn) => {
                             
                             <div>
                                 <span class="text-gray-900 font-medium">Status : </span>
-                                <span id="customer-status" class="inline-block px-3 py-1 text-xs rounded bg-green-100 text-green-700">
-                                    ${status === "true" ? "Block" : "Active"}
+                                <span id="customer-status" class="inline-block px-3 py-1 text-xs rounded ${status === 'true' ? 'bg-red-100 text-red-700' : 'bg-green-100 text-green-700'}">
+                                    ${status === "true" ? "Blocked" : "Active"}
                                 </span>
                             </div>
-                        </div>
-                        
-                        <div class="mt-6">
-                            <h3 class="text-gray-500 text-sm font-medium mb-2">Address</h3>
-                            <p class="text-gray-900" id="customer-address">456 Oak Ave, Somewhere, india 67890</p>
                         </div>
                     </div>
                     
@@ -103,17 +99,12 @@ document.querySelectorAll(".view-customer-btn").forEach((btn) => {
                         <div class="space-y-3">
                             <div>
                                 <span class="text-gray-900 font-medium">Total Orders: </span>
-                                <span class="text-gray-900" id="total-orders">12</span>
+                                <span class="text-gray-900" id="total-orders">${orders}</span>
                             </div>
                             
                             <div>
                                 <span class="text-gray-900 font-medium">Total Spent: </span>
-                                <span class="text-gray-900" id="total-spent">847.50</span>
-                            </div>
-                            
-                            <div>
-                                <span class="text-gray-900 font-medium">Phone: </span>
-                                <span class="text-gray-900" id="order-phone">+91 453 987-6543</span>
+                                <span class="text-gray-900" id="total-spent">₹${parseFloat(spent).toLocaleString()}</span>
                             </div>
                         </div>
                     </div>
@@ -149,7 +140,9 @@ document.querySelectorAll(".block-customer-btn").forEach((btn) => {
       });
 
       if (confirmResult.isConfirmed) {
+        window.setLoading(btn, true);
         const res = await adminApi.blockCustomerAxios(selectedCustomerId);
+        window.setLoading(btn, false);
         // Backend returns { success: "Message string", status: boolean }
         if (res.data.status !== undefined) {
           const newStatus = res.data.status;
@@ -191,6 +184,7 @@ document.querySelectorAll(".block-customer-btn").forEach((btn) => {
         }
       }
     } catch (error) {
+      window.setLoading(btn, false);
       console.error(error);
       Toastify({
         text: "An error occurred while updating customer status",

@@ -69,24 +69,37 @@ function renderProductImages() {
 
 // Set image as main
 async function setAsMain(imageId) {
-  let res = await adminApi.setMainAxios(productId, imageId);
-  if (res.data.success) {
+  try {
+    window.showGlobalLoading();
+    let res = await adminApi.setMainAxios(productId, imageId);
+    if (res.data.success) {
+      window.hideGlobalLoading();
+      Swal.fire({
+        icon: "success",
+        title: " added as Main!",
+        text: res.data.message,
+        timer: 1800,
+        showConfirmButton: false,
+      }).then(() => {
+        location.reload();
+      });
+    } else {
+      window.hideGlobalLoading();
+      Swal.fire({
+        icon: "warning",
+        title: " Something went wrong",
+        text: res.data.message,
+        timer: 1800,
+        showConfirmButton: false,
+      });
+    }
+  } catch (error) {
+    window.hideGlobalLoading();
+    console.error(error);
     Swal.fire({
-      icon: "success",
-      title: " added as Main!",
-      text: res.data.message,
-      timer: 1800,
-      showConfirmButton: false,
-    }).then(() => {
-      location.reload();
-    });
-  } else {
-    Swal.fire({
-      icon: "warning",
-      title: " Something went wrong",
-      text: res.data.message,
-      timer: 1800,
-      showConfirmButton: false,
+      icon: "error",
+      title: "Error",
+      text: "Failed to set as main image",
     });
   }
 }
@@ -209,6 +222,11 @@ function cropAndSave() {
     newForm.append("image", file);
     newForm.append("imageId", currentImageId);
     const produtId = product._id;
+
+    const cropBtn = document.querySelector('button[onclick="cropAndSave()"]');
+    if (cropBtn) window.setLoading(cropBtn, true);
+    window.showGlobalLoading();
+
     // Re-render images
     if (btnMode === "edit") {
       try {
@@ -217,6 +235,7 @@ function cropAndSave() {
         if (res.data.success) {
           console.log("hlow ");
           closeCropModal();
+          window.hideGlobalLoading();
           Swal.fire({
             icon: "success",
             title: " image updated!",
@@ -227,13 +246,23 @@ function cropAndSave() {
             document.getElementById("addImagesModal").classList.add("hidden");
             location.reload();
           });
+        } else {
+          if (cropBtn) window.setLoading(cropBtn, false);
+          window.hideGlobalLoading();
+          Swal.fire({
+            icon: "warning",
+            title: " Something went wrong",
+            text: res.data.message,
+          });
         }
       } catch (error) {
+        if (cropBtn) window.setLoading(cropBtn, false);
+        window.hideGlobalLoading();
         console.log(error);
         Swal.fire({
           icon: "warning",
           title: " someting went wrong!",
-          text: error.response.message,
+          text: error.response?.data?.message || "Error updating image",
           timer: 1800,
           showConfirmButton: false,
         });
@@ -245,6 +274,7 @@ function cropAndSave() {
         console.log(res);
         if (res.data.success) {
           closeCropModal();
+          window.hideGlobalLoading();
           Swal.fire({
             icon: "success",
             title: " image added!",
@@ -256,6 +286,8 @@ function cropAndSave() {
             location.reload();
           });
         } else {
+          if (cropBtn) window.setLoading(cropBtn, false);
+          window.hideGlobalLoading();
           Swal.fire({
             icon: "warning",
             title: " someting went wrong!",
@@ -265,10 +297,12 @@ function cropAndSave() {
           });
         }
       } catch (error) {
+        if (cropBtn) window.setLoading(cropBtn, false);
+        window.hideGlobalLoading();
         Swal.fire({
           icon: "warning",
           title: " someting went wrong!",
-          text: error.response.data.message,
+          text: error.response?.data?.message || "Error uploading image",
           timer: 1800,
           showConfirmButton: false,
         }).then(() => {
@@ -309,20 +343,25 @@ async function deleteImage(id) {
     if (!result.isConfirmed) return;
 
     try {
+      window.showGlobalLoading();
       let res = await adminApi.editImgDeleteAxios(id, productId);
 
+      window.hideGlobalLoading();
       Swal.fire({
         icon: "success",
         title: "Image deleted!",
         text: res.data.message,
         timer: 1800,
         showConfirmButton: false,
-      }).then(() => location.reload());
+      }).then(() => {
+        location.reload();
+      });
     } catch (err) {
+      window.hideGlobalLoading();
       Swal.fire({
         icon: "error",
         title: "Delete Failed!",
-        text: err.response.data.message,
+        text: err.response?.data?.message || "Something went wrong",
         timer: 1800,
         showConfirmButton: false,
       });
@@ -466,24 +505,40 @@ function setupBasicInfoEdit() {
       return;
     }
 
-    const res = await adminApi.editProductBasicInfoAxios(data, productId);
-    if (res.data.success) {
+    try {
+      window.setLoading(saveBasicInfoBtn, true);
+      window.showGlobalLoading();
+      const res = await adminApi.editProductBasicInfoAxios(data, productId);
+      if (res.data.success) {
+        window.hideGlobalLoading();
+        window.setLoading(saveBasicInfoBtn, false);
+        Swal.fire({
+          icon: "success",
+          title: "product info updated!",
+          text: res.data.message,
+          timer: 1800,
+          showConfirmButton: false,
+        }).then(() => {
+          location.reload();
+        });
+      } else {
+        window.setLoading(saveBasicInfoBtn, false);
+        window.hideGlobalLoading();
+        Swal.fire({
+          icon: "warning",
+          title: "Something went wrong!",
+          text: res.data.message,
+          timer: 1800,
+          showConfirmButton: false,
+        });
+      }
+    } catch (error) {
+      window.setLoading(saveBasicInfoBtn, false);
+      window.hideGlobalLoading();
       Swal.fire({
-        icon: "success",
-        title: "product info updated!",
-        text: res.data.message,
-        timer: 1800,
-        showConfirmButton: false,
-      }).then(() => {
-        location.reload();
-      });
-    } else {
-      Swal.fire({
-        icon: "warning",
-        title: "Something went wrong!",
-        text: res.data.message,
-        timer: 1800,
-        showConfirmButton: false,
+        icon: "error",
+        title: "Error",
+        text: error.response?.data?.message || "Failed to update product info",
       });
     }
   });
@@ -554,9 +609,15 @@ async function saveVariantChanges() {
     salePrice: salePrice,
   };
   try {
+    const saveBtn = document.getElementById("saveVariantBtn"); // Assuming id exists or needs to be found
+    if (saveBtn) window.setLoading(saveBtn, true);
+    window.showGlobalLoading();
+
     document.getElementById("editVariantModal").classList.add("hidden");
     const res = await adminApi.editVariantSaveAxios(id, data);
     if (res.data.success) {
+      if (saveBtn) window.setLoading(saveBtn, false);
+      window.hideGlobalLoading();
       Swal.fire({
         icon: "success",
         title: "veriant updeted successfully",
@@ -567,6 +628,9 @@ async function saveVariantChanges() {
         location.reload();
       });
     } else {
+      if (saveBtn) window.setLoading(saveBtn, false);
+      window.hideGlobalLoading();
+      document.getElementById("editVariantModal").classList.remove("hidden");
       Swal.fire({
         icon: "warning",
         title: "something went wrong",
@@ -576,10 +640,14 @@ async function saveVariantChanges() {
       });
     }
   } catch (error) {
+    const saveBtn = document.getElementById("saveVariantBtn");
+    if (saveBtn) window.setLoading(saveBtn, false);
+    window.hideGlobalLoading();
+    document.getElementById("editVariantModal").classList.remove("hidden");
     Swal.fire({
       icon: "warning",
       title: "something went wrong",
-      text: error.response.data.message,
+      text: error.response?.data?.message || "Error updating variant",
       timer: 1800,
       showConfirmButton: false,
     });

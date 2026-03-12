@@ -215,12 +215,13 @@ const postOfferAdd = async (req, res) => {
         });
       }
       console.log("hlow");
-      const existing = await offerModel.findOne({ title: title });
-      console.log(existing);
+      const existing = await offerModel.findOne({
+        title: { $regex: new RegExp(`^${title.trim()}$`, "i") }
+      });
       if (existing) {
         return res.status(STATUS_CODES.CONFLICT).json({
           success: false,
-          message: "Offer already exist!",
+          message: "An offer with this title already exists!",
         });
       }
       const offerData = {
@@ -368,6 +369,19 @@ const postEditOffer = async (req, res) => {
       endDate,
       status,
     };
+
+    // Check for duplicate title (excluding current offer)
+    const existing = await offerModel.findOne({
+      title: { $regex: new RegExp(`^${title.trim()}$`, "i") },
+      _id: { $ne: new mongoose.Types.ObjectId(offerId) }
+    });
+
+    if (existing) {
+      return res.status(STATUS_CODES.CONFLICT).json({
+        success: false,
+        message: "Another offer with this title already exists!"
+      });
+    }
     if (applicableOn === "category") {
       if (categoryIds.length === 0) {
         return res.status(STATUS_CODES.NOT_FOUND).json({

@@ -52,10 +52,14 @@ window.updateOrderStatus = async function (
   }
 
   try {
+    if (selectElement) window.setLoading(selectElement, true);
+    window.showGlobalLoading();
+
     const res = await adminApi.updateStatus(newStatus, orderId, orderItemId);
     console.log(res);
 
     if (res.data.success) {
+      window.hideGlobalLoading();
       selectElement.setAttribute("data-prev-value", newStatus);
       Swal.fire({
         icon: "success",
@@ -67,6 +71,9 @@ window.updateOrderStatus = async function (
 
       setTimeout(() => location.reload(), 1200);
     } else {
+      if (selectElement) window.setLoading(selectElement, false);
+      window.hideGlobalLoading();
+
       if (previousValue) {
         selectElement.value = previousValue;
       } else {
@@ -75,6 +82,9 @@ window.updateOrderStatus = async function (
       Swal.fire("Error", res.data.message || "Update failed", "error");
     }
   } catch (error) {
+    if (selectElement) window.setLoading(selectElement, false);
+    window.hideGlobalLoading();
+
     if (previousValue) {
       selectElement.value = previousValue;
     } else {
@@ -85,7 +95,7 @@ window.updateOrderStatus = async function (
   }
 };
 
-window.approveReturn = async function (orderId, itemId) {
+window.approveReturn = async function (btn, orderId, itemId) {
   const result = await Swal.fire({
     title: "Are you sure?",
     text: `Change Requast status to approve?`,
@@ -98,29 +108,37 @@ window.approveReturn = async function (orderId, itemId) {
   if (!result.isConfirmed) return;
 
   try {
+    if (btn) window.setLoading(btn, true);
+    window.showGlobalLoading();
+
     const res = await adminApi.reqApproveAxios(orderId, itemId);
     console.log(res);
 
     if (res.data.success) {
+      window.hideGlobalLoading();
       Swal.fire({
         icon: "success",
         title: "Approved!",
-        text: "Order Requast updated successfully",
+        text: res.data.message,
         timer: 1500,
         showConfirmButton: false,
       });
 
       setTimeout(() => location.reload(), 1200);
     } else {
+      if (btn) window.setLoading(btn, false);
+      window.hideGlobalLoading();
       Swal.fire("Error", res.data.message || "Update failed", "error");
     }
   } catch (error) {
+    if (btn) window.setLoading(btn, false);
+    window.hideGlobalLoading();
     console.error(error.message);
     Swal.fire("Error", "Something went wrong", "error");
   }
 };
 
-window.rejectReturn = async function (orderId, itemId) {
+window.rejectReturn = async function (btn, orderId, itemId) {
   const result = await Swal.fire({
     title: "Are you sure?",
     text: `Change Requast status to Reject?`,
@@ -133,23 +151,31 @@ window.rejectReturn = async function (orderId, itemId) {
   if (!result.isConfirmed) return;
 
   try {
+    if (btn) window.setLoading(btn, true);
+    window.showGlobalLoading();
+
     const res = await adminApi.reqRejectAxios(orderId, itemId);
     console.log(res);
 
     if (res.data.success) {
+      window.hideGlobalLoading();
       Swal.fire({
         icon: "success",
         title: "Rejected!",
-        text: "Order Requast Rejected Successfully",
+        text: res.data.message,
         timer: 1500,
         showConfirmButton: false,
       });
 
       setTimeout(() => location.reload(), 1200);
     } else {
+      if (btn) window.setLoading(btn, false);
+      window.hideGlobalLoading();
       Swal.fire("Error", res.data.message || "Update failed", "error");
     }
   } catch (error) {
+    if (btn) window.setLoading(btn, false);
+    window.hideGlobalLoading();
     console.error(error.message);
     Swal.fire("Error", "Something went wrong", "error");
   }

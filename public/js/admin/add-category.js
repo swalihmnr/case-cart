@@ -54,11 +54,16 @@ async function submitCategory(event) {
       categoryName,
       categoryDescription,
     };
-    if (mode === "edit") {
+    const btn = event.currentTarget;
+    if (data.mode === "edit") {
       try {
+        if (btn) window.setLoading(btn, true);
+        window.showGlobalLoading();
         let res = await adminApi.editCategoryAxios(id, data);
         console.log(res);
         if (res.data.success) {
+          if (btn) window.setLoading(btn, false);
+          window.hideGlobalLoading();
           Swal.fire({
             icon: "success",
             title: "Updated!",
@@ -70,6 +75,8 @@ async function submitCategory(event) {
           });
         }
       } catch (error) {
+        if (btn) window.setLoading(btn, false);
+        window.hideGlobalLoading();
         Swal.fire({
           icon: "warning",
           title: "not Updated!",
@@ -83,9 +90,13 @@ async function submitCategory(event) {
       }
     } else {
       try {
+        if (btn) window.setLoading(btn, true);
+        window.showGlobalLoading();
         let res = await adminApi.addCategoryAxios(data);
         console.log(res, "nothing");
         if (res.data.success) {
+          if (btn) window.setLoading(btn, false);
+          window.hideGlobalLoading();
           Swal.fire({
             icon: "success",
             title: "product added!",
@@ -96,6 +107,8 @@ async function submitCategory(event) {
             window.location.href = res.data.redirectUrl;
           });
         } else {
+          if (btn) window.setLoading(btn, false);
+          window.hideGlobalLoading();
           Swal.fire({
             icon: "warning",
             title: "not added!",
@@ -105,7 +118,14 @@ async function submitCategory(event) {
           });
         }
       } catch (error) {
+        if (btn) window.setLoading(btn, false);
+        window.hideGlobalLoading();
         console.log(error);
+        Swal.fire({
+          icon: "error",
+          title: "Error",
+          text: error.response?.data?.message || "Something went wrong",
+        });
       }
     }
   }

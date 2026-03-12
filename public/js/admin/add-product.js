@@ -207,31 +207,29 @@ function renderImagePreviews() {
     div.innerHTML = `
             <img src="${img.preview}" alt="Product ${index + 1}" 
                  class="w-full h-32 object-cover rounded-lg border-2 ${img.isMain ? "border-purple-500" : "border-gray-200"}">
-            ${
-              img.isMain
-                ? `
+            ${img.isMain
+        ? `
                 <span class="absolute top-2 left-2 bg-purple-600 text-white text-xs px-2 py-1 rounded">
                     Main Image
                 </span>
             `
-                : ""
-            }
+        : ""
+      }
             <button onclick="removeImage(${index})" 
                     class="absolute top-2 right-2 bg-red-500 text-white p-1 rounded-full opacity-0 group-hover:opacity-100 transition-opacity">
                 <svg width="16" height="16" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
                 </svg>
             </button>
-            ${
-              !img.isMain
-                ? `
+            ${!img.isMain
+        ? `
                 <button onclick="setMainImage(${index})" 
                         class="absolute bottom-2 left-2 bg-white text-purple-600 text-xs px-2 py-1 rounded border border-purple-600 opacity-0 group-hover:opacity-100 transition-opacity">
                     Set as Main
                 </button>
             `
-                : ""
-            }
+        : ""
+      }
         `;
     container.appendChild(div);
   });
@@ -477,9 +475,14 @@ async function createProduct() {
   });
 
   try {
+    const submitBtn = document.querySelector('button[onclick="createProduct()"]');
+    if (submitBtn) window.setLoading(submitBtn, true);
+    window.showGlobalLoading();
+
     let res = await adminApi.addProductAxios(formData);
 
     if (res.data.success) {
+      window.hideGlobalLoading();
       Swal.fire({
         title: "Product added!",
         text: res.data.message,
@@ -487,8 +490,19 @@ async function createProduct() {
       }).then(() => {
         window.location.href = res.data.redirectUrl;
       });
+    } else {
+      if (submitBtn) window.setLoading(submitBtn, false);
+      window.hideGlobalLoading();
+      Swal.fire({
+        title: "Error!",
+        text: res.data.message || "Something went wrong",
+        icon: "error",
+      });
     }
   } catch (err) {
+    const submitBtn = document.querySelector('button[onclick="createProduct()"]');
+    if (submitBtn) window.setLoading(submitBtn, false);
+    window.hideGlobalLoading();
     console.log("Error:", err);
 
     // Grab backend error message (409 duplicate)

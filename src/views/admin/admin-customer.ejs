@@ -171,9 +171,10 @@
                                                     data-number="<%= customer.number?customer.number:" googel auth" %>"
                                                     data-createdAt="<%= customer.createdAt.toDateString() %>"
                                                         data-status="<%= customer.isBlock%>"
-
-                                                            >
-                                                            <i class="fas fa-eye"></i>
+                                                            data-orders="<%= customer.orderCount || 0 %>"
+                                                                data-spent="<%= customer.totalSpent || 0 %>"
+                                                                    >
+                                                                    <i class="fas fa-eye"></i>
                                                 </button>
 
                                                 <% if (customer.isBlock) { %>

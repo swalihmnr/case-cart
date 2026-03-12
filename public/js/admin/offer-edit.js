@@ -127,16 +127,16 @@ document.addEventListener("DOMContentLoaded", () => {
 
     results.innerHTML = filtered.length
       ? filtered
-          .map(
-            (p) => `
+        .map(
+          (p) => `
           <div class="product-result-item p-2 hover:bg-gray-100 cursor-pointer"
             data-id="${p._id}"
             data-name="${p.name}">
             ${p.name}
           </div>
         `,
-          )
-          .join("")
+        )
+        .join("")
       : `<div class="p-2 text-gray-500 text-sm">No products found</div>`;
 
     results.classList.remove("hidden");
@@ -212,6 +212,8 @@ document.addEventListener("DOMContentLoaded", () => {
   form.addEventListener("submit", async (e) => {
     e.preventDefault();
 
+    const submitBtn = e.target.querySelector('button[type="submit"]');
+
     const payload = {
       offerId: offerId._id,
       title: document.getElementById("offerTitle").value.trim(),
@@ -253,9 +255,13 @@ document.addEventListener("DOMContentLoaded", () => {
     }
 
     try {
+      if (submitBtn) window.setLoading(submitBtn, true);
+      window.showGlobalLoading();
+
       const res = await api.offerEditAxios(payload);
 
       if (res.data.success) {
+        window.hideGlobalLoading();
         Swal.fire({
           icon: "success",
           title: "Offer Updated",
@@ -266,6 +272,8 @@ document.addEventListener("DOMContentLoaded", () => {
           location.href = "/admin/offers";
         });
       } else {
+        if (submitBtn) window.setLoading(submitBtn, false);
+        window.hideGlobalLoading();
         Swal.fire({
           icon: "error",
           title: "Update Failed",
@@ -273,6 +281,8 @@ document.addEventListener("DOMContentLoaded", () => {
         });
       }
     } catch (err) {
+      if (submitBtn) window.setLoading(submitBtn, false);
+      window.hideGlobalLoading();
       console.error("Update failed:", err);
 
       Swal.fire({

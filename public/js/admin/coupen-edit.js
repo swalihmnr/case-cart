@@ -207,6 +207,7 @@ document.querySelector("#couponForm")?.addEventListener("submit", async (e) => {
   // SUBMIT
   // -----------------
   if (valid) {
+    const submitBtn = e.target.querySelector('button[type="submit"]');
     const payload = {
       couponId,
       title: data.title,
@@ -224,9 +225,13 @@ document.querySelector("#couponForm")?.addEventListener("submit", async (e) => {
     console.log("SENDING PAYLOAD:", payload);
 
     try {
+      if (submitBtn) window.setLoading(submitBtn, true);
+      window.showGlobalLoading();
+
       let res = await api.editCouponAxios(payload);
 
       if (res.data.success) {
+        window.hideGlobalLoading();
         Swal.fire({
           icon: "success",
           title: "Coupon Updated",
@@ -235,6 +240,8 @@ document.querySelector("#couponForm")?.addEventListener("submit", async (e) => {
           window.location.href = "/admin/coupen";
         });
       } else {
+        if (submitBtn) window.setLoading(submitBtn, false);
+        window.hideGlobalLoading();
         Swal.fire({
           icon: "warning",
           title: "Error",
@@ -242,6 +249,8 @@ document.querySelector("#couponForm")?.addEventListener("submit", async (e) => {
         });
       }
     } catch (error) {
+      if (submitBtn) window.setLoading(submitBtn, false);
+      window.hideGlobalLoading();
       Swal.fire({
         icon: "error",
         title: "Failed!",

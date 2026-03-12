@@ -34,5 +34,27 @@ export function setLoading(btn, isLoading) {
     }
 }
 
+/**
+ * Shows the global full-screen loading overlay
+ */
+export function showGlobalLoading() {
+    const overlay = document.getElementById('global-loading-overlay');
+    if (overlay) {
+        overlay.classList.remove('hidden-overlay');
+    }
+}
+
+/**
+ * Hides the global full-screen loading overlay
+ */
+export function hideGlobalLoading() {
+    const overlay = document.getElementById('global-loading-overlay');
+    if (overlay) {
+        overlay.classList.add('hidden-overlay');
+    }
+}
+
 // Attach to window for legacy inline onclick support
 window.setLoading = setLoading;
+window.showGlobalLoading = showGlobalLoading;
+window.hideGlobalLoading = hideGlobalLoading;

@@ -17,7 +17,9 @@ document.querySelectorAll(".block-btn").forEach((btn) => {
       });
 
       if (confirmResult.isConfirmed) {
+        window.setLoading(btn, true);
         const res = await adminApi.blockCategoryAxios(id);
+        window.setLoading(btn, false);
         // Backend returns { success: "Message string", status: isActive boolean }
         // NEW PATTERN: res.data.status is isActive.
         // If isActive is true, it means it's UNBLOCKED.
@@ -47,6 +49,7 @@ document.querySelectorAll(".block-btn").forEach((btn) => {
         }
       }
     } catch (error) {
+      window.setLoading(btn, false);
       console.error(error);
       Toastify({
         text: "An error occurred while updating category status",

@@ -219,11 +219,16 @@ async function handleOfferSubmit(e) {
   }
 
   const payload = buildPayload(data);
+  const submitBtn = e.target.querySelector('button[type="submit"]');
 
   try {
+    if (submitBtn) window.setLoading(submitBtn, true);
+    window.showGlobalLoading();
+
     const res = await api.createOfferAxios(payload);
 
     if (res?.data?.success) {
+      window.hideGlobalLoading();
       Swal.fire({
         icon: "success",
         title: "Offer Created",
@@ -239,6 +244,9 @@ async function handleOfferSubmit(e) {
     }
   } catch (err) {
     console.error("Create offer error:", err);
+    if (submitBtn) window.setLoading(submitBtn, false);
+    window.hideGlobalLoading();
+
     Swal.fire({
       icon: "error",
       title: "Server Error",

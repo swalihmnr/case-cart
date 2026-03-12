@@ -17,7 +17,9 @@ document.querySelectorAll(".block-btn").forEach((btn) => {
       });
 
       if (confirmResult.isConfirmed) {
+        window.setLoading(btn, true);
         const res = await adminApi.blockProductyAxios(id);
+        window.setLoading(btn, false);
         // Backend returns { success: "Message string", status: boolean }
         if (res.data.status !== undefined) {
           const newBlockedStatus = res.data.status;
@@ -45,6 +47,7 @@ document.querySelectorAll(".block-btn").forEach((btn) => {
         }
       }
     } catch (error) {
+      window.setLoading(btn, false);
       console.error(error);
       Toastify({
         text: "An error occurred while updating product status",

@@ -1,5 +1,5 @@
 import api from "../adminApi.js";
-async function deleteOffer(offerId) {
+async function deleteOffer(offerId, btn) {
   const confirm = await Swal.fire({
     title: "Are you sure?",
     text: "This offer will be permanently deleted!",
@@ -15,7 +15,9 @@ async function deleteOffer(offerId) {
   if (!confirm.isConfirmed) return;
 
   try {
+    if (btn) window.setLoading(btn, true);
     const res = await api.deleteOfferAxios(offerId);
+    if (btn) window.setLoading(btn, false);
     console.log(res);
     if (res.data.success) {
       Swal.fire({
@@ -35,6 +37,7 @@ async function deleteOffer(offerId) {
       });
     }
   } catch (err) {
+    if (btn) window.setLoading(btn, false);
     console.error("Delete failed:", err);
 
     Swal.fire({
@@ -47,21 +50,7 @@ async function deleteOffer(offerId) {
 
 window.deleteOffer = deleteOffer;
 function hideSelectionAlertInfo() {
-  const alert = document.getElementById("selectionAlertInfo");
-
-  if (alert) {
-    alert.classList.add("opacity-0", "-translate-y-10");
-
-    setTimeout(() => {
-      alert.style.display = "none";
-    }, 300);
-  }
-
-  // Remove query parameters from URL
-  const url = new URL(window.location);
-  url.search = "";
-
-  window.history.replaceState({}, document.title, url.pathname);
+  window.location.href = "/admin/offers";
 }
 
 window.hideSelectionAlertInfo = hideSelectionAlertInfo;
