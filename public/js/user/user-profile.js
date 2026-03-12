@@ -1,4 +1,5 @@
 import api from "../api.js";
+import { showGlobalLoading, hideGlobalLoading } from "../ui-helpers.js";
 
 // User profile image
 window.handleProfileUpload = handleProfileUpload;
@@ -91,6 +92,7 @@ document.querySelector("form").addEventListener("submit", async function (e) {
   }
 
   if (isValid) {
+    showGlobalLoading();
     const data = { firstName, lastName, email, number };
     try {
       let res = await api.userProfileAxios(data);
@@ -106,7 +108,7 @@ document.querySelector("form").addEventListener("submit", async function (e) {
           title: "Profile Updated",
           text: res.data.message,
           timer: 1500,
-          showConfirmButton: false
+          showConfirmButton: false,
         });
 
         if (res.data.isChanged) {
@@ -117,16 +119,19 @@ document.querySelector("form").addEventListener("submit", async function (e) {
           icon: "warning",
           title: "Update Failed",
           text: res.data.message || "Failed to update profile",
-          confirmButtonColor: "#9333ea"
+          confirmButtonColor: "#9333ea",
         });
       }
     } catch (error) {
+      console.error(error);
       Swal.fire({
         icon: "error",
         title: "Error",
         text: error.response?.data?.message || "An unexpected error occurred",
-        confirmButtonColor: "#dc2626"
+        confirmButtonColor: "#dc2626",
       });
+    } finally {
+      hideGlobalLoading();
     }
   }
 });

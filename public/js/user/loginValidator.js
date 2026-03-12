@@ -1,4 +1,5 @@
 import api from "../api.js";
+import { showGlobalLoading, hideGlobalLoading } from "../ui-helpers.js";
 const url = new URL(window.location.href);
 window.togglePassword = togglePassword;
 function togglePassword(inputId) {
@@ -58,9 +59,10 @@ document.querySelector("form").addEventListener("submit", async (e) => {
       Email: email,
       Password: password,
     };
-    let res = await api.loginAxios(data);
-    console.log(res);
+    showGlobalLoading();
     try {
+      let res = await api.loginAxios(data);
+      console.log(res);
       if (res.data.success) {
         console.log("hlow");
         if (res.data.redirectUrl === "/") {
@@ -81,11 +83,14 @@ document.querySelector("form").addEventListener("submit", async (e) => {
         }
       }
     } catch (error) {
+      console.error(error);
       Swal.fire({
         icon: "error",
-        title: "Access deneid!",
-        text: error.response.data.message,
+        title: "Access denied!",
+        text: error.response?.data?.message || "An unexpected error occurred",
       });
+    } finally {
+      hideGlobalLoading();
     }
   }
 });

@@ -1,5 +1,9 @@
-// /public/js/user/checkout.js
 import api from "../api.js";
+import {
+  setLoading,
+  showGlobalLoading,
+  hideGlobalLoading,
+} from "../ui-helpers.js";
 
 // Global variables
 let appliedCoupon = null;
@@ -324,7 +328,9 @@ function validateAddressForm() {
 // Verify and apply coupon
 async function verifyAndApplyCoupon(couponCode) {
   try {
+    showGlobalLoading();
     const res = await api.verifyCouponAxios(couponCode);
+    hideGlobalLoading();
 
     if (res.data.success) {
       const couponData = res.data.data;
@@ -395,6 +401,7 @@ async function verifyAndApplyCoupon(couponCode) {
       showToast(res.data.message || "Invalid coupon code", "error");
     }
   } catch (error) {
+    hideGlobalLoading();
     console.error("Coupon verification error:", error);
     showToast("Error verifying coupon", "error");
   }
@@ -802,10 +809,7 @@ function buildPayload() {
 // Place order
 async function placeOrder() {
   const orderButton = document.querySelector('button[onclick="placeOrder()"]');
-  if (orderButton) {
-    orderButton.disabled = true;
-    orderButton.innerHTML = '<span class="spinner"></span> Processing...';
-  }
+  setLoading(orderButton, true);
 
   try {
     const selectedSavedAddress = document.querySelector(
@@ -814,10 +818,7 @@ async function placeOrder() {
 
     if (!selectedSavedAddress && !validateAddressForm()) {
       showToast("Please fill all required shipping details", "warning");
-      if (orderButton) {
-        orderButton.disabled = false;
-        orderButton.innerHTML = "Place Order";
-      }
+      setLoading(orderButton, false);
       return;
     }
 
@@ -827,10 +828,7 @@ async function placeOrder() {
 
     if (!paymentMethod) {
       showToast("Please select a payment method", "warning");
-      if (orderButton) {
-        orderButton.disabled = false;
-        orderButton.innerHTML = "Place Order";
-      }
+      setLoading(orderButton, false);
       return;
     }
 
@@ -869,24 +867,28 @@ async function placeOrder() {
       }
     }
 
+    showGlobalLoading();
     if (paymentMethod === "razorpay") {
       const res = await api.confirmationAxios(payload);
+      hideGlobalLoading();
 
       if (res.data.success) {
         currentOrderId = res.data.orderId;
         const url = new URL(window.location);
         url.searchParams.set("orderId", currentOrderId);
         window.history.replaceState({}, "", url);
+        showGlobalLoading();
         await initiateRazorpayPayment(currentOrderId);
+        hideGlobalLoading();
       } else {
         handleOrderFailure(res);
         if (orderButton) {
-          orderButton.disabled = false;
-          orderButton.innerHTML = "Place Order";
+          setLoading(orderButton, false);
         }
       }
     } else {
       const res = await api.confirmationAxios(payload);
+      hideGlobalLoading();
 
       if (res.data.success) {
         showToast("Order placed successfully!", "success");
@@ -896,8 +898,7 @@ async function placeOrder() {
       } else {
         handleOrderFailure(res);
         if (orderButton) {
-          orderButton.disabled = false;
-          orderButton.innerHTML = "Place Order";
+          setLoading(orderButton, false);
         }
       }
     }
@@ -907,10 +908,8 @@ async function placeOrder() {
       error.response?.data?.message || "An error occurred while placing order",
       "error",
     );
-    if (orderButton) {
-      orderButton.disabled = false;
-      orderButton.innerHTML = "Place Order";
-    }
+    setLoading(orderButton, false);
+    hideGlobalLoading();
   }
 }
 
@@ -1541,81 +1540,6 @@ function showToast(message, type = "info") {
     title: message,
   });
 }
-
-// Add spinner CSS and animations
-const style = document.createElement("style");
-style.textContent = `
-    .spinner {
-        display: inline-block;
-        width: 16px;
-        height: 16px;
-        border: 2px solid rgba(255,255,255,.3);
-        border-radius: 50%;
-        border-top-color: #fff;
-        animation: spin 0.8s linear infinite;
-        margin-right: 8px;
-    }
-    
-    @keyframes spin {
-        to { transform: rotate(360deg); }
-    }
-    
-    /* Add animation for modal */
-    @keyframes fadeInDown {
-        from {
-            opacity: 0;
-            transform: translate3d(0, -20px, 0);
-        }
-        to {
-            opacity: 1;
-            transform: translate3d(0, 0, 0);
-        }
-    }
-    
-    @keyframes fadeOutUp {
-        from {
-            opacity: 1;
-            transform: translate3d(0, 0, 0);
-        }
-        to {
-            opacity: 0;
-            transform: translate3d(0, -20px, 0);
-        }
-    }
-    
-    .animate__animated {
-        animation-duration: 0.5s;
-        animation-fill-mode: both;
-    }
-    
-    .animate__fadeInDown {
-        animation-name: fadeInDown;
-    }
-    
-    .animate__fadeOutUp {
-        animation-name: fadeOutUp;
-    }
-    
-    /* Custom scrollbar for modal */
-    .swal2-popup::-webkit-scrollbar {
-        width: 6px;
-    }
-    
-    .swal2-popup::-webkit-scrollbar-track {
-        background: #f1f1f1;
-        border-radius: 10px;
-    }
-    
-    .swal2-popup::-webkit-scrollbar-thumb {
-        background: #c7c7c7;
-        border-radius: 10px;
-    }
-    
-    .swal2-popup::-webkit-scrollbar-thumb:hover {
-        background: #a8a8a8;
-    }
-`;
-document.head.appendChild(style);
 
 // Export functions to window
 window.placeOrder = placeOrder;

@@ -1,4 +1,5 @@
 import api from "../api.js";
+import { showGlobalLoading, hideGlobalLoading } from "../ui-helpers.js";
 clearInterval(window.OtpTimer);
 window.resendBtn = document.getElementById("resend-btn");
 window.verifyBtn = document.getElementById("verify-btn");
@@ -60,38 +61,44 @@ window.verifyOTP = async function verifyOTP(event) {
   window.otp = otp;
   console.log("User entered OTP:", otp);
 
-  Swal.fire({
-    title: "Verifying OTP...",
-    didOpen: () => Swal.showLoading(),
-    timer: "2000",
-  });
+  showGlobalLoading();
+  try {
+    const res = await api.userOtpAxios(otp);
+    console.log(res);
+    if (res.data.success) {
+      // Clear timer data on successful verification
+      localStorage.removeItem("otpTimer");
+      localStorage.removeItem("otpExpire");
+      clearInterval(window.OtpTimer);
 
-  const res = await api.userOtpAxios(otp);
-  Swal.close();
-  console.log(res);
-  if (res.data.success) {
-    // Clear timer data on successful verification
-    localStorage.removeItem("otpTimer");
-    localStorage.removeItem("otpExpire");
-    clearInterval(window.OtpTimer);
-
-    Swal.fire({
-      icon: "success",
-      title: "OTP Verified!",
-      text: res.data.message,
-      confirmButtonColor: "#667eea",
-    }).then(() => {
-      const loginUrl = sessionStorage.getItem("urlLoginPage");
-      console.log(loginUrl);
-      window.location.href = loginUrl || "/login";
-    });
-  } else {
+      Swal.fire({
+        icon: "success",
+        title: "OTP Verified!",
+        text: res.data.message,
+        confirmButtonColor: "#667eea",
+      }).then(() => {
+        const loginUrl = sessionStorage.getItem("urlLoginPage");
+        console.log(loginUrl);
+        window.location.href = loginUrl || "/login";
+      });
+    } else {
+      Swal.fire({
+        icon: "error",
+        title: "Invalid OTP",
+        text: "Please try again.",
+        confirmButtonColor: "#667eea",
+      });
+    }
+  } catch (error) {
+    console.error(error);
     Swal.fire({
       icon: "error",
-      title: "Invalid OTP",
-      text: "Please try again.",
+      title: "Error",
+      text: "Something went wrong during verification",
       confirmButtonColor: "#667eea",
     });
+  } finally {
+    hideGlobalLoading();
   }
 };
 
@@ -225,15 +232,27 @@ window.resendOTP = async function () {
   resendBtn.disabled = true;
   resendBtn.classList.add("btn-disabled");
 
-  await api.resendOtpAxios(true);
+  showGlobalLoading();
+  try {
+    await api.resendOtpAxios(true);
 
-  Swal.fire({
-    icon: "success",
-    title: "OTP Resent!",
-    text: "Check your email.",
-    timer: 2000,
-    showConfirmButton: false,
-  });
+    Swal.fire({
+      icon: "success",
+      title: "OTP Resent!",
+      text: "Check your email.",
+      timer: 2000,
+      showConfirmButton: false,
+    });
+  } catch (error) {
+    console.error(error);
+    Swal.fire({
+      icon: "error",
+      title: "Error",
+      text: "Failed to resend OTP",
+    });
+  } finally {
+    hideGlobalLoading();
+  }
 
   for (let i = 1; i <= 6; i++) {
     document.getElementById(`otp-${i}`).value = "";

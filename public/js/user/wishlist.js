@@ -1,6 +1,8 @@
 import api from "../api.js";
+import { showGlobalLoading, hideGlobalLoading } from "../ui-helpers.js";
 
 const remWishlist = async (id) => {
+  showGlobalLoading();
   try {
     const res = await api.remWishlistAxios(id);
     if (res.data.success) {
@@ -78,6 +80,8 @@ const remWishlist = async (id) => {
       },
     }).showToast();
     console.log(error.response);
+  } finally {
+    hideGlobalLoading();
   }
 };
 

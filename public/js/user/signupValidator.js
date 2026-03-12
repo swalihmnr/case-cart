@@ -1,4 +1,5 @@
-import api from "../api.js ";
+import api from "../api.js";
+import { showGlobalLoading, hideGlobalLoading } from "../ui-helpers.js";
 
 document.addEventListener("DOMContentLoaded", () => {
   const passwordInput = document.getElementById("signup-password");
@@ -92,15 +93,27 @@ document.querySelector("form").addEventListener("submit", async (event) => {
     sessionStorage.setItem("email", email);
     localStorage.removeItem("otpTimer");
     localStorage.removeItem("otpExpire");
-    let res = await api.userSignupAxios(data);
-    if (res.data.success) {
-      window.location.href = res.data.redirectUrl;
-    } else {
+    showGlobalLoading();
+    try {
+      let res = await api.userSignupAxios(data);
+      if (res.data.success) {
+        window.location.href = res.data.redirectUrl;
+      } else {
+        Swal.fire({
+          icon: "warning",
+          title: res.data.message,
+          confirmButtonColor: "#f6ad55", // orange
+        });
+      }
+    } catch (error) {
+      console.error(error);
       Swal.fire({
-        icon: "warning",
-        title: res.data.message,
-        confirmButtonColor: "#f6ad55", // orange
+        icon: "error",
+        title: "Signup Failed",
+        text: "Something went wrong during signup",
       });
+    } finally {
+      hideGlobalLoading();
     }
   }
 });

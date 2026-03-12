@@ -1,4 +1,5 @@
 import api from "../api.js";
+import { showGlobalLoading, hideGlobalLoading } from "../ui-helpers.js";
 
 document
   .querySelector("#addressForm")
@@ -90,34 +91,47 @@ document
     let streetAddress = line1;
     // -------- SUBMIT --------
     if (Err_flag) {
-      const payload = {
-        firstName,
-        lastName,
-        phone,
-        streetAddress,
-        landmark,
-        city,
-        state,
-        pincode,
-        addressType,
-        isDefault,
-      };
-      const res = await api.addAddressAxios(payload);
-      if (res.data.success) {
+      showGlobalLoading();
+      try {
+        const payload = {
+          firstName,
+          lastName,
+          phone,
+          streetAddress,
+          landmark,
+          city,
+          state,
+          pincode,
+          addressType,
+          isDefault,
+        };
+        const res = await api.addAddressAxios(payload);
+        if (res.data.success) {
+          Swal.fire({
+            icon: "success",
+            title: "created",
+            text: res.data.message,
+            confirmButtonColor: "#667eea",
+          }).then((item) => {
+            location.href = "/address";
+          });
+        } else {
+          Swal.fire({
+            icon: "warning",
+            text: res.data.message,
+            confirmButtonColor: "#667eea",
+          });
+        }
+      } catch (error) {
+        console.error(error);
         Swal.fire({
-          icon: "success",
-          title: "created",
-          text: res.data.message,
-          confirmButtonColor: "#667eea",
-        }).then((item) => {
-          location.href = "/address";
-        });
-      } else {
-        Swal.fire({
-          icon: "warning",
-          text: res.data.message,
+          icon: "error",
+          title: "Error",
+          text: "Something went wrong while saving address",
           confirmButtonColor: "#667eea",
         });
+      } finally {
+        hideGlobalLoading();
       }
     }
   });

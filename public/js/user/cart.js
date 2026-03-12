@@ -1,6 +1,8 @@
 import api from "../api.js";
+import { showGlobalLoading, hideGlobalLoading } from "../ui-helpers.js";
 
 async function addToCart(productId, variantId) {
+  showGlobalLoading();
   console.log(productId, variantId);
   try {
     const res = await api.addToCartAxios(productId, variantId);
@@ -88,6 +90,8 @@ async function addToCart(productId, variantId) {
   } catch (error) {
     console.log("hiiii");
     console.log(error.response);
+  } finally {
+    hideGlobalLoading();
   }
 }
 
@@ -111,6 +115,7 @@ function updateCartCount(count) {
 }
 
 async function updateQuantity(btn, itemId, change) {
+  showGlobalLoading();
   try {
     const res = await api.quantityUpdateAxios(itemId, change);
     if (res.data.success) {
@@ -168,6 +173,8 @@ async function updateQuantity(btn, itemId, change) {
     }
   } catch (error) {
     console.log(error);
+  } finally {
+    hideGlobalLoading();
   }
 }
 
