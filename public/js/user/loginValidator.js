@@ -29,6 +29,8 @@ if (url.searchParams.get("blocked") === "true") {
     title: "Account Blocked",
     text: "Your account has been blocked by admin.",
   });
+window.history.replaceState({}, document.title, "/login");
+
 }
 document.querySelector("form").addEventListener("submit", async (e) => {
   e.preventDefault();
