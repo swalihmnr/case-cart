@@ -2,10 +2,15 @@ import api from "../api.js";
 import { showGlobalLoading, hideGlobalLoading } from "../ui-helpers.js";
 
 async function addToCart(productId, variantId) {
-  showGlobalLoading();
   console.log(productId, variantId);
+
+  let loaderTimer;
   try {
+    loaderTimer = setTimeout(() => {
+      showGlobalLoading();
+    }, 300);
     const res = await api.addToCartAxios(productId, variantId);
+    clearTimeout(loaderTimer); // cancel loader if API is fast
     if (res.data.success) {
       // Update cart count in header
       updateCartCount(res.data.cartCount);
@@ -91,6 +96,7 @@ async function addToCart(productId, variantId) {
     console.log("hiiii");
     console.log(error.response);
   } finally {
+    clearTimeout(loaderTimer);
     hideGlobalLoading();
   }
 }
@@ -227,19 +233,22 @@ async function removeFromCart(productId, variantId) {
     }
   } catch (error) {
     console.error("Remove from cart error:", error);
-    showToast(error.response?.data?.message || "Failed to remove item", "error");
+    showToast(
+      error.response?.data?.message || "Failed to remove item",
+      "error",
+    );
   } finally {
     hideGlobalLoading();
   }
 }
 
-let proceedToCheckOut = document.querySelector('.proceedToCheckOut');
+let proceedToCheckOut = document.querySelector(".proceedToCheckOut");
 if (proceedToCheckOut) {
-  let span = document.createElement('span');
-  span.classList.add('spinner')
-  proceedToCheckOut.addEventListener('click', () => {
-    proceedToCheckOut.appendChild(span)
-  })
+  let span = document.createElement("span");
+  span.classList.add("spinner");
+  proceedToCheckOut.addEventListener("click", () => {
+    proceedToCheckOut.appendChild(span);
+  });
 }
 
 // MAKE ALL FUNCTIONS GLOBAL
