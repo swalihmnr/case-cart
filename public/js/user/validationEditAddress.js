@@ -29,9 +29,9 @@ document
     let Err_pin = document.getElementById("pincodeError");
     let Err_type = document.getElementById("addressTypeError");
 
-    // -------- REGEX --------
+    // -------- REGEX & CONSTRAINTS --------
     const namePattern = /^[A-Za-z\s]+$/;
-    const phonePattern = /^[0-9]+$/;
+    const phonePattern = /^[6-9]\d{9}$/;
     const pinPattern = /^\d{6}$/;
 
     // -------- CLEAR ERRORS --------
@@ -47,23 +47,23 @@ document
     let Err_flag = true;
 
     // -------- VALIDATION --------
-    if (!namePattern.test(firstName)) {
-      Err_fname.innerText = "Enter a valid first name";
+    if (!namePattern.test(firstName) || firstName.length < 2) {
+      Err_fname.innerText = "Enter a valid first name (min 2 chars)";
       Err_flag = false;
     }
 
-    if (!namePattern.test(lastName)) {
+    if (!namePattern.test(lastName) || lastName.length < 1) {
       Err_lname.innerText = "Enter a valid last name";
       Err_flag = false;
     }
 
     if (!phonePattern.test(phone)) {
-      Err_phone.innerText = "Enter a valid 10-digit phone number";
+      Err_phone.innerText = "Enter a valid 10-digit Indian phone number";
       Err_flag = false;
     }
 
-    if (line1 === "") {
-      Err_line1.innerText = "Address Line 1 is required";
+    if (line1 === "" || line1.length < 5) {
+      Err_line1.innerText = "Street address is required (min 5 chars)";
       Err_flag = false;
     }
 
