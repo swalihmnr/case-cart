@@ -1,4 +1,5 @@
 <%- include('../partials/user/header') %>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.6.1/cropper.min.css">
 
 <div class="flex">
     <main class="max-w-7xl mx-auto px-4 py-8 md:py-12">
@@ -103,7 +104,39 @@
     </main>
 </div>
 
+<!-- Cropping Modal -->
+<div id="cropModal" class="fixed inset-0 z-[60] hidden overflow-y-auto" aria-labelledby="modal-title" role="dialog" aria-modal="true">
+    <div class="flex items-center justify-center min-h-screen pt-4 px-4 pb-20 text-center sm:block sm:p-0">
+        <div class="fixed inset-0 bg-gray-500 bg-opacity-75 transition-opacity" aria-hidden="true" onclick="closeCropModal()"></div>
+        <span class="hidden sm:inline-block sm:align-middle sm:h-screen" aria-hidden="true">&#8203;</span>
+        <div class="inline-block align-middle bg-white rounded-2xl text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle sm:max-w-xl sm:w-full">
+            <div class="bg-white px-4 pt-5 pb-4 sm:p-8 sm:pb-4">
+                <div class="sm:flex sm:items-start">
+                    <div class="mt-3 text-center sm:mt-0 sm:text-left w-full">
+                        <h3 class="text-2xl font-bold text-gray-900 mb-6" id="modal-title">
+                            Crop Your Profile Picture
+                        </h3>
+                        <div class="mt-2 w-full aspect-square bg-gray-100 rounded-xl overflow-hidden shadow-inner">
+                            <img id="image-to-crop" src="" alt="To Crop" class="max-w-full block">
+                        </div>
+                        <p class="mt-4 text-sm text-gray-500 italic text-center">Drag and resize the box to select your profile area</p>
+                    </div>
+                </div>
+            </div>
+            <div class="bg-gray-50 px-4 py-4 sm:px-8 sm:flex sm:flex-row-reverse gap-3">
+                <button type="button" id="crop-button" class="w-full inline-flex justify-center rounded-xl border border-transparent shadow-sm px-6 py-3 gradient-bg text-base font-semibold text-white hover:opacity-90 focus:outline-none transition-all sm:w-auto sm:text-sm">
+                    Crop & Save Image
+                </button>
+                <button type="button" onclick="closeCropModal()" class="mt-3 w-full inline-flex justify-center rounded-xl border-2 border-gray-200 shadow-sm px-6 py-3 bg-white text-base font-semibold text-gray-700 hover:bg-gray-50 focus:outline-none transition-all sm:mt-0 sm:w-auto sm:text-sm">
+                    Cancel
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
 <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.6.1/cropper.min.js"></script>
 <script type="module" src="/js/user/user-profile.js"></script>
 
 <!-- Add this small script for copy functionality -->

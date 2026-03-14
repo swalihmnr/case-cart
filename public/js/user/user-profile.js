@@ -3,10 +3,31 @@ import { showGlobalLoading, hideGlobalLoading } from "../ui-helpers.js";
 
 // User profile image
 window.handleProfileUpload = handleProfileUpload;
+window.closeCropModal = closeCropModal;
+
+let cropper = null;
+const cropModal = document.getElementById("cropModal");
+const imageToCrop = document.getElementById("image-to-crop");
+const cropButton = document.getElementById("crop-button");
+
 async function handleProfileUpload(event) {
   const file = event.target.files[0];
   if (!file) return;
 
+  // Validation: Type
+  const allowedTypes = ["image/jpeg", "image/png", "image/gif", "image/webp"];
+  if (!allowedTypes.includes(file.type)) {
+    Swal.fire({
+      icon: "error",
+      title: "Invalid file type",
+      text: "Please upload an image (JPG, PNG, GIF, or WebP)",
+      confirmButtonColor: "#9333ea"
+    });
+    event.target.value = "";
+    return;
+  }
+
+  // Validation: Size
   if (file.size > 2 * 1024 * 1024) {
     Swal.fire({
       icon: "error",
@@ -14,43 +35,92 @@ async function handleProfileUpload(event) {
       text: "Profile picture must be less than 2MB",
       confirmButtonColor: "#9333ea"
     });
+    event.target.value = "";
     return;
   }
 
-  const newForm = new FormData();
-  newForm.append("image", file);
-
-  try {
-    // Show loading state
-    Swal.fire({
-      title: "Uploading...",
-      didOpen: () => {
-        Swal.showLoading();
-      },
-      allowOutsideClick: false,
-      showConfirmButton: false
-    });
-
-    let res = await api.userProfileImgUplaoderAxios(newForm);
-    if (res.data.success) {
-      await Swal.fire({
-        icon: "success",
-        title: "Success",
-        text: res.data.message,
-        timer: 1500,
-        showConfirmButton: false
-      });
-      window.location.reload();
+  // Open Cropper Modal
+  const reader = new FileReader();
+  reader.onload = (e) => {
+    imageToCrop.src = e.target.result;
+    cropModal.classList.remove("hidden");
+    
+    if (cropper) {
+      cropper.destroy();
     }
-  } catch (error) {
-    Swal.fire({
-      icon: "error",
-      title: "Upload Failed",
-      text: error.response?.data?.message || "Something went wrong during upload",
-      confirmButtonColor: "#9333ea"
+    
+    cropper = new Cropper(imageToCrop, {
+      aspectRatio: 1,
+      viewMode: 2,
+      guides: true,
+      autoCropArea: 1,
+      movable: true,
+      zoomable: true,
+      rotatable: true,
+      scalable: true
     });
-  }
+  };
+  reader.readAsDataURL(file);
 }
+
+function closeCropModal() {
+  cropModal.classList.add("hidden");
+  if (cropper) {
+    cropper.destroy();
+    cropper = null;
+  }
+  document.getElementById("profile-upload").value = "";
+}
+
+cropButton.addEventListener("click", async () => {
+  if (!cropper) return;
+
+  const canvas = cropper.getCroppedCanvas({
+    width: 400,
+    height: 400
+  });
+
+  canvas.toBlob(async (blob) => {
+    const formData = new FormData();
+    formData.append("image", blob, "profile.jpg");
+
+    try {
+      closeCropModal();
+      showGlobalLoading();
+      
+      let res = await api.userProfileImgUplaoderAxios(formData);
+      
+      if (res.data.success) {
+        hideGlobalLoading();
+        await Swal.fire({
+          icon: "success",
+          title: "Success",
+          text: res.data.message,
+          timer: 1500,
+          showConfirmButton: false
+        });
+        window.location.reload();
+      } else {
+        hideGlobalLoading();
+        Swal.fire({
+          icon: "error",
+          title: "Upload Failed",
+          text: res.data.message || "Failed to upload image",
+          confirmButtonColor: "#9333ea"
+        });
+      }
+    } catch (error) {
+      hideGlobalLoading();
+      console.error(error);
+      Swal.fire({
+        icon: "error",
+        title: "Error",
+        text: "Something went wrong during upload",
+        confirmButtonColor: "#9333ea"
+      });
+    }
+  }, "image/jpeg", 0.9);
+});
 
 document.querySelector("form").addEventListener("submit", async function (e) {
   e.preventDefault();

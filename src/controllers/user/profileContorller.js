@@ -152,6 +152,12 @@ const editProfileInfo = async (req, res) => {
 const editProfileImg = async (req, res) => {
   try {
     console.log(req.file);
+    if (!req.file) {
+      return res.status(STATUS_CODES.BAD_REQUEST).json({
+        success: false,
+        message: "No image provided or invalid file type",
+      });
+    }
     const uploadResult = await uploadBufferTocloudnery(req.file.buffer);
     const existing = await user.findOne({ email: req.session.user.email });
     console.log(existing);
