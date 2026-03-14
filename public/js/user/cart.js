@@ -233,12 +233,14 @@ async function removeFromCart(productId, variantId) {
   }
 }
 
-let proceedToCheckOut=document.querySelector('.proceedToCheckOut');
-let span =document.createElement('span');
-span.classList.add('spinner')
-proceedToCheckOut.addEventListener('click',()=>{
-  proceedToCheckOut.appendChild(span)
-})
+let proceedToCheckOut = document.querySelector('.proceedToCheckOut');
+if (proceedToCheckOut) {
+  let span = document.createElement('span');
+  span.classList.add('spinner')
+  proceedToCheckOut.addEventListener('click', () => {
+    proceedToCheckOut.appendChild(span)
+  })
+}
 
 // MAKE ALL FUNCTIONS GLOBAL
 window.removeFromCart = removeFromCart;
