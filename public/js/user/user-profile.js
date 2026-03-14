@@ -93,6 +93,9 @@ document.querySelector("form").addEventListener("submit", async function (e) {
 
   if (isValid) {
     showGlobalLoading();
+    const submitBtn = e.target.querySelector('button[type="submit"]');
+    if (submitBtn) window.setLoading(submitBtn, true);
+
     const data = { firstName, lastName, email, number };
     try {
       let res = await api.userProfileAxios(data);
@@ -103,6 +106,8 @@ document.querySelector("form").addEventListener("submit", async function (e) {
           return;
         }
 
+        hideGlobalLoading();
+        if (submitBtn) window.setLoading(submitBtn, false);
         await Swal.fire({
           icon: "success",
           title: "Profile Updated",
@@ -115,6 +120,8 @@ document.querySelector("form").addEventListener("submit", async function (e) {
           window.location.reload();
         }
       } else {
+        hideGlobalLoading();
+        if (submitBtn) window.setLoading(submitBtn, false);
         Swal.fire({
           icon: "warning",
           title: "Update Failed",
@@ -124,14 +131,14 @@ document.querySelector("form").addEventListener("submit", async function (e) {
       }
     } catch (error) {
       console.error(error);
+      hideGlobalLoading();
+      if (submitBtn) window.setLoading(submitBtn, false);
       Swal.fire({
         icon: "error",
         title: "Error",
         text: error.response?.data?.message || "An unexpected error occurred",
         confirmButtonColor: "#dc2626",
       });
-    } finally {
-      hideGlobalLoading();
     }
   }
 });
