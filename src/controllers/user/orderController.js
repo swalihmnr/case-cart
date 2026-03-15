@@ -7,6 +7,7 @@ import variantModel from "../../models/admin/variantModel.js";
 import { STATUS_CODES } from "../../utils/statusCodes.js";
 import addressModel from "../../models/addressModel.js";
 import couponModel from "../../models/admin/coupenModel.js";
+import offerModel from "../../models/admin/offerModel.js";
 
 // ==============================
 // GET ORDER MANAGEMENT PAGE
@@ -865,6 +866,16 @@ const cancelWholeOrder = async (req, res) => {
         ],
       },
     );
+     
+
+      const updateData = {
+        orderStatus: "cancelled",
+        paymentStatus: "cancelled",
+      };
+
+      await orderModel.updateOne({ _id: orderId }, { $set: updateData });
+    
+    
     if (result.modifiedCount > 0 && orderExists.paymentStatus === "paid") {
       let Wallet = await wallet.findOne({
         userId: orderExists.userId,
@@ -953,7 +964,33 @@ const orderCancel = async (req, res) => {
         message: `Item is already ${item.status}`,
       });
     }
+ 
+    let minimumOrdValue=null
+    if(existingOrder.couponId){
+       let coupon=await couponModel.findOne({_id:existingOrder.couponId})
+       minimumOrdValue=coupon.MinimumPurchaseValue
+    }
 
+    const existingItems = existingOrder.orderItems.filter(
+      (item) => item._id.toString() !== orderItemId.toString(),
+    );
+
+    const existingProductTotal = existingItems
+      .filter((item) => item.status !== "cancelled")
+      .reduce((acc, item) => acc + item.finalPrice, 0);
+    if (
+      existingProductTotal <= minimumOrdValue &&
+      existingOrder.couponDiscount > 0
+    ) {
+    
+      return res.status(STATUS_CODES.FORBIDDEN).json({
+        success: false,
+        message:
+          "This item cannot be cancelled because the applied coupon requires a higher minimum purchase amount. Please cancel the entire order.",
+      });
+    }
+
+    console.log(existingItems);
     const result = await orderModel.updateOne(
       { _id: orderID, "orderItems._id": orderItemId },
       {
@@ -967,7 +1004,7 @@ const orderCancel = async (req, res) => {
         },
       },
     );
- const updatedOrder = await orderModel.findById(orderId);
+    const updatedOrder = await orderModel.findById(orderId);
     const activeItems = updatedOrder.orderItems.filter(
       (item) => !["cancelled", "returned"].includes(item.status),
     );
@@ -975,7 +1012,7 @@ const orderCancel = async (req, res) => {
     if (activeItems.length === 0) {
       const updateData = {
         orderStatus: "cancelled",
-        paymentStatus: "cancelled"
+        paymentStatus: "cancelled",
       };
 
       await orderModel.updateOne({ _id: orderId }, { $set: updateData });
