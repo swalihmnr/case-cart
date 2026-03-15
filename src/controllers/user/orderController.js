@@ -949,9 +949,24 @@ const orderCancel = async (req, res) => {
           "orderItems.$.cancelledAt": new Date(),
           "orderItems.$.cancellationReason": reason,
         },
+        $inc: {
+          finalAmount: -item.finalPrice,
+        },
       },
     );
+ const updatedOrder = await orderModel.findById(orderId);
+    const activeItems = updatedOrder.orderItems.filter(
+      (item) => !["cancelled", "returned"].includes(item.status),
+    );
 
+    if (activeItems.length === 0) {
+      const updateData = {
+        orderStatus: "cancelled",
+        paymentStatus: "cancelled"
+      };
+
+      await orderModel.updateOne({ _id: orderId }, { $set: updateData });
+    }
     // ======================
     // RESTORE STOCK
     // ======================

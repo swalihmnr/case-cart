@@ -23,7 +23,7 @@
                                 <select name="status" onchange="this.form.submit()"
                                     class="px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-purple-500">
                                     <option value="">All Orders</option>
-                                    <option value="pending" <%=status==='pending' ? 'selected' : '' %>>Pending
+                                    <option value="failed" <%=status==='"failed"' ? 'selected' : '' %>>Payment Field
                                     </option>
                                     <option value="delivered" <%=status==='delivered' ? 'selected' : '' %>>Delivered
                                     </option>
@@ -88,10 +88,10 @@
                                                         </span>
                                                     </div>
                                                     <div>
-                                                        <span
+                                                        <!-- <span
                                                             class="text-[10px] text-gray-400 font-black uppercase tracking-widest block mb-0.5">TOTAL</span>
                                                         <span class="font-bold text-gray-900">₹<%= order.totalPrice %>
-                                                                </span>
+                                                                </span> -->
                                                     </div>
                                                     <div class="hidden sm:block ml-auto text-right">
                                                         <% /* Re-use overallStatus if defined above, logic is identical
