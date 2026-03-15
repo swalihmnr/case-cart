@@ -218,127 +218,211 @@ function initPaymentSelection() {
   });
 }
 
-// Initialize form validation
+// ============================================================
+// FIELD VALIDATION RULES
+// ============================================================
+const fieldRules = {
+  "first-name": {
+    label: "First name",
+    validate(val) {
+      if (!val) return "First name is required";
+      if (!/^[A-Za-z\s]{2,}$/.test(val))
+        return "First name must contain only letters (min 2 characters)";
+      return null;
+    },
+  },
+  "last-name": {
+    label: "Last name",
+    validate(val) {
+      if (!val) return "Last name is required";
+      if (!/^[A-Za-z\s]{1,}$/.test(val))
+        return "Last name must contain only letters";
+      return null;
+    },
+  },
+  phone: {
+    label: "Phone number",
+    validate(val) {
+      if (!val) return "Phone number is required";
+      if (!/^[6-9]\d{9}$/.test(val))
+        return "Enter a valid 10-digit Indian mobile number";
+      return null;
+    },
+  },
+  line1: {
+    label: "Street address",
+    validate(val) {
+      if (!val) return "Street address is required";
+      if (val.length < 5)
+        return "Street address is too short (min 5 characters)";
+      return null;
+    },
+  },
+  city: {
+    label: "City",
+    validate(val) {
+      if (!val) return "City is required";
+      if (!/^[A-Za-z\s]{2,}$/.test(val))
+        return "City must contain only letters";
+      return null;
+    },
+  },
+  state: {
+    label: "State",
+    validate(val) {
+      if (!val) return "Please select a state";
+      return null;
+    },
+  },
+  pincode: {
+    label: "PIN code",
+    validate(val) {
+      if (!val) return "PIN code is required";
+      if (!/^\d{6}$/.test(val)) return "PIN code must be exactly 6 digits";
+      return null;
+    },
+  },
+};
+
+// Set field visual state (error / success / neutral)
+function setFieldState(fieldId, state) {
+  const el = document.getElementById(fieldId);
+  if (!el) return;
+  el.classList.remove(
+    "border-red-400",
+    "focus:ring-red-400",
+    "border-green-400",
+    "focus:ring-green-400",
+    "border-gray-300",
+  );
+  if (state === "error") {
+    el.classList.add("border-red-400", "focus:ring-red-400");
+  } else if (state === "success") {
+    el.classList.add("border-green-400", "focus:ring-green-400");
+  } else {
+    el.classList.add("border-gray-300");
+  }
+}
+
+// Clear error
+function clearError(fieldId) {
+  const errorElement = document.getElementById(fieldId + "Error");
+  if (errorElement) errorElement.textContent = "";
+  setFieldState(fieldId, "neutral");
+}
+
+// Show error
+function showError(fieldId, message) {
+  const errorElement = document.getElementById(fieldId + "Error");
+  if (errorElement) errorElement.textContent = message;
+  setFieldState(fieldId, "error");
+}
+
+// Show success state
+function showSuccess(fieldId) {
+  const errorElement = document.getElementById(fieldId + "Error");
+  if (errorElement) errorElement.textContent = "";
+  setFieldState(fieldId, "success");
+}
+
+// Validate a single field and update UI
+function validateField(fieldId) {
+  const rule = fieldRules[fieldId];
+  if (!rule) return true;
+  const el = document.getElementById(fieldId);
+  if (!el) return true;
+  const val = el.value.trim();
+  const error = rule.validate(val);
+  if (error) {
+    showError(fieldId, error);
+    return false;
+  } else {
+    showSuccess(fieldId);
+    return true;
+  }
+}
+
+// Initialize form validation (real-time)
 function initFormValidation() {
   const form = document.getElementById("shippingForm");
   if (!form) return;
 
-  // Toggle address type container based on checkbox
   const saveAddressCheckbox = document.getElementById("saveAddressCheckbox");
   const addressTypeContainer = document.getElementById("addressTypeContainer");
-
   if (saveAddressCheckbox && addressTypeContainer) {
     saveAddressCheckbox.addEventListener("change", function () {
-      if (this.checked) {
-        addressTypeContainer.classList.remove("hidden");
-      } else {
-        addressTypeContainer.classList.add("hidden");
-      }
+      addressTypeContainer.classList.toggle("hidden", !this.checked);
     });
   }
 
-  const inputs = form.querySelectorAll(
-    'input:not([type="radio"]):not([type="checkbox"]), select',
-  );
-  inputs.forEach((input) => {
-    input.addEventListener("input", function () {
-      clearError(this.id);
+  // Attach real-time events to each validated field
+  Object.keys(fieldRules).forEach((fieldId) => {
+    const el = document.getElementById(fieldId);
+    if (!el) return;
 
+    // Clear saved-address selection when user manually edits any field
+    el.addEventListener("input", function () {
+      // Clear error while user is typing (not yet done, defer to blur)
+      // But if field was in error state, re-validate on input for responsiveness
+      if (el.classList.contains("border-red-400")) {
+        validateField(fieldId);
+      }
+      // Deselect saved address
       const checkedAddress = document.querySelector(
         'input[name="savedAddress"]:checked',
       );
       if (checkedAddress) {
         checkedAddress.checked = false;
         const dropdownBtn = document.getElementById("addressDropdownBtn");
-        if (dropdownBtn) {
-          dropdownBtn.textContent = "Use saved address";
-        }
+        if (dropdownBtn) dropdownBtn.textContent = "Use saved address";
       }
     });
+
+    // Validate on blur (when user leaves field)
+    el.addEventListener("blur", function () {
+      // Only validate if the field has been touched (has a value or was focused)
+      if (el.value.trim() !== "" || el === document.activeElement) {
+        validateField(fieldId);
+      }
+    });
+
+    // For select, validate on change immediately
+    if (el.tagName === "SELECT") {
+      el.addEventListener("change", () => validateField(fieldId));
+    }
+
+    // Phone: allow only digits
+    if (fieldId === "phone" || fieldId === "pincode") {
+      el.addEventListener("keypress", function (e) {
+        if (
+          !/[0-9]/.test(e.key) &&
+          !["Backspace", "Delete", "ArrowLeft", "ArrowRight", "Tab"].includes(
+            e.key,
+          )
+        ) {
+          e.preventDefault();
+        }
+      });
+    }
   });
 }
 
-// Clear error
-function clearError(fieldId) {
-  const errorElement = document.getElementById(fieldId + "Error");
-  if (errorElement) {
-    errorElement.textContent = "";
-  }
-}
-
-// Show error
-function showError(fieldId, message) {
-  const errorElement = document.getElementById(fieldId + "Error");
-  if (errorElement) {
-    errorElement.textContent = message;
-  }
-}
-
-// Validate address form
+// Validate address form (called on Place Order)
 function validateAddressForm() {
   let isValid = true;
-
-  const firstName = document.getElementById("first-name").value.trim();
-  const lastName = document.getElementById("last-name").value.trim();
-  const phone = document.getElementById("phone").value.trim();
-  const line1 = document.getElementById("line1").value.trim();
-  const city = document.getElementById("city").value.trim();
-  const state = document.getElementById("state").value;
-  const pincode = document.getElementById("pincode").value.trim();
-
-  [
-    "first-name",
-    "last-name",
-    "phone",
-    "line1",
-    "city",
-    "state",
-    "pincode",
-  ].forEach((field) => {
-    clearError(field);
+  // Validate all fields and collect result
+  Object.keys(fieldRules).forEach((fieldId) => {
+    const ok = validateField(fieldId);
+    if (!ok) isValid = false;
   });
-
-  if (!firstName) {
-    showError("first-name", "First name is required");
-    isValid = false;
+  // Scroll to first error
+  if (!isValid) {
+    const firstError = document.querySelector(".border-red-400");
+    if (firstError) {
+      firstError.scrollIntoView({ behavior: "smooth", block: "center" });
+      firstError.focus();
+    }
   }
-
-  if (!lastName) {
-    showError("last-name", "Last name is required");
-    isValid = false;
-  }
-
-  if (!phone) {
-    showError("phone", "Phone number is required");
-    isValid = false;
-  } else if (!/^\d{10}$/.test(phone)) {
-    showError("phone", "Please enter a valid 10-digit phone number");
-    isValid = false;
-  }
-
-  if (!line1) {
-    showError("line1", "Street address is required");
-    isValid = false;
-  }
-
-  if (!city) {
-    showError("city", "City is required");
-    isValid = false;
-  }
-
-  if (!state) {
-    showError("state", "Please select a state");
-    isValid = false;
-  }
-
-  if (!pincode) {
-    showError("pincode", "PIN code is required");
-    isValid = false;
-  } else if (!/^\d{6}$/.test(pincode)) {
-    showError("pincode", "Please enter a valid 6-digit PIN code");
-    isValid = false;
-  }
-
   return isValid;
 }
 
@@ -364,10 +448,16 @@ async function verifyAndApplyCoupon(couponCode) {
       let isValid = true;
       if (effectiveSubtotal < couponData.MinimumPurchaseValue) {
         isValid = false;
-        showToast(
-          `Minimum purchase of ₹${couponData.MinimumPurchaseValue} required`,
-          "warning",
-        );
+        const needed = (
+          couponData.MinimumPurchaseValue - effectiveSubtotal
+        ).toFixed(2);
+        Swal.fire({
+          icon: "warning",
+          title: "Minimum Purchase Required",
+          html: `This coupon requires a minimum purchase of <strong>₹${couponData.MinimumPurchaseValue}</strong>.<br>Add ₹${needed} more to your cart to use this coupon.`,
+          confirmButtonText: "Got it",
+          confirmButtonColor: "#7c3aed",
+        });
         if (orderButton) {
           orderButton.disabled = true;
           orderButton.classList.add("opacity-50", "cursor-not-allowed");
@@ -384,7 +474,19 @@ async function verifyAndApplyCoupon(couponCode) {
         if (errorElement) {
           errorElement.classList.add("hidden");
         }
-        showToast(res.data.message, "success");
+        Swal.fire({
+          icon: "success",
+          title: "Coupon Applied!",
+          text: `${couponData.couponCode} – ${couponData.discountType === "percentage" ? couponData.discountValue + "% OFF" : "₹" + couponData.discountValue + " OFF"} applied successfully`,
+          timer: 2500,
+          timerProgressBar: true,
+          showConfirmButton: false,
+          toast: false,
+          position: "center",
+          background: "#f0fdf4",
+          color: "#15803d",
+          iconColor: "#16a34a",
+        });
       }
 
       document.getElementById("selectedCouponCode").textContent =
@@ -415,7 +517,13 @@ async function verifyAndApplyCoupon(couponCode) {
         updateTotalDisplay(0);
       }
     } else {
-      showToast(res.data.message || "Invalid coupon code", "error");
+      Swal.fire({
+        icon: "error",
+        title: "Invalid Coupon",
+        text: res.data.message || "This coupon code is not valid.",
+        confirmButtonText: "Try Again",
+        confirmButtonColor: "#7c3aed",
+      });
     }
   } catch (error) {
     hideGlobalLoading();
@@ -663,9 +771,10 @@ function populateAddressForm(radioElement) {
 // Clear address form
 function clearAddressForm() {
   const form = document.getElementById("shippingForm");
-  if (form) {
-    form.reset();
-  }
+  if (form) form.reset();
+
+  // Reset all field visual states
+  Object.keys(fieldRules).forEach((fieldId) => clearError(fieldId));
 
   // Show save address option for manual entry
   const saveOption = document
@@ -696,7 +805,14 @@ window.showSelectedCoupon = function (
   let isValid = true;
   if (effectiveSubtotal < parseFloat(minPurchase)) {
     isValid = false;
-    showToast(`Minimum purchase of ₹${minPurchase} required`, "warning");
+    const needed = (parseFloat(minPurchase) - effectiveSubtotal).toFixed(2);
+    Swal.fire({
+      icon: "warning",
+      title: "Minimum Purchase Required",
+      html: `This coupon requires a minimum purchase of <strong>₹${minPurchase}</strong>.<br>Add ₹${needed} more to your cart to use this coupon.`,
+      confirmButtonText: "Got it",
+      confirmButtonColor: "#7c3aed",
+    });
     if (orderButton) {
       orderButton.disabled = true;
       orderButton.classList.add("opacity-50", "cursor-not-allowed");
@@ -713,6 +829,23 @@ window.showSelectedCoupon = function (
     if (errorElement) {
       errorElement.classList.add("hidden");
     }
+    const discountLabel =
+      discountType === "percentage"
+        ? `${discountValue}% OFF`
+        : `₹${discountValue} OFF`;
+    Swal.fire({
+      icon: "success",
+      title: "Coupon Applied!",
+      text: `${code} – ${discountLabel} applied successfully`,
+      timer: 2500,
+      timerProgressBar: true,
+      showConfirmButton: false,
+      toast: false,
+      position: "center",
+      background: "#f0fdf4",
+      color: "#15803d",
+      iconColor: "#16a34a",
+    });
   }
 
   selectedCoupon = {
