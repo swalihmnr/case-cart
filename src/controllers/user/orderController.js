@@ -977,7 +977,7 @@ const orderCancel = async (req, res) => {
       .filter((item) => item.status !== "cancelled")
       .reduce((acc, item) => acc + item.finalPrice, 0);
     if (
-      existingProductTotal <= minimumOrdValue &&
+      existingProductTotal < minimumOrdValue &&
       existingOrder.couponDiscount > 0
     ) {
       return res.status(STATUS_CODES.FORBIDDEN).json({
