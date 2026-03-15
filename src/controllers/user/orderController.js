@@ -509,8 +509,16 @@ const getOrder = async (req, res) => {
   const skip = (currentPage - 1) * limit;
 
   let matchQuery = { userId: userId };
-  if (status) {
+  if (status === "payment_failed") {
+    // Filter by order-level payment status
+    matchQuery.paymentStatus = "failed";
+  } else if (status) {
+    // Filter by individual order item status, but exclude failed-payment orders
     matchQuery["orderItems.status"] = status;
+    matchQuery.paymentStatus = { $ne: "failed" };
+  } else {
+    // "All Orders" — exclude failed-payment orders (only shown under Payment Failed filter)
+    matchQuery.paymentStatus = { $ne: "failed" };
   }
 
   const result = await orderModel.aggregate([
@@ -522,6 +530,11 @@ const getOrder = async (req, res) => {
           { $skip: skip },
           { $limit: limit },
           { $unwind: "$orderItems" },
+          // After unwinding, keep only items matching the selected status
+          // so mixed-status orders don't show non-matching items
+          ...(status && status !== "payment_failed"
+            ? [{ $match: { "orderItems.status": status } }]
+            : []),
           {
             $lookup: {
               from: "products",
