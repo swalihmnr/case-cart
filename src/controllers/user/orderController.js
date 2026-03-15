@@ -866,16 +866,14 @@ const cancelWholeOrder = async (req, res) => {
         ],
       },
     );
-     
 
-      const updateData = {
-        orderStatus: "cancelled",
-        paymentStatus: "cancelled",
-      };
+    const updateData = {
+      orderStatus: "cancelled",
+      paymentStatus: "cancelled",
+    };
 
-      await orderModel.updateOne({ _id: orderId }, { $set: updateData });
-    
-    
+    await orderModel.updateOne({ _id: orderId }, { $set: updateData });
+
     if (result.modifiedCount > 0 && orderExists.paymentStatus === "paid") {
       let Wallet = await wallet.findOne({
         userId: orderExists.userId,
@@ -964,11 +962,11 @@ const orderCancel = async (req, res) => {
         message: `Item is already ${item.status}`,
       });
     }
- 
-    let minimumOrdValue=null
-    if(existingOrder.couponId){
-       let coupon=await couponModel.findOne({_id:existingOrder.couponId})
-       minimumOrdValue=coupon.MinimumPurchaseValue
+
+    let minimumOrdValue = null;
+    if (existingOrder.couponId) {
+      let coupon = await couponModel.findOne({ _id: existingOrder.couponId });
+      minimumOrdValue = coupon.MinimumPurchaseValue;
     }
 
     const existingItems = existingOrder.orderItems.filter(
@@ -982,7 +980,6 @@ const orderCancel = async (req, res) => {
       existingProductTotal <= minimumOrdValue &&
       existingOrder.couponDiscount > 0
     ) {
-    
       return res.status(STATUS_CODES.FORBIDDEN).json({
         success: false,
         message:
