@@ -36,10 +36,6 @@ const getCheckout = async (req, res) => {
       return res.redirect("/product");
     }
 
-    coupons = await couponModel.find({
-      status: "active",
-      usedBy: { $ne: userId },
-    });
     // ======================
     // CART FLOW
     // ======================
@@ -122,7 +118,10 @@ const getCheckout = async (req, res) => {
             title: offerResult.bestOffer.title,
             discountValue: offerResult.bestOffer.discountValue,
             discount: totalItemDiscount,
-            disType: offerResult.bestOffer.offerType === "percentage" ? "percentage" : "fixed",
+            disType:
+              offerResult.bestOffer.offerType === "percentage"
+                ? "percentage"
+                : "fixed",
           };
         } else {
           item.appliedOffer = null;
@@ -180,8 +179,8 @@ const getCheckout = async (req, res) => {
       if (variant.product.isBlock || !variant.isListed || variant.stock < 1) {
         return res.redirect(
           "/product/" +
-          variant.product._id +
-          "/detials?error=Product unavailable",
+            variant.product._id +
+            "/detials?error=Product unavailable",
         );
       }
 
@@ -228,7 +227,10 @@ const getCheckout = async (req, res) => {
           title: offerResult.bestOffer.title,
           discountValue: offerResult.bestOffer.discountValue,
           discount: offerResult.discountAmount, // Use discountAmount directly
-          disType: offerResult.bestOffer.offerType === "percentage" ? "percentage" : "fixed",
+          disType:
+            offerResult.bestOffer.offerType === "percentage"
+              ? "percentage"
+              : "fixed",
         };
         console.log("Applied Offer Set:", item.appliedOffer);
       } else {
@@ -288,6 +290,11 @@ const getCheckout = async (req, res) => {
       }
     }
     console.log("=================================");
+    coupons = await couponModel.find({
+      status: "active",
+      usedBy: { $ne: userId },
+      MinimumPurchaseValue: { $lte: finalAmount },
+    });
 
     res.render("./user/checkout", {
       addresses,
