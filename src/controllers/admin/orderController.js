@@ -274,24 +274,29 @@ const reqApprove = async (req, res) => {
     item.status = "returned";
     item.returnedAt = new Date();
 
-    await existing.save();
+    // ======================
+    // RESTORE PRODUCT STOCK
+    // ======================
 
-    // ======================
-    // RESTORE STOCK
-    // ======================
     await variantModel.updateOne(
       { _id: item.variantId },
       { $inc: { stock: item.quantity } },
     );
 
     // ======================
-    // REFUND (ONLY IF PAID)
+    // REFUND LOGIC
     // ======================
-    // Check both order-level and item-level payment status (important for COD)
+
+    let refundAmount = 0;
+
     if (existing.paymentStatus === "paid" || item.paymentStatus === "paid") {
-      let Wallet = await wallet.findOne({
-        userId: existing.userId,
-      });
+      refundAmount = item.finalPrice; // already includes coupon share
+
+      // ======================
+      // WALLET FETCH / CREATE
+      // ======================
+
+      let Wallet = await wallet.findOne({ userId: existing.userId });
 
       if (!Wallet) {
         Wallet = await wallet.create({
@@ -301,20 +306,23 @@ const reqApprove = async (req, res) => {
         });
       }
 
-      const refundAmount = item.finalPrice;
+      // ======================
+      // CREDIT WALLET
+      // ======================
 
       Wallet.balance += refundAmount;
 
       Wallet.transactions.push({
         amount: refundAmount,
-        description: "Refund for returned item",
+        description: `Refund for returned item`,
         orderId: existing._id,
         transactionType: "credited",
+        createdAt: new Date(),
       });
-
       await Wallet.save();
     }
 
+    await existing.save();
     return res.status(STATUS_CODES.OK).json({
       success: true,
       message: "Return approved & refunded",

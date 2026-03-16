@@ -114,6 +114,14 @@ const orderSchema = new Schema(
           type: Number,
           required: true,
         },
+        couponShare: {
+          type: Number,
+          default: 0,
+        },
+        refundedAmount: {
+          type: Number,
+          default: 0,
+        },
         // EXPLICIT OBJECT DEFINITION TO PREVENT CAST ERRORS
         offer: {
           offerId: {

@@ -499,30 +499,6 @@
                                                                             </div>
                                                                         </div>
 
-                                                                        <select data-prev-value="<%= status %>"
-                                                                            onchange="if(this.value) updateOrderStatus('<%= order._id %>', '<%= order.orderItems._id %>', this.value, this)"
-                                                                            class="w-full px-4 py-3 bg-white border border-gray-200 rounded-xl text-sm font-medium text-gray-600 hover:border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500/20 transition-all appearance-none cursor-pointer">
-                                                                            <option value="" disabled selected>Other
-                                                                                Status Transitions...</option>
-                                                                            <option value="confirmed">Set to Confirmed
-                                                                            </option>
-                                                                            <option value="processing">Set to Processing
-                                                                            </option>
-                                                                            <option value="shipped">Set to Shipped
-                                                                            </option>
-                                                                            <option value="out_for_delivery">Set to Out
-                                                                                for Delivery</option>
-                                                                            <option value="delivered">Set to Delivered
-                                                                            </option>
-                                                                            <option value="cancelled">Cancel Order
-                                                                            </option>
-                                                                        </select>
-
-                                                                        <p
-                                                                            class="text-xs text-gray-500 mt-2 ml-1 text-center">
-                                                                            Changing the status will notify the customer
-                                                                            regarding the new order state.
-                                                                        </p>
                                                                         <% } else if (status==='delivered' ) { %>
                                                                             <div
                                                                                 class="p-4 bg-green-50 border border-green-100 rounded-xl flex items-center justify-center text-green-700 font-medium">

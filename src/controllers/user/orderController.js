@@ -347,6 +347,7 @@ const ordConfirmation = async (req, res) => {
             }
           : null,
         finalPrice: totalItemFinal,
+        couponShare:0,
         status: "processing",
       });
     }
@@ -390,6 +391,31 @@ const ordConfirmation = async (req, res) => {
       console.log("Coupon Discount:", couponDiscount);
 
       finalAmount -= couponDiscount;
+
+      // ==============================
+      // COUPON DISTRIBUTION
+      // ==============================
+
+      if (couponDiscount > 0) {
+        let distributed = 0;
+
+        orderItems.forEach((item, index) => {
+          let share;
+
+          if (index === orderItems.length - 1) {
+            // Last item gets remaining (avoid rounding issue)
+            share = couponDiscount - distributed;
+          } else {
+            share = Math.floor(
+              (item.finalPrice / afterProductDiscounts) * couponDiscount,
+            );
+            distributed += share;
+          }
+
+          item.couponShare = share;
+          item.finalPrice = item.finalPrice - share;
+        });
+      }
     }
 
     // Calculate total savings
@@ -658,6 +684,7 @@ const getOrderDetails = async (req, res) => {
               variant: "$variant",
               quantity: "$orderItems.quantity",
               finalPrice: "$orderItems.finalPrice",
+              price:"$orderItems.price",
               status: "$orderItems.status",
               cancelledAt: "$orderItems.cancelledAt",
               cancellationReason: "$orderItems.cancellationReason",
@@ -975,7 +1002,7 @@ const orderCancel = async (req, res) => {
 
     const existingProductTotal = existingItems
       .filter((item) => item.status !== "cancelled")
-      .reduce((acc, item) => acc + item.finalPrice, 0);
+      .reduce((acc, item) => acc + item.price, 0);
     if (
       existingProductTotal < minimumOrdValue &&
       existingOrder.couponDiscount > 0
@@ -1166,133 +1193,8 @@ const returnReq = async (req, res) => {
     });
   }
 };
-// ==============================
-// APPROVE RETURN REQUEST
-// ==============================
-// Admin approves product return
-// Order item status changed to "returned"
-const reqApprove = async (req, res) => {
-  try {
-    const orderId = new mongoose.Types.ObjectId(req.params.id);
-    const { itemId } = req.body;
-    const ordItemId = new mongoose.Types.ObjectId(itemId);
 
-    const existing = await orderModel.findOne({
-      _id: orderId,
-      "orderItems._id": ordItemId,
-    });
 
-    if (!existing) {
-      return res.status(STATUS_CODES.NOT_FOUND).json({
-        success: false,
-        message: "Item not found",
-      });
-    }
-
-    const item = existing.orderItems.id(ordItemId);
-
-    // Prevent duplicate refund
-    if (item.status === "returned") {
-      return res.json({
-        success: false,
-        message: "Already returned",
-      });
-    }
-
-    // ======================
-    // UPDATE STATUS
-    // ======================
-    item.status = "returned";
-    item.returnedAt = new Date();
-
-    await existing.save();
-
-    // ======================
-    // RESTORE STOCK
-    // ======================
-    await variantModel.updateOne(
-      { _id: item.variantId },
-      { $inc: { stock: item.quantity } },
-    );
-
-    // ======================
-    // REFUND (ONLY IF PAID)
-    // ======================
-    // Check both order-level and item-level payment status (important for COD)
-    if (existing.paymentStatus === "paid" || item.paymentStatus === "paid") {
-      let Wallet = await wallet.findOne({
-        userId: existing.userId,
-      });
-
-      if (!Wallet) {
-        Wallet = await wallet.create({
-          userId: existing.userId,
-          balance: 0,
-          transactions: [],
-        });
-      }
-
-      const refundAmount = item.finalPrice;
-
-      Wallet.balance += refundAmount;
-
-      Wallet.transactions.push({
-        amount: refundAmount,
-        description: "Refund for returned item",
-        orderId: existing._id,
-        transactionType: "credited",
-      });
-
-      await Wallet.save();
-    }
-
-    return res.status(STATUS_CODES.OK).json({
-      success: true,
-      message: "Return approved & refunded",
-    });
-  } catch (error) {
-    console.error(error);
-    return res.status(STATUS_CODES.INTERNAL_SERVER_ERROR).json({
-      success: false,
-      message: "Internal server error",
-    });
-  }
-};
-// ==============================
-// REJECT RETURN REQUEST
-// ==============================
-// Admin rejects return request
-// Status reverted to delivered and marked as rejected
-const reqReject = async (req, res) => {
-  try {
-    const orderId = new mongoose.Types.ObjectId(req.params.id);
-    const { itemId } = req.body;
-    const ordItemId = new mongoose.Types.ObjectId(itemId);
-    const existing = await orderModel.findOne({
-      _id: orderId,
-      "orderItems._id": ordItemId,
-    });
-    if (!existing) {
-      return res.status(STATUS_CODES.NOT_FOUND).json({
-        success: false,
-        message: "Item not Founded",
-      });
-    }
-    const item = existing.orderItems.id(itemId);
-    item.status = "delivered";
-    item.isReject = true;
-    await existing.save();
-    return res.status(STATUS_CODES.CREATED).json({
-      success: true,
-      message: "Return Rejected!",
-    });
-  } catch (error) {
-    return res.status(STATUS_CODES.INTERNAL_SERVER_ERROR).json({
-      success: false,
-      message: "Internal server Error!",
-    });
-  }
-};
 export default {
   getOrderMngmnt,
   getConfirmation,
@@ -1305,7 +1207,5 @@ export default {
   invoice,
   returnReq,
   orderStatusChanger,
-  reqApprove,
-  reqReject,
   checkOrderStatus,
 };
