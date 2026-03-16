@@ -123,15 +123,12 @@ const reqRejectAxios = async (orderId, itemId) => {
 
 const createOfferAxios = async (data) => {
   try {
-    console.log("hlow");
-    console.log(data);
-    return api.post("/admin/offer/add", data);
+    return await api.post("/admin/offer/add", data);
   } catch (error) {
     return error.response;
   }
 };
 const offerEditAxios = async (payload) => {
-  console.log("it is payload", payload);
   try {
     return await api.post("/admin/offer/edit", payload);
   } catch (error) {
@@ -160,9 +157,9 @@ const editCouponAxios = async (payload) => {
     return error.response;
   }
 };
-const deleteCouponAxios = (id) => {
+const deleteCouponAxios = async(id) => {
   try {
-    return api.patch(`/admin/coupen/del/${id}`);
+    return await api.patch(`/admin/coupen/del/${id}`);
   } catch (error) {
     return error.response;
   }

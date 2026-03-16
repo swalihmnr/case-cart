@@ -55,42 +55,74 @@ const getAddCategory = (req, res) => {
 // - Supports "Save" and "Save & Add Another" actions
 const postAddCategory = async (req, res) => {
   try {
-    const { categoryName, categoryDescription, action } = req.body;
-    let existing = await Category.findOne({ name: categoryName });
-    if (!existing) {
-      let newCategory = new Category({
-        name: categoryName,
-        isActive: true,
-        description: categoryDescription,
-      });
-      console.log("category saved");
-      await newCategory.save();
+    let { categoryName, categoryDescription, action } = req.body;
 
-      if (action === "save") {
-        return res.status(200).json({
-          success: true,
-          message: "Category saved...",
-          redirectUrl: "/admin/category",
-        });
-      } else {
-        return res.status(200).json({
-          success: true,
-          message: "Category saved...",
-          redirectUrl: "/admin/add-category",
-        });
-      }
-    } else {
-      console.log("category already exists");
-      return res.status(409).json({
+    if (!categoryName || !categoryDescription) {
+      return res.status(400).json({
         success: false,
-        message: "category already exists",
+        message: "Category name and description are required",
       });
     }
+
+    const cleanName = categoryName.trim();
+    const cleanDescription = categoryDescription.trim();
+
+    if (!cleanName) {
+      return res.status(400).json({
+        success: false,
+        message: "Category name cannot be empty",
+      });
+    }
+
+    const nameRegex = /^[a-zA-Z0-9\s\-]{3,50}$/;
+
+    if (!nameRegex.test(cleanName)) {
+      return res.status(400).json({
+        success: false,
+        message: "Invalid category name format",
+      });
+    }
+
+    if (cleanDescription.length < 5 || cleanDescription.length > 200) {
+      return res.status(400).json({
+        success: false,
+        message: "Description must be between 5 and 200 characters",
+      });
+    }
+
+    const existing = await Category.findOne({
+      name: { $regex: new RegExp(`^${cleanName}$`, "i") },
+    });
+
+    if (existing) {
+      return res.status(409).json({
+        success: false,
+        message: "Category already exists",
+      });
+    }
+
+    const newCategory = new Category({
+      name: cleanName,
+      description: cleanDescription,
+      isActive: true,
+    });
+
+    await newCategory.save();
+
+    return res.status(200).json({
+      success: true,
+      message: "Category saved successfully",
+      redirectUrl:
+        action === "save" ? "/admin/category" : "/admin/add-category",
+    });
   } catch (err) {
-    console.log(err);
+    console.error(err);
+    return res.status(500).json({
+      success: false,
+      message: "Internal server error",
+    });
   }
 };
-
 // ==============================
 // BLOCK / UNBLOCK CATEGORY
 // ==============================
@@ -98,7 +130,6 @@ const postAddCategory = async (req, res) => {
 // Used to hide or show category in user side
 const blockCategory = async (req, res) => {
   try {
-
     let id = req.params.id;
     if (!mongoose.Types.ObjectId.isValid(id)) {
       req.flash("error", "Invalid category.");
@@ -113,7 +144,6 @@ const blockCategory = async (req, res) => {
         message: "Not Founded",
       });
     } else {
-
       console.log(existing.isActive);
       if (existing.isActive) {
         existing.isActive = false;
@@ -146,8 +176,8 @@ const editCategory = async (req, res) => {
   const objectId = new mongoose.Types.ObjectId(id);
   let category = await Category.findOne({ _id: objectId });
   if (!category) {
-    req.flash("error", "Category not found")
-    return res.redirect('/admin/category')
+    req.flash("error", "Category not found");
+    return res.redirect("/admin/category");
   }
   res.render("admin/admin-edit-category", { category });
 };
@@ -159,58 +189,77 @@ const editCategory = async (req, res) => {
 // - Avoids unnecessary updates
 const postEditCategory = async (req, res) => {
   try {
-    console.log(req.body);
     const { categoryName, categoryDescription } = req.body;
-    let id = req.params.id;
+    const id = req.params.id;
+
     if (!mongoose.Types.ObjectId.isValid(id)) {
-      req.flash("error", "Invalid category.");
-      return res.redirect("/admin/category");
-    }
-    console.log(id);
-    const existing = await Category.findOne({ _id: id });
-    if (existing) {
-      const isDuplecate = await Category.findOne({
-        _id: { $ne: id },
-        name: categoryName,
+      return res.status(400).json({
+        success: false,
+        message: "Invalid category ID",
       });
-      if (isDuplecate) {
-        return res.status(409).json({
-          success: false,
-          message: "it's name already exist",
-        });
-      } else {
-        if (
-          existing.name === categoryName &&
-          existing.description === categoryDescription
-        ) {
-          return res.status(304).json({
-            success: false,
-            message: "not detected",
-          });
-        }
-        const updated = await Category.findByIdAndUpdate(
-          id,
-          {
-            name: categoryName,
-            description: categoryDescription,
-          },
-          {
-            new: true,
-          },
-        );
-        return res.status(200).json({
-          success: true,
-          message: "updated successfully",
-          redirectUrl: "/admin/category",
-        });
-      }
-    } else {
+    }
+
+    const cleanName = categoryName.trim();
+    const cleanDescription = categoryDescription.trim();
+
+    if (!cleanName) {
+      return res.status(400).json({
+        success: false,
+        message: "Category name cannot be empty",
+      });
+    }
+
+    const existing = await Category.findById(id);
+
+    if (!existing) {
       return res.status(404).json({
         success: false,
-        message: "User not founded",
+        message: "Category not found",
       });
     }
-  } catch (error) { }
+
+    // 🔹 Duplicate check
+    const duplicate = await Category.findOne({
+      _id: { $ne: id },
+      name: { $regex: new RegExp(`^${cleanName}$`, "i") },
+    });
+
+    if (duplicate) {
+      return res.status(409).json({
+        success: false,
+        message: "Category name already exists",
+      });
+    }
+
+    // 🔹 Check if nothing changed
+    if (
+      existing.name === cleanName &&
+      existing.description === cleanDescription
+    ) {
+      return res.status(304).json({
+        success: false,
+        message: "No changes detected",
+      });
+    }
+
+    await Category.findByIdAndUpdate(id, {
+      name: cleanName,
+      description: cleanDescription,
+    });
+
+    return res.status(200).json({
+      success: true,
+      message: "Category updated successfully",
+      redirectUrl: "/admin/category",
+    });
+  } catch (error) {
+    console.error(error);
+
+    return res.status(500).json({
+      success: false,
+      message: "Internal server error",
+    });
+  }
 };
 
 export default {

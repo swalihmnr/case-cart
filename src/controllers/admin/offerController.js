@@ -214,7 +214,6 @@ const postOfferAdd = async (req, res) => {
           message: "Invalid date",
         });
       }
-      console.log("hlow");
       const existing = await offerModel.findOne({
         title: { $regex: new RegExp(`^${title.trim()}$`, "i") }
       });
