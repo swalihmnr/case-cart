@@ -7,8 +7,7 @@ import { fileURLToPath } from "url";
 import { dirname } from "path";
 import path from "path";
 import nocache from "nocache";
-import flash from 'connect-flash'
-
+import flash from 'connect-flash';
 let __filename = fileURLToPath(import.meta.url);
 let __dirname = dirname(__filename);
 

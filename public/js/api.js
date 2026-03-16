@@ -8,6 +8,43 @@ const api = axios.create({
   },
 });
 
+api.interceptors.response.use(
+  (response) => response,
+
+  (error) => {
+    if (!error.response) {
+      Swal.fire({
+        icon: "error",
+        title: "Network Error",
+        text: "Please check your internet connection",
+      });
+      return Promise.reject(error);
+    }
+
+    const status = error.response.status;
+
+    if (status === 429) {
+      Swal.fire({
+        icon: "error",
+        title: "Too Many Requests",
+        text: error.response.data.message || "Please try again later.",
+        confirmButtonColor: "#667eea",
+      });
+    }
+
+    if (status === 401) {
+      Swal.fire({
+        icon: "warning",
+        title: "Session Expired",
+        text: "Please login again.",
+      });
+      window.location.href = "/login";
+    }
+
+    return Promise.reject(error);
+  },
+);
+
 // ---------------------------
 // SIGNUP
 // ---------------------------

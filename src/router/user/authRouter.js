@@ -13,10 +13,11 @@ import {
   cartCount,
   notUser,
 } from "../../middlewares/auth.js";
+import rateLimiter from "../../middlewares/rateLimiter.js";
 router.use(wishlistCount);
 router.use(cartCount);
 router.get("/login", goBackOtpVerify, authController.getLogin);
-router.post("/login", loginValidator, authController.postLogin);
+router.post("/login", loginValidator, rateLimiter.loginLimiter,authController.postLogin);
 router.get("/signup", goBackOtpVerify, authController.getSignup);
 router.post("/signup", registerValidator, authController.register);
 router.get("/otpVerfication", otpAccess, authController.getOtpVerify);
