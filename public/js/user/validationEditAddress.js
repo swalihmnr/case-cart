@@ -1,113 +1,169 @@
 import api from "../api.js";
+
+// ─── Shared validation rules (mirrors address.js) ─────────────────────────
+const RULES = {
+  firstName: {
+    el: "first-name",
+    err: "firstNameError",
+    validate(v) {
+      if (!v) return "First name is required";
+      if (!/^[A-Za-z\s]+$/.test(v))
+        return "First name must contain only letters";
+      if (v.length < 2) return "First name must be at least 2 characters";
+      if (v.length > 30) return "First name must be at most 30 characters";
+      return null;
+    },
+  },
+  lastName: {
+    el: "last-name",
+    err: "lastNameError",
+    validate(v) {
+      if (!v) return "Last name is required";
+      if (!/^[A-Za-z\s]+$/.test(v))
+        return "Last name must contain only letters";
+      if (v.length > 30) return "Last name must be at most 30 characters";
+      return null;
+    },
+  },
+  phone: {
+    el: "phone",
+    err: "phoneError",
+    validate(v) {
+      if (!v) return "Phone number is required";
+      if (!/^[6-9]\d{9}$/.test(v))
+        return "Enter a valid 10-digit Indian mobile number";
+      return null;
+    },
+  },
+  streetAddress: {
+    el: "line1",
+    err: "line1Error",
+    validate(v) {
+      if (!v) return "Street address is required";
+      if (v.length < 5) return "Street address must be at least 5 characters";
+      if (v.length > 100)
+        return "Street address must be at most 100 characters";
+      return null;
+    },
+  },
+  city: {
+    el: "city",
+    err: "cityError",
+    validate(v) {
+      if (!v) return "City is required";
+      if (!/^[A-Za-z\s]+$/.test(v)) return "City must contain only letters";
+      if (v.length < 2) return "City must be at least 2 characters";
+      return null;
+    },
+  },
+  state: {
+    el: "state",
+    err: "stateError",
+    validate(v) {
+      if (!v) return "Please select a state";
+      return null;
+    },
+  },
+  pincode: {
+    el: "pincode",
+    err: "pincodeError",
+    validate(v) {
+      if (!v) return "PIN code is required";
+      if (!/^\d{6}$/.test(v)) return "PIN code must be exactly 6 digits";
+      return null;
+    },
+  },
+  addressType: {
+    err: "addressTypeError",
+    validate(v) {
+      if (!v) return "Please select an address type";
+      return null;
+    },
+  },
+};
+
+// ─── Helpers ───────────────────────────────────────────────────────────────
+function setError(errId, msg) {
+  const el = document.getElementById(errId);
+  if (el) el.textContent = msg || "";
+}
+
+function clearAllErrors() {
+  Object.values(RULES).forEach((r) => setError(r.err, ""));
+}
+
+function getFieldValue(key) {
+  if (key === "addressType") {
+    return (
+      document.querySelector('input[name="addressType"]:checked')?.value || ""
+    );
+  }
+  const id = RULES[key].el;
+  return (document.getElementById(id)?.value || "").trim();
+}
+
+function validateField(key) {
+  const v = getFieldValue(key);
+  const msg = RULES[key].validate(v);
+  setError(RULES[key].err, msg || "");
+  return !msg;
+}
+
+function validateAll() {
+  let valid = true;
+  Object.keys(RULES).forEach((key) => {
+    if (!validateField(key)) valid = false;
+  });
+  return valid;
+}
+
+// ─── Real-time validation ──────────────────────────────────────────────────
+function attachLiveValidation() {
+  Object.entries(RULES).forEach(([key, rule]) => {
+    if (key === "addressType") {
+      document
+        .querySelectorAll('input[name="addressType"]')
+        .forEach((radio) => {
+          radio.addEventListener("change", () => validateField(key));
+        });
+      return;
+    }
+    const el = document.getElementById(rule.el);
+    if (!el) return;
+    const eventType = el.tagName === "SELECT" ? "change" : "input";
+    el.addEventListener(eventType, () => validateField(key));
+    el.addEventListener("blur", () => validateField(key));
+  });
+}
+
+// ─── Form submit ───────────────────────────────────────────────────────────
 document
   .querySelector("#addressForm")
   .addEventListener("submit", async (event) => {
     event.preventDefault();
+    clearAllErrors();
 
-    // -------- GET VALUES --------
-    console.log("here is ");
-    let firstName = document.getElementById("first-name").value.trim();
-    let lastName = document.getElementById("last-name").value.trim();
-    let phone = document.getElementById("phone").value.trim();
-    let line1 = document.getElementById("line1").value.trim();
-    let landmark = document.getElementById("landmark").value.trim();
-    let city = document.getElementById("city").value.trim();
-    let state = document.getElementById("state").value;
-    let pincode = document.getElementById("pincode").value.trim();
-    let addressType = document.querySelector(
-      'input[name="addressType"]:checked',
-    )?.value;
-    let isDefault = document.getElementById("isDefault").checked;
+    if (!validateAll()) return;
 
-    // -------- ERROR ELEMENTS --------
-    let Err_fname = document.getElementById("firstNameError");
-    let Err_lname = document.getElementById("lastNameError");
-    let Err_phone = document.getElementById("phoneError");
-    let Err_line1 = document.getElementById("line1Error");
-    let Err_city = document.getElementById("cityError");
-    let Err_state = document.getElementById("stateError");
-    let Err_pin = document.getElementById("pincodeError");
-    let Err_type = document.getElementById("addressTypeError");
+    const payload = {
+      firstName: getFieldValue("firstName"),
+      lastName: getFieldValue("lastName"),
+      phone: getFieldValue("phone"),
+      streetAddress: getFieldValue("streetAddress"),
+      landMark: (document.getElementById("landmark")?.value || "").trim(),
+      city: getFieldValue("city"),
+      state: getFieldValue("state"),
+      pincode: getFieldValue("pincode"),
+      addressType: getFieldValue("addressType"),
+      isDefault: document.getElementById("isDefault")?.checked ?? false,
+    };
 
-    // -------- REGEX & CONSTRAINTS --------
-    const namePattern = /^[A-Za-z\s]+$/;
-    const phonePattern = /^[6-9]\d{9}$/;
-    const pinPattern = /^\d{6}$/;
-
-    // -------- CLEAR ERRORS --------
-    Err_fname.innerText = "";
-    Err_lname.innerText = "";
-    Err_phone.innerText = "";
-    Err_line1.innerText = "";
-    Err_city.innerText = "";
-    Err_state.innerText = "";
-    Err_pin.innerText = "";
-    Err_type.innerText = "";
-
-    let Err_flag = true;
-
-    // -------- VALIDATION --------
-    if (!namePattern.test(firstName) || firstName.length < 2) {
-      Err_fname.innerText = "Enter a valid first name (min 2 chars)";
-      Err_flag = false;
-    }
-
-    if (!namePattern.test(lastName) || lastName.length < 1) {
-      Err_lname.innerText = "Enter a valid last name";
-      Err_flag = false;
-    }
-
-    if (!phonePattern.test(phone)) {
-      Err_phone.innerText = "Enter a valid 10-digit Indian phone number";
-      Err_flag = false;
-    }
-
-    if (line1 === "" || line1.length < 5) {
-      Err_line1.innerText = "Street address is required (min 5 chars)";
-      Err_flag = false;
-    }
-
-    if (city === "") {
-      Err_city.innerText = "City is required";
-      Err_flag = false;
-    }
-
-    if (state === "") {
-      Err_state.innerText = "Select a state";
-      Err_flag = false;
-    }
-
-    if (!pinPattern.test(pincode)) {
-      Err_pin.innerText = "Enter a valid 6-digit PIN code";
-      Err_flag = false;
-    }
-
-    if (!addressType) {
-      Err_type.innerText = "Select address type";
-      Err_flag = false;
-    }
-    let streetAddress = line1;
-    let landMark = landmark;
-    let pinCode = pincode;
-    // -------- SUBMIT --------
-    if (Err_flag) {
-      const payload = {
-        firstName,
-        lastName,
-        phone,
-        streetAddress,
-        landMark,
-        city,
-        state,
-        pinCode,
-        addressType,
-        isDefault,
-      };
+    try {
       const res = await api.editAddressAxios(payload);
       if (res.data.success) {
         Swal.fire({
           icon: "success",
-          title: "updated",
+          title: "Updated!",
           text: res.data.message,
           confirmButtonColor: "#667eea",
         }).then(() => {
@@ -120,5 +176,15 @@ document
           confirmButtonColor: "#667eea",
         });
       }
+    } catch (error) {
+      console.error(error);
+      Swal.fire({
+        icon: "error",
+        title: "Error",
+        text: "Something went wrong while updating address",
+        confirmButtonColor: "#667eea",
+      });
     }
   });
+
+attachLiveValidation();

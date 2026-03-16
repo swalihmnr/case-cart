@@ -290,11 +290,9 @@ const reqApprove = async (req, res) => {
     let refundAmount = 0;
 
     if (existing.paymentStatus === "paid" || item.paymentStatus === "paid") {
-      refundAmount = item.finalPrice; // already includes coupon share
+      refundAmount = item.finalPrice;
 
-      // ======================
-      // WALLET FETCH / CREATE
-      // ======================
+      item.refundedAmount += refundAmount;
 
       let Wallet = await wallet.findOne({ userId: existing.userId });
 
@@ -306,22 +304,18 @@ const reqApprove = async (req, res) => {
         });
       }
 
-      // ======================
-      // CREDIT WALLET
-      // ======================
-
       Wallet.balance += refundAmount;
 
       Wallet.transactions.push({
         amount: refundAmount,
-        description: `Refund for returned item`,
+        description: "Refund for returned item",
         orderId: existing._id,
         transactionType: "credited",
         createdAt: new Date(),
       });
+
       await Wallet.save();
     }
-
     await existing.save();
     return res.status(STATUS_CODES.OK).json({
       success: true,
