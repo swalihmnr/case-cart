@@ -16,7 +16,9 @@ router.get(
 
       email: req.user.email,
       profileUrl: req.user.profileImg,
+      isGoogle:true
     };
+    console.log(req.session.user)
     res.redirect("/");
   },
 );

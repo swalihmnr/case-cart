@@ -2,6 +2,7 @@ import passport from "passport";
 import { Strategy as GoogleStrategy } from "passport-google-oauth20";
 import User from "../models/userModel.js";
 import dotenv from "dotenv";
+import refferalCode from "../utils/randomNumberGerator.js";
 dotenv.config();
 passport.use(
   new GoogleStrategy(
@@ -26,6 +27,9 @@ passport.use(
             number: null,
             isVerified: true,
             profileImg: profile.photos[0].value,
+            referralCode: `${profile.name.familyName}${refferalCode()}`
+              .toUpperCase()
+              .trim(),
           });
 
           return done(null, newUser);

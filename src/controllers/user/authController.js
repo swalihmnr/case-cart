@@ -54,8 +54,9 @@ let postLogin = async (req, res) => {
               name: `${existing.firstName} ${existing.lastName}`,
               email: existing.email,
               profileUrl: existing.profileImg,
+              isGoogle:false
             };
-            console.log(req.session.user.profileUrl);
+            console.log(req.session.user);
             return res.status(200).json({
               success: true,
               message: "login successfully..",

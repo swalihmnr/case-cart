@@ -73,18 +73,20 @@
                     Wishlist
                 </button>
             </a>
-
-            <a href="/security" class="flex-shrink-0 lg:w-full snap-start">
-                <button id="nav-security"
-                    class="whitespace-nowrap w-full flex items-center justify-center lg:justify-start gap-2 lg:gap-3 px-6 lg:px-4 py-2.5 lg:py-3 rounded-full lg:rounded-lg font-bold transition-all text-sm lg:text-base border shadow-sm lg:shadow-none <%= typeof activeTab !== 'undefined' && activeTab === 'security' ? 'bg-purple-600 text-white border-purple-600' : 'bg-white lg:bg-transparent text-gray-600 border-gray-100 hover:bg-gray-50 lg:border-none' %>">
-                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                            d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z">
-                        </path>
-                    </svg>
-                    Security
-                </button>
-            </a>
+            <% if (!user.isGoogle) { %>
+                
+                <a href="/security" class="flex-shrink-0 lg:w-full snap-start">
+                    <button id="nav-security"
+                        class="whitespace-nowrap w-full flex items-center justify-center lg:justify-start gap-2 lg:gap-3 px-6 lg:px-4 py-2.5 lg:py-3 rounded-full lg:rounded-lg font-bold transition-all text-sm lg:text-base border shadow-sm lg:shadow-none <%= typeof activeTab !== 'undefined' && activeTab === 'security' ? 'bg-purple-600 text-white border-purple-600' : 'bg-white lg:bg-transparent text-gray-600 border-gray-100 hover:bg-gray-50 lg:border-none' %>">
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z">
+                            </path>
+                        </svg>
+                        Security
+                    </button>
+                </a>
+            <% } %>
 
             <a href="/logout" class="flex-shrink-0 lg:w-full lg:border-t lg:mt-4 lg:pt-4 snap-start">
                 <button
