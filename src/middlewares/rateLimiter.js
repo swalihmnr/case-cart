@@ -9,17 +9,28 @@ const apiLimiter = rateLimit({
 });
 
 const loginLimiter = rateLimit({
-  windowMs: 15 * 60 * 1000,
+  windowMs: 7 * 60 * 1000,
   max: 10,
   message: {
     success: false,
-    message: "Too many login attempts. Please try again after 15 minutes."
+    message: "Too many login attempts. Please try again after 7 minutes."
   },
   standardHeaders: true,
   legacyHeaders: false
 });
+const otpLImiter=rateLimit({
+    windowMs:5 * 60 * 1000,
+    max:3,
+    message:{
+        success:false,
+        message:"Too many login attempts. Please try again after 5 minutes."
+    },
+    standardHeaders:true,
+    legacyHeaders:false
+})
 
 export default {
   apiLimiter,
-  loginLimiter
+  loginLimiter,
+  otpLImiter
 };

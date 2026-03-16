@@ -21,7 +21,7 @@ router.post("/login", loginValidator, rateLimiter.loginLimiter,authController.po
 router.get("/signup", goBackOtpVerify, authController.getSignup);
 router.post("/signup", registerValidator, authController.register);
 router.get("/otpVerfication", otpAccess, authController.getOtpVerify);
-router.post("/otpVerfication", authController.OtpVerify);
+router.post("/otpVerfication", rateLimiter.otpLImiter, authController.OtpVerify);
 router.get("/resetPassword", keResetPass, authController.getResetPass);
 router.post("/resetPassword", authController.postResetPass);
 router.get("/forgotPassword", notUser, authController.getForgetPassword);
