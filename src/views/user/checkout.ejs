@@ -530,11 +530,11 @@
                                             <!-- Price with Original Price Striked -->
                                             <div class="text-right whitespace-nowrap">
                                                 <div class="font-semibold text-gray-800 text-sm sm:text-base">
-                                                    ₹<%= item.finalPrice %>
+                                                    ₹<%= Math.floor(item.finalPrice).toFixed(2) %>
                                                 </div>
 
                                                 <div class="text-xs text-gray-400 line-through">
-                                                    ₹<%= (item.orgPrice * (item.quantity || 1)).toFixed(2) %>
+                                                    ₹<%= Math.floor(item.orgPrice * (item.quantity || 1)).toFixed(2) %>
                                                 </div>
 
                                             </div>
@@ -562,7 +562,7 @@
                                                 </div>
                                                 <% if (savingsPerItem> 0) { %>
                                                     <span class="text-xs font-semibold text-green-600">
-                                                        Save ₹<%= savingsPerItem.toFixed(2) %>
+                                                        Save ₹<%= Math.floor(savingsPerItem).toFixed(2) %>
                                                     </span>
                                                     <% } %>
                                             </div>
@@ -735,7 +735,7 @@
                                                                             </span>
                                                                         </div>
                                                                     </div>
-                                                                   
+
                                                                 </div>
                                                             </div>
                                                             <% }) %>
@@ -763,13 +763,13 @@
                             <div class="space-y-2 sm:space-y-3 mb-4 sm:mb-6">
                                 <div class="flex justify-between text-gray-600 text-sm">
                                     <span>Subtotal</span>
-                                    <span class="font-medium">₹<%= subtotal.toFixed(2) %></span>
+                                    <span class="font-medium">₹<%= Math.floor(subtotal).toFixed(2) %></span>
                                 </div>
 
                                 <!-- Product Savings -->
                                 <div class="flex justify-between text-green-600 text-sm">
                                     <span>Product Savings</span>
-                                    <span class="font-medium">-₹<%= (offerDiscountTotal || 0).toFixed(2) %></span>
+                                    <span class="font-medium">-₹<%= Math.floor(offerDiscountTotal || 0).toFixed(2) %></span>
                                 </div>
 
                                 <!-- Coupon Discount (Hidden by default) -->
@@ -781,7 +781,7 @@
                                 <div class="flex justify-between text-gray-600 text-sm">
                                     <span>Shipping</span>
                                     <span class="<%= shipping===0?'text-green-600 font-semibold':'font-medium' %>">
-                                        <%= shipping===0?"Free":`₹${shipping.toFixed(2)}` %>
+                                        <%= shipping===0?"Free":`₹${Math.floor(shipping).toFixed(2)}` %>
                                     </span>
                                 </div>
 
@@ -789,7 +789,7 @@
                                     <div class="flex justify-between items-center">
                                         <span class="text-base sm:text-lg font-bold text-gray-800">Total Amount</span>
                                         <span class="text-xl sm:text-2xl font-bold text-purple-600" id="finalTotal">₹<%=
-                                                finalAmount.toFixed(2) %></span>
+                                                Math.floor(finalAmount).toFixed(2) %></span>
                                     </div>
 
                                     <p class="text-xs text-green-600 mt-2 font-medium flex items-center gap-1">
@@ -798,7 +798,7 @@
                                                 d="M12 7a1 1 0 110-2h5a1 1 0 011 1v5a1 1 0 11-2 0V8.414l-4.293 4.293a1 1 0 01-1.414 0L8 10.414l-4.293 4.293a1 1 0 01-1.414-1.414l5-5a1 1 0 011.414 0L11 10.586 14.586 7H12z"
                                                 clip-rule="evenodd" />
                                         </svg>
-                                        You saved ₹<%= subtotal-finalAmount %> on this order!
+                                        You saved ₹<%= Math.floor(subtotal-finalAmount).toFixed(2) %> on this order!
                                     </p>
 
                                 </div>

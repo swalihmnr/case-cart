@@ -77,9 +77,9 @@ const getCart = async (req, res) => {
 
     res.render("./user/cart", {
       products: cartItems,
-      subtotal,
-      totalDiscount,
-      finalAmount,
+      subtotal: Math.round(subtotal),
+      totalDiscount: Math.round(totalDiscount),
+      finalAmount: Math.round(finalAmount),
       totalDocs,
       shipping,
     });
@@ -87,6 +87,7 @@ const getCart = async (req, res) => {
     console.log(error.message);
   }
 };
+
 
 // ==============================
 // ADD ITEM TO CART

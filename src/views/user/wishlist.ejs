@@ -36,21 +36,12 @@
                                                 <h4 class="font-bold text-gray-900 mb-1 truncate">
                                                     <%= product.productId.name %>
                                                 </h4>
-                                                <p class="text-xs text-gray-500 mb-2 truncate">
+                                                <p class="text-xs text-gray-500 mb-1 truncate">
                                                     <%= product.productId.catgId.name %>
                                                 </p>
-                                                <div class="flex items-center mb-3">
-                                                    <div class="flex text-yellow-400 scale-90 origin-left">
-                                                        <% for(let i=0; i<5; i++) { %>
-                                                            <svg class="w-4 h-4 fill-current <%= i < 4 ? '' : 'text-gray-300' %>"
-                                                                viewBox="0 0 24 24">
-                                                                <path
-                                                                    d="M12 17.27L18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z" />
-                                                            </svg>
-                                                            <% } %>
-                                                    </div>
-                                                    <span class="ml-1 text-xs text-gray-600">4.2</span>
-                                                </div>
+                                                <p class="text-sm font-semibold text-purple-600 mb-3 truncate">
+                                                    Model: <%= product.variantId.deviceModel %>
+                                                </p>
                                                 <div class="flex items-center justify-between mb-4">
                                                     <p class="text-xl font-bold text-purple-600">₹<%=
                                                             product.variantId.salePrice %>

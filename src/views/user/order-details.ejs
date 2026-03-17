@@ -104,27 +104,27 @@
                                                     !=='Failed' && order.paymentStatus !=='failed' ) { %>
 
 
-                                                        <% if ( !item.isReject ) { %>
-                                                    
-                                                            
-                                                           <button
-                                                               onclick="returnItem('<%= item._id %>', '<%= item.product.name %>', '<%= order._id %>')"
-                                                               class="text-sm text-blue-600 hover:text-blue-700 mt-2 font-medium">
-                                                               Return Item
-                                                           </button>
+                                                    <% if ( !item.isReject ) { %>
+
+
+                                                        <button
+                                                            onclick="returnItem('<%= item._id %>', '<%= item.product.name %>', '<%= order._id %>')"
+                                                            class="text-sm text-blue-600 hover:text-blue-700 mt-2 font-medium">
+                                                            Return Item
+                                                        </button>
                                                         <% } %>
 
-                                                    <button
-                                                        onclick="downloadInvoice('<%= order._id %>', '<%= item._id %>')"
-                                                        class="text-sm text-gray-600 hover:text-gray-700 mt-2 font-medium ml-3">
-                                                        <i class="fas fa-download mr-1"></i> Invoice
-                                                    </button>
-                                                    <% } %>
+                                                            <button
+                                                                onclick="downloadInvoice('<%= order._id %>', '<%= item._id %>')"
+                                                                class="text-sm text-gray-600 hover:text-gray-700 mt-2 font-medium ml-3">
+                                                                <i class="fas fa-download mr-1"></i> Invoice
+                                                            </button>
+                                                            <% } %>
                                         </div>
                                         <div class="text-right">
-                                            <p class="text-gray-600">₹<%= item.price %> x <%= item.quantity %>
+                                            <p class="text-gray-600">₹<%= Math.floor(item.price).toFixed(2) %> x <%= item.quantity %>
                                             </p>
-                                            <p class="font-medium text-gray-900">₹<%= item.price * item.quantity %>
+                                            <p class="font-medium text-gray-900">₹<%= Math.floor(item.price * item.quantity).toFixed(2) %>
                                             </p>
                                         </div>
                                     </div>
@@ -135,125 +135,128 @@
                 </div>
 
                 <!-- Order Summary -->
-                <% if (order.paymentStatus!=='cancelled') { %>
-                <div class="p-6 border-b border-gray-200">
-                    <h3 class="text-lg font-semibold text-gray-900 mb-4">Order Summary</h3>
+                <% if (order.paymentStatus!=='cancelled' ) { %>
+                    <div class="p-6 border-b border-gray-200">
+                        <h3 class="text-lg font-semibold text-gray-900 mb-4">Order Summary</h3>
 
-                    <div class="space-y-3">
-                        <div class="flex justify-between text-sm">
-                            <span class="text-gray-600">Subtotal</span>
-                            <span class="font-medium text-gray-900">₹<%= order.totalPrice %></span>
-                        </div>
-                        <% if (order.totalDiscount> 0) { %>
+                        <div class="space-y-3">
                             <div class="flex justify-between text-sm">
-                                <span class="text-gray-600">Discount</span>
-                                <span class="font-medium text-green-600">-₹<%= order.totalDiscount %></span>
+                                <span class="text-gray-600">Subtotal</span>
+                                <span class="font-medium text-gray-900">₹<%= Math.floor(order.totalPrice).toFixed(2) %></span>
                             </div>
-                            <% } %>
-                                <% if (order.couponDiscount> 0) { %>
-                                    <div class="flex justify-between text-sm">
-                                        <span class="text-gray-600">Coupon Discount</span>
-                                        <span class="font-medium text-green-600">-₹<%= order.couponDiscount %></span>
-                                    </div>
-                                    <% } %>
+                            <% if (order.totalDiscount> 0) { %>
+                                <div class="flex justify-between text-sm">
+                                    <span class="text-gray-600">Discount</span>
+                                    <span class="font-medium text-green-600">-₹<%= Math.floor(order.totalDiscount).toFixed(2) %></span>
+                                </div>
+                                <% } %>
+                                    <% if (order.couponDiscount> 0) { %>
                                         <div class="flex justify-between text-sm">
-                                            <span class="text-gray-600">Shipping</span>
-                                            <span class="font-medium text-green-600">
-                                                <%= order.shipping %>
+                                            <span class="text-gray-600">Coupon Discount</span>
+                                            <span class="font-medium text-green-600">-₹<%= Math.floor(order.couponDiscount).toFixed(2) %>
                                             </span>
                                         </div>
-                                        <div
-                                            class="flex justify-between text-base font-semibold pt-3 border-t border-gray-200">
-                                            <span class="text-gray-900">Total Amount</span>
-                                            <span class="text-gray-900">₹<%= Math.floor(order.finalAmount )||
-                                                    (order.totalPrice - (order.totalDiscount || 0) -
-                                                    (order.couponDiscount || 0)) %>
-                                            </span>
-                                        </div>
-                    </div>
-                </div>
-                <% } else { %>
-                    <style>
-.alert-message {
-  background-color: #fff3cd;
-  color: #856404;
-  border: 1px solid #ffeeba;
-  padding: 12px 16px;
-  border-radius: 6px;
-  margin-top: 10px;
-  font-size: 14px;
-}
-</style>
-
-<div class="alert-message">
-  <strong>Note:</strong> Shipping charges will not be refunded if you cancel or return this product.
-</div>
-                 <% } %>
-
-                <!-- Payment Details & Address -->
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-6 p-6 border-b border-gray-200">
-                    <div>
-                        <h3 class="text-lg font-semibold text-gray-900 mb-4">Payment Details</h3>
-                        <div class="space-y-2 text-sm">
-                            <div class="flex justify-between">
-                                <span class="text-gray-600">Method</span>
-                                <span class="font-medium text-gray-900">
-                                    <%= order.paymentMethod %>
-                                </span>
-                            </div>
-                            <div class="flex justify-between">
-                                <span class="text-gray-600">Status</span>
-                                <span
-                                    class="font-medium <%= order.paymentStatus === 'Completed' ? 'text-green-600' : 'text-yellow-600' %>">
-                                    <%= order.paymentStatus %>
-                                </span>
-                            </div>
-                        </div>
-                    </div>
-
-                    <div>
-                        <h3 class="text-lg font-semibold text-gray-900 mb-4">Shipping Address</h3>
-                        <% if (order.shippingAddress) { %>
-                            <p class="text-gray-600 text-sm">
-                                <%= order.shippingAddress.firstName %>
-                                    <%= order.shippingAddress.lastName %><br>
-                                        <%= order.shippingAddress.streetAddress %><br>
-                                            <%= order.shippingAddress.city %>, <%= order.shippingAddress.state %> - <%=
-                                                        order.shippingAddress.pinCode %><br>
-                                                        Phone: <%= order.shippingAddress.phone %>
-                            </p>
-                            <% } else { %>
-                                <p class="text-gray-600 text-sm">Address not available</p>
-                                <% } %>
-                    </div>
-                </div>
-
-                <!-- Global Actions -->
-                <% // Check if any item is cancellable to show "Cancel Entire Order" const
-                    hasCancellableItems=order.orderItems.some(item=> ['pending', 'processing',
-                    'placed'].includes(item.status));
-                    %>
-                    <div class="p-6">
-                        <div class="flex flex-col sm:flex-row gap-3">
-                            <% if (order.paymentStatus==='Failed' || order.paymentStatus==='failed' ) { %>
-                                <button onclick="retryPayment('<%= order._id %>')"
-                                    class="flex-1 px-4 py-3 bg-purple-600 text-white rounded-lg hover:bg-purple-700 font-medium transition text-center">
-                                    Retry Payment
-                                </button>
-                                <% } %>
-                                    <% if (hasCancellableItems && order.paymentStatus !=='Failed' && order.paymentStatus
-                                        !=='failed' ) { %>
-                                        <button onclick="cancelFullOrder('<%= order._id %>')"
-                                            class="flex-1 px-4 py-3 bg-red-600 text-white rounded-lg hover:bg-red-700 font-medium transition text-center">
-                                            Cancel Entire Order
-                                        </button>
                                         <% } %>
-                                            <a href="/order"
-                                                class="flex-1 px-4 py-3 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 font-medium transition text-center">
-                                                View All Orders
-                                            </a>
+                                            <div class="flex justify-between text-sm">
+                                                <span class="text-gray-600">Shipping</span>
+                                                <span class="font-medium text-green-600">
+                                                    <%= order.shipping > 0 ? '₹' + Math.floor(order.shipping).toFixed(2) : 'FREE' %>
+                                                </span>
+                                            </div>
+                                            <div
+                                                class="flex justify-between text-base font-semibold pt-3 border-t border-gray-200">
+                                                <span class="text-gray-900">Total Amount</span>
+                                                <span class="text-gray-900">₹<%= (Math.floor(order.finalAmount )||
+                                                        (order.totalPrice - (order.totalDiscount || 0) -
+                                                        (order.couponDiscount || 0))).toFixed(2) %>
+                                                </span>
+                                            </div>
                         </div>
                     </div>
+                    <% } else { %>
+                        <style>
+                            .alert-message {
+                                background-color: #fff3cd;
+                                color: #856404;
+                                border: 1px solid #ffeeba;
+                                padding: 12px 16px;
+                                border-radius: 6px;
+                                margin-top: 10px;
+                                font-size: 14px;
+                            }
+                        </style>
+
+                        <div class="alert-message">
+                            <strong>Note:</strong> Shipping charges will not be refunded if you cancel or return this
+                            product.
+                        </div>
+                        <% } %>
+
+                            <!-- Payment Details & Address -->
+                            <div class="grid grid-cols-1 md:grid-cols-2 gap-6 p-6 border-b border-gray-200">
+                                <div>
+                                    <h3 class="text-lg font-semibold text-gray-900 mb-4">Payment Details</h3>
+                                    <div class="space-y-2 text-sm">
+                                        <div class="flex justify-between">
+                                            <span class="text-gray-600">Method</span>
+                                            <span class="font-medium text-gray-900">
+                                                <%= order.paymentMethod %>
+                                            </span>
+                                        </div>
+                                        <div class="flex justify-between">
+                                            <span class="text-gray-600">Status</span>
+                                            <span
+                                                class="font-medium <%= order.paymentStatus === 'Completed' ? 'text-green-600' : 'text-yellow-600' %>">
+                                                <%= order.paymentStatus %>
+                                            </span>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div>
+                                    <h3 class="text-lg font-semibold text-gray-900 mb-4">Shipping Address</h3>
+                                    <% if (order.shippingAddress) { %>
+                                        <p class="text-gray-600 text-sm">
+                                            <%= order.shippingAddress.firstName %>
+                                                <%= order.shippingAddress.lastName %><br>
+                                                    <%= order.shippingAddress.streetAddress %><br>
+                                                        <%= order.shippingAddress.city %>, <%=
+                                                                order.shippingAddress.state %> - <%=
+                                                                    order.shippingAddress.pinCode %><br>
+                                                                    Phone: <%= order.shippingAddress.phone %>
+                                        </p>
+                                        <% } else { %>
+                                            <p class="text-gray-600 text-sm">Address not available</p>
+                                            <% } %>
+                                </div>
+                            </div>
+
+                            <!-- Global Actions -->
+                            <% // Check if any item is cancellable to show "Cancel Entire Order" const
+                                hasCancellableItems=order.orderItems.some(item=> ['pending', 'processing',
+                                'placed'].includes(item.status));
+                                %>
+                                <div class="p-6">
+                                    <div class="flex flex-col sm:flex-row gap-3">
+                                        <% if (order.paymentStatus==='Failed' || order.paymentStatus==='failed' ) { %>
+                                            <button onclick="retryPayment('<%= order._id %>')"
+                                                class="flex-1 px-4 py-3 bg-purple-600 text-white rounded-lg hover:bg-purple-700 font-medium transition text-center">
+                                                Retry Payment
+                                            </button>
+                                            <% } %>
+                                                <% if (hasCancellableItems && order.paymentStatus !=='Failed' &&
+                                                    order.paymentStatus !=='failed' ) { %>
+                                                    <button onclick="cancelFullOrder('<%= order._id %>')"
+                                                        class="flex-1 px-4 py-3 bg-red-600 text-white rounded-lg hover:bg-red-700 font-medium transition text-center">
+                                                        Cancel Entire Order
+                                                    </button>
+                                                    <% } %>
+                                                        <a href="/order"
+                                                            class="flex-1 px-4 py-3 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 font-medium transition text-center">
+                                                            View All Orders
+                                                        </a>
+                                    </div>
+                                </div>
             </div>
         </div>
 

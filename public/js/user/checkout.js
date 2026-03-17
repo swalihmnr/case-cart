@@ -448,7 +448,7 @@ async function verifyAndApplyCoupon(couponCode) {
       let isValid = true;
       if (effectiveSubtotal < couponData.MinimumPurchaseValue) {
         isValid = false;
-        const needed = (
+        const needed = Math.floor(
           couponData.MinimumPurchaseValue - effectiveSubtotal
         ).toFixed(2);
         Swal.fire({
@@ -612,12 +612,12 @@ function updateTotalDisplay(discount) {
   }
 
   if (couponDiscountValueElement) {
-    couponDiscountValueElement.textContent = `-₹${discount.toFixed(2)}`;
+    couponDiscountValueElement.textContent = `-₹${Math.floor(discount).toFixed(2)}`;
   }
 
   const finalTotalElement = document.getElementById("finalTotal");
   if (finalTotalElement) {
-    finalTotalElement.textContent = `₹${newTotal.toFixed(2)}`;
+    finalTotalElement.textContent = `₹${Math.floor(newTotal).toFixed(2)}`;
   }
 
   const savingsElement = document.createElement("p");
@@ -627,7 +627,7 @@ function updateTotalDisplay(discount) {
         <svg class="w-3 h-3 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
             <path fill-rule="evenodd" d="M12 7a1 1 0 110-2h5a1 1 0 011 1v5a1 1 0 11-2 0V8.414l-4.293 4.293a1 1 0 01-1.414 0L8 10.414l-4.293 4.293a1 1 0 01-1.414-1.414l5-5a1 1 0 011.414 0L11 10.586 14.586 7H12z" clip-rule="evenodd"/>
         </svg>
-        You saved ₹${discount.toFixed(2)} with coupon!
+        You saved ₹${Math.floor(discount).toFixed(2)} with coupon!
     `;
 
   const existingSavings = document.querySelector(".coupon-savings-message");
@@ -678,7 +678,7 @@ function removeSelectedCoupon() {
   const originalFinal = parseFloat(checkoutData.finalAmount);
 
   if (finalTotalElement) {
-    finalTotalElement.textContent = `₹${originalFinal.toFixed(2)}`;
+    finalTotalElement.textContent = `₹${Math.floor(originalFinal).toFixed(2)}`;
   }
 
   const existingSavings = document.querySelector(".coupon-savings-message");
@@ -805,7 +805,7 @@ window.showSelectedCoupon = function (
   let isValid = true;
   if (effectiveSubtotal < parseFloat(minPurchase)) {
     isValid = false;
-    const needed = (parseFloat(minPurchase) - effectiveSubtotal).toFixed(2);
+    const needed = Math.floor(parseFloat(minPurchase) - effectiveSubtotal).toFixed(2);
     Swal.fire({
       icon: "warning",
       title: "Minimum Purchase Required",

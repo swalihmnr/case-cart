@@ -132,7 +132,7 @@ async function updateQuantity(btn, itemId, change) {
       const incBtn = document.getElementById(`inc-btn-${itemId}`);
 
       if (qtyEl) qtyEl.innerText = res.data.quantity;
-      if (priceEl) priceEl.innerText = `₹ ${res.data.totalAmountPerPrdct}`;
+      if (priceEl) priceEl.innerText = `₹ ${Math.round(res.data.totalAmountPerPrdct)}`;
 
       // 2. Update summary UI
       const subtotalEl = document.getElementById("subtotal");
@@ -140,9 +140,9 @@ async function updateQuantity(btn, itemId, change) {
       const discountEl = document.getElementById("totalDiscount");
       const shippingEl = document.getElementById("shipping");
 
-      if (subtotalEl) subtotalEl.textContent = `₹ ${res.data.subtotal}`;
-      if (totalEl) totalEl.textContent = `₹ ${res.data.finalAmount}`;
-      if (discountEl) discountEl.textContent = res.data.totalDiscount;
+      if (subtotalEl) subtotalEl.textContent = `₹ ${Math.round(res.data.subtotal)}`;
+      if (totalEl) totalEl.textContent = `₹ ${Math.round(res.data.finalAmount)}`;
+      if (discountEl) discountEl.textContent = Math.round(res.data.totalDiscount);
 
       if (shippingEl) {
         if (res.data.shipping === 0) {
@@ -157,13 +157,17 @@ async function updateQuantity(btn, itemId, change) {
 
       // 3. Handle button disabled states and messages
       const limitMsgEl = document.getElementById(`limit-msg-${itemId}`);
-      if (limitMsgEl) {
+      const limitTextEl = limitMsgEl?.querySelector('.limit-text');
+      
+      if (limitMsgEl && limitTextEl) {
         if (res.data.maxType === "stock") {
-          limitMsgEl.innerText = "Stock limit reached";
+          limitTextEl.innerText = "Stock limit reached";
+          limitMsgEl.classList.remove('hidden');
         } else if (res.data.maxType === "limit") {
-          limitMsgEl.innerText = "Max 5 units allowed";
+          limitTextEl.innerText = "Max 5 units allowed";
+          limitMsgEl.classList.remove('hidden');
         } else {
-          limitMsgEl.innerText = "";
+          limitMsgEl.classList.add('hidden');
         }
       }
 

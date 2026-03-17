@@ -272,10 +272,17 @@ const getDetialProduct = async (req, res) => {
       }
     }
 
+    let wishlistItems = [];
+    if (req.session.user?.id) {
+      wishlistItems = await wishlistModel.find({ userId: req.session.user.id });
+    }
+
     res.render("./user/product-detial", {
       product,
       relatedProducts,
       initialOffer,
+      wishlistItems,
+      user: req.session.user
     });
   } catch (error) {
     console.log(error);

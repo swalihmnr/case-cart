@@ -247,6 +247,104 @@ async function selectVariant(productId, variantId) {
       stockCountEl.classList.remove("text-orange-500", "text-red-500");
     }
   }
+
+  // Update wishlist icon for selected variant
+  updateWishlistIcon(variantID);
+}
+
+function updateWishlistIcon(vId) {
+  const wishIcon = document.getElementById("wishlist-icon");
+  if (!wishIcon || !window.wishlistItems) return;
+
+  const isInWishlist = window.wishlistItems.some(
+    (item) => item.variantId && item.variantId.toString() === vId.toString()
+  );
+
+  if (isInWishlist) {
+    wishIcon.classList.remove("text-gray-400");
+    wishIcon.classList.add("text-red-500");
+  } else {
+    wishIcon.classList.remove("text-red-500");
+    wishIcon.classList.add("text-gray-400");
+  }
+}
+
+async function toggleWishlist() {
+  if (!productID || !variantID) return;
+
+  try {
+    const res = await api.toggleWishlistAxios(productID, variantID);
+    if (res.data.success) {
+      const action = res.data.action; // 'added' or 'removed'
+
+      // Update local wishlistItems state
+      if (action === "added") {
+        window.wishlistItems.push({ variantId: variantID });
+        Toastify({
+          text: "Added to Wishlist",
+          duration: 3000,
+          gravity: "bottom",
+          position: "center",
+          style: {
+            background: "linear-gradient(to right, #667eea, #764ba2)",
+            borderRadius: "10px",
+          },
+        }).showToast();
+      } else {
+        window.wishlistItems = window.wishlistItems.filter(
+          (item) => item.variantId.toString() !== variantID.toString()
+        );
+        Toastify({
+          text: "Removed from Wishlist",
+          duration: 3000,
+          gravity: "bottom",
+          position: "center",
+          style: {
+            background: "linear-gradient(to right, #667eea, #764ba2)",
+            borderRadius: "10px",
+          },
+        }).showToast();
+      }
+
+      // Update icon
+      updateWishlistIcon(variantID);
+
+      // Update wishlist count in header if provided
+      if (res.data.wishlistCount !== undefined) {
+        updateWishlistCountInHeader(res.data.wishlistCount);
+      }
+    }
+  } catch (error) {
+    console.log(error);
+    const message = error.response?.data?.message || "Please login to add to wishlist";
+    Toastify({
+      text: message,
+      duration: 3000,
+      gravity: "bottom",
+      position: "center",
+      style: {
+        background: "linear-gradient(to right, #ff416c, #ff4b2b)",
+        borderRadius: "10px",
+      },
+    }).showToast();
+  }
+}
+
+function updateWishlistCountInHeader(count) {
+  const desktopBadge = document.getElementById("wishlist-count-desktop");
+  const mobileBadge = document.getElementById("wishlist-count-mobile");
+
+  const badges = [desktopBadge, mobileBadge];
+  badges.forEach((badge) => {
+    if (badge) {
+      badge.textContent = count;
+      if (count > 0) {
+        badge.classList.remove("hidden");
+      } else {
+        badge.classList.add("hidden");
+      }
+    }
+  });
 }
 
 async function addToCart() {
@@ -314,6 +412,7 @@ async function buyNow() {
 window.selectVariant = selectVariant;
 window.addToCart = addToCart;
 window.buyNow = buyNow;
+window.toggleWishlist = toggleWishlist;
 window.handleImageHover = handleImageHover;
 window.showZoomPreview = showZoomPreview;
 window.hideZoomPreview = hideZoomPreview;
