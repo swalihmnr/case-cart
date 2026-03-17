@@ -39,6 +39,10 @@ router.post(
   "/product/edit/:id/variant-save",
   productController.postEditVariantSave,
 );
+router.post(
+  "/product/edit/:id/add-variant",
+  productController.postAddVariant,
+);
 router.patch(
   "/product/edit/:id/veriant-toggle",
   productController.patchListUnlist,

@@ -786,6 +786,12 @@ const editImgDelete = async (req, res) => {
       });
     }
     if (existing.productImages[index].isMain !== true) {
+      if (existing.productImages.length <= 3) {
+        return res.status(400).json({
+          success: false,
+          message: "A minimum of 3 images is required for each product",
+        });
+      }
       existing.productImages.splice(index, 1);
       await existing.save();
       return res.status(200).json({
@@ -963,6 +969,76 @@ const patchListUnlist = async (req, res) => {
     });
   }
 };
+
+// ==============================
+// ADD NEW VARIANT
+// ==============================
+// Creates a new variant and associates it with the product
+const postAddVariant = async (req, res) => {
+  try {
+    const { deviceModel, stock, orgPrice, salePrice } = req.body;
+    const productId = req.params.id;
+
+    if (!mongoose.Types.ObjectId.isValid(productId)) {
+      return res.status(400).json({
+        success: false,
+        message: "Invalid product ID",
+      });
+    }
+
+    const product = await productModel.findById(productId);
+    if (!product) {
+      return res.status(404).json({
+        success: false,
+        message: "Product not found",
+      });
+    }
+
+    // Check if variant with same model already exists for this product
+    const existingVariant = await variantModel.findOne({
+      productId: productId,
+      deviceModel: { $regex: new RegExp(`^${deviceModel}$`, "i") },
+    });
+
+    if (existingVariant) {
+      return res.status(409).json({
+        success: false,
+        message: "Variant with this model already exists for this product",
+      });
+    }
+
+    if (+orgPrice < +salePrice) {
+      return res.status(400).json({
+        success: false,
+        message: "Sale price cannot be greater than original price",
+      });
+    }
+
+    const newVariant = await variantModel.create({
+      productId: productId,
+      deviceModel,
+      stock,
+      orgPrice,
+      salePrice,
+    });
+
+    product.variants.push(newVariant._id);
+    await product.save();
+
+    return res.status(201).json({
+      success: true,
+      message: "Variant added successfully",
+      variant: newVariant,
+    });
+  } catch (error) {
+    console.error(error);
+    return res.status(500).json({
+      success: false,
+      message: "Internal server error",
+    });
+  }
+};
+
 export default {
   getProductList,
   getAddproduct,
@@ -980,4 +1056,5 @@ export default {
   passVariantData,
   postEditVariantSave,
   patchListUnlist,
+  postAddVariant,
 };

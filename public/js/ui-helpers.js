@@ -14,23 +14,19 @@ export function setLoading(btn, isLoading) {
         // Prevent multiple clicks
         btn.disabled = true;
 
-        // Save original content
-        if (!btn.hasAttribute('data-original-content')) {
-            btn.setAttribute('data-original-content', btn.innerHTML);
-        }
-
         // Add loading class and spinner
         btn.classList.add('btn-loading');
-        btn.innerHTML = '<span class="spinner"></span>' + (btn.getAttribute('data-original-content') || '');
+        
+        const spinner = document.createElement('span');
+        spinner.className = 'spinner';
+        btn.prepend(spinner);
     } else {
         // Restore state
         btn.disabled = false;
         btn.classList.remove('btn-loading');
 
-        const originalContent = btn.getAttribute('data-original-content');
-        if (originalContent) {
-            btn.innerHTML = originalContent;
-        }
+        const spinner = btn.querySelector('.spinner');
+        if (spinner) spinner.remove();
     }
 }
 

@@ -164,6 +164,9 @@ const deleteCouponAxios = async(id) => {
     return error.response;
   }
 };
+const addVariantAxios = async (id, data) => {
+  return await api.post(`/admin/product/edit/${id}/add-variant`, data);
+};
 export default {
   addCategoryAxios,
   blockCategoryAxios,
@@ -179,6 +182,7 @@ export default {
   variantDetialsAxios,
   editVariantSaveAxios,
   toggleListUnlistAxios,
+  addVariantAxios,
   updateStatus,
   reqApproveAxios,
   reqRejectAxios,

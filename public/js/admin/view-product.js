@@ -331,6 +331,17 @@ function saveImages() {
 }
 
 async function deleteImage(id) {
+  if (productImages.length <= 3) {
+    Swal.fire({
+      icon: "warning",
+      title: "Minimum Requirement",
+      text: "A minimum of 3 images is required for each product.",
+      timer: 2000,
+      showConfirmButton: false,
+    });
+    return;
+  }
+
   Swal.fire({
     title: "Are you sure?",
     text: "This image will be permanently deleted!",
@@ -391,6 +402,15 @@ function setupBasicInfoEdit() {
 
   // Edit button click handler
   editBasicInfoBtn.addEventListener("click", function () {
+    // Initialize edit fields with current display values
+    productNameEdit.value = productNameDisplay.textContent.trim();
+    descriptionEdit.value = descriptionDisplay.textContent.trim();
+    
+    const currentCatId = categoryDisplay.getAttribute('data-category-id');
+    if (currentCatId) {
+      categoryEdit.value = currentCatId;
+    }
+
     // Hide display elements
     productNameDisplay.classList.add("hidden");
 
@@ -416,9 +436,13 @@ function setupBasicInfoEdit() {
   // Cancel button click handler
   cancelBasicInfoBtn.addEventListener("click", function () {
     // Reset values to original
-    productNameEdit.value = productNameDisplay.textContent;
-    categoryEdit.value = categoryDisplay.textContent;
-    descriptionEdit.value = descriptionDisplay.textContent;
+    productNameEdit.value = productNameDisplay.textContent.trim();
+    descriptionEdit.value = descriptionDisplay.textContent.trim();
+    
+    const originalCatId = categoryDisplay.getAttribute('data-category-id');
+    if (originalCatId) {
+      categoryEdit.value = originalCatId;
+    }
 
     // Hide edit elements
     productNameEdit.classList.add("hidden");
@@ -583,8 +607,8 @@ async function saveVariantChanges() {
   } else if (!salePrice || salePrice <= 0) {
     errorMessage = "Sale price must be greater than 0.";
     isValid = false;
-  } else if (salePrice >= originalPrice) {
-    errorMessage = "Sale price must be strictly less than Original price.";
+  } else if (salePrice > originalPrice) {
+    errorMessage = "Sale price cannot be greater than Original price.";
     isValid = false;
   } else if (isNaN(stock) || stock < 0 || !Number.isInteger(stock)) {
     errorMessage = "Stock must be a whole number greater than or equal to 0.";
@@ -654,16 +678,140 @@ async function saveVariantChanges() {
   }
 }
 
-async function toggleListUnlist(id) {
-  const res = await adminApi.toggleListUnlistAxios(id);
-  if (res.data.success) {
-    location.reload();
+async function toggleListUnlist(id, btn) {
+  try {
+    if (btn) window.setLoading(btn, true);
+    const res = await adminApi.toggleListUnlistAxios(id);
+    if (res.data.success) {
+      if (btn) {
+        window.setLoading(btn, false);
+        const isListed = res.data.message.toLowerCase() === "listed";
+        
+        if (isListed) {
+          btn.innerHTML = '<i class="fas fa-eye-slash mr-1"></i>Unlist';
+          btn.className = "px-3 py-1 bg-gray-600 text-white text-xs rounded hover:bg-red-700 transition w-20";
+        } else {
+          btn.innerHTML = '<i class="fas fa-eye mr-1"></i>List';
+          btn.className = "px-3 py-1 bg-green-600 text-white text-xs rounded hover:bg-green-700 transition w-20";
+        }
+        
+        Toastify({
+          text: `Variant ${res.data.message}`,
+          duration: 2000,
+          gravity: "top",
+          position: "right",
+          backgroundColor: isListed ? "#10B981" : "#6B7280",
+        }).showToast();
+      }
+    }
+  } catch (err) {
+    if (btn) window.setLoading(btn, false);
+    console.error("Listing toggle error:", err);
+    Swal.fire({
+      icon: "error",
+      title: "Action Failed",
+      text: err.response?.data?.message || "Failed to update listing status",
+    });
   }
 }
 
 function closeModal() {
   document.getElementById("editVariantModal").classList.add("hidden");
   document.getElementById("addImagesModal").classList.add("hidden");
+  document.getElementById("addVariantModal").classList.add("hidden");
+}
+
+function openAddVariantModal() {
+  document.getElementById("addVariantModal").classList.remove("hidden");
+}
+
+function closeAddVariantModal() {
+  document.getElementById("addVariantModal").classList.add("hidden");
+}
+
+async function saveNewVariant() {
+  const model = document.getElementById("addVariantModel").value.trim();
+  const stock = parseInt(document.getElementById("addVariantStock").value);
+  const originalPrice = parseFloat(
+    document.getElementById("addVariantOriginalPrice").value,
+  );
+  const salePrice = parseFloat(
+    document.getElementById("addVariantSalePrice").value,
+  );
+
+  let isValid = true;
+  let errorMessage = "";
+
+  if (!model || model.length < 2 || model.length > 50) {
+    errorMessage = "Variant Model must be between 2 and 50 characters.";
+    isValid = false;
+  } else if (!originalPrice || originalPrice <= 0) {
+    errorMessage = "Original price must be greater than 0.";
+    isValid = false;
+  } else if (!salePrice || salePrice <= 0) {
+    errorMessage = "Sale price must be greater than 0.";
+    isValid = false;
+  } else if (salePrice > originalPrice) {
+    errorMessage = "Sale price cannot be greater than Original price.";
+    isValid = false;
+  } else if (isNaN(stock) || stock < 0 || !Number.isInteger(stock)) {
+    errorMessage = "Stock must be a whole number greater than or equal to 0.";
+    isValid = false;
+  }
+
+  if (!isValid) {
+    Swal.fire({
+      icon: "warning",
+      title: "Invalid Input",
+      text: errorMessage,
+      timer: 2000,
+      showConfirmButton: false,
+    });
+    return;
+  }
+
+  const data = {
+    deviceModel: model,
+    stock: stock,
+    orgPrice: originalPrice,
+    salePrice: salePrice,
+  };
+
+  try {
+    const saveBtn = document.getElementById("saveNewVariantBtn");
+    if (saveBtn) window.setLoading(saveBtn, true);
+
+    const res = await adminApi.addVariantAxios(productId, data);
+    if (res.data.success) {
+      if (saveBtn) window.setLoading(saveBtn, false);
+      Swal.fire({
+        icon: "success",
+        title: "Variant added successfully",
+        text: res.data.message,
+        timer: 1800,
+        showConfirmButton: false,
+      }).then(() => {
+        location.reload();
+      });
+    } else {
+      if (saveBtn) window.setLoading(saveBtn, false);
+      Swal.fire({
+        icon: "warning",
+        title: "Something went wrong",
+        text: res.data.message,
+        timer: 1800,
+        showConfirmButton: false,
+      });
+    }
+  } catch (error) {
+    const saveBtn = document.getElementById("saveNewVariantBtn");
+    if (saveBtn) window.setLoading(saveBtn, false);
+    Swal.fire({
+      icon: "error",
+      title: "Error",
+      text: error.response?.data?.message || "Failed to add variant",
+    });
+  }
 }
 
 // Make all functions global for HTML access
@@ -684,3 +832,6 @@ window.saveVariantChanges = saveVariantChanges;
 window.closeModal = closeModal;
 window.deleteImage = deleteImage;
 window.toggleListUnlist = toggleListUnlist;
+window.openAddVariantModal = openAddVariantModal;
+window.closeAddVariantModal = closeAddVariantModal;
+window.saveNewVariant = saveNewVariant;
