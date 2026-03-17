@@ -12,14 +12,25 @@ export const registerValidator = [
     .trim()
     .notEmpty()
     .withMessage("First name is required!")
-    .isLength({ min: 3 })
-    .withMessage("First name must be at least 3 characters"),
-  body("lastname").trim().notEmpty().withMessage("Last name is required"),
+    .matches(/^[A-Za-z\s]+$/)
+    .withMessage("First name must contain only letters and spaces")
+    .isLength({ min: 2, max: 50 })
+    .withMessage("First name must be between 2 and 50 characters"),
+  body("lastname")
+    .trim()
+    .notEmpty()
+    .withMessage("Last name is required")
+    .matches(/^[A-Za-z\s]+$/)
+    .withMessage("Last name must contain only letters and spaces")
+    .isLength({ min: 2, max: 50 })
+    .withMessage("Last name must be between 2 and 50 characters"),
   body("number")
     .notEmpty()
-    .withMessage("Phone number is required ")
-    .isMobilePhone("en-IN")
-    .withMessage("Invalid mobile number"),
+    .withMessage("Phone number is required")
+    .isNumeric()
+    .withMessage("Phone number must contain only digits")
+    .isLength({ min: 10, max: 10 })
+    .withMessage("Phone number must be exactly 10 digits"),
   body("email")
     .trim()
     .notEmpty()
@@ -29,8 +40,16 @@ export const registerValidator = [
   body("password")
     .notEmpty()
     .withMessage("Password is required")
-    .isLength({ min: 8 })
-    .withMessage("password must be at least 8 characters"),
-  body("refferalCode").optional(),
+    .isStrongPassword({
+      minLength: 8,
+      minLowercase: 1,
+      minUppercase: 1,
+      minNumbers: 1,
+      minSymbols: 1,
+    })
+    .withMessage(
+      "Password must be 8+ characters with at least one uppercase, one lowercase, one number, and one special character",
+    ),
+  body("referralCode").optional(),
   validateResult,
 ];

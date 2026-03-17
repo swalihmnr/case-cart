@@ -3,6 +3,17 @@ import api from "../api.js";
 document.addEventListener("DOMContentLoaded", () => {
   const form = document.getElementById("passwordForm");
 
+  // Clear errors on input
+  document.getElementById("newPassword")?.addEventListener("input", () => {
+    document.getElementById("newPassErr").innerText = "";
+  });
+  document.getElementById("confirmPassword")?.addEventListener("input", () => {
+    document.getElementById("confirmPassErr").innerText = "";
+  });
+  document.getElementById("currentPassword")?.addEventListener("input", () => {
+    document.getElementById("currentPassErr").innerText = "";
+  });
+
   form.addEventListener("submit", async (event) => {
     event.preventDefault();
 
@@ -32,11 +43,12 @@ document.addEventListener("DOMContentLoaded", () => {
       isValid = false;
     }
 
+    const passwordPattern = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,}$/;
     if (!newPassword) {
       if (errNew) errNew.innerText = "Enter new password";
       isValid = false;
-    } else if (newPassword.length < 8) {
-      if (errNew) errNew.innerText = "Minimum 8 characters required";
+    } else if (!passwordPattern.test(newPassword)) {
+      if (errNew) errNew.innerText = "Must be 8+ chars with uppercase, lowercase, number and symbol";
       isValid = false;
     }
 

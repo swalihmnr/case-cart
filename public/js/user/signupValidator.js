@@ -6,15 +6,42 @@ document.addEventListener("DOMContentLoaded", () => {
   const eyeIcon = document.getElementById("eye-icon");
 
   eyeIcon.addEventListener("click", () => {
-    if (passwordInput.type === "password") {
-      passwordInput.type = "text";
-      eyeIcon.classList.remove("fa-eye");
-      eyeIcon.classList.add("fa-eye-slash");
+    toggleVisibility(passwordInput, eyeIcon);
+  });
+
+  const confirmPasswordInput = document.getElementById("confirm-password");
+  const confirmEyeIcon = document.getElementById("confirm-eye-icon");
+
+  confirmEyeIcon.addEventListener("click", () => {
+    toggleVisibility(confirmPasswordInput, confirmEyeIcon);
+  });
+
+  function toggleVisibility(input, icon) {
+    if (input.type === "password") {
+      input.type = "text";
+      icon.classList.remove("fa-eye");
+      icon.classList.add("fa-eye-slash");
     } else {
-      passwordInput.type = "password";
-      eyeIcon.classList.remove("fa-eye-slash");
-      eyeIcon.classList.add("fa-eye");
+      input.type = "password";
+      icon.classList.remove("fa-eye-slash");
+      icon.classList.add("fa-eye");
     }
+  }
+
+  // Clear errors on input
+  const inputs = [
+    { id: "first-name", err: "fnameErr" },
+    { id: "last-name", err: "lnameErr" },
+    { id: "phone", err: "numberErr" },
+    { id: "email", err: "emailErr" },
+    { id: "signup-password", err: "passwordErr" },
+    { id: "confirm-password", err: "cpasswordErr" },
+  ];
+
+  inputs.forEach((input) => {
+    document.getElementById(input.id).addEventListener("input", function() {
+      document.getElementById(input.err).innerText = "";
+    });
   });
 });
 document.querySelector("form").addEventListener("submit", async (event) => {
@@ -35,10 +62,10 @@ document.querySelector("form").addEventListener("submit", async (event) => {
   let Err_cPass = document.getElementById("cpasswordErr");
 
   // Regex Patterns
-  const namePattern = /^[A-Za-z\s]+$/;
+  const namePattern = /^[A-Za-z\s]{2,50}$/;
   const emailPattern = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-  const passwordPattern = /^.{8,}$/;
-  const numberPattern = /^[0-9]+$/;
+  const passwordPattern = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,}$/;
+  const numberPattern = /^[0-9]{10}$/;
 
   // Clear all previous errors
   Err_fname.innerText = "";
@@ -50,31 +77,48 @@ document.querySelector("form").addEventListener("submit", async (event) => {
 
   let Err_flag = true;
 
-  if (!namePattern.test(fname)) {
-    Err_fname.innerText = "Enter your first name";
+  if (fname === "") {
+    Err_fname.innerText = "First name is required";
+    Err_flag = false;
+  } else if (!namePattern.test(fname)) {
+    Err_fname.innerText = "Name must be 2-50 characters (letters only)";
     Err_flag = false;
   }
-  if (!namePattern.test(lname)) {
-    Err_lname.innerText = "Enter your last name";
+
+  if (lname === "") {
+    Err_lname.innerText = "Last name is required";
+    Err_flag = false;
+  } else if (!namePattern.test(lname)) {
+    Err_lname.innerText = "Name must be 2-50 characters (letters only)";
     Err_flag = false;
   }
-  if (!numberPattern.test(pnumber)) {
-    Err_number.innerText = "Enter a valid phone number";
+
+  if (pnumber === "") {
+    Err_number.innerText = "Phone number is required";
+    Err_flag = false;
+  } else if (!numberPattern.test(pnumber)) {
+    Err_number.innerText = "Phone number must be exactly 10 digits";
     Err_flag = false;
   }
-  if (!emailPattern.test(email)) {
-    Err_email.innerText = "Enter your email properly";
+
+  if (email === "") {
+    Err_email.innerText = "Email is required";
+    Err_flag = false;
+  } else if (!emailPattern.test(email)) {
+    Err_email.innerText = "Please enter a valid email address";
     Err_flag = false;
   }
+
   if (password === "") {
-    Err_pass.innerText = "Enter your password";
+    Err_pass.innerText = "Password is required";
     Err_flag = false;
   } else if (!passwordPattern.test(password)) {
-    Err_pass.innerText = "Minimum length should be 8 characters";
+    Err_pass.innerText = "Must be 8+ chars with uppercase, lowercase, number, and special character";
     Err_flag = false;
   }
+
   if (confirmPass === "") {
-    Err_cPass.innerText = "Enter confirm password";
+    Err_cPass.innerText = "Please confirm your password";
     Err_flag = false;
   } else if (password !== confirmPass) {
     Err_cPass.innerText = "Passwords do not match";

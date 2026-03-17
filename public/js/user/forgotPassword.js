@@ -1,5 +1,9 @@
 import api from "../api.js";
 
+document.getElementById("email")?.addEventListener("input", () => {
+  document.getElementById("emailErr").innerText = "";
+});
+
 document.querySelector("form").addEventListener("submit", async (event) => {
   localStorage.removeItem("otpTimer");
   localStorage.removeItem("otpExpire");
@@ -18,22 +22,46 @@ document.querySelector("form").addEventListener("submit", async (event) => {
     Err_flag = false;
   }
   if (Err_flag) {
-    console.log("Submitting signup form...");
-    const data = {
-      email,
-    };
-    let res = await api.forgotPassAxios(data);
+    const submitBtn = event.target.querySelector('button[type="submit"]');
+    const originalBtnText = submitBtn.innerText;
 
-    if (res.data.success) {
-      window.location.href = res.data.redirectUrl;
-    } else {
-      console.log(res.data.message);
+    try {
+      submitBtn.disabled = true;
+      submitBtn.innerText = "Submitting...";
+
+      console.log("Submitting forgot password form...");
+      const data = {
+        email,
+      };
+      let res = await api.forgotPassAxios(data);
+
+      if (res.data.success) {
+        window.location.href = res.data.redirectUrl;
+      } else {
+        console.log(res.data.message);
+        Swal.fire({
+          icon: "warning",
+          title: "Forgot Password",
+          text: res.data.message,
+          confirmButtonColor: "#667eea",
+        });
+      }
+    } catch (err) {
+      console.error("Forgot password submission error:", err);
+      const errorMessage =
+        err.response && err.response.data && err.response.data.message
+          ? err.response.data.message
+          : "Something went wrong. Please try again later.";
+
       Swal.fire({
-        icon: "warning",
-        title: "Signup",
-        text: res.data.message,
+        icon: "error",
+        title: "Forgot Password",
+        text: errorMessage,
         confirmButtonColor: "#667eea",
       });
+    } finally {
+      submitBtn.disabled = false;
+      submitBtn.innerText = originalBtnText;
     }
   }
 });

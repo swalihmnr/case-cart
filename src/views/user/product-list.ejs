@@ -480,13 +480,13 @@
         window.location.href = '/product';
     }
     
-    // Add debounce for search input
-    let searchTimeout;
-    document.getElementById('search').addEventListener('input', function() {
-        clearTimeout(searchTimeout);
-        searchTimeout = setTimeout(() => {
+    // Search input: only trigger on Enter
+    const searchInput = document.getElementById('search');
+    
+    searchInput.addEventListener('keydown', function(e) {
+        if (e.key === 'Enter') {
             handleFilterChange();
-        }, 500);
+        }
     });
     
     // Update checkmark display on radio change

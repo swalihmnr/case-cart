@@ -28,23 +28,18 @@ const categoryCheckboxes = document.querySelectorAll(".filter-checkbox");
 let timer;
 
 // ======================
-// SEARCH INPUT (DEBOUNCE)
+// SEARCH INPUT (ENTER ONLY)
 // ======================
-search?.addEventListener("input", function () {
-  clearTimeout(timer);
-
-  const value = this.value.trim();
-
-  timer = setTimeout(() => {
+search?.addEventListener("keydown", function (e) {
+  if (e.key === "Enter") {
+    clearTimeout(timer);
+    const value = this.value.trim();
     if (value.length === 0) {
       clearFilters();
-      return;
+    } else {
+      applyFilters();
     }
-
-    if (value.length < 2) return;
-
-    applyFilters();
-  }, 800); // wait 800ms after typing stops
+  }
 });
 
 // ======================

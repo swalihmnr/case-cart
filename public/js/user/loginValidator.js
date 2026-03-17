@@ -18,6 +18,14 @@ function togglePassword(inputId) {
   }
 }
 
+// Clear errors on input
+document.getElementById("user-email").addEventListener("input", () => {
+  document.getElementById("emailErr").innerText = "";
+});
+document.getElementById("user-password").addEventListener("input", () => {
+  document.getElementById("passwordErr").innerText = "";
+});
+
 const patterns = {
   email: /^[^\s@]+@[^\s@]+\.[^\s@]+$/,
   password: /^.{8,}$/,
@@ -78,7 +86,7 @@ document.querySelector("form").addEventListener("submit", async (e) => {
         } else {
           Swal.fire({
             icon: "warning",
-            title: "Signup",
+            title: "Login Failure",
             text: res.data.message,
             confirmButtonColor: "#667eea",
           });
@@ -86,10 +94,15 @@ document.querySelector("form").addEventListener("submit", async (e) => {
       }
     } catch (error) {
       console.error(error);
+      const errorMessage = error.response && error.response.data && error.response.data.message 
+        ? error.response.data.message 
+        : "An unexpected error occurred during login";
+        
       Swal.fire({
         icon: "error",
-        title: "Access denied!",
-        text: error.response?.data?.message || "An unexpected error occurred",
+        title: "Login Error",
+        text: errorMessage,
+        confirmButtonColor: "#667eea",
       });
     } finally {
       hideGlobalLoading();

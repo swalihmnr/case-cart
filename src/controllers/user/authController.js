@@ -270,11 +270,11 @@ let OtpVerify = async (req, res) => {
           redirectUrl: "/login",
         });
       } else {
-        res.json({ success: false, message: "otp not matched" });
+        res.status(STATUS_CODES.BAD_REQUEST).json({ success: false, message: "otp not matched" });
       }
     } else {
       console.log("expired");
-      return res.json({ success: false, message: "otp expired" });
+      return res.status(STATUS_CODES.UNAUTHORIZED).json({ success: false, message: "otp expired" });
     }
   } catch (err) {
     console.log(err, "it is the eoror");
@@ -290,13 +290,13 @@ let resendOtpVerify = async (req, res) => {
   const { userEmail } = req.body;
   const User = await user.findOne({ email: userEmail });
   if (!User) {
-    return res.json({ success: false, message: "User not found" });
+    return res.status(STATUS_CODES.NOT_FOUND).json({ success: false, message: "User not found" });
   }
 
   const newOtp = await otpGeneratorTodb(User, userEmail);
   console.log(`New OTP generated: ${newOtp}`);
 
-  return res.json({
+  return res.status(STATUS_CODES.OK).json({
     success: true,
     message: "New OTP sent",
   });
@@ -319,7 +319,7 @@ let postResetPass = async (req, res) => {
   console.log(req.body);
   const { password, userEmail } = req.body;
   if (!userEmail) {
-    return res.json({
+    return res.status(STATUS_CODES.NOT_FOUND).json({
       success: false,
       message: "user Email has missed!",
     });
@@ -338,7 +338,7 @@ let postResetPass = async (req, res) => {
     console.log(hashedPassword);
     User.password = hashedPassword;
     await User.save();
-    res.json({
+    return res.status(STATUS_CODES.OK).json({
       success: true,
       message: "Password updated successfully",
       redirectUrl: "/",
@@ -363,10 +363,10 @@ let PostForgetPassword = async (req, res) => {
   const { email } = req.body;
   const existing = await user.findOne({ email: email });
   if (!existing) {
-    return res.json({ success: false, message: "User not exist" });
+    return res.status(STATUS_CODES.NOT_FOUND).json({ success: false, message: "User not exist" });
   } else {
     if (existing.isBlock) {
-      return res.json({ success: false, message: "Your are blocked by admin" });
+      return res.status(STATUS_CODES.FORBIDDEN).json({ success: false, message: "Your are blocked by admin" });
     }
     if (existing.password !== "google-auth") {
       req.session.redirect = "resetPassword";

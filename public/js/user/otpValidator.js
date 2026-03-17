@@ -91,10 +91,14 @@ window.verifyOTP = async function verifyOTP(event) {
     }
   } catch (error) {
     console.error(error);
+    const errorMessage = error.response && error.response.data && error.response.data.message 
+      ? error.response.data.message 
+      : "Something went wrong during verification";
+
     Swal.fire({
       icon: "error",
-      title: "Error",
-      text: "Something went wrong during verification",
+      title: "Verification Failed",
+      text: errorMessage,
       confirmButtonColor: "#667eea",
     });
   } finally {
@@ -260,11 +264,6 @@ window.resendOTP = async function () {
 
   startTimer("timer", 2);
   document.getElementById("otp-1").focus();
-
-  setTimeout(() => {
-    resendBtn.disabled = false;
-    resendBtn.classList.remove("btn-disabled");
-  }, 120000);
 };
 
 // ====== Paste OTP Functionality ======

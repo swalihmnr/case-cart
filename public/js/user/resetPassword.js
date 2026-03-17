@@ -15,6 +15,17 @@ function togglePassword(inputId) {
     icon.classList.add("fa-eye");
   }
 }
+
+// Clear errors on input
+document.getElementById("new-password")?.addEventListener("input", () => {
+  document.getElementById("Errmsg").innerText = "";
+});
+document
+  .getElementById("confirm-new-password")
+  ?.addEventListener("input", () => {
+    document.getElementById("cnErrmsg").innerText = "";
+  });
+
 document.querySelector("form").addEventListener("submit", async (event) => {
   event.preventDefault();
 
@@ -27,7 +38,8 @@ document.querySelector("form").addEventListener("submit", async (event) => {
   let Err_cPass = document.getElementById("cnErrmsg");
 
   // Regex Patterns
-  const passwordPattern = /^.{8,}$/;
+  const passwordPattern =
+    /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,}$/;
 
   Err_pass.innerText = "";
   Err_cPass.innerText = "";
@@ -38,7 +50,8 @@ document.querySelector("form").addEventListener("submit", async (event) => {
     Err_pass.innerText = "Enter your password";
     Err_flag = false;
   } else if (!passwordPattern.test(password)) {
-    Err_pass.innerText = "Minimum length should be 8 characters";
+    Err_pass.innerText =
+      "Must be 8+ characters with uppercase, lowercase, number and symbol";
     Err_flag = false;
   }
   if (confirmPass === "") {
@@ -56,21 +69,36 @@ document.querySelector("form").addEventListener("submit", async (event) => {
       password,
       userEmail,
     };
-    let res = await api.resetPassAxios(data);
-    if (res.data.success) {
-      Swal.fire({
-        icon: "success",
-        title: "password updated",
-        text: res.data.message,
-        confirmButtonColor: "#667eea",
-      }).then(() => {
-        window.location.href = res.data.redirectUrl;
-      });
-    } else {
+    try {
+      let res = await api.resetPassAxios(data);
+      if (res.data.success) {
+        Swal.fire({
+          icon: "success",
+          title: "Password Updated",
+          text: res.data.message,
+          confirmButtonColor: "#667eea",
+        }).then(() => {
+          window.location.href = res.data.redirectUrl;
+        });
+      } else {
+        Swal.fire({
+          icon: "error",
+          title: "Update Failed",
+          text: res.data.message,
+          confirmButtonColor: "#667eea",
+        });
+      }
+    } catch (err) {
+      console.error("Reset password error:", err);
+      const errorMessage =
+        err.response && err.response.data && err.response.data.message
+          ? err.response.data.message
+          : "Something went wrong. Please try again.";
+
       Swal.fire({
         icon: "error",
-        title: "did not updated yet",
-        text: res.data.message,
+        title: "Error",
+        text: errorMessage,
         confirmButtonColor: "#667eea",
       });
     }
