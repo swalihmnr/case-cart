@@ -856,6 +856,7 @@ const cancelWholeOrder = async (req, res) => {
     // Verify order exists and has items that can be cancelled
     const orderExists = await orderModel.findOne({
       _id: new mongoose.Types.ObjectId(orderId),
+      userId:new mongoose.Types.ObjectId(req.session.user.id),
       "orderItems.status": { $in: ["pending", "placed", "processing"] },
     });
 
@@ -971,6 +972,7 @@ const orderCancel = async (req, res) => {
     // Check if order exists
     const existingOrder = await orderModel.findOne({
       _id: orderID,
+      userId:new mongoose.Types.ObjectId(req.session.user.id),
       "orderItems._id": orderItemId,
     });
 
@@ -1162,6 +1164,7 @@ const returnReq = async (req, res) => {
     const { orderId, reason } = req.body;
     const existing = await orderModel.findOne({
       _id: new mongoose.Types.ObjectId(orderId),
+      userId:new mongoose.Types.ObjectId(req.session.user.id),
       "orderItems._id": new mongoose.Types.ObjectId(orderItemId),
     });
     if (!existing) {
