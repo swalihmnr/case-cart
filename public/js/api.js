@@ -31,16 +31,6 @@ api.interceptors.response.use(
         confirmButtonColor: "#667eea",
       });
     }
-
-    if (status === 401) {
-      Swal.fire({
-        icon: "warning",
-        title: "Session Expired",
-        text: "Please login again.",
-      });
-      window.location.href = "/login";
-    }
-
     return Promise.reject(error);
   },
 );
