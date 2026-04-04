@@ -335,7 +335,7 @@
                                     <%= order.orderItem.quantity %>
                                 </td>
                                 <td class="px-6 py-4 font-bold text-lg">
-                                    ₹<%= (order.orderItem.itemTotal).toFixed(2) %>
+                                    ₹<%= order.orderItem.quantity*(order.orderItem.finalPrice/order.orderItem.quantity) %>
                                 </td>
                             </tr>
                         </tbody>

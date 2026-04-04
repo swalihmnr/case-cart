@@ -17,6 +17,6 @@ router.get("/address", userAuth, addressController.getAddressMngmnt);
 router.get("/address/edit/:id", userAuth, addressController.geteditAddress);
 router.get("/address/add", userAuth, addressController.getAddAddress);
 router.post("/address/add", addressValidator, addressController.addAddress);
-router.post("/address/edit", addressValidator, addressController.editAddress);
+router.put("/address/edit", addressValidator, addressController.editAddress);
 router.patch("/address/:id/del", addressController.deleteAddress);
 export default router;

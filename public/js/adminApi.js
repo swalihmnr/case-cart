@@ -87,7 +87,7 @@ const variantDetialsAxios = async (data) => {
   return await api.patch(`/admin/product/edit/${data}/variant-data`);
 };
 const editVariantSaveAxios = async (id, data) => {
-  return await api.post(`/admin/product/edit/${id}/variant-save`, data);
+  return await api.put(`/admin/product/edit/${id}/variant-save`, data);
 };
 const toggleListUnlistAxios = async (id) => {
   return await api.patch(`/admin/product/edit/${id}/veriant-toggle`);
@@ -130,7 +130,7 @@ const createOfferAxios = async (data) => {
 };
 const offerEditAxios = async (payload) => {
   try {
-    return await api.post("/admin/offer/edit", payload);
+    return await api.patch("/admin/offer/edit", payload);
   } catch (error) {
     return error.response;
   }

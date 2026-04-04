@@ -35,7 +35,7 @@ router.patch(
   "/product/edit/:id/variant-data",
   productController.passVariantData,
 );
-router.post(
+router.put(
   "/product/edit/:id/variant-save",
   productController.postEditVariantSave,
 );

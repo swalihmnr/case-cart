@@ -18,5 +18,5 @@ router.get(
   blockUser,
   productController.getDetialProduct,
 );
-router.post("/product/:id/getVariant", productController.getVariantData);
+router.get("/product/:id/getVariant", productController.getVariantData);
 export default router;

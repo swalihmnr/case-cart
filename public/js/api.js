@@ -204,7 +204,7 @@ const addWishlistAxios = async (productId, variant) => {
   });
 };
 const toggleWishlistAxios = async (productId, variant) => {
-  return await api.post("/product/wishlist/toggle", {
+  return await api.patch("/product/wishlist/toggle", {
     productId,
     variant,
   });
@@ -226,7 +226,7 @@ const productDetialAxios = async (productId, variantId) => {
 };
 const getVariantDataAxios = async (productId, variantId) => {
   try {
-    return await api.post(
+    return await api.get(
       `/product/${productId}/getVariant?variantId=${variantId}`,
     );
   } catch (error) {
@@ -249,7 +249,7 @@ const addToCartAxios = async (productId, variantId) => {
 };
 const quantityUpdateAxios = async (cartId, change) => {
   try {
-    return await api.post(`/cart/quantity/${cartId}`, {
+    return await api.patch(`/cart/quantity/${cartId}`, {
       change,
     });
   } catch (error) {
@@ -271,7 +271,7 @@ const addAddressAxios = async (data) => {
 };
 const editAddressAxios = async (data) => {
   try {
-    return await api.post(`/address/edit`, {
+    return await api.put(`/address/edit`, {
       data,
     });
   } catch (error) {
