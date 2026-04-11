@@ -317,7 +317,9 @@
                                 </td>
                                 <td class="px-6 py-4 border-r border-gray-200 font-medium text-lg">
                                     <% const finalUnitPrice = order.orderItem.finalPrice/order.orderItem.quantity; %>
-                                    <% const originalPrice = order.orderItem.price; %>
+                                    <% const offerDiscount = order.orderItem.offer ? order.orderItem.offer.discountAmount : 0; %>
+                                    <% const trueOrgPrice = (order.orderItem.finalPrice + (order.orderItem.couponShare || 0) + offerDiscount) / order.orderItem.quantity; %>
+                                    <% const originalPrice = trueOrgPrice; %>
                                         <div class="flex flex-col">
                                             <div class="flex items-center gap-2">
                                                 <span>₹<%= finalUnitPrice.toFixed(2) %></span>
@@ -372,9 +374,12 @@
                             <div class="text-gray-500">Unit Price</div>
                             <div class="text-right font-medium">
                                 <div class="flex justify-end items-center gap-2">
-                                    <span>₹<%= (order.orderItem.finalPrice/order.orderItem.quantity).toFixed(2) %></span>
-                                    <% if (order.orderItem.price > (order.orderItem.finalPrice/order.orderItem.quantity)) { %>
-                                        <span class="text-xs text-gray-400 line-through">₹<%= order.orderItem.price.toFixed(2) %></span>
+                                    <% const finalUnitMobile = (order.orderItem.finalPrice/order.orderItem.quantity); %>
+                                    <% const offerDiscountMobile = order.orderItem.offer ? order.orderItem.offer.discountAmount : 0; %>
+                                    <% const trueOrgPriceMobile = (order.orderItem.finalPrice + (order.orderItem.couponShare || 0) + offerDiscountMobile) / order.orderItem.quantity; %>
+                                    <span>₹<%= finalUnitMobile.toFixed(2) %></span>
+                                    <% if (trueOrgPriceMobile > finalUnitMobile) { %>
+                                        <span class="text-xs text-gray-400 line-through">₹<%= trueOrgPriceMobile.toFixed(2) %></span>
                                     <% } %>
                                 </div>
                             </div>

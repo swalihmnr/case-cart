@@ -329,8 +329,8 @@ const ordConfirmation = async (req, res) => {
         variantId: item.variant._id,
         name: item.product.name,
         quantity,
-        price: item.variant.salePrice,
-        itemTotal: item.variant.salePrice * quantity,
+        price: item.variant.orgPrice,
+        itemTotal: item.variant.orgPrice * quantity,
         paymentStatus:
           paymentMethod === "cod"
             ? "pending"
@@ -1141,6 +1141,8 @@ const invoice = async (req, res) => {
         paymentMethod: 1,
         paymentStatus: 1,
         totalPrice: 1,
+        totalDiscount: 1,
+        couponDiscount: 1,
         finalAmount: 1,
         createdAt: 1,
         orderItem: "$orderItems",
