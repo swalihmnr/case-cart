@@ -281,7 +281,7 @@
                                         Product Details</h4>
 
                                     <div class="flex items-center space-x-4">
-                                        <% const mainImage=order.product.productImages.find(img=> img.isMain); %>
+                                        <% const mainImage=order.variant.images.find(img=> img.isMain); %>
                                             <% if (mainImage) { %>
                                                 <img src="<%= mainImage.url %>" alt="<%= order.product.name %>"
                                                     class="w-20 h-20 object-cover rounded-xl border border-gray-100" />

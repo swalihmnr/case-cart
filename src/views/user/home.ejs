@@ -156,7 +156,7 @@
                                     <!-- Image Container -->
                                     <div class="absolute inset-0 bg-gray-100 overflow-hidden">
                                         <a href="/product/<%= product._id %>/detials" class="block w-full h-full">
-                                            <img src="<%= product.productImages.find(img => img.isMain)?.url || '/img/placeholder.jpg' %>"
+                                            <img src="<%= product.minVariant?.images?.find(img => img.isMain)?.url || product.variants[0]?.images?.find(img => img.isMain)?.url || '/img/placeholder.jpg' %>"
                                                 alt="<%= product.name %>"
                                                 class="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700 ease-out opacity-90 group-hover:opacity-100" />
                                         </a>

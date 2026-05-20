@@ -31,6 +31,7 @@ import adminOfferRouter from "../src/router/admin/offerRouter.js";
 import adminCoupenRouter from "../src/router/admin/coupenRouter.js";
 import adminReportRouter from "../src/router/admin/reportRouter.js";
 import adminDashboardRouter from "../src/router/admin/dashboardRouter.js";
+import adminBrandRouter from "../src/router/admin/brandRouter.js";
 
 import userCouponRouter from "../src/router/user/couponRouter.js";
 import walletRouter from "./router/user/walletRouter.js";
@@ -101,6 +102,7 @@ app.use("/admin", adminCategoryRouter);
 app.use("/admin", customerRouter);
 app.use("/admin", adminOrderRouter);
 app.use("/admin", adminProductRouter);
+app.use("/admin", adminBrandRouter);
 
 // user Routers here
 

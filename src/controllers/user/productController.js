@@ -113,15 +113,6 @@ const getProduct = async (req, res) => {
               },
             },
           },
-          mainImage: {
-            $first: {
-              $filter: {
-                input: "$productImages",
-                as: "img",
-                cond: { $eq: ["$$img.isMain", true] },
-              },
-            },
-          },
         },
       },
 
@@ -216,6 +207,8 @@ const getDetialProduct = async (req, res) => {
 
     const relatedProductsInitial = await productModel
       .find({ catgId: product.catgId, _id: { $ne: product._id } })
+      .populate("catgId")
+      .populate("variants")
       .limit(4);
 
     const relatedProducts = [
@@ -231,6 +224,8 @@ const getDetialProduct = async (req, res) => {
               ],
             },
           })
+          .populate("catgId")
+          .populate("variants")
           .limit(4 - relatedProductsInitial.length)
         : []),
     ];
@@ -357,6 +352,7 @@ const getVariantData = async (req, res) => {
       orgPrice: variant.orgPrice,
       stock: variant.stock,
       disObject,
+      images: variant.images,
     });
   } catch (error) {
     console.log(error);

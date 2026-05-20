@@ -26,6 +26,28 @@ const editCategoryAxios = async (id, data) => {
   let res = await api.patch(`/admin/category/edit/${id}`, data);
   return res;
 };
+
+const addBrandAxios = async (data) => {
+  try {
+    let res = await api.post("/admin/brands", data);
+    return res;
+  } catch (error) {
+    return error.response;
+  }
+};
+const blockBrandAxios = async (data) => {
+  try {
+    let res = await api.patch(`/admin/brands/${data}/block`);
+    return res;
+  } catch (err) {
+    console.log(err);
+  }
+};
+const editBrandAxios = async (id, data) => {
+  let res = await api.put(`/admin/brands/${id}`, data);
+  return res;
+};
+
 const blockCustomerAxios = async (id) => {
   console.log(id);
   let res = await api.patch(`/admin/customers/block/${id}`);
@@ -164,13 +186,18 @@ const deleteCouponAxios = async(id) => {
     return error.response;
   }
 };
-const addVariantAxios = async (id, data) => {
-  return await api.post(`/admin/product/edit/${id}/add-variant`, data);
+const addVariantAxios = async (id, formData) => {
+  return await api.post(`/admin/product/edit/${id}/add-variant`, formData, {
+    headers: { "Content-Type": "multipart/form-data" },
+  });
 };
 export default {
   addCategoryAxios,
   blockCategoryAxios,
   editCategoryAxios,
+  addBrandAxios,
+  blockBrandAxios,
+  editBrandAxios,
   blockCustomerAxios,
   addProductAxios,
   blockProductyAxios,

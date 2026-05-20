@@ -67,7 +67,7 @@ const getCheckout = async (req, res) => {
             mainImage: {
               $first: {
                 $filter: {
-                  input: "$product.productImages",
+                  input: "$variant.images",
                   as: "img",
                   cond: { $eq: ["$$img.isMain", true] },
                 },
@@ -160,7 +160,7 @@ const getCheckout = async (req, res) => {
             mainImage: {
               $first: {
                 $filter: {
-                  input: "$product.productImages",
+                  input: "$images",
                   as: "img",
                   cond: { $eq: ["$$img.isMain", true] },
                 },

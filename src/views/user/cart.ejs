@@ -82,9 +82,9 @@
                             class="bg-white rounded-2xl shadow-md p-4 md:p-6 fade-in cart-item hover:shadow-xl transition-shadow duration-300 border border-gray-100">
                             <div class="flex gap-4">
                                 <!-- Product Image with zoom effect -->
-                                <div class="relative flex-shrink-0">
-                                    <img src="<%= product.productId.productImages.find(img => img.isMain)?.url %>"
-                                        class="w-24 h-24 md:w-32 md:h-32 rounded-xl object-cover flex-shrink-0 hover:scale-105 transition-transform duration-300"
+                                <div class="relative flex-shrink-0 w-24 h-24 md:w-32 md:h-32 rounded-xl bg-white border border-gray-100 flex items-center justify-center p-2 overflow-hidden">
+                                    <img src="<%= product.variantId.images.find(img => img.isMain)?.url || '/img/placeholder.jpg' %>"
+                                        class="max-w-full max-h-full object-contain hover:scale-105 transition-transform duration-300"
                                         onerror="this.src='/images/default-product.jpg'">
                                     <% if (product.variantId.stock < 10 && product.variantId.stock > 0) { %>
                                         <div class="absolute -top-2 -right-2 z-10">

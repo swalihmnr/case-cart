@@ -65,9 +65,9 @@
                     <div class="space-y-4">
                         <% order.orderItems.forEach((item, index)=> { %>
                             <div class="flex items-start gap-4 <%= index > 0 ? 'pt-4 border-t border-gray-100' : '' %>">
-                                <div class="w-16 h-16 flex-shrink-0">
-                                    <img src="<%= item.product.productImages[0].url %>" alt="<%= item.product.name %>"
-                                        class="w-full h-full object-cover rounded-lg border border-gray-200">
+                                <div class="w-16 h-16 flex-shrink-0 bg-gray-50 border border-gray-200 rounded-lg flex items-center justify-center p-1 overflow-hidden">
+                                    <img src="<%= item.variant.images[0]?.url || '/img/placeholder.jpg' %>" alt="<%= item.product.name %>"
+                                        class="max-w-full max-h-full object-contain">
                                 </div>
                                 <div class="flex-1">
                                     <div class="flex flex-col md:flex-row justify-between gap-4">

@@ -194,8 +194,8 @@
                     <% order.orderItems.forEach(item => { 
                         // Find main image
                         let mainImageUrl = 'https://via.placeholder.com/150';
-                        if (item.productId && item.productId.productImages) {
-                            const mainImage = item.productId.productImages.find(img => img.isMain);
+                        if (item.variantId && item.variantId.images) {
+                            const mainImage = item.variantId.images.find(img => img.isMain);
                             if (mainImage && mainImage.url) {
                                 mainImageUrl = mainImage.url;
                             }

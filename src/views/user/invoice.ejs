@@ -300,7 +300,7 @@
                                 <td class="px-6 py-4 border-r border-gray-200 pdf-break">
                                     <div class="flex items-center">
                                         <div class="relative w-20 h-20 flex-shrink-0 mr-4">
-                                            <img src="<%= order.product.productImages.find(img=>img.isMain).url %>"
+                                            <img src="<%= order.variant.images.find(img=>img.isMain)?.url || '/img/placeholder.jpg' %>"
                                                 class="w-full h-full rounded-lg object-cover border border-gray-200"
                                                 alt="<%= order.product.name %>">
                                         </div>
@@ -355,7 +355,7 @@
                     <div class="bg-white border rounded-xl p-4 shadow-sm">
                         <div class="flex gap-4 mb-4">
                             <div class="w-20 h-20 flex-shrink-0">
-                                <img src="<%= order.product.productImages.find(img=>img.isMain).url %>"
+                                <img src="<%= order.variant.images.find(img=>img.isMain)?.url || '/img/placeholder.jpg' %>"
                                     class="w-full h-full rounded-lg object-cover border border-gray-100"
                                     alt="<%= order.product.name %>">
                             </div>

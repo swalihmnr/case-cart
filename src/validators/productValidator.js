@@ -39,13 +39,6 @@ export const addProductValidation = [
     .isIn(["active", "inactive"])
     .withMessage("Invalid status"),
 
-  // MAIN IMAGE INDEX
-  body("mainImageIndex")
-    .notEmpty()
-    .withMessage("Main image index required")
-    .isInt({ min: 0 })
-    .withMessage("Invalid main image index"),
-
   body("devices")
     .notEmpty()
     .withMessage("Variants required")

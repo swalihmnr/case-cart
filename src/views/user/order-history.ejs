@@ -111,7 +111,7 @@
                                             onclick="window.location.href='/order/<%= order._id %>'">
                                             <% order.orderItems.slice(0, 3).forEach(item=> { %>
                                                 <div class="flex items-center gap-4">
-                                                    <img src="<%= item.product.productImages[0].url %>"
+                                                    <img src="<%= item.variant.images[0]?.url || '/img/placeholder.jpg' %>"
                                                         alt="<%= item.product.name %>"
                                                         class="w-16 h-16 object-contain border border-gray-200 rounded-md bg-gray-50">
                                                     <div class="flex-1">

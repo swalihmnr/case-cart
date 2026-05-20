@@ -18,10 +18,12 @@
 
                                         <div
                                             class="bg-white rounded-lg shadow-sm overflow-hidden hover:shadow-md transition group">
-                                            <div class="relative overflow-hidden">
-                                                <img src="<%= product.productId.productImages.find(img=>img.isMain).url %>"
-                                                    alt="<%= product.productId.name %>"
-                                                    class="w-full h-48 sm:h-56 object-cover group-hover:scale-110 transition-transform duration-500">
+                                            <div class="relative bg-white h-48 sm:h-56 flex items-center justify-center overflow-hidden p-4">
+                                                <a href="/product/<%= product.productId._id %>/detials" class="w-full h-full flex items-center justify-center">
+                                                    <img src="<%= product.variantId.images.find(img=>img.isMain)?.url || '/img/placeholder.jpg' %>"
+                                                        alt="<%= product.productId.name %>"
+                                                        class="max-w-full max-h-full object-contain group-hover:scale-110 transition-transform duration-500">
+                                                </a>
                                                 <button onclick="remWishlist('<%= product._id %>')"
                                                     class="absolute top-3 right-3 bg-white/80 backdrop-blur-sm rounded-full p-2 shadow-md hover:bg-red-50 transition-colors z-10">
                                                     <svg class="w-5 h-5 text-red-500" fill="currentColor"

@@ -37,11 +37,11 @@ async function submitCategory(event) {
     errDes.innerText = "Category Description is required.";
     flag = false;
   } else if (
-    categoryDescription.length < 10 ||
+    categoryDescription.length < 5 ||
     categoryDescription.length > 500
   ) {
     errDes.innerText =
-      "Category Description must be between 10 and 500 characters.";
+      "Category Description must be between 5 and 500 characters.";
     flag = false;
   } else if (categoryDescription.trim().length === 0) {
     errDes.innerText = "Category Description cannot be just spaces.";

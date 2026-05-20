@@ -5,60 +5,84 @@ let btnMode = null;
 let cropper = null;
 const product = window.product;
 const productId = product._id.toString();
-const productsImages = window.productImages;
-let productImages = productsImages.map((img, index) => ({
-  _id: img._id,
-  id: index + 1,
-  src: img.url,
-  isMain: img.isMain,
-}));
+let productImages = [];
+let currentVariantIdForImages = null;
 
 let currentUploadedImage = null;
 let currentImageId = null;
 
 // Initialize the page
 document.addEventListener("DOMContentLoaded", function () {
-  renderProductImages();
   setupBasicInfoEdit();
+  
+  // Expose global functions for the HTML buttons
+  window.manageVariantImages = manageVariantImages;
+  window.setAsMain = setAsMain;
+  window.updateImage = updateImage;
+  window.deleteImage = deleteImage;
+  window.openImageUploader = openImageUploader;
 });
+
+window.manageVariantImages = function(variantId) {
+  currentVariantIdForImages = variantId;
+  const variant = product.variants.find(v => v._id === variantId);
+  if (variant && variant.images) {
+    productImages = variant.images.map((img, index) => ({
+      _id: img._id,
+      id: index + 1,
+      src: img.url,
+      isMain: img.isMain,
+    }));
+  } else {
+    productImages = [];
+  }
+  renderProductImages();
+  document.getElementById("manageVariantImagesModal").classList.remove("hidden");
+};
 
 // Render product images
 function renderProductImages() {
   const container = document.getElementById("productImagesContainer");
+  const countEl = document.getElementById("imageCount");
+  
   container.innerHTML = "";
+  if (countEl) countEl.textContent = `${productImages.length} Images`;
 
   productImages.forEach((image) => {
     const imageElement = document.createElement("div");
     imageElement.id = `image-${image.id}`;
-    imageElement.className = `image-container rounded-lg ${image.isMain ? "main-image" : "border border-gray-200"}`;
+    imageElement.className = `image-container aspect-square group shadow-sm border border-gray-100`;
     imageElement.innerHTML = `
-    <img src="${image.src}" alt="Product" class="w-full h-32 object-cover rounded-lg">
-    ${image.isMain ? '<span class="absolute top-2 left-2 bg-blue-600 text-white text-xs px-2 py-1 rounded">Main</span>' : ""}
-    <div class="image-overlay">
-        <div class="flex flex-col space-y-2">
-            
+    <img src="${image.src}" alt="Product" class="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110">
+    
+    ${image.isMain 
+      ? '<div class="absolute top-2 left-2 bg-blue-600 text-white text-[10px] font-bold px-2 py-0.5 rounded-full shadow-lg z-10">MAIN</div>' 
+      : ""}
+
+    <div class="image-overlay opacity-0 group-hover:opacity-100 transition-all duration-300">
+        <div class="flex items-center gap-2">
             <!-- SET MAIN BUTTON -->
+            ${!image.isMain ? `
             <button onclick="setAsMain('${image.id}')" 
-                class="p-2 bg-white text-blue-600 rounded-full hover:bg-blue-100 transition" 
+                class="w-10 h-10 bg-white/90 backdrop-blur-sm text-blue-600 rounded-xl hover:bg-blue-600 hover:text-white transition-all transform hover:scale-110 shadow-lg" 
                 title="Set as Main">
                 <i class="fas fa-star"></i>
             </button>
+            ` : ''}
 
             <!-- UPDATE BUTTON -->
             <button onclick="updateImage('${image._id}', this)" data-btnmode="edit"
-                class="p-2 bg-white text-green-600 rounded-full hover:bg-green-100 transition" 
-                
-                title="Update Image">
-                <i class="fas fa-edit"></i>
+                class="w-10 h-10 bg-white/90 backdrop-blur-sm text-emerald-600 rounded-xl hover:bg-emerald-600 hover:text-white transition-all transform hover:scale-110 shadow-lg" 
+                title="Replace/Edit Image">
+                <i class="fas fa-sync-alt"></i>
             </button>
 
             <!-- DELETE BUTTON -->
             <button onclick="deleteImage('${image._id}')" 
-                class="p-2 bg-white text-red-600 rounded-full hover:bg-red-100 transition" 
-                title="Delete Image">
-                <i class="fas fa-trash"></i>
+                class="w-10 h-10 bg-white/90 backdrop-blur-sm text-red-600 rounded-xl hover:bg-red-600 hover:text-white transition-all transform hover:scale-110 shadow-lg" 
+                title="Delete Asset">
+                <i class="fas fa-trash-alt"></i>
             </button>
-
         </div>
     </div>
 `;
@@ -67,11 +91,12 @@ function renderProductImages() {
   });
 }
 
+
 // Set image as main
 async function setAsMain(imageId) {
   try {
     window.showGlobalLoading();
-    let res = await adminApi.setMainAxios(productId, imageId);
+    let res = await adminApi.setMainAxios(currentVariantIdForImages, imageId);
     if (res.data.success) {
       window.hideGlobalLoading();
       Swal.fire({
@@ -134,7 +159,7 @@ function updateImage(imageId, btn) {
 function openImageUploader(btn) {
   btnMode = btn.dataset.btnmode;
   console.log(btn);
-  document.getElementById("addImagesModal").classList.remove("hidden");
+  document.getElementById("manageVariantImagesModal").classList.remove("hidden");
 }
 
 // Handle image upload for adding new images
@@ -221,7 +246,6 @@ function cropAndSave() {
     const newForm = new FormData();
     newForm.append("image", file);
     newForm.append("imageId", currentImageId);
-    const produtId = product._id;
 
     const cropBtn = document.querySelector('button[onclick="cropAndSave()"]');
     if (cropBtn) window.setLoading(cropBtn, true);
@@ -230,7 +254,7 @@ function cropAndSave() {
     // Re-render images
     if (btnMode === "edit") {
       try {
-        let res = await adminApi.editImgProductAxios(newForm, produtId);
+        let res = await adminApi.editImgProductAxios(newForm, currentVariantIdForImages);
         console.log(res.data);
         if (res.data.success) {
           console.log("hlow ");
@@ -270,7 +294,7 @@ function cropAndSave() {
     }
     if (btnMode === "add") {
       try {
-        const res = await adminApi.uploadImgProductAxios(productId, newForm);
+        const res = await adminApi.uploadImgProductAxios(currentVariantIdForImages, newForm);
         console.log(res);
         if (res.data.success) {
           closeCropModal();
@@ -355,7 +379,7 @@ async function deleteImage(id) {
 
     try {
       window.showGlobalLoading();
-      let res = await adminApi.editImgDeleteAxios(id, productId);
+      let res = await adminApi.editImgDeleteAxios(id, currentVariantIdForImages);
 
       window.hideGlobalLoading();
       Swal.fire({
@@ -569,7 +593,7 @@ function setupBasicInfoEdit() {
 }
 
 let currenctVariantId;
-async function editVariant(variantId) {
+async function openEditVariantModal(variantId) {
   document.getElementById("editVariantModal").classList.remove("hidden");
   const res = await adminApi.variantDetialsAxios(variantId);
   currenctVariantId = res.data.variant._id;
@@ -581,12 +605,15 @@ async function editVariant(variantId) {
     res.data.variant.orgPrice;
   document.getElementById("editVariantSalePrice").value =
     res.data.variant.salePrice;
+  document.getElementById("editVariantBrand").value =
+    res.data.variant.brandId || "";
 }
 
 async function saveVariantChanges() {
   const id = currenctVariantId;
 
   const model = document.getElementById("editVariantModel").value.trim();
+  const brandId = document.getElementById("editVariantBrand").value;
   const stock = parseInt(document.getElementById("editVariantStock").value);
   const originalPrice = parseFloat(
     document.getElementById("editVariantOriginalPrice").value,
@@ -600,6 +627,9 @@ async function saveVariantChanges() {
 
   if (!model || model.length < 2 || model.length > 50) {
     errorMessage = "Variant Model must be between 2 and 50 characters.";
+    isValid = false;
+  } else if (!brandId) {
+    errorMessage = "Brand is required.";
     isValid = false;
   } else if (!originalPrice || originalPrice <= 0) {
     errorMessage = "Original price must be greater than 0.";
@@ -628,6 +658,7 @@ async function saveVariantChanges() {
 
   const data = {
     deviceModel: model,
+    brandId: brandId,
     stock: stock,
     orgPrice: originalPrice,
     salePrice: salePrice,
@@ -682,28 +713,33 @@ async function toggleListUnlist(id, btn) {
   try {
     if (btn) window.setLoading(btn, true);
     const res = await adminApi.toggleListUnlistAxios(id);
-    if (res.data.success) {
-      if (btn) {
-        window.setLoading(btn, false);
-        const isListed = res.data.message.toLowerCase() === "listed";
-        
-        if (isListed) {
-          btn.innerHTML = '<i class="fas fa-eye-slash mr-1"></i>Unlist';
-          btn.className = "px-3 py-1 bg-gray-600 text-white text-xs rounded hover:bg-red-700 transition w-20";
-        } else {
-          btn.innerHTML = '<i class="fas fa-eye mr-1"></i>List';
-          btn.className = "px-3 py-1 bg-green-600 text-white text-xs rounded hover:bg-green-700 transition w-20";
+      if (res.data.success) {
+        if (btn) {
+          window.setLoading(btn, false);
+          const isListed = res.data.message.toLowerCase() === "listed";
+          
+          if (isListed) {
+            btn.innerHTML = '<i class="fas fa-eye-slash"></i>';
+            btn.className = "p-2 text-amber-600 hover:bg-amber-50 rounded-lg transition-colors";
+            btn.title = "Unlist";
+          } else {
+            btn.innerHTML = '<i class="fas fa-eye"></i>';
+            btn.className = "p-2 text-emerald-600 hover:bg-emerald-50 rounded-lg transition-colors";
+            btn.title = "List";
+          }
+          
+          Swal.fire({
+            icon: "success",
+            title: "Status Updated",
+            text: `Variant ${res.data.message} successfully`,
+            timer: 1500,
+            showConfirmButton: false,
+            toast: true,
+            position: 'top-end'
+          });
         }
-        
-        Toastify({
-          text: `Variant ${res.data.message}`,
-          duration: 2000,
-          gravity: "top",
-          position: "right",
-          backgroundColor: isListed ? "#10B981" : "#6B7280",
-        }).showToast();
       }
-    }
+
   } catch (err) {
     if (btn) window.setLoading(btn, false);
     console.error("Listing toggle error:", err);
@@ -717,7 +753,10 @@ async function toggleListUnlist(id, btn) {
 
 function closeModal() {
   document.getElementById("editVariantModal").classList.add("hidden");
-  document.getElementById("addImagesModal").classList.add("hidden");
+  const addImg = document.getElementById("addImagesModal");
+  if(addImg) addImg.classList.add("hidden");
+  const manageModal = document.getElementById("manageVariantImagesModal");
+  if(manageModal) manageModal.classList.add("hidden");
   document.getElementById("addVariantModal").classList.add("hidden");
 }
 
@@ -731,6 +770,7 @@ function closeAddVariantModal() {
 
 async function saveNewVariant() {
   const model = document.getElementById("addVariantModel").value.trim();
+  const brandId = document.getElementById("addVariantBrand").value;
   const stock = parseInt(document.getElementById("addVariantStock").value);
   const originalPrice = parseFloat(
     document.getElementById("addVariantOriginalPrice").value,
@@ -744,6 +784,9 @@ async function saveNewVariant() {
 
   if (!model || model.length < 2 || model.length > 50) {
     errorMessage = "Variant Model must be between 2 and 50 characters.";
+    isValid = false;
+  } else if (!brandId) {
+    errorMessage = "Brand is required.";
     isValid = false;
   } else if (!originalPrice || originalPrice <= 0) {
     errorMessage = "Original price must be greater than 0.";
@@ -770,18 +813,25 @@ async function saveNewVariant() {
     return;
   }
 
-  const data = {
-    deviceModel: model,
-    stock: stock,
-    orgPrice: originalPrice,
-    salePrice: salePrice,
-  };
+  const formData = new FormData();
+  formData.append("deviceModel", model);
+  formData.append("brandId", brandId);
+  formData.append("stock", stock);
+  formData.append("orgPrice", originalPrice);
+  formData.append("salePrice", salePrice);
+
+  // Add images to FormData
+  const imageFiles = window.newVariantImages || [];
+  imageFiles.forEach((file) => {
+    formData.append("images", file);
+  });
+
 
   try {
     const saveBtn = document.getElementById("saveNewVariantBtn");
     if (saveBtn) window.setLoading(saveBtn, true);
 
-    const res = await adminApi.addVariantAxios(productId, data);
+    const res = await adminApi.addVariantAxios(productId, formData);
     if (res.data.success) {
       if (saveBtn) window.setLoading(saveBtn, false);
       Swal.fire({
@@ -827,7 +877,7 @@ window.openImageUploader = openImageUploader;
 window.handleImagesUpload = handleImagesUpload;
 window.saveImages = saveImages;
 window.setupBasicInfoEdit = setupBasicInfoEdit;
-window.editVariant = editVariant;
+window.openEditVariantModal = openEditVariantModal;
 window.saveVariantChanges = saveVariantChanges;
 window.closeModal = closeModal;
 window.deleteImage = deleteImage;
@@ -835,3 +885,57 @@ window.toggleListUnlist = toggleListUnlist;
 window.openAddVariantModal = openAddVariantModal;
 window.closeAddVariantModal = closeAddVariantModal;
 window.saveNewVariant = saveNewVariant;
+
+// Handle image selection for new variant
+window.newVariantImages = [];
+window.handleAddVariantImages = function(event) {
+    const files = Array.from(event.target.files);
+    const container = document.getElementById("addVariantImagesPreview");
+    
+    files.forEach(file => {
+        if (window.newVariantImages.length >= 5) return;
+        
+        window.newVariantImages.push(file);
+        
+        const reader = new FileReader();
+        reader.onload = function(e) {
+            const div = document.createElement("div");
+            div.className = "relative group aspect-square";
+            div.innerHTML = `
+                <img src="${e.target.result}" class="w-full h-full object-cover rounded-lg border border-gray-200">
+                <button onclick="removeNewVariantImage(this, ${window.newVariantImages.length - 1})" 
+                        class="absolute -top-2 -right-2 bg-red-500 text-white rounded-full w-5 h-5 flex items-center justify-center text-[10px] shadow-lg opacity-0 group-hover:opacity-100 transition-opacity">
+                    <i class="fas fa-times"></i>
+                </button>
+            `;
+            container.appendChild(div);
+        };
+        reader.readAsDataURL(file);
+    });
+};
+
+window.removeNewVariantImage = function(btn, index) {
+    window.newVariantImages.splice(index, 1);
+    btn.parentElement.remove();
+    // Update indices for remaining buttons
+    const container = document.getElementById("addVariantImagesPreview");
+    Array.from(container.children).forEach((child, i) => {
+        const removeBtn = child.querySelector('button');
+        if (removeBtn) {
+            removeBtn.setAttribute('onclick', `removeNewVariantImage(this, ${i})`);
+        }
+    });
+};
+
+window.closeAddVariantModal = function() {
+    document.getElementById("addVariantModal").classList.add("hidden");
+    // Clear images
+    window.newVariantImages = [];
+    document.getElementById("addVariantImagesPreview").innerHTML = "";
+    // Reset form
+    document.getElementById("addVariantModel").value = "";
+    document.getElementById("addVariantBrand").value = "";
+    document.getElementById("addVariantStock").value = "";
+    document.getElementById("addVariantOriginalPrice").value = "";
+    document.getElementById("addVariantSalePrice").value = "";
+};

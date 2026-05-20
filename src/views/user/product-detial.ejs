@@ -249,7 +249,8 @@
                             <!-- Main Image with Zoom -->
                             <div class="main-image-wrapper" onmousemove="handleImageHover(event)"
                                 onmouseenter="showZoomPreview()" onmouseleave="hideZoomPreview()">
-                                <img id="mainImageTag" src="<%= product.productImages.find(img => img.isMain).url %>"
+                                <img id="mainImageTag"
+                                    src="<%= product.variants[0]?.images?.find(img => img.isMain)?.url || '/img/placeholder.jpg' %>"
                                     class="main-image" alt="<%= product.name %>" />
                                 <div id="zoomLens" class="zoom-lens"></div>
                                 <div class="zoom-hint">
@@ -269,12 +270,13 @@
 
                             <!-- Thumbnails -->
                             <div class="thumbnail-horizontal">
-                                <% product.productImages.forEach((img)=> { %>
+                                <% if(product.variants[0] && product.variants[0].images) {
+                                    product.variants[0].images.forEach((img)=> { %>
                                     <div class="thumbnail-item <%= img.isMain ? 'active' : '' %>"
                                         onclick="changeMainImage('<%= img.url %>', this)">
                                         <img src="<%= img.url %>" alt="Thumbnail">
                                     </div>
-                                    <% }) %>
+                                    <% }) } %>
                             </div>
                         </div>
 
@@ -433,11 +435,11 @@
                                         d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z" />
                                 </svg>
                             </button>
-                        <% } %>
+                            <% } %>
                     </div>
 
                     <script>
-                        window.wishlistItems = <%- JSON.stringify(wishlistItems || []) %>;
+                        window.wishlistItems = <% - JSON.stringify(wishlistItems || []) %>;
                     </script>
 
                     <!-- Additional Info -->
@@ -566,48 +568,146 @@
                 <!-- Specifications Tab -->
 
             </div>
-        </div>
 
         <!-- Related Products -->
-        <div class="mt-12 md:mt-16">
-            <h2 class="text-2xl md:text-3xl font-bold text-gray-800 mb-6 md:mb-8">You May Also Like</h2>
-            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 md:gap-6">
-                <% relatedProducts.forEach(rel=> { %>
-                    <a href="/product/<%= rel._id %>/Detials"
-                        class="bg-white rounded-xl shadow-md overflow-hidden hover:shadow-xl transition cursor-pointer block">
-                        <!-- Product Image -->
-                        <div class="relative h-48 flex items-center justify-center bg-gray-100">
-                            <img src="<%= rel.productImages.find(img => img.isMain).url %>" alt="<%= rel.name %>"
-                                class="w-full h-full object-cover" />
-                        </div>
-
-                        <!-- Product Content -->
-                        <div class="p-4">
-                            <!-- Name -->
-                            <h3 class="font-bold text-gray-800 truncate">
-                                <%= rel.name %>
-                            </h3>
-
-                            <!-- Price + Rating -->
-                            <div class="flex items-center justify-between mt-2">
-
-                                <!-- Price -->
-
-                                <span class="text-lg font-bold text-purple-600">
-                                    Buy now
-                                </span>
-
-
-                                <!-- Rating (Static for now, you can update later) -->
-                                <div class="flex text-yellow-400 text-sm">
-                                    <span>★★★★☆</span>
-                                </div>
-                            </div>
-                        </div>
-                    </a>
-                    <% }) %>
-            </div>
+        <!-- Related Products -->
+<div class="mt-12 md:mt-16">
+    <div class="flex items-center justify-between mb-6 md:mb-8">
+        <div>
+            <h2 class="text-2xl md:text-3xl font-bold text-gray-800">You May Also Like</h2>
+            <p class="text-gray-500 mt-1 text-sm md:text-base">Based on your browsing history</p>
         </div>
+        <a href="/product" class="hidden sm:flex items-center gap-1 text-purple-600 hover:text-purple-700 font-semibold text-sm transition">
+            View All
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
+            </svg>
+        </a>
+    </div>
+
+    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 md:gap-6">
+        <% relatedProducts.forEach(rel => { %>
+            <a href="/product/<%= rel._id %>/detials" 
+               class="group bg-white rounded-2xl shadow-sm hover:shadow-xl transition-all duration-300 overflow-hidden border border-gray-100 hover:border-purple-200 transform hover:-translate-y-1">
+                
+                <!-- Product Image Container -->
+                <div class="relative overflow-hidden bg-gradient-to-br from-gray-50 to-gray-100 p-6">
+                    <div class="aspect-square flex items-center justify-center">
+                        <img src="<%= rel.variants[0]?.images?.find(img => img.isMain)?.url || '/img/placeholder.jpg' %>" 
+                             alt="<%= rel.name %>" 
+                             class="w-full h-full object-contain transform group-hover:scale-110 transition-transform duration-500" />
+                    </div>
+                    
+                    <!-- Quick Action Buttons -->
+                    <div class="absolute top-3 right-3 flex flex-col gap-2 opacity-0 group-hover:opacity-100 transition-opacity duration-300">
+                        <button onclick="event.preventDefault(); addToWishlist('<%= rel._id %>')" 
+                                class="w-9 h-9 bg-white rounded-full shadow-md flex items-center justify-center hover:bg-red-50 transition group/btn">
+                            <svg class="w-5 h-5 text-gray-400 group-hover/btn:text-red-500 transition" fill="currentColor" viewBox="0 0 24 24">
+                                <path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"/>
+                            </svg>
+                        </button>
+                        <button onclick="event.preventDefault(); quickView('<%= rel._id %>')" 
+                                class="w-9 h-9 bg-white rounded-full shadow-md flex items-center justify-center hover:bg-purple-50 transition group/btn">
+                            <svg class="w-5 h-5 text-gray-400 group-hover/btn:text-purple-600 transition" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/>
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/>
+                            </svg>
+                        </button>
+                    </div>
+
+                    <!-- Badge (if on sale) -->
+                    <% if (rel.variants && rel.variants[0] && rel.variants[0].salePrice && rel.variants[0].orgPrice && rel.variants[0].orgPrice > rel.variants[0].salePrice) { %>
+                        <div class="absolute top-3 left-3">
+                            <span class="bg-gradient-to-r from-red-500 to-pink-500 text-white text-xs font-bold px-3 py-1 rounded-full">
+                                SALE
+                            </span>
+                        </div>
+                    <% } %>
+                </div>
+
+                <!-- Product Content -->
+                <div class="p-4 space-y-3">
+                    <!-- Category Tag -->
+                    <span class="text-xs font-medium text-purple-600 bg-purple-50 px-2.5 py-1 rounded-full">
+                        <%= rel.catgId?.name || 'Accessories' %>
+                    </span>
+
+                    <!-- Product Name -->
+                    <h3 class="font-semibold text-gray-800 line-clamp-2 group-hover:text-purple-600 transition-colors">
+                        <%= rel.name %>
+                    </h3>
+
+                    <!-- Rating Stars -->
+                    <div class="flex items-center gap-2">
+                        <div class="flex text-yellow-400">
+                            <span>★★★★</span>
+                            <span class="text-gray-300">★</span>
+                        </div>
+                        <span class="text-xs text-gray-500">(128)</span>
+                    </div>
+
+                    <!-- Price -->
+                    <div class="flex items-center justify-between pt-2 border-t border-gray-50">
+                        <div class="flex items-baseline gap-2">
+                            <% if (rel.variants && rel.variants[0] && rel.variants[0].salePrice) { %>
+                                <span class="text-xl font-bold text-purple-600">
+                                    ₹<%= rel.variants[0].salePrice.toLocaleString('en-IN') %>
+                                </span>
+                                <% if (rel.variants[0].orgPrice && rel.variants[0].orgPrice > rel.variants[0].salePrice) { %>
+                                    <span class="text-sm text-gray-400 line-through">
+                                        ₹<%= rel.variants[0].orgPrice.toLocaleString('en-IN') %>
+                                    </span>
+                                <% } %>
+                            <% } else if (rel.variants && rel.variants[0] && rel.variants[0].orgPrice) { %>
+                                <span class="text-xl font-bold text-purple-600">
+                                    ₹<%= rel.variants[0].orgPrice.toLocaleString('en-IN') %>
+                                </span>
+                            <% } else { %>
+                                <span class="text-xl font-bold text-purple-600">
+                                    N/A
+                                </span>
+                            <% } %>
+                        </div>
+                        
+                        <!-- Add to Cart Mini Button -->
+                        <button onclick="event.preventDefault(); addToCart('<%= rel._id %>')" 
+                                class="w-9 h-9 bg-purple-600 text-white rounded-full flex items-center justify-center hover:bg-purple-700 transition shadow-md shadow-purple-200 group/btn">
+                            <svg class="w-5 h-5 transform group-hover/btn:scale-110 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"/>
+                            </svg>
+                        </button>
+                    </div>
+                </div>
+            </a>
+        <% }) %>
+    </div>
+
+    <!-- Mobile View All Button -->
+    <div class="mt-6 text-center sm:hidden">
+        <a href="/products" class="inline-flex items-center gap-2 bg-purple-600 text-white px-6 py-3 rounded-xl font-semibold hover:bg-purple-700 transition">
+            View All Products
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 8l4 4m0 0l-4 4m4-4H3"/>
+            </svg>
+        </a>
+    </div>
+</div>
+
+<style>
+    /* Additional styles for the related products section */
+    .line-clamp-2 {
+        display: -webkit-box;
+        -webkit-line-clamp: 2;
+        -webkit-box-orient: vertical;
+        overflow: hidden;
+    }
+    
+    @media (max-width: 640px) {
+        .grid {
+            gap: 0.75rem;
+        }
+    }
+</style>
     </div>
     </div>
 
@@ -630,4 +730,23 @@
             }
         });
     </script>
-    <%- include('../partials/footer') %>
+    <%- include('../partials/footer') %>ivr.net/npm/sweetalert2@11"></script>
+        <script type="module" src="/js/user/product-detials.js"></script>
+        <script>
+            document.addEventListener('DOMContentLoaded', () => {
+                const urlParams = new URLSearchParams(window.location.search);
+                const error = urlParams.get('error');
+                if (error) {
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'Unavailable',
+                        text: error,
+                        timer: 3000,
+                        showConfirmButton: false
+                    });
+                    // Clean URL
+                    window.history.replaceState({}, document.title, window.location.pathname);
+                }
+            });
+        </script>
+        <%- include('../partials/footer') %>
