@@ -43,13 +43,13 @@ import { attachAdmin } from "./middlewares/auth.js";
 import paymentRouter from "../src/router/paymentRouter.js";
 import MongoStore from "connect-mongo";
 import morgan from "morgan";
-import fs from 'fs'
+// import fs from 'fs'
 
-const logStream=fs.createWriteStream(
-  path.join(__dirname,"logs","access.log"),
-  {flags:"a"}
-)
-app.use(morgan("combined",{stream:logStream}))
+// const logStream=fs.createWriteStream(
+//   path.join(__dirname,"logs","access.log"),
+//   {flags:"a"}
+// )
+// app.use(morgan("combined",{stream:logStream}))
 
 app.use(express.static(path.join(__dirname, "../public")));
 app.use(
