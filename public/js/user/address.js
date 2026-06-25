@@ -159,12 +159,12 @@ document.querySelector("#addressForm").addEventListener("submit", async (event) 
         icon: "success",
         title: "Saved!",
         text: res.data.message,
-        confirmButtonColor: "#667eea",
+        confirmButtonColor: "#C9A84C",
       }).then(() => {
         location.href = "/address";
       });
     } else {
-      Swal.fire({ icon: "warning", text: res.data.message, confirmButtonColor: "#667eea" });
+      Swal.fire({ icon: "warning", text: res.data.message, confirmButtonColor: "#C9A84C" });
     }
   } catch (error) {
     console.error(error);
@@ -172,7 +172,7 @@ document.querySelector("#addressForm").addEventListener("submit", async (event) 
       icon: "error",
       title: "Error",
       text: "Something went wrong while saving address",
-      confirmButtonColor: "#667eea",
+      confirmButtonColor: "#C9A84C",
     });
   } finally {
     hideGlobalLoading();

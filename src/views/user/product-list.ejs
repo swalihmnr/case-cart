@@ -1,563 +1,331 @@
 <%- include('../partials/user/header') %>
-<div class="min-h-screen bg-gray-50">
-    <!-- Breadcrumb -->
-    <div class="bg-white border-b">
-        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-3 md:py-4">
-            <div class="flex items-center space-x-2 text-sm">
-                <a href="/" class="text-gray-600 hover:text-purple-600 transition">Home</a>
-                <span class="text-gray-400">/</span>
-                <span class="text-gray-800 font-medium">Products</span>
-            </div>
-        </div>
-    </div>
 
-    <!-- Main Content -->
-    <div class="max-w-7xl mx-auto px-3 sm:px-4 lg:px-8 py-4 md:py-8">
-        <div class="flex flex-col lg:flex-row gap-4 md:gap-8">
-            <!-- Mobile Filter Toggle -->
-            <div class="lg:hidden mb-4">
-                <button id="filterToggle" class="w-full bg-purple-600 text-white px-4 py-3 rounded-lg font-semibold hover:bg-purple-700 transition flex items-center justify-center gap-2">
-                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 4a1 1 0 011-1h16a1 1 0 011 1v2.586a1 1 0 01-.293.707l-6.414 6.414a1 1 0 00-.293.707V17l-4 4v-6.586a1 1 0 00-.293-.707L3.293 7.293A1 1 0 013 6.586V4z"/>
-                    </svg>
-                    Filter Products
+<main class="bg-obsidian min-h-screen text-ivory pt-28 pb-16">
+    <div class="max-w-7xl mx-auto px-6 sm:px-8">
+        
+        <!-- Page Title & Editorial Header -->
+        <div class="mb-12 text-center md:text-left space-y-2">
+            <p class="text-[10px] uppercase tracking-widest text-gold-accent font-medium">Bespoke Protection</p>
+            <h1 class="font-display text-4xl sm:text-5xl font-light tracking-wide text-gold-light">Case Collection</h1>
+        </div>
+
+        <!-- Horizontal Pill-Tab Filters & Sort/Price Toolbar -->
+        <div class="flex flex-col gap-6 mb-12 border-b border-gold-light/10 pb-8">
+            <!-- Scrollable Category Pills (Max 6) -->
+            <div class="flex items-center space-x-3 overflow-x-auto no-scrollbar pb-2">
+                <!-- All Products Pill -->
+                <button onclick="selectCategory('')" 
+                        class="px-5 py-2 rounded-full text-xs uppercase tracking-widest font-medium border transition-200 whitespace-nowrap
+                        <%= selectedCategories.length === 0 ? 'bg-gold-light text-obsidian border-gold-light' : 'border-gold-light/20 text-gold-light hover:border-gold-accent hover:text-gold-accent' %>">
+                    All Cases
                 </button>
+                
+                <% categories.forEach(cat => { %>
+                    <button onclick="selectCategory('<%= cat._id %>')" 
+                            class="px-5 py-2 rounded-full text-xs uppercase tracking-widest font-medium border transition-200 whitespace-nowrap
+                            <%= selectedCategories.includes(String(cat._id)) ? 'bg-gold-light text-obsidian border-gold-light' : 'border-gold-light/20 text-gold-light hover:border-gold-accent hover:text-gold-accent' %>">
+                        <%= cat.name.replace(' Cases', '') %>
+                    </button>
+                <% }) %>
             </div>
 
-            <!-- Sidebar Filters -->
-            <aside id="sidebarFilters" class="lg:w-64 flex-shrink-0 hidden lg:block">
-                <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-4 md:p-6 sticky top-24">
-                    <div class="flex items-center justify-between mb-4 md:mb-6">
-                        <h2 class="text-lg md:text-xl font-bold text-gray-800">Filters</h2>
-                        <button onclick="clearFilters()" class="text-sm text-purple-600 hover:text-purple-700 transition font-medium">
-                            Clear All
-                        </button>
+            <!-- Scrollable Brand Pills -->
+            <div class="flex items-center space-x-3 overflow-x-auto no-scrollbar pb-2">
+                <!-- All Brands Pill -->
+                <button onclick="selectBrand('')" 
+                        class="px-5 py-2 rounded-full text-xs uppercase tracking-widest font-medium border transition-200 whitespace-nowrap
+                        <%= selectedBrands.length === 0 ? 'bg-gold-light text-obsidian border-gold-light' : 'border-gold-light/20 text-gold-light hover:border-gold-accent hover:text-gold-accent' %>">
+                    All Brands
+                </button>
+                
+                <% brands.forEach(brand => { %>
+                    <button onclick="selectBrand('<%= brand._id %>')" 
+                            class="px-5 py-2 rounded-full text-xs uppercase tracking-widest font-medium border transition-200 whitespace-nowrap
+                            <%= selectedBrands.includes(String(brand._id)) ? 'bg-gold-light text-obsidian border-gold-light' : 'border-gold-light/20 text-gold-light hover:border-gold-accent hover:text-gold-accent' %>">
+                        <%= brand.name %>
+                    </button>
+                <% }) %>
+            </div>
+
+            <!-- Sorting & Price Ranges -->
+            <div class="flex flex-wrap items-center justify-between gap-4 text-xs">
+                <!-- Sorting & Price filters -->
+                <div class="flex flex-wrap items-center gap-4">
+                    <!-- Price Pills -->
+                    <div class="flex items-center space-x-2">
+                        <span class="text-gray-500 uppercase tracking-wider text-[10px]">Price:</span>
+                        <select id="priceSelect" onchange="handleListFilterChange()" class="bg-obsidian-light border border-gold-light/20 text-gold-light px-3 py-1.5 rounded focus:outline-none focus:border-gold-accent">
+                            <option value="all" <%= price === "all" || !price ? "selected" : "" %>>All Prices</option>
+                            <option value="under-150" <%= price === "under-150" ? "selected" : "" %>>Under ₹150</option>
+                            <option value="500-700" <%= price === "500-700" ? "selected" : "" %>>₹500 – ₹700</option>
+                            <option value="above-1000" <%= price === "above-1000" ? "selected" : "" %>>Above ₹1000</option>
+                        </select>
                     </div>
 
-                    <!-- Search -->
-                    <div class="mb-4 md:mb-6">
-                        <label class="block text-sm font-semibold text-gray-700 mb-2">Search</label>
-                        <div class="relative">
-                            <input 
-                                id="search" 
-                                value="<%= search || '' %>" 
-                                type="text" 
-                                placeholder="Search products..." 
-                                class="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent text-sm md:text-base"
-                            >
-                            <svg class="absolute right-3 top-3 w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/>
-                            </svg>
-                        </div>
-                    </div>
-
-                    <!-- Categories -->
-                    <div class="mb-4 md:mb-6">
-                        <h3 class="text-sm font-semibold text-gray-700 mb-3">Categories</h3>
-                        <div class="space-y-2 max-h-60 overflow-y-auto pr-2 custom-scrollbar">
-                            <!-- All Products -->
-                            <div class="flex items-center">
-                                <input 
-                                    type="radio" 
-                                    id="cat_all" 
-                                    name="category" 
-                                    value=""
-                                    class="sr-only"
-                                    <%= selectedCategories.length === 0 ? "checked" : "" %>
-                                    onchange="handleFilterChange()"
-                                >
-                                <label 
-                                    for="cat_all" 
-                                    class="flex-1 px-3 py-2.5 text-sm border border-gray-300 rounded-lg cursor-pointer hover:bg-gray-50 transition flex items-center justify-between"
-                                >
-                                    <span>All Products</span>
-                                    <svg class="w-4 h-4 hidden" id="check_cat_all" fill="currentColor" viewBox="0 0 20 20">
-                                        <path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"/>
-                                    </svg>
-                                </label>
-                            </div>
-
-                            <% categories.forEach(cat => { %>
-                                <div class="flex items-center">
-                                    <input 
-                                        type="radio" 
-                                        id="cat_<%= cat._id %>" 
-                                        name="category" 
-                                        value="<%= cat._id %>"
-                                        class="sr-only"
-                                        <%= selectedCategories.includes(String(cat._id)) ? "checked" : "" %>
-                                        onchange="handleFilterChange()"
-                                    >
-                                    <label 
-                                        for="cat_<%= cat._id %>" 
-                                        class="flex-1 px-3 py-2.5 text-sm border border-gray-300 rounded-lg cursor-pointer hover:bg-gray-50 transition flex items-center justify-between"
-                                    >
-                                        <span><%= cat.name %></span>
-                                        <svg class="w-4 h-4 hidden" id="check_cat_<%= cat._id %>" fill="currentColor" viewBox="0 0 20 20">
-                                            <path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"/>
-                                        </svg>
-                                    </label>
-                                </div>
-                            <% }) %>
-                        </div>
-                    </div>
-
-                    <!-- Price Range -->
-                    <div class="mb-4 md:mb-6">
-                        <h3 class="text-sm font-semibold text-gray-700 mb-3">Price Range</h3>
-                        <div class="space-y-2">
-                            <div class="flex items-center">
-                                <input 
-                                    type="radio" 
-                                    id="price_all" 
-                                    name="price" 
-                                    value="all" 
-                                    class="sr-only"
-                                    <%= price === "all" || !price ? "checked" : "" %>
-                                    onchange="handleFilterChange()"
-                                >
-                                <label 
-                                    for="price_all" 
-                                    class="flex-1 px-3 py-2.5 text-sm border border-gray-300 rounded-lg cursor-pointer hover:bg-gray-50 transition flex items-center justify-between"
-                                >
-                                    <span>All Prices</span>
-                                    <svg class="w-4 h-4 hidden" id="check_price_all" fill="currentColor" viewBox="0 0 20 20">
-                                        <path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"/>
-                                    </svg>
-                                </label>
-                            </div>
-                            
-                            <div class="flex items-center">
-                                <input 
-                                    type="radio" 
-                                    id="price_under_150" 
-                                    name="price" 
-                                    value="under-150" 
-                                    class="sr-only"
-                                    <%= price === "under-150" ? "checked" : "" %>
-                                    onchange="handleFilterChange()"
-                                >
-                                <label 
-                                    for="price_under_150" 
-                                    class="flex-1 px-3 py-2.5 text-sm border border-gray-300 rounded-lg cursor-pointer hover:bg-gray-50 transition flex items-center justify-between"
-                                >
-                                    <span>Under ₹150</span>
-                                    <svg class="w-4 h-4 hidden" id="check_price_under_150" fill="currentColor" viewBox="0 0 20 20">
-                                        <path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"/>
-                                    </svg>
-                                </label>
-                            </div>
-                            
-                            <div class="flex items-center">
-                                <input 
-                                    type="radio" 
-                                    id="price_500_700" 
-                                    name="price" 
-                                    value="500-700" 
-                                    class="sr-only"
-                                    <%= price === "500-700" ? "checked" : "" %>
-                                    onchange="handleFilterChange()"
-                                >
-                                <label 
-                                    for="price_500_700" 
-                                    class="flex-1 px-3 py-2.5 text-sm border border-gray-300 rounded-lg cursor-pointer hover:bg-gray-50 transition flex items-center justify-between"
-                                >
-                                    <span>₹500 – ₹700</span>
-                                    <svg class="w-4 h-4 hidden" id="check_price_500_700" fill="currentColor" viewBox="0 0 20 20">
-                                        <path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"/>
-                                    </svg>
-                                </label>
-                            </div>
-                            
-                            <div class="flex items-center">
-                                <input 
-                                    type="radio" 
-                                    id="price_above_1000" 
-                                    name="price" 
-                                    value="above-1000" 
-                                    class="sr-only"
-                                    <%= price === "above-1000" ? "checked" : "" %>
-                                    onchange="handleFilterChange()"
-                                >
-                                <label 
-                                    for="price_above_1000" 
-                                    class="flex-1 px-3 py-2.5 text-sm border border-gray-300 rounded-lg cursor-pointer hover:bg-gray-50 transition flex items-center justify-between"
-                                >
-                                    <span>Above ₹1000</span>
-                                    <svg class="w-4 h-4 hidden" id="check_price_above_1000" fill="currentColor" viewBox="0 0 20 20">
-                                        <path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"/>
-                                    </svg>
-                                </label>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </aside>
-
-            <!-- Products Grid -->
-            <main class="flex-1">
-                <!-- Toolbar -->
-                <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-4 mb-4 md:mb-6">
-                    <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3 md:gap-4">
-                        <div class="text-gray-600 text-sm md:text-base">
-                            <% 
-                            const limit = 12; // Set your limit per page
-                            const startIndex = (currentPage - 1) * limit;
-                            const endIndex = Math.min(startIndex + limit, totalItems);
-                            %>
-                            Showing <span class="font-semibold text-gray-800"><%= startIndex + 1 %>-<%= endIndex %></span> of <span class="font-semibold text-gray-800"><%= totalItems %></span> products
-                        </div>
-                        <div class="flex items-center gap-3">
-                            <label class="text-sm text-gray-600">Sort by:</label>
-                            <select 
-                                id="sort" 
-                                class="px-4 py-2.5 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent text-sm md:text-base w-full sm:w-auto"
-                                onchange="handleFilterChange()"
-                            >
-                                <option value="">Default</option>
-                                <option value="priceLowHigh" <%= sort === "priceLowHigh" ? "selected" : "" %>>Price: Low → High</option>
-                                <option value="priceHighLow" <%= sort === "priceHighLow" ? "selected" : "" %>>Price: High → Low</option>
-                                <option value="aToZ" <%= sort === "aToZ" ? "selected" : "" %>>A → Z</option>
-                                <option value="zToA" <%= sort === "zToA" ? "selected" : "" %>>Z → A</option>
-                            </select>
-                        </div>
+                    <!-- Sort -->
+                    <div class="flex items-center space-x-2">
+                        <span class="text-gray-500 uppercase tracking-wider text-[10px]">Sort:</span>
+                        <select id="sortSelect" onchange="handleListFilterChange()" class="bg-obsidian-light border border-gold-light/20 text-gold-light px-3 py-1.5 rounded focus:outline-none focus:border-gold-accent">
+                            <option value="">Default</option>
+                            <option value="priceLowHigh" <%= sort === "priceLowHigh" ? "selected" : "" %>>Price: Low → High</option>
+                            <option value="priceHighLow" <%= sort === "priceHighLow" ? "selected" : "" %>>Price: High → Low</option>
+                            <option value="aToZ" <%= sort === "aToZ" ? "selected" : "" %>>A → Z</option>
+                            <option value="zToA" <%= sort === "zToA" ? "selected" : "" %>>Z → A</option>
+                        </select>
                     </div>
                 </div>
 
-                <!-- Products Grid - SINGLE SECTION (removed duplicates) -->
-                <% if (products.length > 0) { %>
-                    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-6">
-                        <% products.forEach(product => { %>
-                            <% 
-                            const isInWishlist = wishlistItems && wishlistItems.some(item =>
-                                item.variantId && item.variantId.toString() === product.minVariant._id.toString()
-                            );
-                            %>
-                            <div class="product-card bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden hover:shadow-md transition-shadow duration-300">
-                                <!-- Image Section -->
-                                <div class="relative bg-gradient-to-br from-gray-100 to-gray-200 h-48 md:h-56 flex items-center justify-center overflow-hidden">
-                                    <a href="/product/<%= product._id %>/detials">
-                                        <img 
-                                            src="<%= product.productImages.find(img => img.isMain).url %>" 
-                                            alt="<%= product.name %>"
-                                            class="w-full h-full object-cover transition-transform duration-500 hover:scale-105"
-                                        />
-                                    </a>
-                                    
-                                    <!-- Offer Badges -->
-                                    <% if (product.offerValue > 0) { %>
-                                        <div class="absolute top-4 left-4 flex flex-col gap-2">
-                                            <div class="bg-gradient-to-r from-red-500 to-pink-600 text-white text-xs font-bold px-3 py-1.5 rounded-full shadow-lg animate-pulse">
-                                                <%= product.offerType === 'percentage'
-                                                    ? product.offerValue + '% OFF'
-                                                    : '₹' + product.offerValue + ' OFF' %>
-                                            </div>
-                                        </div>
-                                    <% } %>   
-
-                                    <!-- Wishlist Button -->
-                                    <% if (user) { %>
-                                        <button 
-                                            onclick="addWishlist('<%= product._id %>', '<%= product.minVariant._id %>')" 
-                                            class="absolute top-4 right-4 bg-white rounded-full p-2 hover:bg-gray-100 transition z-10"
-                                        >
-                                            <svg
-                                                id="wish-icon-<%= product._id %>-<%= product.minVariant._id %>"
-                                                class="w-5 h-5 <%= isInWishlist ? 'text-red-500' : 'text-gray-400' %>"
-                                                viewBox="0 0 24 24"
-                                                fill="currentColor"
-                                                xmlns="http://www.w3.org/2000/svg"
-                                            >
-                                                <path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"/>
-                                            </svg>
-                                        </button>
-                                    <% } %>
-                                </div>
-
-                                <!-- Content -->
-                                <div class="p-4">
-                                    <a href="/product/<%= product._id %>/detials" class="block">
-                                        <!-- Product Name -->
-                                        <h3 class="text-base md:text-lg font-bold text-gray-800 mb-1 truncate hover:text-purple-600 transition">
-                                            <%= product.name %>
-                                        </h3>
-                                        
-                                        <!-- Category -->
-                                        <p class="text-xs md:text-sm text-gray-500 mb-2">
-                                            <%= product.catgId.name %>
-                                        </p>
-                                        
-                                        <!-- Rating -->
-                                        
-                                    </a>
-                                    
-                                    <!-- Price Section -->
-                                    <div class="flex items-center justify-between">
-                                        <div class="flex flex-col">
-                                            <span class="text-lg md:text-xl font-bold text-purple-600">
-                                                ₹<%= product.minPrice %>
-                                            </span>
-                                            <% if (product.originalPrice && product.originalPrice > product.minPrice) { %>
-                                                <div class="flex items-center space-x-2 mt-1">
-                                                    <span class="text-xs text-gray-400 line-through">
-                                                        ₹<%= product.originalPrice %>
-                                                    </span>
-                                                    <span class="text-xs font-semibold text-red-600 bg-red-50 px-2 py-0.5 rounded">
-                                                        Save ₹<%= (product.originalPrice - product.minPrice).toFixed(0) %>
-                                                    </span>
-                                                </div>
-                                            <% } %>
-                                        </div>
-                                        
-                                        <!-- Add to Cart Button -->
-                                        <button 
-                                            onclick="addToCart('<%= product._id %>', '<%= product.minVariant._id %>')" 
-                                            class="bg-purple-600 text-white px-3 md:px-4 py-2 rounded-lg hover:bg-purple-700 transition text-xs md:text-sm font-medium"
-                                        >
-                                            Add to Cart
-                                        </button>
-                                    </div>
-                                </div>
-                            </div>
-                        <% }) %>
-                    </div>
-                <% } else { %>
-                    <!-- No Products Found -->
-                    <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-8 md:p-12 text-center">
-                        <div class="w-20 h-20 md:w-24 md:h-24 mx-auto mb-4 text-gray-300">
-                            <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M9.172 16.172a4 4 0 015.656 0M9 10h.01M15 10h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
-                            </svg>
-                        </div>
-                        <h3 class="text-lg md:text-xl font-bold text-gray-800 mb-2">No products found</h3>
-                        <p class="text-gray-600 mb-6">Try adjusting your filters or search term</p>
-                        <button onclick="clearFilters()" class="bg-purple-600 text-white px-6 py-2.5 rounded-lg hover:bg-purple-700 transition font-medium">
-                            Clear All Filters
-                        </button>
-                    </div>
-                <% } %>
-
-                <% if (totalPages > 1) { %>
-                    <div class="flex justify-center mt-8 md:mt-10 space-x-2">
-                        <!-- Previous Button -->
-                        <% if (currentPage > 1) { %>
-                            <a 
-                                href="/product?page=<%= currentPage - 1 %><%= search ? '&search=' + encodeURIComponent(search) : '' %><%= price ? '&price=' + price : '' %><%= sort ? '&sort=' + sort : '' %><%= selectedCategories && selectedCategories.length > 0 ? '&Categories=' + selectedCategories.join(',') : '' %>"
-                                class="px-4 py-2 border rounded-lg hover:bg-gray-50 transition text-sm font-medium"
-                            >
-                                Prev
-                            </a>
-                        <% } else { %>
-                            <span class="px-4 py-2 border rounded-lg text-gray-400 cursor-not-allowed text-sm">
-                                Prev
-                            </span>
-                        <% } %>
-                        
-                        <!-- Page Numbers -->
-                        <% for (let i = 1; i <= totalPages; i++) { %>
-                            <% if (i === currentPage) { %>
-                                <span class="px-4 py-2 bg-purple-600 text-white rounded-lg font-medium text-sm">
-                                    <%= i %>
-                                </span>
-                            <% } else { %>
-                                <a 
-                                    href="/product?page=<%= i %><%= search ? '&search=' + encodeURIComponent(search) : '' %><%= price ? '&price=' + price : '' %><%= sort ? '&sort=' + sort : '' %><%= selectedCategories && selectedCategories.length > 0 ? '&Categories=' + selectedCategories.join(',') : '' %>"
-                                    class="px-4 py-2 border rounded-lg hover:bg-gray-50 transition text-sm font-medium"
-                                >
-                                    <%= i %>
-                                </a>
-                            <% } %>
-                        <% } %>
-                        
-                        <!-- Next Button -->
-                        <% if (currentPage < totalPages) { %>
-                            <a 
-                                href="/product?page=<%= currentPage + 1 %><%= search ? '&search=' + encodeURIComponent(search) : '' %><%= price ? '&price=' + price : '' %><%= sort ? '&sort=' + sort : '' %><%= selectedCategories && selectedCategories.length > 0 ? '&Categories=' + selectedCategories.join(',') : '' %>"
-                                class="px-4 py-2 border rounded-lg hover:bg-gray-50 transition text-sm font-medium"
-                            >
-                                Next
-                            </a>
-                        <% } else { %>
-                            <span class="px-4 py-2 border rounded-lg text-gray-400 cursor-not-allowed text-sm">
-                                Next
-                            </span>
-                        <% } %>
-                    </div>
-                <% } %>
-            </main>
+                <!-- Counts -->
+                <div class="text-gray-500 tracking-wide">
+                    Showing <span class="text-gold-light font-medium"><%= products.length %></span> of <span class="text-gold-light font-medium"><%= totalItems %></span> artifacts
+                </div>
+            </div>
         </div>
+
+        <!-- Products Grid -->
+        <% if (products.length > 0) { %>
+            <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-x-6 gap-y-12">
+                <% products.forEach(product => { %>
+                    <% const isInWishlist = wishlistItems && wishlistItems.some(item =>
+                        item.variantId && item.variantId.toString() === product.minVariant._id.toString()
+                    ); %>
+                    
+                    <!-- Product Card -->
+                    <div class="group relative flex flex-col space-y-4 animate-fade-in">
+                        <!-- Wishlist Toggle (Always visible on mobile, hover on desktop) -->
+                        <% if (user) { %>
+                            <button onclick="addListWishlist('<%= product._id %>', '<%= product.minVariant._id %>')" 
+                                    class="absolute top-3 right-3 z-20 text-gold-light hover:text-gold-accent transition-all duration-300 p-2 bg-obsidian/40 backdrop-blur-md rounded-full md:opacity-0 md:group-hover:opacity-100">
+                                <i id="wish-icon-<%= product._id %>-<%= product.minVariant._id %>" 
+                                   class="fa-heart <%= isInWishlist ? 'fas text-red-500 font-bold' : 'far text-gold-light' %> text-xs sm:text-sm"></i>
+                            </button>
+                        <% } %>
+
+                        <!-- Image Section (65% height area) -->
+                        <div class="relative aspect-[3/4] bg-obsidian-light border border-gold-light/5 group-hover:border-gold-light/20 overflow-hidden flex items-center justify-center transition-colors duration-300">
+                            <a href="/product/<%= product._id %>/detials" class="block w-full h-full">
+                                <% 
+                                  let mainImageUrl = '/img/placeholder.jpg';
+                                  if (product.productImages && product.productImages.length > 0) {
+                                      const mainImg = product.productImages.find(img => img.isMain);
+                                      if (mainImg) mainImageUrl = mainImg.url;
+                                      else if (product.productImages[0]) mainImageUrl = product.productImages[0].url;
+                                  } else if (product.minVariant && product.minVariant.images && product.minVariant.images.length > 0) {
+                                      const mainImg = product.minVariant.images.find(img => img.isMain);
+                                      if (mainImg) mainImageUrl = mainImg.url;
+                                      else if (product.minVariant.images[0]) mainImageUrl = product.minVariant.images[0].url;
+                                  } else if (product.variants && product.variants[0] && product.variants[0].images && product.variants[0].images.length > 0) {
+                                      const mainImg = product.variants[0].images.find(img => img.isMain);
+                                      if (mainImg) mainImageUrl = mainImg.url;
+                                      else if (product.variants[0].images[0]) mainImageUrl = product.variants[0].images[0].url;
+                                  }
+                                %>
+                                <img src="<%= mainImageUrl %>" 
+                                     alt="<%= product.name %>" 
+                                     class="w-full h-full object-cover transform group-hover:scale-105 transition-transform duration-700 ease-out">
+                            </a>
+
+                            <!-- Offer Badge -->
+                            <% if (product.offerValue > 0) { %>
+                                <span class="absolute bottom-3 left-3 bg-red-950/40 backdrop-blur-md border border-red-500/20 text-red-400 text-[9px] uppercase tracking-widest font-semibold px-2 py-0.5 rounded">
+                                    <%= product.offerType === 'percentage' ? product.offerValue + '% OFF' : '₹' + product.offerValue + ' OFF' %>
+                                </span>
+                            <% } %>
+
+                            <!-- Quick Add CTA (Overlay on Desktop, Hidden on mobile) -->
+                            <div class="absolute inset-x-0 bottom-0 p-3 bg-gradient-to-t from-obsidian via-obsidian/80 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 hidden md:block z-10">
+                                <button onclick="addListToCart('<%= product._id %>', '<%= product.minVariant._id %>')"
+                                        class="w-full bg-gold-light hover:bg-gold-accent text-obsidian py-2 rounded-sm text-[9px] uppercase tracking-widest font-bold transition-colors duration-200">
+                                    Quick Add
+                                </button>
+                            </div>
+                        </div>
+
+                        <!-- Card Info -->
+                        <div class="space-y-1">
+                            <p class="text-[9px] uppercase tracking-widest text-gold-accent font-medium">
+                                <%= product.catgId ? product.catgId.name : 'Case Collection' %>
+                            </p>
+                            <h3 class="font-display text-sm sm:text-base tracking-wide text-gold-light font-light truncate">
+                                <a href="/product/<%= product._id %>/detials" class="hover:text-gold-accent transition-colors">
+                                    <%= product.name %>
+                                </a>
+                            </h3>
+                            <div class="flex items-center space-x-2 pt-0.5">
+                                <span class="text-xs text-gold-light font-semibold">₹<%= Math.floor(product.minPrice) %></span>
+                                <% if (product.originalPrice && product.originalPrice > product.minPrice) { %>
+                                    <span class="text-[10px] text-gray-500 line-through">₹<%= Math.floor(product.originalPrice) %></span>
+                                <% } %>
+                            </div>
+                        </div>
+                    </div>
+                <% }) %>
+            </div>
+
+            <!-- Premium Pagination -->
+            <% if (totalPages > 1) { %>
+                <div class="flex justify-center items-center space-x-6 mt-20 border-t border-gold-light/5 pt-8 text-xs">
+                    <% if (currentPage > 1) { %>
+                        <a href="javascript:goToPage(<%= currentPage - 1 %>)" class="text-gold-light hover:text-gold-accent transition-colors uppercase tracking-widest flex items-center gap-1.5">
+                            <i class="fas fa-chevron-left text-[10px]"></i> Previous
+                        </a>
+                    <% } else { %>
+                        <span class="text-gray-600 uppercase tracking-widest flex items-center gap-1.5 pointer-events-none">
+                            <i class="fas fa-chevron-left text-[10px]"></i> Previous
+                        </span>
+                    <% } %>
+
+                    <div class="flex items-center space-x-3 text-gold-light">
+                        <% for (let i = 1; i <= totalPages; i++) { %>
+                            <a href="javascript:goToPage(<%= i %>)" 
+                               class="w-6 h-6 flex items-center justify-center rounded-full font-medium transition-colors
+                               <%= i === currentPage ? 'bg-gold-light text-obsidian font-bold' : 'hover:bg-gold-light/10' %>">
+                                <%= i %>
+                            </a>
+                        <% } %>
+                    </div>
+
+                    <% if (currentPage < totalPages) { %>
+                        <a href="javascript:goToPage(<%= currentPage + 1 %>)" class="text-gold-light hover:text-gold-accent transition-colors uppercase tracking-widest flex items-center gap-1.5">
+                            Next <i class="fas fa-chevron-right text-[10px]"></i>
+                        </a>
+                    <% } else { %>
+                        <span class="text-gray-600 uppercase tracking-widest flex items-center gap-1.5 pointer-events-none">
+                            Next <i class="fas fa-chevron-right text-[10px]"></i>
+                        </span>
+                    <% } %>
+                </div>
+            <% } %>
+        <% } else { %>
+            <!-- Empty state -->
+            <div class="text-center py-24 space-y-4">
+                <i class="fas fa-filter text-gray-700 text-3xl"></i>
+                <p class="font-display text-xl text-gold-light">No cases match your filters.</p>
+                <button onclick="clearAllFilters()" class="text-xs uppercase tracking-widest text-gold-accent hover:underline">Clear All Filters</button>
+            </div>
+        <% } %>
     </div>
-</div>
+</main>
 
 <script>
-    // Initialize checkmark display
-    document.addEventListener('DOMContentLoaded', function() {
-        updateCheckmarks();
-        
-        // Mobile filter toggle
-        const filterToggle = document.getElementById('filterToggle');
-        const sidebarFilters = document.getElementById('sidebarFilters');
-        
-        if (filterToggle) {
-            filterToggle.addEventListener('click', function() {
-                sidebarFilters.classList.toggle('hidden');
-                sidebarFilters.classList.toggle('block');
-                this.innerHTML = sidebarFilters.classList.contains('hidden') 
-                    ? '<svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 4a1 1 0 011-1h16a1 1 0 011 1v2.586a1 1 0 01-.293.707l-6.414 6.414a1 1 0 00-.293.707V17l-4 4v-6.586a1 1 0 00-.293-.707L3.293 7.293A1 1 0 013 6.586V4z"/></svg>Filter Products'
-                    : '<svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>Close Filters';
-            });
-        }
-    });
-    
-    function updateCheckmarks() {
-        // Category checkmarks
-        const selectedCategory = document.querySelector('input[name="category"]:checked');
-        document.querySelectorAll('[id^="check_cat_"]').forEach(check => check.classList.add('hidden'));
-        if (selectedCategory) {
-            const checkId = 'check_cat_' + selectedCategory.value;
-            const checkElement = document.getElementById(checkId);
-            if (checkElement) checkElement.classList.remove('hidden');
-        }
-        
-        // Price checkmarks
-        const selectedPrice = document.querySelector('input[name="price"]:checked');
-        document.querySelectorAll('[id^="check_price_"]').forEach(check => check.classList.add('hidden'));
-        if (selectedPrice) {
-            const checkId = 'check_price_' + selectedPrice.value.replace(/-/g, '_');
-            const checkElement = document.getElementById(checkId);
-            if (checkElement) checkElement.classList.remove('hidden');
-        }
-        
-        // Update label styles for selected items
-        document.querySelectorAll('label[for^="cat_"], label[for^="price_"]').forEach(label => {
-            const inputId = label.getAttribute('for');
-            const input = document.getElementById(inputId);
-            if (input && input.checked) {
-                label.classList.add('border-purple-500', 'bg-purple-50', 'text-purple-700');
-                label.classList.remove('border-gray-300', 'text-gray-700');
-            } else {
-                label.classList.remove('border-purple-500', 'bg-purple-50', 'text-purple-700');
-                label.classList.add('border-gray-300', 'text-gray-700');
-            }
-        });
+    // Filters, category and brand management
+    let currentCategoryId = '<%= selectedCategories[0] || "" %>';
+    let currentBrandId = '<%= selectedBrands[0] || "" %>';
+
+    function selectCategory(catId) {
+        currentCategoryId = catId;
+        handleListFilterChange();
     }
-    
-    function handleFilterChange() {
-        updateCheckmarks();
+
+    function selectBrand(brandId) {
+        currentBrandId = brandId;
+        handleListFilterChange();
+    }
+
+    function handleListFilterChange() {
+        const sort = document.getElementById('sortSelect').value;
+        const price = document.getElementById('priceSelect').value;
         
-        const search = document.getElementById('search').value;
-        const sort = document.getElementById('sort').value;
-        const category = document.querySelector('input[name="category"]:checked')?.value || '';
-        const price = document.querySelector('input[name="price"]:checked')?.value || '';
-        
-        // Build query string
         const params = new URLSearchParams();
-        params.append('page', '1'); // Reset to page 1 when filters change
-        if (search) params.append('search', search);
-        if (sort) params.append('sort', sort);
-        if (category) params.append('Categories', category); // Note: Capital C to match your existing code
-        if (price) params.append('price', price);
+        params.append('page', '1');
         
-        // Redirect with new filters
+        // Retain search if present in URL
+        const urlParams = new URLSearchParams(window.location.search);
+        const search = urlParams.get('search');
+        if (search) params.append('search', search);
+
+        if (sort) params.append('sort', sort);
+        if (currentCategoryId) params.append('Categories', currentCategoryId);
+        if (currentBrandId) params.append('Brands', currentBrandId);
+        if (price) params.append('price', price);
+
         window.location.href = `/product?${params.toString()}`;
     }
-    
-    function clearFilters() {
-        // Reset form elements
-        document.getElementById('search').value = '';
-        document.getElementById('sort').value = '';
-        
-        const categoryAll = document.getElementById('cat_all');
-        if (categoryAll) categoryAll.checked = true;
-        
-        const priceAll = document.getElementById('price_all');
-        if (priceAll) priceAll.checked = true;
-        
-        // Update checkmarks
-        updateCheckmarks();
-        
-        // Redirect without filters
+
+    function goToPage(page) {
+        const urlParams = new URLSearchParams(window.location.search);
+        urlParams.set('page', page);
+        window.location.href = `/product?${urlParams.toString()}`;
+    }
+
+    function clearAllFilters() {
         window.location.href = '/product';
     }
-    
-    // Search input: only trigger on Enter
-    const searchInput = document.getElementById('search');
-    
-    searchInput.addEventListener('keydown', function(e) {
-        if (e.key === 'Enter') {
-            handleFilterChange();
+
+    // AJAX actions with Toastify
+    async function addListWishlist(productId, variantId) {
+        try {
+            const response = await fetch('/product/wishlist/toggle', {
+                method: 'PATCH',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ productId, variantId })
+            });
+            const data = await response.json();
+            
+            if (data.success) {
+                const heart = document.getElementById(`wish-icon-${productId}-${variantId}`);
+                if (data.action === "added") {
+                    heart.className = "fas fa-heart text-red-500 text-xs sm:text-sm font-bold";
+                    showToast("Added to Wishlist", "success");
+                } else {
+                    heart.className = "far fa-heart text-gold-light text-xs sm:text-sm";
+                    showToast("Removed from Wishlist", "success");
+                }
+                
+                const badge = document.getElementById('wishlist-count-badge');
+                if (badge && data.wishlistCount !== undefined) {
+                    badge.textContent = data.wishlistCount;
+                    if (data.wishlistCount > 0) badge.classList.remove('hidden');
+                    else badge.classList.add('hidden');
+                }
+            } else {
+                showToast(data.message || "Failed to update wishlist", "error");
+            }
+        } catch (err) {
+            console.error(err);
+            showToast("Network error updating wishlist", "error");
         }
-    });
-    
-    // Update checkmark display on radio change
-    document.querySelectorAll('input[name="category"], input[name="price"]').forEach(input => {
-        input.addEventListener('change', updateCheckmarks);
-    });
+    }
+
+    async function addListToCart(productId, variantId) {
+        try {
+            const response = await fetch('/cart/add', {
+                method: 'PATCH',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ productId, variantId })
+            });
+            
+            if (response.status === 401) {
+                const data = await response.json();
+                showToast(data.message || "Please login first", "error");
+                setTimeout(() => window.location.href = data.redirectUrl || '/login', 1500);
+                return;
+            }
+
+            const data = await response.json();
+            if (data.success) {
+                showToast("Added to Cart Collection", "success");
+                updateCartCountBadges(data.cartCount);
+                openCartDrawer();
+            } else {
+                showToast(data.message || "Failed to add to cart", "error");
+            }
+        } catch (err) {
+            console.error(err);
+            showToast("Network error adding to cart", "error");
+        }
+    }
 </script>
 
 <style>
-    /* Custom Scrollbar */
-    .custom-scrollbar::-webkit-scrollbar {
-        width: 6px;
+    /* Hide scrollbar for category pills container */
+    .no-scrollbar::-webkit-scrollbar {
+        display: none;
     }
-    
-    .custom-scrollbar::-webkit-scrollbar-track {
-        background: #f1f1f1;
-        border-radius: 3px;
-    }
-    
-    .custom-scrollbar::-webkit-scrollbar-thumb {
-        background: #c1c1c1;
-        border-radius: 3px;
-    }
-    
-    .custom-scrollbar::-webkit-scrollbar-thumb:hover {
-        background: #a1a1a1;
-    }
-    
-    /* Smooth transitions */
-    .product-card {
-        transition: all 0.3s ease;
-    }
-    
-    .product-card:hover {
-        transform: translateY(-4px);
-    }
-    
-    /* Mobile filter sidebar */
-    @media (max-width: 1024px) {
-        #sidebarFilters {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100vh;
-            z-index: 50;
-            background: white;
-            overflow-y: auto;
-            padding-top: 60px;
-        }
-        
-        #sidebarFilters.hidden {
-            display: none;
-        }
-    }
-    
-    /* Responsive pagination */
-    @media (max-width: 640px) {
-        .flex.justify-center.space-x-2 {
-            flex-wrap: wrap;
-            gap: 4px;
-        }
-        
-        .flex.justify-center.space-x-2 > * {
-            margin: 2px;
-        }
+    .no-scrollbar {
+        -ms-overflow-style: none;
+        scrollbar-width: none;
     }
 </style>
 
-<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script> 
-<script type="module" src="/js/user/list-product.js"></script>
-<script type="module" src="/js/user/cart.js"></script>
-
-<%- include('../partials/footer') %>
+<%- include('../partials/user/footer') %>

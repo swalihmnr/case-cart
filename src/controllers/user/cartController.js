@@ -75,6 +75,18 @@ const getCart = async (req, res) => {
       finalAmount += shipping;
     }
 
+    if (req.query.json === 'true') {
+      return res.status(200).json({
+        success: true,
+        products: cartItems,
+        subtotal: Math.round(subtotal),
+        totalDiscount: Math.round(totalDiscount),
+        finalAmount: Math.round(finalAmount),
+        totalDocs,
+        shipping,
+      });
+    }
+
     res.render("./user/cart", {
       products: cartItems,
       subtotal: Math.round(subtotal),

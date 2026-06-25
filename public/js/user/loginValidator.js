@@ -88,7 +88,7 @@ document.querySelector("form").addEventListener("submit", async (e) => {
             icon: "warning",
             title: "Login Failure",
             text: res.data.message,
-            confirmButtonColor: "#667eea",
+            confirmButtonColor: "#C9A84C",
           });
         }
       }
@@ -102,7 +102,7 @@ document.querySelector("form").addEventListener("submit", async (e) => {
         icon: "error",
         title: "Login Error",
         text: errorMessage,
-        confirmButtonColor: "#667eea",
+        confirmButtonColor: "#C9A84C",
       });
     } finally {
       hideGlobalLoading();

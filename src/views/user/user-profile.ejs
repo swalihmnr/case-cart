@@ -1,34 +1,37 @@
 <%- include('../partials/user/header') %>
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.6.1/cropper.min.css">
 
-<div class="flex">
-    <main class="max-w-7xl mx-auto px-4 py-8 md:py-12">
-        <div class="mb-8 fade-in">
-            <h1 class="text-3xl md:text-4xl font-bold mb-2">My Account</h1>
-            <p class="text-gray-600">Manage your account settings and preferences</p>
+<div class="min-h-screen bg-obsidian text-ivory font-sans">
+    <main class="max-w-7xl mx-auto px-6 py-12 md:py-16">
+        <!-- Page Header -->
+        <div class="mb-10 fade-in">
+            <h1 class="font-display text-4xl font-light text-gold-light tracking-wide mb-2">My Account</h1>
+            <p class="text-gray-400 text-xs uppercase tracking-wider">Manage your account settings and preferences</p>
         </div>
+        
         <div class="grid lg:grid-cols-4 gap-8">
             <%- include('../partials/user/sidebar') %>
+            
             <div class="lg:col-span-3 space-y-6">
                 <section id="section-profile" class="account-section">
-                    <div class="bg-white rounded-2xl shadow-md p-6 md:p-8 fade-in">
-                        <h2 class="text-2xl font-bold mb-6">Profile Information</h2>
+                    <div class="bg-obsidian-light border border-gold-light/5 rounded p-6 md:p-8 shadow-2xl fade-in">
+                        <h2 class="font-display text-2xl font-light text-gold-light tracking-wide mb-6">Profile Information</h2>
                         
                         <form class="space-y-6" novalidate>
                             <div>
-                                <label class="block text-sm font-semibold text-gray-900 mb-3">Profile Picture</label>
+                                <label class="block text-[10px] uppercase tracking-widest text-gold-light/80 mb-3 font-medium">Profile Picture</label>
                                 <div class="flex items-center gap-6">
                                     <img src="<%= User.profileImg  %>" 
                                         alt="" 
-                                        class="w-20 h-20 rounded-full flex items-center justify-center text-white text-3xl font-bold">
+                                        class="w-20 h-20 rounded-full object-cover border border-gold-light/20 flex items-center justify-center text-white text-3xl font-bold">
                                     <div>
                                         <label for="profile-upload" class="cursor-pointer">
-                                            <div class="px-4 py-2 border-2 border-purple-600 text-purple-600 rounded-lg font-semibold hover:bg-purple-50 transition mb-2 inline-block">
+                                            <div class="px-4 py-2 border border-gold-light/10 text-gold-light rounded font-semibold text-xs uppercase tracking-widest hover:border-gold-accent hover:text-gold-accent hover:bg-gold-light/5 transition mb-2 inline-block">
                                                 Change Photo
                                             </div>
                                             <input id="profile-upload" name="image" type="file" accept="image/jpeg,image/png,image/gif" class="hidden" onchange="handleProfileUpload(event)">
                                         </label>
-                                        <p class="text-sm text-gray-600">JPG, PNG or GIF. Max size 2MB.</p>
+                                        <p class="text-xs text-gray-500 uppercase tracking-wider">JPG, PNG or GIF. Max size 2MB.</p>
                                     </div>
                                 </div> 
                             </div>
@@ -36,62 +39,60 @@
                             <!-- Profile Information -->
                             <div class="grid md:grid-cols-2 gap-6">
                                 <div>
-                                    <label class="block text-sm font-semibold text-gray-900 mb-2">First Name</label>
-                                    <input id="f-name" type="text" value="<%= User.firstName %>" class="w-full px-4 py-3 border-2 border-gray-200 rounded-lg focus:border-purple-600 transition">
-                                    <p class="text-red-500" id="f-err"></p>
+                                    <label class="block text-[10px] uppercase tracking-widest text-gold-light/80 mb-2 font-medium">First Name</label>
+                                    <input id="f-name" type="text" value="<%= User.firstName %>" class="w-full px-4 py-3 bg-obsidian border border-gold-light/10 rounded focus:outline-none focus:border-gold-accent transition text-ivory text-sm">
+                                    <p class="text-red-500 text-xs mt-1" id="f-err"></p>
                                 </div>
                                 <div>
-                                    <label class="block text-sm font-semibold text-gray-900 mb-2">Last Name</label>
-                                    <input id="l-name" type="text" value="<%= User.lastName %>" class="w-full px-4 py-3 border-2 border-gray-200 rounded-lg focus:border-purple-600 transition">
-                                    <p class="text-red-500" id="l-err"></p>
+                                    <label class="block text-[10px] uppercase tracking-widest text-gold-light/80 mb-2 font-medium">Last Name</label>
+                                    <input id="l-name" type="text" value="<%= User.lastName %>" class="w-full px-4 py-3 bg-obsidian border border-gold-light/10 rounded focus:outline-none focus:border-gold-accent transition text-ivory text-sm">
+                                    <p class="text-red-500 text-xs mt-1" id="l-err"></p>
                                 </div>
                             </div>
 
                             <div>
-                                <label class="block text-sm font-semibold text-gray-900 mb-2">Email Address</label>
-                                <input id="email" type="email" value="<%= User.email %>" class="w-full px-4 py-3 border-2 border-gray-200 rounded-lg focus:border-purple-600 transition">
-                                <p class="text-red-500" id="emailErr"></p>
+                                <label class="block text-[10px] uppercase tracking-widest text-gold-light/80 mb-2 font-medium">Email Address</label>
+                                <input id="email" type="email" value="<%= User.email %>" class="w-full px-4 py-3 bg-obsidian border border-gold-light/10 rounded focus:outline-none focus:border-gold-accent transition text-ivory text-sm">
+                                <p class="text-red-500 text-xs mt-1" id="emailErr"></p>
                             </div>
 
                             <div>
-                                <label class="block text-sm font-semibold text-gray-900 mb-2">Phone Number</label>
-                                <input id="number" type="tel" value="<%= User.number||'' %>" class="w-full px-4 py-3 border-2 border-gray-200 rounded-lg focus:border-purple-600 transition" placeholder="Enter Your Number">
-                                <p class="text-red-500" id="numberErr"></p>
+                                <label class="block text-[10px] uppercase tracking-widest text-gold-light/80 mb-2 font-medium">Phone Number</label>
+                                <input id="number" type="tel" value="<%= User.number||'' %>" class="w-full px-4 py-3 bg-obsidian border border-gold-light/10 rounded focus:outline-none focus:border-gold-accent transition text-ivory text-sm" placeholder="Enter Your Number">
+                                <p class="text-red-500 text-xs mt-1" id="numberErr"></p>
                             </div>
                             
                             <!-- Referral Code Field (Dummy/Read-Only) -->
-                            <div class="bg-purple-50 p-5 rounded-lg border-2 border-purple-100">
+                            <div class="bg-obsidian border border-gold-light/10 p-5 rounded">
                                 <div class="flex items-center justify-between mb-2">
-                                    <label class="block text-sm font-semibold text-gray-900">Your Referral Code</label>
-                                    <span class="bg-green-100 text-green-800 text-xs font-medium px-3 py-1 rounded-full">Active</span>
+                                    <label class="block text-[10px] uppercase tracking-widest text-gold-light/80 font-medium">Your Referral Code</label>
+                                    <span class="bg-gold-accent text-obsidian text-[10px] font-bold uppercase tracking-widest px-3 py-1 rounded">Active</span>
                                 </div>
                                 <div class="flex items-center gap-3">
                                     <div class="relative flex-1">
-                                        <input id="referral-code" type="text" value="<%= User.referralCode %> " readonly 
-                                            class="w-full px-4 py-3 bg-white border-2 border-purple-200 rounded-lg text-gray-800 font-mono font-semibold focus:border-purple-600 transition cursor-pointer"
+                                        <input id="referral-code" type="text" value="<%= User.referralCode %>" readonly 
+                                            class="w-full px-4 py-3 bg-obsidian-light border border-gold-light/10 rounded text-gold-light font-mono font-semibold focus:border-gold-accent transition cursor-pointer text-sm"
                                             onclick="this.select()">
                                         <button type="button" onclick="copyReferralCode()" 
-                                            class="absolute right-2 top-1/2 -translate-y-1/2 bg-purple-600 text-white px-4 py-1.5 rounded-md text-sm font-medium hover:bg-purple-700 transition">
+                                            class="absolute right-2 top-1/2 -translate-y-1/2 bg-gold-light text-obsidian px-4 py-1.5 rounded text-xs uppercase tracking-widest font-semibold hover:bg-gold-accent transition">
                                             Copy
                                         </button>
                                     </div>
                                 </div>
-                                <p class="text-sm text-gray-600 mt-2 flex items-center gap-1">
-                                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
-                                    </svg>
+                                <p class="text-xs text-gray-500 mt-2 flex items-center gap-1 uppercase tracking-wider">
+                                    <i class="fas fa-info-circle text-gold-accent mr-1"></i>
                                     Share this code with friends to earn rewards!
                                 </p>
                             </div>
 
-                            <div class="mb-2 p-3 bg-yellow-100 text-yellow-800 text-sm rounded-lg border border-yellow-300 warning-box hidden"></div>
+                            <div class="mb-2 p-3 bg-red-950 text-red-200 text-xs rounded border border-red-500/25 warning-box hidden"></div>
 
                             <div class="flex gap-3 btn-submit">
-                                <button type="submit" class="gradient-bg text-white px-8 py-3 rounded-lg font-semibold hover:opacity-90 transition">
+                                <button type="submit" class="bg-gold-light text-obsidian px-8 py-3 rounded text-xs uppercase tracking-widest font-semibold hover:bg-gold-accent transition">
                                     Save Changes
                                 </button>
                                 <a href="/user-profile">
-                                    <button type="button" class="px-8 py-3 border-2 border-gray-200 text-gray-700 rounded-lg font-semibold hover:bg-gray-50 transition">
+                                    <button type="button" class="px-8 py-3 border border-gold-light/10 text-gold-light rounded text-xs uppercase tracking-widest font-semibold hover:bg-gold-light/5 hover:border-gold-accent transition">
                                         Cancel
                                     </button>
                                 </a>
@@ -107,27 +108,27 @@
 <!-- Cropping Modal -->
 <div id="cropModal" class="fixed inset-0 z-[60] hidden overflow-y-auto" aria-labelledby="modal-title" role="dialog" aria-modal="true">
     <div class="flex items-center justify-center min-h-screen pt-4 px-4 pb-20 text-center sm:block sm:p-0">
-        <div class="fixed inset-0 bg-gray-500 bg-opacity-75 transition-opacity" aria-hidden="true" onclick="closeCropModal()"></div>
+        <div class="fixed inset-0 bg-obsidian bg-opacity-75 transition-opacity" aria-hidden="true" onclick="closeCropModal()"></div>
         <span class="hidden sm:inline-block sm:align-middle sm:h-screen" aria-hidden="true">&#8203;</span>
-        <div class="inline-block align-middle bg-white rounded-2xl text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle sm:max-w-xl sm:w-full">
-            <div class="bg-white px-4 pt-5 pb-4 sm:p-8 sm:pb-4">
+        <div class="inline-block align-middle bg-obsidian-light border border-gold-light/10 rounded text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle sm:max-w-xl sm:w-full">
+            <div class="px-6 pt-5 pb-4 sm:p-8">
                 <div class="sm:flex sm:items-start">
                     <div class="mt-3 text-center sm:mt-0 sm:text-left w-full">
-                        <h3 class="text-2xl font-bold text-gray-900 mb-6" id="modal-title">
+                        <h3 class="font-display text-2xl font-light text-gold-light mb-6" id="modal-title">
                             Crop Your Profile Picture
                         </h3>
-                        <div class="mt-2 w-full aspect-square bg-gray-100 rounded-xl overflow-hidden shadow-inner">
+                        <div class="mt-2 w-full aspect-square bg-obsidian rounded overflow-hidden border border-gold-light/5">
                             <img id="image-to-crop" src="" alt="To Crop" class="max-w-full block">
                         </div>
-                        <p class="mt-4 text-sm text-gray-500 italic text-center">Drag and resize the box to select your profile area</p>
+                        <p class="mt-4 text-xs text-gray-500 italic text-center uppercase tracking-wider">Drag and resize the box to select your profile area</p>
                     </div>
                 </div>
             </div>
-            <div class="bg-gray-50 px-4 py-4 sm:px-8 sm:flex sm:flex-row-reverse gap-3">
-                <button type="button" id="crop-button" class="w-full inline-flex justify-center rounded-xl border border-transparent shadow-sm px-6 py-3 gradient-bg text-base font-semibold text-white hover:opacity-90 focus:outline-none transition-all sm:w-auto sm:text-sm">
+            <div class="bg-obsidian border-t border-gold-light/5 px-6 py-4 sm:px-8 sm:flex sm:flex-row-reverse gap-3">
+                <button type="button" id="crop-button" class="w-full inline-flex justify-center rounded border border-transparent shadow-sm px-6 py-3 bg-gold-light text-xs uppercase tracking-widest font-semibold text-obsidian hover:bg-gold-accent focus:outline-none transition-all sm:w-auto">
                     Crop & Save Image
                 </button>
-                <button type="button" onclick="closeCropModal()" class="mt-3 w-full inline-flex justify-center rounded-xl border-2 border-gray-200 shadow-sm px-6 py-3 bg-white text-base font-semibold text-gray-700 hover:bg-gray-50 focus:outline-none transition-all sm:mt-0 sm:w-auto sm:text-sm">
+                <button type="button" onclick="closeCropModal()" class="mt-3 w-full inline-flex justify-center rounded border border-gold-light/10 shadow-sm px-6 py-3 bg-obsidian text-xs uppercase tracking-widest font-semibold text-gold-light hover:bg-gold-light/5 focus:outline-none transition-all sm:mt-0 sm:w-auto">
                     Cancel
                 </button>
             </div>

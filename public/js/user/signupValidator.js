@@ -146,7 +146,7 @@ document.querySelector("form").addEventListener("submit", async (event) => {
         Swal.fire({
           icon: "warning",
           title: res.data.message,
-          confirmButtonColor: "#f6ad55", // orange
+          confirmButtonColor: "#C9A84C",
         });
       }
     } catch (error) {

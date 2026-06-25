@@ -81,7 +81,19 @@
                                         <tr class="hover:bg-gray-50 transition-colors">
                                             <td class="px-6 py-4">
                                                 <div class="flex items-center space-x-3">
-                                                    <img src="<%= product.productImages.find(img=>img.isMain).url %>"
+                                                    <%
+                                                      let plImageUrl = '/img/placeholder.jpg';
+                                                      if (product.productImages && product.productImages.length > 0) {
+                                                          const mainImg = product.productImages.find(img => img.isMain);
+                                                          if (mainImg) plImageUrl = mainImg.url;
+                                                          else if (product.productImages[0]) plImageUrl = product.productImages[0].url;
+                                                      } else if (product.variants && product.variants[0] && product.variants[0].images && product.variants[0].images.length > 0) {
+                                                          const mainImg = product.variants[0].images.find(img => img.isMain);
+                                                          if (mainImg) plImageUrl = mainImg.url;
+                                                          else if (product.variants[0].images[0]) plImageUrl = product.variants[0].images[0].url;
+                                                      }
+                                                    %>
+                                                    <img src="<%= plImageUrl %>"
                                                         alt="Product"
                                                         class="w-12 h-12 rounded-lg object-cover flex-shrink-0">
 

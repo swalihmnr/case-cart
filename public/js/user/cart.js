@@ -178,7 +178,7 @@ async function updateQuantity(btn, itemId, change) {
         icon: "warning",
         title: "Cart",
         text: res.data.message,
-        confirmButtonColor: "#667eea",
+        confirmButtonColor: "#C9A84C",
       });
     }
   } catch (error) {
@@ -230,7 +230,7 @@ async function removeFromCart(productId, variantId) {
         icon: "warning",
         title: "Deleting",
         text: res.data.message,
-        confirmButtonColor: "#667eea",
+        confirmButtonColor: "#C9A84C",
       }).then((re) => {
         location.reload();
       });

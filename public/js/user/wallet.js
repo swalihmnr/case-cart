@@ -82,7 +82,7 @@ document.addEventListener("DOMContentLoaded", function () {
       confirmButtonText:
         '<i class="fas fa-wallet mr-2"></i> Go to Wallet Dashboard',
       cancelButtonText: '<i class="fas fa-times mr-2"></i> Close',
-      confirmButtonColor: "#3B82F6",
+      confirmButtonColor: "#C9A84C",
       cancelButtonColor: "#6B7280",
       backdrop: `
                 rgba(0,0,0,0.6)
@@ -139,7 +139,7 @@ document.addEventListener("DOMContentLoaded", function () {
       confirmButtonText: '<i class="fas fa-redo mr-2"></i> Retry Payment',
       cancelButtonText: '<i class="fas fa-wallet mr-2"></i> Go to Wallet',
       confirmButtonColor: "#EF4444",
-      cancelButtonColor: "#3B82F6",
+      cancelButtonColor: "#C9A84C",
       backdrop: `
                 rgba(0,0,0,0.6)
             `,
@@ -193,7 +193,7 @@ document.addEventListener("DOMContentLoaded", function () {
       showCancelButton: true,
       confirmButtonText: '<i class="fas fa-redo mr-2"></i> Try Again',
       cancelButtonText: '<i class="fas fa-wallet mr-2"></i> Wallet Dashboard',
-      confirmButtonColor: "#3B82F6",
+      confirmButtonColor: "#C9A84C",
       cancelButtonColor: "#6B7280",
       customClass: {
         popup: "rounded-2xl shadow-2xl",
@@ -297,7 +297,7 @@ document.addEventListener("DOMContentLoaded", function () {
         },
 
         theme: {
-          color: "#3B82F6",
+          color: "#C9A84C",
         },
       };
 

@@ -529,7 +529,7 @@ window.invoice = async function (orderId, orderID, orderItemId) {
     title: "Download Invoice",
     text: `Invoice for order #${orderId} will be downloaded.`,
     icon: "info",
-    confirmButtonColor: "#8b5cf6",
+    confirmButtonColor: "#C9A84C",
     confirmButtonText: "Download",
   });
 };

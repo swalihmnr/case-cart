@@ -165,7 +165,7 @@ document
           icon: "success",
           title: "Updated!",
           text: res.data.message,
-          confirmButtonColor: "#667eea",
+          confirmButtonColor: "#C9A84C",
         }).then(() => {
           location.href = "/address";
         });
@@ -173,7 +173,7 @@ document
         Swal.fire({
           icon: "warning",
           text: res.data.message,
-          confirmButtonColor: "#667eea",
+          confirmButtonColor: "#C9A84C",
         });
       }
     } catch (error) {
@@ -182,7 +182,7 @@ document
         icon: "error",
         title: "Error",
         text: "Something went wrong while updating address",
-        confirmButtonColor: "#667eea",
+        confirmButtonColor: "#C9A84C",
       });
     }
   });

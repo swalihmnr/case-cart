@@ -83,9 +83,21 @@
                             <div class="flex gap-4">
                                 <!-- Product Image with zoom effect -->
                                 <div class="relative flex-shrink-0">
-                                    <img src="<%= product.productId.productImages.find(img => img.isMain)?.url %>"
+                                    <%
+                                      let cartImageUrl = '/img/placeholder.jpg';
+                                      if (product.productId.productImages && product.productId.productImages.length > 0) {
+                                          const mainImg = product.productId.productImages.find(img => img.isMain);
+                                          if (mainImg) cartImageUrl = mainImg.url;
+                                          else if (product.productId.productImages[0]) cartImageUrl = product.productId.productImages[0].url;
+                                      } else if (product.variantId && product.variantId.images && product.variantId.images.length > 0) {
+                                          const mainImg = product.variantId.images.find(img => img.isMain);
+                                          if (mainImg) cartImageUrl = mainImg.url;
+                                          else if (product.variantId.images[0]) cartImageUrl = product.variantId.images[0].url;
+                                      }
+                                    %>
+                                    <img src="<%= cartImageUrl %>"
                                         class="w-24 h-24 md:w-32 md:h-32 rounded-xl object-cover flex-shrink-0 hover:scale-105 transition-transform duration-300"
-                                        onerror="this.src='/images/default-product.jpg'">
+                                        onerror="this.src='/img/placeholder.jpg'">
                                     <% if (product.variantId.stock < 10 && product.variantId.stock > 0) { %>
                                         <div class="absolute -top-2 -right-2 z-10">
                                             <span class="flex items-center gap-1 bg-gradient-to-r from-orange-400 to-red-500 text-white text-[10px] font-bold px-2 py-1 rounded-full shadow-lg border border-white/20 animate-pulse">

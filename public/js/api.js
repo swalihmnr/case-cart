@@ -28,7 +28,7 @@ api.interceptors.response.use(
         icon: "error",
         title: "Too Many Requests",
         text: error.response.data.message || "Please try again later.",
-        confirmButtonColor: "#667eea",
+        confirmButtonColor: "#C9A84C",
       });
     }
     return Promise.reject(error);

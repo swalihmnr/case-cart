@@ -65,11 +65,53 @@ const getCheckout = async (req, res) => {
         {
           $addFields: {
             mainImage: {
-              $first: {
-                $filter: {
-                  input: "$product.productImages",
-                  as: "img",
-                  cond: { $eq: ["$$img.isMain", true] },
+              $cond: {
+                if: { $gt: [{ $size: { $ifNull: ["$product.productImages", []] } }, 0] },
+                then: {
+                  $let: {
+                    vars: {
+                      mainImgList: {
+                        $filter: {
+                          input: "$product.productImages",
+                          as: "img",
+                          cond: { $eq: ["$$img.isMain", true] },
+                        },
+                      },
+                    },
+                    in: {
+                      $cond: {
+                        if: { $gt: [{ $size: "$$mainImgList" }, 0] },
+                        then: { $first: "$$mainImgList" },
+                        else: { $first: "$product.productImages" },
+                      },
+                    },
+                  },
+                },
+                else: {
+                  $cond: {
+                    if: { $gt: [{ $size: { $ifNull: ["$variant.images", []] } }, 0] },
+                    then: {
+                      $let: {
+                        vars: {
+                          mainImgList: {
+                            $filter: {
+                              input: "$variant.images",
+                              as: "img",
+                              cond: { $eq: ["$$img.isMain", true] },
+                            },
+                          },
+                        },
+                        in: {
+                          $cond: {
+                            if: { $gt: [{ $size: "$$mainImgList" }, 0] },
+                            then: { $first: "$$mainImgList" },
+                            else: { $first: "$variant.images" },
+                          },
+                        },
+                      },
+                    },
+                    else: null,
+                  },
                 },
               },
             },
@@ -158,11 +200,53 @@ const getCheckout = async (req, res) => {
         {
           $addFields: {
             mainImage: {
-              $first: {
-                $filter: {
-                  input: "$product.productImages",
-                  as: "img",
-                  cond: { $eq: ["$$img.isMain", true] },
+              $cond: {
+                if: { $gt: [{ $size: { $ifNull: ["$product.productImages", []] } }, 0] },
+                then: {
+                  $let: {
+                    vars: {
+                      mainImgList: {
+                        $filter: {
+                          input: "$product.productImages",
+                          as: "img",
+                          cond: { $eq: ["$$img.isMain", true] },
+                        },
+                      },
+                    },
+                    in: {
+                      $cond: {
+                        if: { $gt: [{ $size: "$$mainImgList" }, 0] },
+                        then: { $first: "$$mainImgList" },
+                        else: { $first: "$product.productImages" },
+                      },
+                    },
+                  },
+                },
+                else: {
+                  $cond: {
+                    if: { $gt: [{ $size: { $ifNull: ["$images", []] } }, 0] },
+                    then: {
+                      $let: {
+                        vars: {
+                          mainImgList: {
+                            $filter: {
+                              input: "$images",
+                              as: "img",
+                              cond: { $eq: ["$$img.isMain", true] },
+                            },
+                          },
+                        },
+                        in: {
+                          $cond: {
+                            if: { $gt: [{ $size: "$$mainImgList" }, 0] },
+                            then: { $first: "$$mainImgList" },
+                            else: { $first: "$images" },
+                          },
+                        },
+                      },
+                    },
+                    else: null,
+                  },
                 },
               },
             },

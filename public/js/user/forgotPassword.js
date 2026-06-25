@@ -43,7 +43,7 @@ document.querySelector("form").addEventListener("submit", async (event) => {
           icon: "warning",
           title: "Forgot Password",
           text: res.data.message,
-          confirmButtonColor: "#667eea",
+          confirmButtonColor: "#C9A84C",
         });
       }
     } catch (err) {
@@ -57,7 +57,7 @@ document.querySelector("form").addEventListener("submit", async (event) => {
         icon: "error",
         title: "Forgot Password",
         text: errorMessage,
-        confirmButtonColor: "#667eea",
+        confirmButtonColor: "#C9A84C",
       });
     } finally {
       submitBtn.disabled = false;

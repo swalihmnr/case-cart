@@ -26,11 +26,31 @@ const variantSchema = new mongoose.Schema(
       type: mongoose.Types.ObjectId,
       ref: "product",
     },
+    brandId: {
+      type: mongoose.Types.ObjectId,
+      ref: "brand",
+    },
     stock: {
       type: Number,
       required: true,
       default: 0,
     },
+    images: [
+      {
+        url: {
+          type: String,
+          required: true,
+        },
+        publicId: {
+          type: String,
+          required: true,
+        },
+        isMain: {
+          type: Boolean,
+          default: false,
+        },
+      },
+    ],
   },
   {
     timestamps: true,

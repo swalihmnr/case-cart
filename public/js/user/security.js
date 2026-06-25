@@ -74,7 +74,7 @@ document.addEventListener("DOMContentLoaded", () => {
           icon: "success",
           title: "Password Updated",
           text: "Your password has been changed successfully",
-          confirmButtonColor: "#7c3aed", // purple
+          confirmButtonColor: "#C9A84C", // purple
         });
 
         form.reset();

@@ -456,7 +456,7 @@ async function verifyAndApplyCoupon(couponCode) {
           title: "Minimum Purchase Required",
           html: `This coupon requires a minimum purchase of <strong>₹${couponData.MinimumPurchaseValue}</strong>.<br>Add ₹${needed} more to your cart to use this coupon.`,
           confirmButtonText: "Got it",
-          confirmButtonColor: "#7c3aed",
+          confirmButtonColor: "#C9A84C",
         });
         if (orderButton) {
           orderButton.disabled = true;
@@ -522,7 +522,7 @@ async function verifyAndApplyCoupon(couponCode) {
         title: "Invalid Coupon",
         text: res.data.message || "This coupon code is not valid.",
         confirmButtonText: "Try Again",
-        confirmButtonColor: "#7c3aed",
+        confirmButtonColor: "#C9A84C",
       });
     }
   } catch (error) {
@@ -811,7 +811,7 @@ window.showSelectedCoupon = function (
       title: "Minimum Purchase Required",
       html: `This coupon requires a minimum purchase of <strong>₹${minPurchase}</strong>.<br>Add ₹${needed} more to your cart to use this coupon.`,
       confirmButtonText: "Got it",
-      confirmButtonColor: "#7c3aed",
+      confirmButtonColor: "#C9A84C",
     });
     if (orderButton) {
       orderButton.disabled = true;

@@ -193,11 +193,20 @@
                 <% if (order.orderItems && order.orderItems.length > 0) { %>
                     <% order.orderItems.forEach(item => { 
                         // Find main image
-                        let mainImageUrl = 'https://via.placeholder.com/150';
-                        if (item.productId && item.productId.productImages) {
+                        let mainImageUrl = '/img/placeholder.jpg';
+                        if (item.productId && item.productId.productImages && item.productId.productImages.length > 0) {
                             const mainImage = item.productId.productImages.find(img => img.isMain);
                             if (mainImage && mainImage.url) {
                                 mainImageUrl = mainImage.url;
+                            } else if (item.productId.productImages[0]) {
+                                mainImageUrl = item.productId.productImages[0].url;
+                            }
+                        } else if (item.variantId && item.variantId.images && item.variantId.images.length > 0) {
+                            const mainImage = item.variantId.images.find(img => img.isMain);
+                            if (mainImage && mainImage.url) {
+                                mainImageUrl = mainImage.url;
+                            } else if (item.variantId.images[0]) {
+                                mainImageUrl = item.variantId.images[0].url;
                             }
                         }
                         

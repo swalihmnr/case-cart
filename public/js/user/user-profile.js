@@ -21,7 +21,7 @@ async function handleProfileUpload(event) {
       icon: "error",
       title: "Invalid file type",
       text: "Please upload an image (JPG, PNG, GIF, or WebP)",
-      confirmButtonColor: "#9333ea"
+      confirmButtonColor: "#C9A84C"
     });
     event.target.value = "";
     return;
@@ -33,7 +33,7 @@ async function handleProfileUpload(event) {
       icon: "error",
       title: "File too large",
       text: "Profile picture must be less than 2MB",
-      confirmButtonColor: "#9333ea"
+      confirmButtonColor: "#C9A84C"
     });
     event.target.value = "";
     return;
@@ -106,7 +106,7 @@ cropButton.addEventListener("click", async () => {
           icon: "error",
           title: "Upload Failed",
           text: res.data.message || "Failed to upload image",
-          confirmButtonColor: "#9333ea"
+          confirmButtonColor: "#C9A84C"
         });
       }
     } catch (error) {
@@ -116,7 +116,7 @@ cropButton.addEventListener("click", async () => {
         icon: "error",
         title: "Error",
         text: "Something went wrong during upload",
-        confirmButtonColor: "#9333ea"
+        confirmButtonColor: "#C9A84C"
       });
     }
   }, "image/jpeg", 0.9);
@@ -196,7 +196,7 @@ document.querySelector("form").addEventListener("submit", async function (e) {
           icon: "warning",
           title: "Update Failed",
           text: res.data.message || "Failed to update profile",
-          confirmButtonColor: "#9333ea",
+          confirmButtonColor: "#C9A84C",
         });
       }
     } catch (error) {

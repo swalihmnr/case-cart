@@ -3,6 +3,7 @@ import offerModel from "../../models/admin/offerModel.js";
 import Category from "../../models/admin/categoryModel.js";
 import wishlistModel from "../../models/wishlistModel.js";
 import variantModel from "../../models/admin/variantModel.js";
+import brandModel from "../../models/admin/brandModel.js";
 import mongoose from "mongoose";
 import { STATUS_CODES } from "../../utils/statusCodes.js";
 import discountChecker from "../../utils/calculateDiscount.js";
@@ -18,6 +19,7 @@ const getProduct = async (req, res) => {
       search = "",
       price = "all",
       Categories = "",
+      Brands = "",
       sort = "",
     } = req.query;
     page = Number(page);
@@ -27,6 +29,10 @@ const getProduct = async (req, res) => {
 
     const selectedCategories = Categories
       ? Categories.split(",").filter(Boolean)
+      : [];
+
+    const selectedBrands = Brands
+      ? Brands.split(",").filter(Boolean)
       : [];
 
     let matchStage = { isBlock: false };
@@ -60,6 +66,20 @@ const getProduct = async (req, res) => {
     if (sort === "aToZ") sortStage = { name: 1 };
     if (sort === "zToA") sortStage = { name: -1 };
 
+    const variantFilterConditions = [
+      { $gt: ["$$v.stock", 0] },
+      { $eq: ["$$v.isListed", true] },
+    ];
+
+    if (selectedBrands.length > 0) {
+      variantFilterConditions.push({
+        $in: [
+          "$$v.brandId",
+          selectedBrands.map((id) => new mongoose.Types.ObjectId(id)),
+        ],
+      });
+    }
+
     const pipeline = [
       { $match: matchStage },
 
@@ -78,10 +98,7 @@ const getProduct = async (req, res) => {
               input: "$variants",
               as: "v",
               cond: {
-                $and: [
-                  { $gt: ["$$v.stock", 0] },
-                  { $eq: ["$$v.isListed", true] },
-                ],
+                $and: variantFilterConditions,
               },
             },
           },
@@ -101,7 +118,7 @@ const getProduct = async (req, res) => {
       { $unwind: "$catgId" },
       { $match: { "catgId.isActive": true } },
 
-      // ADD MIN PRICE & MAIN IMAGE
+      // ADD MIN PRICE & MIN VARIANT
       {
         $addFields: {
           minPrice: { $min: "$variants.salePrice" },
@@ -113,12 +130,59 @@ const getProduct = async (req, res) => {
               },
             },
           },
+        },
+      },
+      // ADD MAIN IMAGE USING FALLBACK TO MIN VARIANT IMAGES
+      {
+        $addFields: {
           mainImage: {
-            $first: {
-              $filter: {
-                input: "$productImages",
-                as: "img",
-                cond: { $eq: ["$$img.isMain", true] },
+            $cond: {
+              if: { $gt: [{ $size: { $ifNull: ["$productImages", []] } }, 0] },
+              then: {
+                $let: {
+                  vars: {
+                    mainImgList: {
+                      $filter: {
+                        input: "$productImages",
+                        as: "img",
+                        cond: { $eq: ["$$img.isMain", true] },
+                      },
+                    },
+                  },
+                  in: {
+                    $cond: {
+                      if: { $gt: [{ $size: "$$mainImgList" }, 0] },
+                      then: { $first: "$$mainImgList" },
+                      else: { $first: "$productImages" },
+                    },
+                  },
+                },
+              },
+              else: {
+                $cond: {
+                  if: { $gt: [{ $size: { $ifNull: ["$minVariant.images", []] } }, 0] },
+                  then: {
+                    $let: {
+                      vars: {
+                        mainImgList: {
+                          $filter: {
+                            input: "$minVariant.images",
+                            as: "img",
+                            cond: { $eq: ["$$img.isMain", true] },
+                          },
+                        },
+                      },
+                      in: {
+                        $cond: {
+                          if: { $gt: [{ $size: "$$mainImgList" }, 0] },
+                          then: { $first: "$$mainImgList" },
+                          else: { $first: "$minVariant.images" },
+                        },
+                      },
+                    },
+                  },
+                  else: null,
+                },
               },
             },
           },
@@ -172,6 +236,7 @@ const getProduct = async (req, res) => {
       user = true;
     }
     const categories = await Category.find({ isActive: true });
+    const brands = await brandModel.find({ isActive: true });
     if (req.session.user?.id) {
       wishlistItems = await wishlistModel.find({ userId: req.session.user.id });
     }
@@ -179,6 +244,8 @@ const getProduct = async (req, res) => {
       products,
       categories,
       selectedCategories,
+      brands,
+      selectedBrands,
       search,
       price,
       sort,
@@ -356,6 +423,7 @@ const getVariantData = async (req, res) => {
       salePrice,
       orgPrice: variant.orgPrice,
       stock: variant.stock,
+      images: variant.images || [],
       disObject,
     });
   } catch (error) {

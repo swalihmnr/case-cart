@@ -48,7 +48,7 @@ window.verifyOTP = async function verifyOTP(event) {
         icon: "error",
         title: "Incomplete OTP",
         text: "Please enter all 6 digits",
-        confirmButtonColor: "#667eea",
+        confirmButtonColor: "#C9A84C",
       });
 
       input.focus();
@@ -75,7 +75,7 @@ window.verifyOTP = async function verifyOTP(event) {
         icon: "success",
         title: "OTP Verified!",
         text: res.data.message,
-        confirmButtonColor: "#667eea",
+        confirmButtonColor: "#C9A84C",
       }).then(() => {
         const loginUrl = sessionStorage.getItem("urlLoginPage");
         console.log(loginUrl);
@@ -86,7 +86,7 @@ window.verifyOTP = async function verifyOTP(event) {
         icon: "error",
         title: "Invalid OTP",
         text: "Please try again.",
-        confirmButtonColor: "#667eea",
+        confirmButtonColor: "#C9A84C",
       });
     }
   } catch (error) {
@@ -99,7 +99,7 @@ window.verifyOTP = async function verifyOTP(event) {
       icon: "error",
       title: "Verification Failed",
       text: errorMessage,
-      confirmButtonColor: "#667eea",
+      confirmButtonColor: "#C9A84C",
     });
   } finally {
     hideGlobalLoading();

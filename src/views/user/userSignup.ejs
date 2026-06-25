@@ -5,213 +5,273 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>CaseCart - Sign Up</title>
+    <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="/css/style.css">
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        obsidian: {
+                            DEFAULT: '#0A0A0A',
+                            light: '#161616',
+                            muted: '#262626'
+                        },
+                        gold: {
+                            light: '#E8D5B0',
+                            accent: '#C9A84C'
+                        },
+                        ivory: {
+                            DEFAULT: '#F7F5F2',
+                            muted: '#E5E3E0'
+                        }
+                    },
+                    fontFamily: {
+                        display: ['"Cormorant Garamond"', 'serif'],
+                        sans: ['Inter', 'sans-serif']
+                    }
+                }
+            }
+        }
+    </script>
     <style>
+        @import url('https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;1,300&family=Inter:wght@300;400;500;600&display=swap');
+        
+        .font-display {
+            font-family: 'Cormorant Garamond', serif;
+        }
+        
+        body {
+            font-family: 'Inter', sans-serif;
+        }
+
+        .input-focus:focus {
+            border-color: #C9A84C !important;
+            box-shadow: 0 0 0 1px rgba(201, 168, 76, 0.2);
+        }
+
         @keyframes fadeIn {
             from {
                 opacity: 0;
-                transform: translateY(20px);
+                transform: translateY(10px);
             }
-
             to {
                 opacity: 1;
                 transform: translateY(0);
             }
         }
 
-        .fade-in {
-            animation: fadeIn 0.6s ease-out;
+        .animate-fade-in {
+            animation: fadeIn 0.5s ease-out forwards;
         }
 
-        .gradient-bg {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-        }
-
-        .input-focus:focus {
-            border-color: #667eea;
-            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
-        }
-
-        .btn-hover:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 10px 20px rgba(102, 126, 234, 0.3);
-        }
-
-        .strength-weak {
-            background-color: #ef4444;
-        }
-
-        .strength-fair {
-            background-color: #f59e0b;
-        }
-
-        .strength-good {
-            background-color: #3b82f6;
-        }
-
-        .strength-strong {
-            background-color: #10b981;
-        }
+        .strength-weak { background-color: #ef4444; }
+        .strength-fair { background-color: #f59e0b; }
+        .strength-good { background-color: #3b82f6; }
+        .strength-strong { background-color: #10b981; }
     </style>
 </head>
 
-<body class="bg-gray-50">
-    <div id="user-signup" class="page">
-        <div class="min-h-screen flex items-center justify-center py-12 px-4 sm:px-6 lg:px-8">
-            <div class="max-w-md w-full fade-in">
-                <div class="bg-white rounded-2xl shadow-xl p-8">
-                    <div class="text-center mb-8">
-                        <div class="w-16 h-16 gradient-bg rounded-full flex items-center justify-center mx-auto mb-4">
-                            <i class="fas fa-user-plus text-white text-2xl"></i>
-                        </div>
-                        <h2 class="text-3xl font-bold text-gray-800">Create Account</h2>
-                        <p class="text-gray-600 mt-2">Join CaseCart today</p>
-                    </div>
-
-                    <form class="space-y-5" novalidate>
-                        <div class="grid grid-cols-2 gap-4">
-                            <div>
-                                <label class="block text-sm font-medium text-gray-700 mb-2">First Name</label>
-                                <input name="firstname" type="text" id="first-name" required
-                                    class="input-focus block w-full px-3 py-3 border border-gray-300 rounded-lg focus:outline-none transition"
-                                    placeholder="John">
-                                <p class="text-red-500" id="fnameErr"></p>
-                            </div>
-                            <div>
-                                <label class="block text-sm font-medium text-gray-700 mb-2">Last Name</label>
-                                <input name="lastname" type="text" id="last-name" required
-                                    class="input-focus block w-full px-3 py-3 border border-gray-300 rounded-lg focus:outline-none transition"
-                                    placeholder="Doe">
-                                <p class="text-red-500" id="lnameErr"></p>
-                            </div>
-                        </div>
-
-                        <div>
-                            <label class="block text-sm font-medium text-gray-700 mb-2">Email Address</label>
-                            <div class="relative">
-                                <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                                    <i class="fas fa-envelope text-gray-400"></i>
-                                </div>
-                                <input name="email" type="email" id="email" required
-                                    class="input-focus block w-full pl-10 pr-3 py-3 border border-gray-300 rounded-lg focus:outline-none transition"
-                                    placeholder="you@example.com">
-                                <p class="text-red-500" id="emailErr"></p>
-                            </div>
-                        </div>
-
-                        <div>
-                            <label class="block text-sm font-medium text-gray-700 mb-2">Phone Number</label>
-                            <div class="relative">
-                                <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                                    <i class="fas fa-phone text-gray-400"></i>
-                                </div>
-                                <input name="number" type="tel" id="phone" required
-                                    class="input-focus block w-full pl-10 pr-3 py-3 border border-gray-300 rounded-lg focus:outline-none transition"
-                                    placeholder="+91 98765 43210">
-                                <p class="text-red-500" id="numberErr"></p>
-                            </div>
-                        </div>
-
-                        <div>
-                            <label class="block text-sm font-medium text-gray-700 mb-2">Password</label>
-                            <div class="relative">
-                                <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                                    <i class="fas fa-lock text-gray-400"></i>
-                                </div>
-                                <input name="password" type="password" id="signup-password"
-                                    class="input-focus block w-full pl-10 pr-10 py-3 border border-gray-300 rounded-lg focus:outline-none transition"
-                                    placeholder="••••••••">
-                                <p class="text-red-500" id="passwordErr"></p>
-                                <button type="button" class="absolute inset-y-0 right-0 pr-3 flex items-center">
-                                    <i class="fas fa-eye text-gray-400 hover:text-gray-600" id="eye-icon"></i>
-                                </button>
-                            </div>
-
-                        </div>
-
-                        <div>
-                            <label class="block text-sm font-medium text-gray-700 mb-2">Confirm Password</label>
-                            <div class="relative">
-                                <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                                    <i class="fas fa-lock text-gray-400"></i>
-                                </div>
-                                <input name="confirmpassword" type="password" id="confirm-password" required
-                                    class="input-focus block w-full pl-10 pr-10 py-3 border border-gray-300 rounded-lg focus:outline-none transition"
-                                    placeholder="••••••••">
-                                <p class="text-red-500" id="cpasswordErr"></p>
-                                <button type="button" class="absolute inset-y-0 right-0 pr-3 flex items-center">
-                                    <i class="fas fa-eye text-gray-400 hover:text-gray-600" id="confirm-eye-icon"></i>
-                                </button>
-                            </div>
-                        </div>
-
-                        <div>
-                            <label class="block text-sm font-medium text-gray-700 mb-2">
-                                Referral Code (Optional)
-                            </label>
-
-                            <div class="relative">
-                                <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                                    <i class="fas fa-gift text-gray-400"></i>
-                                </div>
-
-                                <input name="referralCode" type="text" id="referral-code"
-                                    class="input-focus block w-full pl-10 pr-3 py-3 border border-gray-300 rounded-lg focus:outline-none transition"
-                                    placeholder="Enter referral code">
-
-                                <p class="text-red-500" id="referralErr"></p>
-                            </div>
-                        </div>
-
-
-                        <button type="submit"
-                            class="btn-hover w-full gradient-bg text-white py-3 rounded-lg font-semibold transition duration-300">
-                            Create Account
-                        </button>
-
-                        <div class="relative my-6">
-                            <div class="absolute inset-0 flex items-center">
-                                <div class="w-full border-t border-gray-300"></div>
-                            </div>
-                            <div class="relative flex justify-center text-sm">
-                                <span class="px-4 bg-white text-gray-500">Or sign up with</span>
-                            </div>
-                        </div>
-
-                        <a href="/auth/google">
-                            <button type="button"
-                                class="w-full flex items-center justify-center gap-3 bg-white border-2 border-gray-300 text-gray-700 py-3 rounded-lg font-semibold hover:bg-gray-50 transition">
-                                <svg class="w-5 h-5" viewBox="0 0 24 24">
-                                    <path fill="#4285F4"
-                                        d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" />
-                                    <path fill="#34A853"
-                                        d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" />
-                                    <path fill="#FBBC05"
-                                        d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z" />
-                                    <path fill="#EA4335"
-                                        d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" />
-                                </svg>
-                                Sign in with Google
-                            </button>
-
-                        </a>
-
-                        <p class="text-center text-sm text-gray-600">
-                            Already have an account?
-                            <a href="/login" class="text-purple-600 hover:text-purple-700 font-semibold">
-                                Sign in
-                            </a>
-                        </p>
-                    </form>
+<body class="bg-obsidian min-h-screen text-ivory font-sans flex flex-col justify-between">
+    <!-- Navigation Bar -->
+    <nav class="border-b border-gold-light/10 bg-obsidian/90 backdrop-blur-md sticky top-0 z-50">
+        <div class="max-w-7xl mx-auto px-6 sm:px-8">
+            <div class="flex justify-between items-center h-20">
+                <div class="flex items-center space-x-3 cursor-pointer" onclick="window.location.href='/'">
+                    <img src="/img/Pasted image.png" alt="CaseCart Logo" class="h-8 w-auto object-contain rounded-md">
+                    <span class="font-display text-2xl tracking-widest text-gold-light font-light uppercase">Case Cart</span>
                 </div>
             </div>
         </div>
+    </nav>
+
+    <!-- USER SIGNUP PAGE -->
+    <div id="user-signup" class="page active flex-grow flex items-center justify-center py-12 px-6 sm:px-8">
+        <div class="max-w-md w-full animate-fade-in">
+            <div class="bg-obsidian-light border border-gold-light/5 rounded p-8 sm:p-10 shadow-2xl relative">
+                <div class="text-center mb-8">
+                    <p class="text-[10px] uppercase tracking-widest text-gold-accent font-medium mb-1">Create Account</p>
+                    <h2 class="font-display text-3xl sm:text-4xl font-light tracking-wide text-gold-light">Join CaseCart</h2>
+                    <p class="text-gray-400 text-[10px] uppercase tracking-wider mt-2">Create your online retail profile</p>
+                </div>
+
+                <form class="space-y-5" novalidate>
+                    <div class="grid grid-cols-2 gap-4">
+                        <div>
+                            <label class="block text-[10px] uppercase tracking-widest text-gold-light/80 mb-2 font-medium">First Name</label>
+                            <input name="firstname" type="text" id="first-name" required
+                                class="input-focus block w-full px-3 py-3 bg-obsidian border border-gold-light/10 rounded focus:outline-none transition text-ivory placeholder-gray-650 text-sm"
+                                placeholder="John">
+                            <p class="text-red-500 text-xs mt-1" id="fnameErr"></p>
+                        </div>
+                        <div>
+                            <label class="block text-[10px] uppercase tracking-widest text-gold-light/80 mb-2 font-medium">Last Name</label>
+                            <input name="lastname" type="text" id="last-name" required
+                                class="input-focus block w-full px-3 py-3 bg-obsidian border border-gold-light/10 rounded focus:outline-none transition text-ivory placeholder-gray-655 text-sm"
+                                placeholder="Doe">
+                            <p class="text-red-500 text-xs mt-1" id="lnameErr"></p>
+                        </div>
+                    </div>
+
+                    <div>
+                        <label class="block text-[10px] uppercase tracking-widest text-gold-light/80 mb-2 font-medium">Email Address</label>
+                        <div class="relative">
+                            <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                                <i class="fas fa-envelope text-gold-light/40 text-xs"></i>
+                            </div>
+                            <input name="email" type="email" id="email" required
+                                class="input-focus block w-full pl-10 pr-3 py-3 bg-obsidian border border-gold-light/10 rounded focus:outline-none transition text-ivory placeholder-gray-600 text-sm"
+                                placeholder="you@example.com">
+                        </div>
+                        <p class="text-red-500 text-xs mt-1" id="emailErr"></p>
+                    </div>
+
+                    <div>
+                        <label class="block text-[10px] uppercase tracking-widest text-gold-light/80 mb-2 font-medium">Phone Number</label>
+                        <div class="relative">
+                            <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                                <i class="fas fa-phone text-gold-light/40 text-xs"></i>
+                            </div>
+                            <input name="number" type="tel" id="phone" required
+                                class="input-focus block w-full pl-10 pr-3 py-3 bg-obsidian border border-gold-light/10 rounded focus:outline-none transition text-ivory placeholder-gray-600 text-sm"
+                                placeholder="+91 98765 43210">
+                        </div>
+                        <p class="text-red-500 text-xs mt-1" id="numberErr"></p>
+                    </div>
+
+                    <div>
+                        <label class="block text-[10px] uppercase tracking-widest text-gold-light/80 mb-2 font-medium">Password</label>
+                        <div class="relative">
+                            <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                                <i class="fas fa-lock text-gold-light/40 text-xs"></i>
+                            </div>
+                            <input name="password" type="password" id="signup-password" required
+                                class="input-focus block w-full pl-10 pr-10 py-3 bg-obsidian border border-gold-light/10 rounded focus:outline-none transition text-ivory placeholder-gray-600 text-sm"
+                                placeholder="••••••••">
+                            <button type="button" class="absolute inset-y-0 right-0 pr-3 flex items-center" id="toggle-signup-pwd">
+                                <i class="fas fa-eye text-gold-light/40 hover:text-gold-accent transition text-xs" id="eye-icon"></i>
+                            </button>
+                        </div>
+                        <p class="text-red-500 text-xs mt-1" id="passwordErr"></p>
+                    </div>
+
+                    <div>
+                        <label class="block text-[10px] uppercase tracking-widest text-gold-light/80 mb-2 font-medium">Confirm Password</label>
+                        <div class="relative">
+                            <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                                <i class="fas fa-lock text-gold-light/40 text-xs"></i>
+                            </div>
+                            <input name="confirmpassword" type="password" id="confirm-password" required
+                                class="input-focus block w-full pl-10 pr-10 py-3 bg-obsidian border border-gold-light/10 rounded focus:outline-none transition text-ivory placeholder-gray-600 text-sm"
+                                placeholder="••••••••">
+                            <button type="button" class="absolute inset-y-0 right-0 pr-3 flex items-center" id="toggle-confirm-pwd">
+                                <i class="fas fa-eye text-gold-light/40 hover:text-gold-accent transition text-xs" id="confirm-eye-icon"></i>
+                            </button>
+                        </div>
+                        <p class="text-red-500 text-xs mt-1" id="cpasswordErr"></p>
+                    </div>
+
+                    <div>
+                        <label class="block text-[10px] uppercase tracking-widest text-gold-light/80 mb-2 font-medium">Referral Code (Optional)</label>
+                        <div class="relative">
+                            <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                                <i class="fas fa-gift text-gold-light/40 text-xs"></i>
+                            </div>
+                            <input name="referralCode" type="text" id="referral-code"
+                                class="input-focus block w-full pl-10 pr-3 py-3 bg-obsidian border border-gold-light/10 rounded focus:outline-none transition text-ivory placeholder-gray-650 text-sm"
+                                placeholder="Enter referral code">
+                        </div>
+                        <p class="text-red-500 text-xs mt-1" id="referralErr"></p>
+                    </div>
+
+                    <button type="submit"
+                        class="w-full bg-gold-light text-obsidian py-3 rounded text-xs uppercase tracking-widest font-semibold hover:bg-gold-accent transition duration-300">
+                        Create Account
+                    </button>
+
+                    <div class="relative my-6">
+                        <div class="absolute inset-0 flex items-center">
+                            <div class="w-full border-t border-gold-light/10"></div>
+                        </div>
+                        <div class="relative flex justify-center text-[10px] uppercase tracking-widest">
+                            <span class="px-4 bg-obsidian-light text-gray-500">Or sign up with</span>
+                        </div>
+                    </div>
+
+                    <a href="/auth/google" class="block">
+                        <button type="button"
+                            class="w-full flex items-center justify-center gap-3 bg-obsidian border border-gold-light/10 text-gold-light py-3 rounded text-xs uppercase tracking-widest font-semibold hover:border-gold-accent hover:bg-gold-light/5 transition">
+                            <svg class="w-4 h-4" viewBox="0 0 24 24">
+                                <path fill="#4285F4"
+                                    d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" />
+                                <path fill="#34A853"
+                                    d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" />
+                                <path fill="#FBBC05"
+                                    d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z" />
+                                <path fill="#EA4335"
+                                    d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" />
+                            </svg>
+                            Sign in with Google
+                        </button>
+                    </a>
+
+                    <p class="text-center text-xs text-gray-400 mt-6 tracking-wide">
+                        Already have an account?
+                        <a href="/login" class="text-gold-accent hover:text-gold-light font-semibold transition ml-1">
+                            Sign in
+                        </a>
+                    </p>
+                </form>
+            </div>
+        </div>
     </div>
+
+    <!-- Footer Space -->
+    <div class="h-10"></div>
+
     <script src="https://cdn.tailwindcss.com"></script>
     <script type="module" src="/js/api.js"></script>
     <script type="module" src="/js/ui-helpers.js"></script>
     <script type="module" src="/js/user/signupValidator.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const toggleBtn = document.getElementById('toggle-signup-pwd');
+            if (toggleBtn) {
+                toggleBtn.addEventListener('click', () => {
+                    const input = document.getElementById('signup-password');
+                    const icon = document.getElementById('eye-icon');
+                    if (input.type === 'password') {
+                        input.type = 'text';
+                        icon.classList.remove('fa-eye');
+                        icon.classList.add('fa-eye-slash');
+                    } else {
+                        input.type = 'password';
+                        icon.classList.remove('fa-eye-slash');
+                        icon.classList.add('fa-eye');
+                    }
+                });
+            }
+
+            const toggleConfirmBtn = document.getElementById('toggle-confirm-pwd');
+            if (toggleConfirmBtn) {
+                toggleConfirmBtn.addEventListener('click', () => {
+                    const input = document.getElementById('confirm-password');
+                    const icon = document.getElementById('confirm-eye-icon');
+                    if (input.type === 'password') {
+                        input.type = 'text';
+                        icon.classList.remove('fa-eye');
+                        icon.classList.add('fa-eye-slash');
+                    } else {
+                        input.type = 'password';
+                        icon.classList.remove('fa-eye-slash');
+                        icon.classList.add('fa-eye');
+                    }
+                });
+            }
+        });
+    </script>
 </body>
 
 </html>

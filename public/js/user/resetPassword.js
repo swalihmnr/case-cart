@@ -76,7 +76,7 @@ document.querySelector("form").addEventListener("submit", async (event) => {
           icon: "success",
           title: "Password Updated",
           text: res.data.message,
-          confirmButtonColor: "#667eea",
+          confirmButtonColor: "#C9A84C",
         }).then(() => {
           window.location.href = res.data.redirectUrl;
         });
@@ -85,7 +85,7 @@ document.querySelector("form").addEventListener("submit", async (event) => {
           icon: "error",
           title: "Update Failed",
           text: res.data.message,
-          confirmButtonColor: "#667eea",
+          confirmButtonColor: "#C9A84C",
         });
       }
     } catch (err) {
@@ -99,7 +99,7 @@ document.querySelector("form").addEventListener("submit", async (event) => {
         icon: "error",
         title: "Error",
         text: errorMessage,
-        confirmButtonColor: "#667eea",
+        confirmButtonColor: "#C9A84C",
       });
     }
   }

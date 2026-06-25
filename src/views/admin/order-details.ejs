@@ -281,15 +281,20 @@
                                         Product Details</h4>
 
                                     <div class="flex items-center space-x-4">
-                                        <% const mainImage=order.product.productImages.find(img=> img.isMain); %>
-                                            <% if (mainImage) { %>
-                                                <img src="<%= mainImage.url %>" alt="<%= order.product.name %>"
-                                                    class="w-20 h-20 object-cover rounded-xl border border-gray-100" />
-                                                <% } else { %>
-                                                    <div
-                                                        class="w-20 h-20 bg-gray-100 rounded-xl flex items-center justify-center text-gray-400">
-                                                        No Image</div>
-                                                    <% } %>
+                                        <%
+                                          let orderDetailImageUrl = '/img/placeholder.jpg';
+                                          if (order.product && order.product.productImages && order.product.productImages.length > 0) {
+                                              const mainImg = order.product.productImages.find(img => img.isMain);
+                                              if (mainImg) orderDetailImageUrl = mainImg.url;
+                                              else if (order.product.productImages[0]) orderDetailImageUrl = order.product.productImages[0].url;
+                                          } else if (order.variant && order.variant.images && order.variant.images.length > 0) {
+                                              const mainImg = order.variant.images.find(img => img.isMain);
+                                              if (mainImg) orderDetailImageUrl = mainImg.url;
+                                              else if (order.variant.images[0]) orderDetailImageUrl = order.variant.images[0].url;
+                                          }
+                                        %>
+                                        <img src="<%= orderDetailImageUrl %>" alt="<%= order.product.name %>"
+                                             class="w-20 h-20 object-cover rounded-xl border border-gray-100" />
 
                                                         <div class="flex-1">
                                                             <h5 class="text-base font-medium text-gray-900 mb-1">
