@@ -28,7 +28,7 @@ const variantSchema = new mongoose.Schema(
     },
     brandId: {
       type: mongoose.Types.ObjectId,
-      ref: "brand",
+      ref: "Brand",
     },
     stock: {
       type: Number,

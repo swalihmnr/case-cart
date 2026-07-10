@@ -1,7 +1,10 @@
-import Category from "../../models/admin/categoryModel.js";
+import Brand from "../../models/admin/brandModel.js";
 import mongoose from "mongoose";
-// List categories with pagination and search
-const getCategory = async (req, res) => {
+import { uploadBufferTocloudnery } from "../../utils/cloudneryUpload.js";
+
+
+// List brands with pagination and search
+const getBrand = async (req, res) => {
   const search = req.query.search || "";
   const page = parseInt(req.query.page) || 1;
   let searchFilter = {};
@@ -17,15 +20,16 @@ const getCategory = async (req, res) => {
   const limit = 9;
   const skip = (page - 1) * limit;
 
-  const categories = await Category.find(searchFilter)
+  const brands = await Brand.find(searchFilter)
     .skip(skip)
     .limit(limit)
     .lean();
-  const totalItems = await Category.find(searchFilter).countDocuments();
+  const totalItems = await Brand.find(searchFilter).countDocuments();
   const totalPages = Math.ceil(totalItems / limit);
   let currentPage = page;
-  res.render("./admin/category-list", {
-    categories,
+  
+  res.render("./admin/brand-list", {
+    brands,
     totalItems,
     totalPages,
     skip,
@@ -36,50 +40,40 @@ const getCategory = async (req, res) => {
   });
 };
 
-// Create new category
-// Prevent duplicate category names
-const postCategory = async (req, res) => {
-  res.render("./admin/list-category");
-};
-
-//Render add category
-const getAddCategory = (req, res) => {
-  res.render("./admin/add-category");
+const getAddBrand = (req, res) => {
+  res.render("./admin/add-brand");
 };
 
 // ==============================
-// ADD CATEGORY (POST)
+// ADD BRAND (POST)
 // ==============================
-// Creates a new category
-// - Prevents duplicate category names
-// - Supports "Save" and "Save & Add Another" actions
-const postAddCategory = async (req, res) => {
+const postAddBrand = async (req, res) => {
   try {
-    let { categoryName, categoryDescription, action } = req.body;
+    let { brandName, brandDescription, action } = req.body;
 
-    if (!categoryName || !categoryDescription) {
+    if (!brandName || !brandDescription) {
       return res.status(400).json({
         success: false,
-        message: "Category name and description are required",
+        message: "Brand name and description are required",
       });
     }
 
-    const cleanName = categoryName.trim();
-    const cleanDescription = categoryDescription.trim();
+    const cleanName = brandName.trim();
+    const cleanDescription = brandDescription.trim();
 
     if (!cleanName) {
       return res.status(400).json({
         success: false,
-        message: "Category name cannot be empty",
+        message: "Brand name cannot be empty",
       });
     }
 
-    const nameRegex = /^[a-zA-Z0-9\s\-]{3,50}$/;
+    const nameRegex = /^[a-zA-Z0-9\s\-]{2,50}$/;
 
     if (!nameRegex.test(cleanName)) {
       return res.status(400).json({
         success: false,
-        message: "Invalid category name format",
+        message: "Invalid brand name format",
       });
     }
 
@@ -90,30 +84,36 @@ const postAddCategory = async (req, res) => {
       });
     }
 
-    const existing = await Category.findOne({
+    const existing = await Brand.findOne({
       name: { $regex: new RegExp(`^${cleanName}$`, "i") },
     });
 
     if (existing) {
       return res.status(409).json({
         success: false,
-        message: "Category already exists",
+        message: "Brand already exists",
       });
     }
 
-    const newCategory = new Category({
+    const newBrand = new Brand({
       name: cleanName,
       description: cleanDescription,
       isActive: true,
     });
 
-    await newCategory.save();
+    if (req.file) {
+      const uploadResult = await uploadBufferTocloudnery(req.file.buffer);
+      newBrand.icon = uploadResult.secure_url;
+    }
+
+
+    await newBrand.save();
 
     return res.status(200).json({
       success: true,
-      message: "Category saved successfully",
+      message: "Brand saved successfully",
       redirectUrl:
-        action === "save" ? "/admin/category" : "/admin/add-category",
+        action === "save" ? "/admin/brands" : "/admin/brands/new",
     });
   } catch (err) {
     console.error(err);
@@ -123,36 +123,29 @@ const postAddCategory = async (req, res) => {
     });
   }
 };
+
 // ==============================
-// BLOCK / UNBLOCK CATEGORY
+// BLOCK / UNBLOCK BRAND
 // ==============================
-// Toggles category active status
-// Used to hide or show category in user side
-const blockCategory = async (req, res) => {
+const blockBrand = async (req, res) => {
   try {
     let id = req.params.id;
     if (!mongoose.Types.ObjectId.isValid(id)) {
-      req.flash("error", "Invalid category.");
-      return res.redirect("/admin/category");
+      req.flash("error", "Invalid brand.");
+      return res.redirect("/admin/brands");
     }
 
     const objectId = new mongoose.Types.ObjectId(id);
-    const existing = await Category.findOne({ _id: objectId });
+    const existing = await Brand.findOne({ _id: objectId });
     if (!existing) {
       return res.status(404).json({
         success: false,
         message: "Not Founded",
       });
     } else {
-      console.log(existing.isActive);
-      if (existing.isActive) {
-        existing.isActive = false;
-        await existing.save();
-      } else {
-        existing.isActive = true;
-        await existing.save();
-      }
-      console.log(existing.isActive);
+      existing.isActive = !existing.isActive;
+      await existing.save();
+      
       return res.status(200).json({
         success: `${existing.isActive ? "Unblocked" : "Blocked"}`,
         status: existing.isActive,
@@ -164,43 +157,40 @@ const blockCategory = async (req, res) => {
 };
 
 // ==============================
-// GET EDIT CATEGORY PAGE
+// GET EDIT BRAND PAGE
 // ==============================
-// Fetch category by ID and render edit page
-const editCategory = async (req, res) => {
+const editBrand = async (req, res) => {
   let id = req.params.id;
   if (!mongoose.Types.ObjectId.isValid(id)) {
-    req.flash("error", "Invalid category.");
-    return res.redirect("/admin/category");
+    req.flash("error", "Invalid brand.");
+    return res.redirect("/admin/brands");
   }
   const objectId = new mongoose.Types.ObjectId(id);
-  let category = await Category.findOne({ _id: objectId });
-  if (!category) {
-    req.flash("error", "Category not found");
-    return res.redirect("/admin/category");
+  let brand = await Brand.findOne({ _id: objectId });
+  if (!brand) {
+    req.flash("error", "Brand not found");
+    return res.redirect("/admin/brands");
   }
-  res.render("admin/admin-edit-category", { category });
+  res.render("admin/admin-edit-brand", { brand });
 };
 
 // ==============================
-// UPDATE CATEGORY
+// UPDATE BRAND
 // ==============================
-// - Prevents duplicate names
-// - Avoids unnecessary updates
-const postEditCategory = async (req, res) => {
+const postEditBrand = async (req, res) => {
   try {
-    const { categoryName, categoryDescription } = req.body;
+    const { brandName, brandDescription } = req.body;
     const id = req.params.id;
 
     if (!mongoose.Types.ObjectId.isValid(id)) {
       return res.status(400).json({
         success: false,
-        message: "Invalid category ID",
+        message: "Invalid brand ID",
       });
     }
 
-    const cleanName = categoryName.trim();
-    const cleanDescription = categoryDescription.trim();
+    const cleanName = brandName.trim();
+    const cleanDescription = brandDescription.trim();
 
     if (cleanDescription.length < 5 || cleanDescription.length > 500) {
       return res.status(400).json({
@@ -212,21 +202,21 @@ const postEditCategory = async (req, res) => {
     if (!cleanName) {
       return res.status(400).json({
         success: false,
-        message: "Category name cannot be empty",
+        message: "Brand name cannot be empty",
       });
     }
 
-    const existing = await Category.findById(id);
+    const existing = await Brand.findById(id);
 
     if (!existing) {
       return res.status(404).json({
         success: false,
-        message: "Category not found",
+        message: "Brand not found",
       });
     }
 
     // 🔹 Duplicate check
-    const duplicate = await Category.findOne({
+    const duplicate = await Brand.findOne({
       _id: { $ne: id },
       name: { $regex: new RegExp(`^${cleanName}$`, "i") },
     });
@@ -234,14 +224,15 @@ const postEditCategory = async (req, res) => {
     if (duplicate) {
       return res.status(409).json({
         success: false,
-        message: "Category name already exists",
+        message: "Brand name already exists",
       });
     }
 
-    // 🔹 Check if nothing changed
+    // 🔹 Check if nothing changed (only if no new image)
     if (
       existing.name === cleanName &&
-      existing.description === cleanDescription
+      existing.description === cleanDescription &&
+      !req.file
     ) {
       return res.status(304).json({
         success: false,
@@ -249,15 +240,23 @@ const postEditCategory = async (req, res) => {
       });
     }
 
-    await Category.findByIdAndUpdate(id, {
+    let updateData = {
       name: cleanName,
       description: cleanDescription,
-    });
+    };
+
+    if (req.file) {
+      const uploadResult = await uploadBufferTocloudnery(req.file.buffer);
+      updateData.icon = uploadResult.secure_url;
+    }
+
+    await Brand.findByIdAndUpdate(id, updateData);
+
 
     return res.status(200).json({
       success: true,
-      message: "Category updated successfully",
-      redirectUrl: "/admin/category",
+      message: "Brand updated successfully",
+      redirectUrl: "/admin/brands",
     });
   } catch (error) {
     console.error(error);
@@ -270,11 +269,10 @@ const postEditCategory = async (req, res) => {
 };
 
 export default {
-  getCategory,
-  postCategory,
-  getAddCategory,
-  postAddCategory,
-  blockCategory,
-  editCategory,
-  postEditCategory,
+  getBrand,
+  getAddBrand,
+  postAddBrand,
+  blockBrand,
+  editBrand,
+  postEditBrand,
 };

@@ -8,20 +8,23 @@ const brandSchema = new mongoose.Schema(
     },
     description: {
       type: String,
-      required: false,
+      required: true,
     },
     isActive: {
       type: Boolean,
-      default: true,
+      required: true,
     },
     icon: {
-      type: String,
+      type: String, // Store Cloudinary URL
       required: false,
     },
   },
   {
     timestamps: true,
-  }
+  },
 );
 
-export default mongoose.model("brand", brandSchema);
+brandSchema.index({ name: "text", description: "text" });
+
+const Brand = mongoose.model("Brand", brandSchema);
+export default Brand;

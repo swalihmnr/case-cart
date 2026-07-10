@@ -66,26 +66,6 @@
                             </div>
                         </div>
                     </div>
-
-                    <!-- Product Images -->
-                    <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
-                        <h2 class="text-lg font-semibold text-gray-900 mb-6">Product Images</h2>
-                        
-                        <div>
-                            <input type="file" id="productImages" accept="image/*" multiple class="hidden" onchange="handleImagesUpload(event)">
-                            <div onclick="document.getElementById('productImages').click()" class="border-2 border-dashed border-gray-300 rounded-lg p-8 text-center hover:border-purple-400 transition-colors cursor-pointer mb-4">
-                                <svg class="mx-auto text-gray-400 mb-2" width="32" height="32" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12"></path>
-                                </svg>
-                                <p class="text-sm font-medium text-gray-700">Upload Product Images</p>
-                                <p class="text-xs text-gray-500 mt-1">PNG, JPG up to 5MB each (Multiple files)</p>
-                                <p class="text-xs text-purple-600 mt-1">First image will be the main image</p>
-                            </div>
-                            
-                            <!-- Images Preview Grid -->
-                            <div id="imagesPreview" class="grid grid-cols-2 gap-3"></div>
-                        </div>
-                    </div>
                 </div>
 
                 <!-- Right Column - Product Details -->
@@ -156,6 +136,22 @@
                 <p id="deviceNameError" class="hidden mt-1 text-sm text-red-600">Device name is required</p>
             </div>
 
+            <div>
+                <label class="block text-sm font-medium text-gray-700 mb-2">
+                    Brand <span class="text-red-500">*</span>
+                </label>
+                <select id="deviceBrand" class="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500">
+                    <option value="">Select Brand</option>
+                    <% if (typeof brands !== 'undefined' && brands.length > 0) { %>
+                        <% brands.forEach(brand => { %>
+                            <option value="<%= brand._id %>"><%= brand.name %></option>
+                        <% }) %>
+                    <% } %>
+                </select>
+                <p id="deviceBrandError" class="hidden mt-1 text-sm text-red-600">Brand is required</p>
+            </div>
+
+
             <div class="grid grid-cols-2 gap-4">
                 <div>
                     <label class="block text-sm font-medium text-gray-700 mb-2">
@@ -176,11 +172,6 @@
                 </div>
             </div>
 
-
-
-
-
-
             <div>
                 <label class="block text-sm font-medium text-gray-700 mb-2">
                     Stock <span class="text-red-500">*</span>
@@ -188,6 +179,23 @@
                 <input type="number" id="stock" placeholder="0"
                     class="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500">
                 <p id="stockError" class="hidden mt-1 text-sm text-red-600">Stock cannot be negative</p>
+            </div>
+
+            <div>
+                <label class="block text-sm font-medium text-gray-700 mb-2">
+                    Device Images (Minimum 3 required) <span class="text-red-500">*</span>
+                </label>
+                <input type="file" id="deviceImagesInput" accept="image/*" multiple class="hidden" onchange="handleImagesUpload(event)">
+                <div onclick="document.getElementById('deviceImagesInput').click()" class="border-2 border-dashed border-gray-300 rounded-lg p-4 text-center hover:border-purple-400 transition-colors cursor-pointer mb-2">
+                    <svg class="mx-auto text-gray-400 mb-1" width="24" height="24" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12"></path>
+                    </svg>
+                    <p class="text-sm font-medium text-gray-700">Upload Images</p>
+                    <p class="text-xs text-purple-600 mt-1">First image will be the main image</p>
+                </div>
+                <!-- Images Preview Grid -->
+                <div id="deviceImagesPreview" class="grid grid-cols-3 gap-2 max-h-32 overflow-y-auto"></div>
+                <p id="deviceImagesError" class="hidden mt-1 text-sm text-red-600">Upload minimum 3 images</p>
             </div>
         </div>
         

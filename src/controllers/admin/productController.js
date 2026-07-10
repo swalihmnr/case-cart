@@ -1,8 +1,10 @@
 import productModel from "../../models/admin/productModel.js";
 import offerModel from "../../models/admin/offerModel.js";
 import Category from "../../models/admin/categoryModel.js";
+import Brand from "../../models/admin/brandModel.js";
 import wishlistModel from "../../models/wishlistModel.js";
 import variantModel from "../../models/admin/variantModel.js";
+
 import mongoose from "mongoose";
 import discountChecker from "../../utils/calculateDiscount.js";
 import { STATUS_CODES } from "../../utils/statusCodes.js";
@@ -68,9 +70,13 @@ const getProductList = async (req, res) => {
 // ==============================
 // Fetch categories and render product creation page
 const getAddproduct = async (req, res) => {
-  const categories = await Category.find();
+  const [categories, brands] = await Promise.all([
+    Category.find({ isActive: true }),
+    Brand.find({ isActive: true })
+  ]);
   res.render("./admin/add-product-&-variant", {
     categories,
+    brands
   });
 };
 
@@ -99,9 +105,10 @@ const getProductEdit = async (req, res) => {
       return res.redirect("/admin/product-list");
     }
 
-    const [product, categories] = await Promise.all([
-      productModel.findById(id).populate(["catgId", "variants"]),
-      Category.find(),
+    const [product, categories, brands] = await Promise.all([
+      productModel.findById(id).populate(["catgId", { path: "variants", populate: { path: "brandId" } }]),
+      Category.find({ isActive: true }),
+      Brand.find({ isActive: true })
     ]);
 
     if (!product) {
@@ -112,6 +119,7 @@ const getProductEdit = async (req, res) => {
     res.render("admin/edit-product", {
       product,
       categories,
+      brands
     });
   } catch (error) {
     console.error(error);
@@ -215,15 +223,6 @@ const getProduct = async (req, res) => {
               $sortArray: {
                 input: "$variants",
                 sortBy: { salePrice: 1 },
-              },
-            },
-          },
-          mainImage: {
-            $first: {
-              $filter: {
-                input: "$productImages",
-                as: "img",
-                cond: { $eq: ["$$img.isMain", true] },
               },
             },
           },
@@ -373,49 +372,55 @@ const getProduct = async (req, res) => {
 // - Create product & variants
 const postAddproduct = async (req, res) => {
   try {
-    if (req.files.length < 3) {
-      return res.status(400).json({
-        success: false,
-        message: "upload minimum three images",
+    const {
+      productName,
+      description,
+      category,
+      status,
+      devices,
+    } = req.body;
+    
+    const existing = await productModel.findOne({ name: productName });
+    if (!existing) {
+      const newProduct = await productModel.create({
+        name: productName,
+        description: description,
+        productStatus: status === "active" ? true : false,
+        catgId: new mongoose.Types.ObjectId(category),
       });
-    } else {
-      const {
-        productName,
-        description,
-        category,
-        status,
-        devices,
-        mainImageIndex,
-      } = req.body;
-      const existing = await productModel.findOne({ name: productName });
-      if (!existing) {
-        const uploadResults = await Promise.all(
-          req.files.map((file) => uploadBufferTocloudnery(file.buffer)),
-        );
-        const productImgUrls = uploadResults.map((upload, index) => ({
-          url: upload.secure_url,
-          publicId: upload.public_id,
-          isMain: Number(mainImageIndex) === index,
-        }));
+      
+      const parsedDevices = JSON.parse(devices);
+      
+      const variants = await variantModel.insertMany(
+        await Promise.all(parsedDevices.map(async (v, index) => {
+          // Process files for this specific variant
+          const deviceFiles = req.files ? req.files.filter(f => f.fieldname === `images_${index}`) : [];
+          const mainImgIndex = req.body[`mainImageIndex_${index}`] || 0;
+          
+          let variantImages = [];
+          if (deviceFiles.length > 0) {
+            const uploadResults = await Promise.all(
+              deviceFiles.map((file) => uploadBufferTocloudnery(file.buffer))
+            );
+            variantImages = uploadResults.map((upload, i) => ({
+              url: upload.secure_url,
+              publicId: upload.public_id,
+              isMain: Number(mainImgIndex) === i,
+            }));
+          }
 
-        const newProduct = await productModel.create({
-          name: productName,
-          description: description,
-          productStatus: status === "active" ? true : false,
-          catgId: new mongoose.Types.ObjectId(category),
-          productImages: productImgUrls,
-        });
-        const parsedDevices = JSON.parse(devices);
-        const variants = await variantModel.insertMany(
-          parsedDevices.map((v) => ({
+          return {
             productId: newProduct._id,
             deviceModel: v.name,
+            brandId: v.brandId,
             orgPrice: v.originalPrice,
             salePrice: v.salePrice,
             stock: v.stock,
             discount: v.discount,
-          })),
-        );
+            images: variantImages,
+          };
+        }))
+      );
         newProduct.variants = variants.map((v) => {
           return v._id;
         });
@@ -434,11 +439,11 @@ const postAddproduct = async (req, res) => {
           message: "Product already existing",
         });
       }
+    } catch (error) {
+      console.log(error);
+      return res.status(500).json({ success: false, message: "Internal server error" });
     }
-  } catch (error) {
-    console.log(error);
-  }
-};
+  };
 // ==============================
 // EDIT PRODUCT IMAGE
 // ==============================
@@ -446,16 +451,16 @@ const postAddproduct = async (req, res) => {
 const productImageEdit = async (req, res) => {
   try {
     const { imageId } = req.body;
-    const productId = req.params.id;
-    const objectId = new mongoose.Types.ObjectId(productId);
-    const existing = await productModel.findOne({ _id: objectId });
+    const variantId = req.params.id; // now represents variant ID
+    const objectId = new mongoose.Types.ObjectId(variantId);
+    const existing = await variantModel.findOne({ _id: objectId });
     if (!existing) {
       return res.status(404).json({
         success: false,
-        message: "product not exists",
+        message: "variant not exists",
       });
     }
-    const index = existing.productImages.findIndex((img) => {
+    const index = existing.images.findIndex((img) => {
       return img._id == imageId;
     });
     if (index === -1) {
@@ -472,7 +477,7 @@ const productImageEdit = async (req, res) => {
       });
     }
     const cloudUrl = await uploadBufferTocloudnery(req.file.buffer);
-    existing.productImages[index].url = cloudUrl.secure_url;
+    existing.images[index].url = cloudUrl.secure_url;
     await existing.save();
     return res.status(200).json({
       success: true,
@@ -503,6 +508,8 @@ const getDetialProduct = async (req, res) => {
 
     let relatedProducts = await productModel
       .find({ catgId: product.catgId, _id: { $ne: product._id } })
+      .populate("catgId")
+      .populate("variants")
       .limit(4);
     if (relatedProducts.length < 4) {
       const remains = 4 - relatedProducts.length;
@@ -515,6 +522,8 @@ const getDetialProduct = async (req, res) => {
           catgId: { $ne: product.catgId },
           _id: { $nin: excludeCatgIds },
         })
+        .populate("catgId")
+        .populate("variants")
         .limit(remains);
       relatedProducts = [...relatedProducts, ...defCatgProduct];
     }
@@ -679,24 +688,26 @@ const blockProduct = async (req, res) => {
 // Only one main image allowed
 const imgSetMain = async (req, res) => {
   try {
-    const proudctId = req.params.id;
-    const objectId = new mongoose.Types.ObjectId(proudctId);
+    const variantId = req.params.id; // now represents variant ID
+    const objectId = new mongoose.Types.ObjectId(variantId);
     const { imgIndx } = req.body;
-    const existing = await productModel.findOne({ _id: objectId });
+    const existing = await variantModel.findOne({ _id: objectId });
     if (!existing) {
       return res.status(STATUS_CODES.NOT_FOUND).json({
         success: false,
-        message: "product not exists",
+        message: "variant not exists",
       });
     }
-    for (let i = 0; i < existing.productImages.length; i++) {
+    for (let i = 0; i < existing.images.length; i++) {
       if (i === Number(imgIndx) - 1) {
-        if (existing.productImages[i].isMain !== true) {
-          const existMainRemove = existing.productImages.findIndex(
+        if (existing.images[i].isMain !== true) {
+          const existMainRemove = existing.images.findIndex(
             (img) => img.isMain === true,
           );
-          existing.productImages[existMainRemove].isMain = false;
-          existing.productImages[i].isMain = true;
+          if(existMainRemove !== -1) {
+             existing.images[existMainRemove].isMain = false;
+          }
+          existing.images[i].isMain = true;
           await existing.save();
           return res.status(200).json({
             success: true,
@@ -722,13 +733,13 @@ const imgSetMain = async (req, res) => {
 // Image stored in Cloudinary
 const productImageUpload = async (req, res) => {
   try {
-    const id = req.params.id;
+    const id = req.params.id; // now represents variant ID
     const objectId = new mongoose.Types.ObjectId(id);
-    const existing = await productModel.findById(objectId);
+    const existing = await variantModel.findById(objectId);
     if (!existing) {
       return res.status(404).json({
         success: false,
-        message: "product not exists",
+        message: "variant not exists",
       });
     }
     if (!req.file) {
@@ -737,9 +748,9 @@ const productImageUpload = async (req, res) => {
         message: "Image not selected",
       });
     }
-    if (existing.productImages.length < 5) {
+    if (existing.images.length < 5) {
       const cloudUrl = await uploadBufferTocloudnery(req.file.buffer);
-      existing.productImages.push({
+      existing.images.push({
         url: cloudUrl.secure_url,
         publicId: cloudUrl.public_id,
         isMain: false,
@@ -766,17 +777,17 @@ const productImageUpload = async (req, res) => {
 // Deletes image except main image
 const editImgDelete = async (req, res) => {
   try {
-    const Id = req.params.id;
+    const Id = req.params.id; // now represents variant ID
     const { id } = req.body;
     const objectId = new mongoose.Types.ObjectId(Id);
-    const existing = await productModel.findOne({ _id: objectId });
+    const existing = await variantModel.findOne({ _id: objectId });
     if (!existing) {
       return res.status(404).json({
         success: false,
-        message: "product not exists",
+        message: "variant not exists",
       });
     }
-    const index = existing.productImages.findIndex(
+    const index = existing.images.findIndex(
       (v) => v._id.toString() === id,
     );
     if (index === -1) {
@@ -785,14 +796,14 @@ const editImgDelete = async (req, res) => {
         message: "Image not founded",
       });
     }
-    if (existing.productImages[index].isMain !== true) {
-      if (existing.productImages.length <= 3) {
+    if (existing.images[index].isMain !== true) {
+      if (existing.images.length <= 3) {
         return res.status(400).json({
           success: false,
-          message: "A minimum of 3 images is required for each product",
+          message: "A minimum of 3 images is required for each variant",
         });
       }
-      existing.productImages.splice(index, 1);
+      existing.images.splice(index, 1);
       await existing.save();
       return res.status(200).json({
         success: true,
@@ -878,7 +889,7 @@ const passVariantData = async (req, res) => {
 // Validates price logic and updates variant
 const postEditVariantSave = async (req, res) => {
   try {
-    const { deviceModel, stock, orgPrice, salePrice } = req.body;
+    const { deviceModel, brandId, stock, orgPrice, salePrice } = req.body;
     const id = req.params.id;
     const objectId = new mongoose.Types.ObjectId(id);
     const existing = await variantModel.findById(objectId);
@@ -899,6 +910,7 @@ const postEditVariantSave = async (req, res) => {
       objectId,
       {
         deviceModel: deviceModel,
+        brandId: brandId,
         stock: stock,
         orgPrice: orgPrice,
         salePrice: salePrice,
@@ -908,6 +920,9 @@ const postEditVariantSave = async (req, res) => {
     console.log(result);
     let isflag = false;
     if (existing.deviceModel !== result.deviceModel) {
+      isflag = true;
+    }
+    if (existing.brandId?.toString() !== result.brandId?.toString()) {
       isflag = true;
     }
     if (existing.stock !== result.stock) {
@@ -976,7 +991,7 @@ const patchListUnlist = async (req, res) => {
 // Creates a new variant and associates it with the product
 const postAddVariant = async (req, res) => {
   try {
-    const { deviceModel, stock, orgPrice, salePrice } = req.body;
+    const { deviceModel, brandId, stock, orgPrice, salePrice } = req.body;
     const productId = req.params.id;
 
     if (!mongoose.Types.ObjectId.isValid(productId)) {
@@ -1014,12 +1029,26 @@ const postAddVariant = async (req, res) => {
       });
     }
 
+    let images = [];
+    if (req.files && req.files.length > 0) {
+      const uploadResults = await Promise.all(
+        req.files.map((file) => uploadBufferTocloudnery(file.buffer))
+      );
+      images = uploadResults.map((upload, index) => ({
+        url: upload.secure_url,
+        publicId: upload.public_id,
+        isMain: index === 0, // First image is main
+      }));
+    }
+
     const newVariant = await variantModel.create({
       productId: productId,
       deviceModel,
+      brandId,
       stock,
       orgPrice,
       salePrice,
+      images,
     });
 
     product.variants.push(newVariant._id);

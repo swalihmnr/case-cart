@@ -198,20 +198,20 @@ const userProfileImgUplaoderAxios = async (file) => {
 };
 
 const addWishlistAxios = async (productId, variant) => {
-  return await api.post("/product/wishlist/add", {
+  return await api.post("/wishlist", {
     productId,
     variant,
   });
 };
 const toggleWishlistAxios = async (productId, variant) => {
-  return await api.patch("/product/wishlist/toggle", {
+  return await api.patch("/wishlist/toggle", {
     productId,
     variant,
   });
 };
 const remWishlistAxios = async (id) => {
   try {
-    return await api.delete(`/product/wishlist/${id}/rem`);
+    return await api.delete(`/wishlist/${id}`);
   } catch (error) {
     console.log(error.response + "Axios error");
     return error.response;
@@ -236,7 +236,7 @@ const getVariantDataAxios = async (productId, variantId) => {
 
 const addToCartAxios = async (productId, variantId) => {
   try {
-    return await api.patch(`/cart/add`, {
+    return await api.post(`/cart`, {
       variantId,
       productId,
     });
@@ -249,7 +249,7 @@ const addToCartAxios = async (productId, variantId) => {
 };
 const quantityUpdateAxios = async (cartId, change) => {
   try {
-    return await api.patch(`/cart/quantity/${cartId}`, {
+    return await api.patch(`/cart/${cartId}/quantity`, {
       change,
     });
   } catch (error) {
@@ -257,7 +257,7 @@ const quantityUpdateAxios = async (cartId, change) => {
   }
 };
 const removeFromCartAxios = async (productId, variantId) => {
-  return api.patch(`/product/cart/${productId}`);
+  return api.delete(`/cart/${productId}`);
 };
 
 const addAddressAxios = async (data) => {

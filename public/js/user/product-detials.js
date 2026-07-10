@@ -207,6 +207,24 @@ async function selectVariant(productId, variantId) {
   if (salePriceField) salePriceField.innerText = `₹${resVariant.data.salePrice}`;
   if (orgPriceField) orgPriceField.innerText = `₹${resVariant.data.orgPrice}`;
 
+  // Update images
+  if (resVariant.data.images && resVariant.data.images.length > 0) {
+    const mainImgObj = resVariant.data.images.find(img => img.isMain) || resVariant.data.images[0];
+    mainImage.src = mainImgObj.url;
+    currentImage = mainImgObj.url;
+    
+    // Update thumbnails
+    const thumbContainer = document.querySelector('.thumbnail-horizontal');
+    if (thumbContainer) {
+      thumbContainer.innerHTML = resVariant.data.images.map((img) => `
+        <div class="thumbnail-item ${img.isMain ? 'active' : ''}"
+            onclick="changeMainImage('${img.url}', this)">
+            <img src="${img.url}" alt="Thumbnail">
+        </div>
+      `).join('');
+    }
+  }
+
   const stockCountEl = document.getElementById("stock-count");
   if (stockCountEl) {
     if (resVariant.data.stock <= 0) {

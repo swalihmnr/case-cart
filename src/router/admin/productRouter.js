@@ -8,7 +8,7 @@ router.use(requiredAdmin);
 router.get("/add-product", productController.getAddproduct);
 router.post(
   "/add-product",
-  upload.array("images", 5),
+  upload.any(),
   addProductValidation,
   productController.postAddproduct,
 );
@@ -41,6 +41,7 @@ router.put(
 );
 router.post(
   "/product/edit/:id/add-variant",
+  upload.array("images", 5),
   productController.postAddVariant,
 );
 router.patch(

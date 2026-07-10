@@ -230,7 +230,7 @@ window.showOrderDetails = function (orderId, productId, orderItemId) {
     <div class="mb-6">
       <h4 class="font-semibold text-gray-800 mb-4">ORDER ITEM</h4>
       <div class="flex items-start space-x-4 bg-gray-50 p-4 rounded-lg">
-        <img src="${order.product.productImages.find((img) => img.isMain).url}" 
+        <img src="${order.variant?.images?.find((img) => img.isMain)?.url || '/img/placeholder.jpg'}" 
              class="w-16 h-16 object-cover rounded-lg flex-shrink-0">
         <div class="flex-1">
           <h5 class="font-medium text-gray-800">${order.product.name}</h5>

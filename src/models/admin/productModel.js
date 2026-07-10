@@ -33,22 +33,6 @@ let produtSchema = new mongoose.Schema(
         required: true,
       },
     ],
-    productImages: [
-      {
-        url: {
-          type: String,
-          required: true,
-        },
-        publicId: {
-          type: String,
-          required: true,
-        },
-        isMain: {
-          type: Boolean,
-          default: false,
-        },
-      },
-    ],
   },
   { timestamps: true },
 );

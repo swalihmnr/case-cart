@@ -4,44 +4,48 @@ import User from "../models/userModel.js";
 import dotenv from "dotenv";
 import refferalCode from "../utils/randomNumberGerator.js";
 dotenv.config();
-passport.use(
-  new GoogleStrategy(
-    {
-      clientID: process.env.GOOGLE_CLIENT_ID,
-      clientSecret: process.env.GOOGLE_CLIENT_SECRET,
-      callbackURL: process.env.GOOGLE_CALLBACK_URL,
-      proxy: true,
-    },
-    async (accessToken, refreshToken, profile, done) => {
-      try {
-        const email = profile.emails[0].value;
+if (process.env.GOOGLE_CLIENT_ID && process.env.GOOGLE_CLIENT_SECRET && process.env.GOOGLE_CLIENT_ID.trim() !== "" && process.env.GOOGLE_CLIENT_SECRET.trim() !== "") {
+  passport.use(
+    new GoogleStrategy(
+      {
+        clientID: process.env.GOOGLE_CLIENT_ID,
+        clientSecret: process.env.GOOGLE_CLIENT_SECRET,
+        callbackURL: process.env.GOOGLE_CALLBACK_URL,
+        proxy: true,
+      },
+      async (accessToken, refreshToken, profile, done) => {
+        try {
+          const email = profile.emails[0].value;
 
-        let existingUser = await User.findOne({ email });
+          let existingUser = await User.findOne({ email });
 
-        if (!existingUser) {
-          const newUser = await User.create({
-            firstName: profile.name.givenName,
-            lastName: profile.name.familyName,
-            email: email,
-            password: "google-auth",
-            number: null,
-            isVerified: true,
-            profileImg: profile.photos[0].value,
-            referralCode: `${profile.name.familyName}${refferalCode()}`
-              .toUpperCase()
-              .trim(),
-          });
+          if (!existingUser) {
+            const newUser = await User.create({
+              firstName: profile.name.givenName,
+              lastName: profile.name.familyName,
+              email: email,
+              password: "google-auth",
+              number: null,
+              isVerified: true,
+              profileImg: profile.photos[0].value,
+              referralCode: `${profile.name.familyName}${refferalCode()}`
+                .toUpperCase()
+                .trim(),
+            });
 
-          return done(null, newUser);
+            return done(null, newUser);
+          }
+          console.log("existing user enter again");
+          return done(null, existingUser);
+        } catch (err) {
+          return done(err, null);
         }
-        console.log("existing user enter again");
-        return done(null, existingUser);
-      } catch (err) {
-        return done(err, null);
-      }
-    },
-  ),
-);
+      },
+    ),
+  );
+} else {
+  console.warn("Google OAuth credentials are not fully configured. Google sign-in strategy registration skipped.");
+}
 
 passport.serializeUser((user, done) => {
   done(null, user._id);

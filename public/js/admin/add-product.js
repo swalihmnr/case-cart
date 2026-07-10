@@ -6,8 +6,11 @@ const UPLOAD_CONFIG = {
   MAX_FILE_SIZE: 5 * 1024 * 1024, // 5MB
   ALLOWED_TYPES: ["image/jpeg", "image/png", "image/webp", "image/gif"],
 };
+
 let devices = [];
-let productImages = [];
+
+// Image state for the currently open device modal
+let currentDeviceImages = [];
 let currentCropper = null;
 let currentFile = null;
 let currentFileIndex = 0;
@@ -20,6 +23,7 @@ window.cropAndSave = cropAndSave;
 window.renderImagePreviews = renderImagePreviews;
 window.removeImage = removeImage;
 window.setMainImage = setMainImage;
+
 window.openDeviceModal = openDeviceModal;
 window.closeDeviceModal = closeDeviceModal;
 window.addDevice = addDevice;
@@ -32,10 +36,10 @@ function handleImagesUpload(event) {
   if (!files.length) return;
 
   // Check max image limit
-  const totalImages = productImages.length + files.length;
+  const totalImages = currentDeviceImages.length + files.length;
   if (totalImages > UPLOAD_CONFIG.MAX_IMAGES) {
     alert(`You can upload only ${UPLOAD_CONFIG.MAX_IMAGES} images.
-You already have ${productImages.length}, and selected ${files.length} more.`);
+You already have ${currentDeviceImages.length}, and selected ${files.length} more.`);
     event.target.value = "";
     return;
   }
@@ -66,7 +70,7 @@ You already have ${productImages.length}, and selected ${files.length} more.`);
 
 function processNextImage() {
   if (currentFileIndex >= pendingFiles.length) {
-    document.getElementById("productImages").value = "";
+    document.getElementById("deviceImagesInput").value = "";
     return;
   }
 
@@ -172,10 +176,10 @@ function cropAndSave() {
         const imageData = {
           file: croppedFile,
           preview: URL.createObjectURL(blob),
-          isMain: productImages.length === 0,
+          isMain: currentDeviceImages.length === 0,
         };
 
-        productImages.push(imageData);
+        currentDeviceImages.push(imageData);
         renderImagePreviews();
 
         // Process next image
@@ -196,36 +200,35 @@ function cropAndSave() {
   }
 }
 
-// Rest of your functions remain the same...
 function renderImagePreviews() {
-  const container = document.getElementById("imagesPreview");
+  const container = document.getElementById("deviceImagesPreview");
   container.innerHTML = "";
 
-  productImages.forEach((img, index) => {
+  currentDeviceImages.forEach((img, index) => {
     const div = document.createElement("div");
     div.className = "relative group";
     div.innerHTML = `
-            <img src="${img.preview}" alt="Product ${index + 1}" 
-                 class="w-full h-32 object-cover rounded-lg border-2 ${img.isMain ? "border-purple-500" : "border-gray-200"}">
+            <img src="${img.preview}" alt="Device ${index + 1}" 
+                 class="w-full h-20 object-cover rounded-lg border-2 ${img.isMain ? "border-purple-500" : "border-gray-200"}">
             ${img.isMain
         ? `
-                <span class="absolute top-2 left-2 bg-purple-600 text-white text-xs px-2 py-1 rounded">
-                    Main Image
+                <span class="absolute top-1 left-1 bg-purple-600 text-white text-[10px] px-1 py-0.5 rounded">
+                    Main
                 </span>
             `
         : ""
       }
             <button onclick="removeImage(${index})" 
-                    class="absolute top-2 right-2 bg-red-500 text-white p-1 rounded-full opacity-0 group-hover:opacity-100 transition-opacity">
-                <svg width="16" height="16" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    class="absolute top-1 right-1 bg-red-500 text-white p-1 rounded-full opacity-0 group-hover:opacity-100 transition-opacity">
+                <svg width="12" height="12" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
                 </svg>
             </button>
             ${!img.isMain
         ? `
                 <button onclick="setMainImage(${index})" 
-                        class="absolute bottom-2 left-2 bg-white text-purple-600 text-xs px-2 py-1 rounded border border-purple-600 opacity-0 group-hover:opacity-100 transition-opacity">
-                    Set as Main
+                        class="absolute bottom-1 left-1 bg-white text-purple-600 text-[10px] px-1 py-0.5 rounded border border-purple-600 opacity-0 group-hover:opacity-100 transition-opacity">
+                    Set Main
                 </button>
             `
         : ""
@@ -236,18 +239,18 @@ function renderImagePreviews() {
 }
 
 function removeImage(index) {
-  URL.revokeObjectURL(productImages[index].preview);
-  productImages.splice(index, 1);
+  URL.revokeObjectURL(currentDeviceImages[index].preview);
+  currentDeviceImages.splice(index, 1);
 
-  if (productImages.length > 0 && !productImages.some((img) => img.isMain)) {
-    productImages[0].isMain = true;
+  if (currentDeviceImages.length > 0 && !currentDeviceImages.some((img) => img.isMain)) {
+    currentDeviceImages[0].isMain = true;
   }
 
   renderImagePreviews();
 }
 
 function setMainImage(index) {
-  productImages.forEach((img, i) => {
+  currentDeviceImages.forEach((img, i) => {
     img.isMain = i === index;
   });
   renderImagePreviews();
@@ -268,22 +271,32 @@ function closeDeviceModal() {
 
 function clearDeviceForm() {
   document.getElementById("deviceName").value = "";
+  document.getElementById("deviceBrand").value = "";
   document.getElementById("originalPrice").value = "";
   document.getElementById("salePrice").value = "";
   document.getElementById("stock").value = "";
+  document.getElementById("deviceImagesInput").value = "";
+  
+  currentDeviceImages = [];
+  renderImagePreviews();
 
   [
     "deviceNameError",
+    "deviceBrandError",
     "originalPriceError",
     "salePriceError",
     "stockError",
+    "deviceImagesError",
   ].forEach((id) => {
-    document.getElementById(id).classList.add("hidden");
+    if (document.getElementById(id)) {
+      document.getElementById(id).classList.add("hidden");
+    }
   });
 }
 
 function addDevice() {
   const deviceName = document.getElementById("deviceName").value.trim();
+  const deviceBrand = document.getElementById("deviceBrand").value;
   const originalPrice = parseFloat(
     document.getElementById("originalPrice").value,
   );
@@ -304,6 +317,13 @@ function addDevice() {
     isValid = false;
   } else {
     document.getElementById("deviceNameError").classList.add("hidden");
+  }
+
+  if (!deviceBrand) {
+    document.getElementById("deviceBrandError").classList.remove("hidden");
+    isValid = false;
+  } else {
+    document.getElementById("deviceBrandError").classList.add("hidden");
   }
 
   if (!originalPrice || originalPrice <= 0) {
@@ -338,15 +358,24 @@ function addDevice() {
     document.getElementById("stockError").classList.add("hidden");
   }
 
+  if (currentDeviceImages.length < UPLOAD_CONFIG.MIN_IMAGES) {
+    document.getElementById("deviceImagesError").classList.remove("hidden");
+    isValid = false;
+  } else {
+    document.getElementById("deviceImagesError").classList.add("hidden");
+  }
+
   if (!isValid) return;
 
   const device = {
     id: Date.now(),
     name: deviceName,
+    brandId: deviceBrand,
     originalPrice,
     salePrice,
     stock,
     discount: Math.round(((originalPrice - salePrice) / originalPrice) * 100),
+    images: [...currentDeviceImages],
   };
 
   devices.push(device);
@@ -393,6 +422,10 @@ function renderDevices() {
                 <div class="flex justify-between">
                     <span class="text-gray-600">Stock:</span>
                     <span class="text-gray-900">${device.stock} units</span>
+                </div>
+                <div class="flex justify-between">
+                    <span class="text-gray-600">Images:</span>
+                    <span class="text-gray-900">${device.images.length} images</span>
                 </div>
             </div>
         </div>
@@ -465,13 +498,26 @@ async function createProduct() {
   formData.append("description", description);
   formData.append("category", category);
   formData.append("status", status);
-  formData.append("devices", JSON.stringify(devices));
+  
+  // We need to send devices JSON without the large image objects
+  const devicesWithoutImages = devices.map(d => ({
+    name: d.name,
+    brandId: d.brandId,
+    originalPrice: d.originalPrice,
+    salePrice: d.salePrice,
+    stock: d.stock,
+    discount: d.discount
+  }));
+  formData.append("devices", JSON.stringify(devicesWithoutImages));
 
-  productImages.forEach((img, index) => {
-    formData.append(`images`, img.file);
-    if (img.isMain) {
-      formData.append("mainImageIndex", index);
-    }
+  // Append images for each device separately
+  devices.forEach((device, dIndex) => {
+    device.images.forEach((img, iIndex) => {
+      formData.append(`images_${dIndex}`, img.file);
+      if (img.isMain) {
+        formData.append(`mainImageIndex_${dIndex}`, iIndex);
+      }
+    });
   });
 
   try {
