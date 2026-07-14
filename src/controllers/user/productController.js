@@ -211,13 +211,19 @@ const getProduct = async (req, res) => {
     let user = false;
     const today = new Date();
 
+    const activeOffers = await offerModel.find({
+      status: "active",
+      startDate: { $lte: today },
+      endDate: { $gte: today },
+    });
+
     const products = await Promise.all(
       result[0].data.map(async (p) => {
         const offerResult = await calculateBestItemOffer({
           product: p,
           variant: p.minVariant,
           quantity: 1,
-        });
+        }, activeOffers);
 
         return {
           ...p,

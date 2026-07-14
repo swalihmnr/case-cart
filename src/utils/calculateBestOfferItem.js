@@ -1,6 +1,6 @@
 import offerModel from "../models/admin/offerModel.js";
 
-const calculateBestItemOffer = async (item) => {
+const calculateBestItemOffer = async (item, activeOffers = null) => {
   const orgPrice = item.variant.orgPrice;
   const salePrice = item.variant.salePrice;
   const quantity = item.quantity;
@@ -17,16 +17,33 @@ const calculateBestItemOffer = async (item) => {
   let bestOfferDiscountPerUnit = 0;
   let bestOffer = null;
 
-  const offers = await offerModel.find({
-    status: "active",
-    startDate: { $lte: new Date() },
-    endDate: { $gte: new Date() },
-    $or: [
-      
-      { applicableOn: "product", productIds: { $in: [item.product._id] } },
-      { applicableOn: "category", categoryIds: { $in: [item.product.catgId] } },
-    ],
-  });
+  let offers;
+  if (activeOffers) {
+    const prodId = (item.product._id || item.product).toString();
+    const catId = (item.product.catgId?._id || item.product.catgId)?.toString();
+
+    offers = activeOffers.filter(offer => {
+      const isProductApplicable = offer.applicableOn === "product" &&
+        offer.productIds &&
+        offer.productIds.some(id => id.toString() === prodId);
+
+      const isCategoryApplicable = offer.applicableOn === "category" &&
+        offer.categoryIds &&
+        offer.categoryIds.some(id => id.toString() === catId);
+
+      return isProductApplicable || isCategoryApplicable;
+    });
+  } else {
+    offers = await offerModel.find({
+      status: "active",
+      startDate: { $lte: new Date() },
+      endDate: { $gte: new Date() },
+      $or: [
+        { applicableOn: "product", productIds: { $in: [item.product._id] } },
+        { applicableOn: "category", categoryIds: { $in: [item.product.catgId] } },
+      ],
+    });
+  }
 
   console.log("Found offers:", offers.length);
 

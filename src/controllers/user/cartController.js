@@ -23,6 +23,11 @@ const getCart = async (req, res) => {
         path: "productId",
         populate: { path: "catgId", model: "Category" },
       });
+    const activeOffers = await offerModel.find({
+      status: "active",
+      startDate: { $lte: new Date() },
+      endDate: { $gte: new Date() },
+    });
 
     let subtotal = 0;
     let totalDiscount = 0;
@@ -41,7 +46,7 @@ const getCart = async (req, res) => {
         product: item.productId,
         variant: item.variantId,
         quantity: item.quantity,
-      });
+      }, activeOffers);
       const finalUnitPrice = offerResult.finalPrice;
       const usedDiscountPerUnit = offerResult.discountAmount;
 
@@ -297,6 +302,11 @@ const cartQuantityUpdate = async (req, res) => {
         path: "productId",
         populate: { path: "catgId", model: "Category" },
       });
+    const activeOffers = await offerModel.find({
+      status: "active",
+      startDate: { $lte: new Date() },
+      endDate: { $gte: new Date() },
+    });
 
     let subtotal = 0;
     let totalDiscount = 0;
@@ -314,7 +324,7 @@ const cartQuantityUpdate = async (req, res) => {
         product: item.productId,
         variant: item.variantId,
         quantity: item.quantity,
-      });
+      }, activeOffers);
       const finalUnitPrice = offerResult.finalPrice;
       const usedDiscountPerUnit = offerResult.discountAmount;
 

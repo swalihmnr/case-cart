@@ -303,6 +303,12 @@ const ordConfirmation = async (req, res) => {
     }
     console.log("Original Subtotal:", subtotal);
 
+    const activeOffers = await offerModel.find({
+      status: "active",
+      startDate: { $lte: new Date() },
+      endDate: { $gte: new Date() },
+    });
+
     // Then calculate offers for each item
     for (const item of items) {
       const quantity = item.quantity;
@@ -311,7 +317,7 @@ const ordConfirmation = async (req, res) => {
         quantity,
         variant: item.variant,
         product: item.product,
-      });
+      }, activeOffers);
 
       const totalItemDiscount = offerResult.discountAmount * quantity;
       const totalItemFinal = offerResult.finalPrice * quantity;

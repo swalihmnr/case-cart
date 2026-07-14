@@ -6,6 +6,7 @@ import calculateBestItemOffer from "../../utils/calculateBestOfferItem.js";
 import addressModel from "../../models/addressModel.js";
 import variantModel from "../../models/admin/variantModel.js";
 import { STATUS_CODES } from "../../utils/statusCodes.js";
+import offerModel from "../../models/admin/offerModel.js";
 // ==============================
 // GET CHECKOUT PAGE
 // ==============================
@@ -16,6 +17,11 @@ const getCheckout = async (req, res) => {
     if (!req.session || !req.session.user || !req.session.user.id) {
       return res.redirect("/login");
     }
+    const activeOffers = await offerModel.find({
+      status: "active",
+      startDate: { $lte: new Date() },
+      endDate: { $gte: new Date() },
+    });
     let cartItems = [];
     let subtotal = 0; // ORIGINAL TOTAL
     let offerDiscountTotal = 0;
@@ -146,7 +152,7 @@ const getCheckout = async (req, res) => {
         const orgTotal = item.variant.orgPrice * item.quantity;
         subtotal += orgTotal;
 
-        const offerResult = await calculateBestItemOffer(item);
+        const offerResult = await calculateBestItemOffer(item, activeOffers);
 
         const totalItemDiscount = offerResult.discountAmount * item.quantity;
         const totalItemFinal = offerResult.finalPrice * item.quantity;
@@ -299,7 +305,7 @@ const getCheckout = async (req, res) => {
         product: item.product,
         variant: item.variant,
         quantity: 1,
-      });
+      }, activeOffers);
 
       // Set item properties
       item.offerDiscount = offerResult.discountAmount;
