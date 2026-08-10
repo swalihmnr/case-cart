@@ -96,16 +96,17 @@
                                             if (mainImg) itemImageUrl = mainImg.url;
                                             else if (item.variant.images[0]) itemImageUrl = item.variant.images[0].url;
                                         }
+                                        const itemName = item.product ? item.product.name : (item.name || 'Product Item');
                                     %>
                                         <div class="flex items-center gap-4 py-2 first:pt-0 last:pb-0">
                                             <img src="<%= itemImageUrl %>"
-                                                alt="<%= item.product.name %>"
+                                                alt="<%= itemName %>"
                                                 class="w-16 h-16 object-cover border border-gold-light/10 rounded bg-obsidian">
                                             <div class="flex-1 min-w-0">
                                                 <div class="flex items-center justify-between gap-4">
                                                     <div>
                                                         <p class="font-display text-base text-gold-light hover:text-gold-accent transition truncate">
-                                                            <%= item.product.name %>
+                                                            <%= itemName %>
                                                         </p>
                                                         <p class="text-xs text-gray-500 mt-0.5">
                                                             Qty: <%= item.quantity %>
@@ -152,11 +153,11 @@
                 </div>
 
                 <!-- Pagination -->
-                <% if (totalPages> 1) { %>
+                <% if (orders && orders.length > 0 && totalPages > 1) { %>
                     <div class="flex flex-col sm:flex-row items-center justify-between gap-4 border-t border-gold-light/5 pt-8">
                         <p class="text-xs uppercase tracking-widest text-gray-500 order-2 sm:order-1">
                             Showing <span class="text-gold-light font-bold"><%= (currentPage - 1) * limit + 1 %></span>
-                            to <span class="text-gold-light font-bold"><%= Math.min(currentPage * limit, totalItems) %></span>
+                            to <span class="text-gold-light font-bold"><%= Math.min((currentPage - 1) * limit + orders.length, totalItems) %></span>
                             of <span class="text-gold-light font-bold"><%= totalItems %></span> orders
                         </p>
 

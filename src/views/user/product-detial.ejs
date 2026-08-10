@@ -3,16 +3,15 @@
 <main class="bg-obsidian min-h-screen text-ivory pt-28 pb-16">
     <%
       let displayImages = [];
-      if (product.productImages && product.productImages.length > 0) {
-          displayImages = product.productImages;
+      if (product.variants && product.variants.length > 0 && product.variants[0].images && product.variants[0].images.length > 0) {
+          displayImages = product.variants[0].images;
       } else if (product.variants && product.variants.length > 0) {
-          // Find the first variant that has images
           const variantWithImages = product.variants.find(v => v.images && v.images.length > 0);
           if (variantWithImages) {
               displayImages = variantWithImages.images;
-          } else if (product.variants[0] && product.variants[0].images) {
-              displayImages = product.variants[0].images;
           }
+      } else if (product.productImages && product.productImages.length > 0) {
+          displayImages = product.productImages;
       }
       
       let mainImgUrl = '/img/placeholder.jpg';

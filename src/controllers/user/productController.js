@@ -334,7 +334,7 @@ const getDetialProduct = async (req, res) => {
           product,
           variant: defaultVariant,
           quantity: 1,
-        });
+        }, offers);
 
         if (offerResult.bestOffer) {
           initialOffer = {
@@ -383,8 +383,10 @@ const getVariantData = async (req, res) => {
       });
     }
 
-    const variant = await variantModel.findById(variantId);
-    const product = await productModel.findById(productId);
+    const [variant, product] = await Promise.all([
+      variantModel.findById(variantId).lean(),
+      productModel.findById(productId).lean(),
+    ]);
 
     if (!variant || !product) {
       return res.status(STATUS_CODES.NOT_FOUND).json({
@@ -403,7 +405,7 @@ const getVariantData = async (req, res) => {
         { applicableOn: "product", productIds: product._id },
         { applicableOn: "category", categoryIds: product.catgId },
       ],
-    });
+    }).lean();
 
     let disObject = { bestDiscount: 0, isOffer: false };
     let salePrice = variant.salePrice;
@@ -413,7 +415,7 @@ const getVariantData = async (req, res) => {
         product,
         variant,
         quantity: 1,
-      });
+      }, offers);
 
       if (offerResult.bestOffer) {
         disObject = {
