@@ -15,54 +15,44 @@ async function addToCart(productId, variantId) {
       // Update cart count in header
       updateCartCount(res.data.cartCount);
 
-      // If we are on wishlist page, we might want to update wishlist count too
-      // since adding to cart removes from wishlist in backend
-      if (typeof updateWishlistCount === "function") {
-        const wishlistCountEl = document.getElementById(
-          "wishlist-count-desktop",
-        );
-        if (wishlistCountEl) {
-          const currentCount = parseInt(wishlistCountEl.innerText) || 0;
-          if (currentCount > 0) {
-            updateWishlistCount(currentCount - 1);
-          }
-        }
-      }
-
-      // 2. Identify if we are on the wishlist page and remove the item from DOM
-      // The backend removes it from wishlist automatically when added to cart
-      const wishlistBtn = document.querySelector(
-        `button[onclick*="addToCart('${productId}', '${variantId}')"]`,
-      );
+      // If we are on wishlist page, update wishlist count and remove card
       const isWishlistPage = window.location.pathname.includes("/wishlist");
+      if (isWishlistPage) {
+        const wishlistBadge = document.getElementById("wishlist-count-badge");
+        if (wishlistBadge) {
+          const currentCount = parseInt(wishlistBadge.innerText) || 0;
+          const newCount = Math.max(0, currentCount - 1);
+          wishlistBadge.innerText = newCount;
+          if (newCount === 0) wishlistBadge.classList.add("hidden");
+        }
 
-      if (isWishlistPage && wishlistBtn) {
-        const card = wishlistBtn.closest(
-          ".bg-white.rounded-lg.shadow-sm.overflow-hidden",
+        const wishlistBtn = document.querySelector(
+          `button[onclick*="addToCart('${productId}', '${variantId}')"]`,
         );
+        const card = wishlistBtn?.closest("[data-wishlist-card], .bg-obsidian-light, .group");
         if (card) {
-          card.classList.add("fade-out");
+          card.style.transition = "all 0.3s ease";
+          card.style.opacity = "0";
+          card.style.transform = "scale(0.95)";
           setTimeout(() => {
             card.remove();
 
-            // Update wishlist count in header (already covered by part 1 but being explicit)
-            if (typeof updateWishlistCount === "function") {
-              updateWishlistCount(-1);
-            }
-
-            // Check if wishlist is now empty
-            const container = document.querySelector(
-              ".grid.grid-cols-1.md-grid-cols-2.xl-grid-cols-3.gap-6",
-            );
-            if (container && container.children.length === 0) {
+            const container = document.querySelector(".grid.grid-cols-1");
+            const remainingCards = container ? container.querySelectorAll("[data-wishlist-card]") : [];
+            if (container && remainingCards.length === 0) {
               container.innerHTML = `
-                <div class="col-span-full py-12 text-center">
-                  <div class="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-4">
-                    <i class="fas fa-heart-broken text-gray-400 text-2xl"></i>
+                <div class="col-span-full py-16 text-center">
+                  <div class="w-16 h-16 border border-gold-light/10 bg-gold-light/5 rounded-full flex items-center justify-center mx-auto mb-6">
+                    <i class="far fa-heart text-gold-accent text-xl"></i>
                   </div>
-                  <h3 class="text-lg font-medium text-gray-900">Your wishlist is empty</h3>
-                  <p class="text-gray-500 mt-1">Looks like you haven't added anything to your wishlist yet.</p>
-                  <a href="/product" class="inline-block mt-4 text-purple-600 font-medium hover:text-purple-700">Explore Products →</a>
+                  <h3 class="font-display text-2xl font-light text-gold-light mb-2">Your wishlist is empty</h3>
+                  <p class="text-gray-400 text-xs uppercase tracking-widest mb-8 max-w-sm mx-auto leading-relaxed">
+                    Looks like you haven't added anything to your wishlist yet. Add items you love to keep track of them!
+                  </p>
+                  <a href="/product" class="inline-flex items-center gap-2 bg-gold-light text-obsidian hover:bg-gold-accent px-8 py-3 rounded text-xs uppercase tracking-widest font-semibold transition duration-300 shadow-md">
+                    Discover Products
+                    <i class="fas fa-arrow-right text-[10px]"></i>
+                  </a>
                 </div>
               `;
             }

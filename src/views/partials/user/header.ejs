@@ -143,10 +143,15 @@
         .swal2-close:hover {
             color: #E8D5B0 !important;
         }
-        /* Toast overrides */
-        .swal2-container.swal2-top-end .swal2-popup,
-        .swal2-container.swal2-top-right .swal2-popup {
-            border-radius: 4px !important;
+        /* Hide all browser scrollbars globally */
+        html, body {
+            -ms-overflow-style: none !important;
+            scrollbar-width: none !important;
+        }
+        ::-webkit-scrollbar {
+            display: none !important;
+            width: 0 !important;
+            height: 0 !important;
         }
     </style>
 
@@ -164,8 +169,8 @@
         </div>
     </div>
 
-    <!-- Navigation Header -->
-    <nav id="navbar" class="fixed top-0 left-0 right-0 z-[100] border-b border-transparent transition-all duration-300 py-4 sm:py-6">
+    <!-- Flipkart Model Navigation Header -->
+    <nav id="navbar" class="fixed top-0 left-0 right-0 z-[100] bg-[#2874f0] text-white shadow-md transition-all duration-300 py-3">
         <% 
         let fName = ''; 
         let lName = ''; 
@@ -174,82 +179,95 @@
             lName = user.lastName ? user.lastName.charAt(0).toUpperCase() : ''; 
         } 
         %>
-        <div class="max-w-7xl mx-auto px-6 sm:px-8">
-            <div class="flex justify-between items-center h-10">
+        <div class="w-full max-w-[1600px] mx-auto px-4 sm:px-8 lg:px-12">
+            <div class="flex justify-between items-center h-10 gap-4">
                 <!-- Logo -->
                 <div class="flex-shrink-0">
-                    <a href="/" class="flex items-center space-x-3">
-                        <img src="/img/Pasted image.png" alt="CaseCart Logo" class="h-8 w-auto object-contain rounded-md">
-                        <span class="font-display text-3xl font-light tracking-wide text-gold-light hover:text-gold-accent transition-colors">CASE CART</span>
+                    <a href="/" class="flex items-center space-x-2">
+                        <img src="/img/Pasted image.png" alt="CaseCart Logo" class="h-8 w-auto object-contain rounded-md bg-white p-0.5 shadow">
+                        <div class="flex flex-col leading-none">
+                            <span class="font-bold text-xl sm:text-2xl tracking-tight text-white font-sans italic">CaseCart</span>
+                            <span class="text-[9px] text-[#ffe500] font-semibold italic flex items-center gap-0.5">Explore <span class="text-white font-bold">Plus</span> <i class="fas fa-plus text-[8px] text-[#ffe500]"></i></span>
+                        </div>
                     </a>
                 </div>
 
-                <!-- Desktop Category Navigation (Center) -->
-                <div class="hidden md:flex items-center space-x-10">
-                    <a href="/product" class="text-xs uppercase tracking-widest text-gold-light hover:text-gold-accent transition-colors font-medium">All Cases</a>
-                    <a href="/product?search=leather" class="text-xs uppercase tracking-widest text-gold-light hover:text-gold-accent transition-colors font-medium">Leather</a>
-                    <a href="/product?Categories=69f5b2cd9ec325a798c4d6cb" class="text-xs uppercase tracking-widest text-gold-light hover:text-gold-accent transition-colors font-medium">MagSafe</a>
-                    <a href="/product?Categories=69f5b2ec9ec325a798c4d6d1" class="text-xs uppercase tracking-widest text-gold-light hover:text-gold-accent transition-colors font-medium">Premium Collection</a>
+                <!-- Integrated Center Search Bar (Flipkart Style) -->
+                <div class="hidden sm:flex flex-1 max-w-xl mx-4 relative">
+                    <form action="/product" method="GET" class="w-full relative">
+                        <input type="text" name="search" placeholder="Search for products, brands and more" 
+                               class="w-full bg-white text-gray-900 placeholder-gray-500 rounded-sm pl-4 pr-10 py-2 text-xs sm:text-sm font-medium focus:outline-none shadow-inner">
+                        <button type="submit" class="absolute right-3 top-1/2 -translate-y-1/2 text-[#2874f0] text-sm hover:text-blue-700">
+                            <i class="fas fa-search"></i>
+                        </button>
+                    </form>
                 </div>
 
                 <!-- Right Side Actions -->
-                <div class="flex items-center space-x-5">
-                    <!-- Theme Toggle -->
-                    <button onclick="toggleTheme()" class="p-2 text-gold-light hover:text-gold-accent transition-colors text-sm" title="Toggle Theme">
-                        <i id="theme-icon" class="fas fa-sun"></i>
-                    </button>
-
-                    <!-- Search Trigger -->
-                    <button onclick="toggleSearch()" class="p-2 text-gold-light hover:text-gold-accent transition-colors text-sm" title="Search">
-                        <i class="fas fa-search"></i>
-                    </button>
-
+                <div class="flex items-center space-x-4 sm:space-x-6">
                     <!-- Wishlist -->
-                    <a href="/wishlist" class="p-2 text-gold-light hover:text-gold-accent transition-colors text-sm relative" title="Wishlist">
-                        <i class="far fa-heart"></i>
-                        <span id="wishlist-count-badge" class="absolute -top-1 -right-1 bg-gold-accent text-obsidian text-[9px] font-bold rounded-full w-4 h-4 flex items-center justify-center border border-obsidian <%= (wishlistcount > 0) ? '' : 'hidden' %>">
+                    <a href="/wishlist" class="flex items-center space-x-1 text-white hover:text-yellow-300 transition-colors text-xs font-bold relative" title="Wishlist">
+                        <i class="far fa-heart text-base"></i>
+                        <span class="hidden md:inline">Wishlist</span>
+                        <span id="wishlist-count-badge" class="bg-[#ff9f00] text-black text-[9px] font-extrabold rounded-full w-4 h-4 flex items-center justify-center border border-white <%= (wishlistcount > 0) ? '' : 'hidden' %>">
                             <%= wishlistcount %>
                         </span>
                     </a>
 
                     <!-- Cart Drawer Trigger -->
-                    <button onclick="openCartDrawer()" class="p-2 text-gold-light hover:text-gold-accent transition-colors text-sm relative" title="Cart">
-                        <i class="fas fa-shopping-bag"></i>
-                        <span id="cart-count-badge" class="absolute -top-1 -right-1 bg-gold-accent text-obsidian text-[9px] font-bold rounded-full w-4 h-4 flex items-center justify-center border border-obsidian <%= (cartCount > 0) ? '' : 'hidden' %>">
+                    <button onclick="openCartDrawer()" class="flex items-center space-x-1 text-white hover:text-yellow-300 transition-colors text-xs font-bold relative" title="Cart">
+                        <i class="fas fa-shopping-cart text-base"></i>
+                        <span class="hidden md:inline">Cart</span>
+                        <span id="cart-count-badge" class="bg-[#ff9f00] text-black text-[9px] font-extrabold rounded-full w-4 h-4 flex items-center justify-center border border-white <%= (cartCount > 0) ? '' : 'hidden' %>">
                             <%= cartCount %>
                         </span>
                     </button>
 
-                    <!-- User Account -->
+                    <!-- Theme Toggle -->
+                    <button onclick="toggleTheme()" class="p-1.5 text-white hover:text-yellow-300 transition-colors text-sm" title="Toggle Theme">
+                        <i id="theme-icon" class="fas fa-sun"></i>
+                    </button>
+
+                    <!-- User Account / Login Button -->
                     <div class="relative group">
                         <% if (!user) { %>
-                            <a href="/login" class="text-xs uppercase tracking-widest text-gold-light hover:text-gold-accent transition-colors font-medium">Login</a>
+                            <a href="/login" class="bg-white text-[#2874f0] hover:bg-gray-100 font-bold px-6 py-1.5 rounded-sm text-xs transition duration-200 shadow-sm">
+                                Login
+                            </a>
                         <% } else { %>
-                            <button class="flex items-center space-x-2 focus:outline-none p-1">
-                                <div class="w-7 h-7 bg-gold-light/10 border border-gold-light/30 rounded-full flex items-center justify-center text-gold-light text-xs font-bold uppercase overflow-hidden">
+                            <button class="flex items-center space-x-2 focus:outline-none bg-blue-700/60 hover:bg-blue-800/80 px-3 py-1.5 rounded-sm text-xs font-bold transition">
+                                <div class="w-5 h-5 bg-white text-[#2874f0] rounded-full flex items-center justify-center text-[10px] font-extrabold uppercase overflow-hidden">
                                     <% if (user.profileUrl) { %>
                                         <img src="<%= user.profileUrl %>" alt="Profile" class="w-full h-full object-cover">
                                     <% } else { %>
-                                        <%= fName %><%= lName %>
+                                        <%= fName %>
                                     <% } %>
                                 </div>
+                                <span class="hidden sm:inline text-white max-w-[90px] truncate"><%= user.firstName || user.name || 'Account' %></span>
+                                <i class="fas fa-chevron-down text-[9px] text-white/80"></i>
                             </button>
                             <!-- Dropdown -->
-                            <div class="absolute right-0 top-full mt-2 w-48 bg-obsidian-light border border-gold-light/20 rounded shadow-xl py-2 hidden group-hover:block animate-fade-in">
-                                <div class="px-4 py-2 border-b border-gold-light/10 mb-1">
-                                    <p class="text-[10px] text-gray-500 uppercase tracking-widest">Account</p>
-                                    <p class="text-xs font-medium text-gold-light truncate"><%= user.name %></p>
+                            <div class="absolute right-0 top-full mt-1 w-48 bg-white text-gray-900 border border-gray-200 rounded-sm shadow-xl py-1 hidden group-hover:block animate-fade-in z-50">
+                                <div class="px-4 py-2 border-b border-gray-100 mb-1 bg-gray-50">
+                                    <p class="text-[9px] text-gray-500 uppercase font-bold">Hello,</p>
+                                    <p class="text-xs font-bold text-gray-800 truncate"><%= user.name || user.firstName %></p>
                                 </div>
-                                <a href="/user-profile" class="block px-4 py-2 text-xs text-gray-400 hover:text-gold-light hover:bg-obsidian-surface transition-colors">My Profile</a>
-                                <a href="/order" class="block px-4 py-2 text-xs text-gray-400 hover:text-gold-light hover:bg-obsidian-surface transition-colors">My Orders</a>
-                                <a href="/logout" class="block px-4 py-2 text-xs text-red-400 hover:bg-red-950/20 hover:text-red-300 transition-colors border-t border-gold-light/10 mt-1">Logout</a>
+                                <a href="/user-profile" class="block px-4 py-2 text-xs font-semibold text-gray-700 hover:bg-blue-50 hover:text-[#2874f0] transition">
+                                    <i class="far fa-user-circle mr-2 text-[#2874f0]"></i>My Profile
+                                </a>
+                                <a href="/order" class="block px-4 py-2 text-xs font-semibold text-gray-700 hover:bg-blue-50 hover:text-[#2874f0] transition">
+                                    <i class="fas fa-box mr-2 text-[#2874f0]"></i>My Orders
+                                </a>
+                                <a href="/logout" class="block px-4 py-2 text-xs font-semibold text-red-600 hover:bg-red-50 transition border-t border-gray-100 mt-1">
+                                    <i class="fas fa-power-off mr-2 text-red-500"></i>Logout
+                                </a>
                             </div>
                         <% } %>
                     </div>
 
                     <!-- Mobile Menu Trigger -->
-                    <button onclick="toggleMobileMenu()" class="md:hidden p-2 text-gold-light hover:text-gold-accent transition-colors">
-                        <i class="fas fa-bars"></i>
+                    <button onclick="toggleMobileMenu()" class="md:hidden p-1 text-white hover:text-yellow-300 transition-colors">
+                        <i class="fas fa-bars text-lg"></i>
                     </button>
                 </div>
             </div>
@@ -362,49 +380,407 @@
 
     <!-- Navigation Scroll and Theme Toggle Scripts -->
     <script>
-        // Scroll aware navigation filling
+        // Scroll aware navigation elevation
         window.addEventListener('scroll', function() {
             const navbar = document.getElementById('navbar');
-            if (window.scrollY > 50) {
-                navbar.classList.add('bg-obsidian-light/95', 'backdrop-blur-md', 'border-gold-light/10');
-                navbar.classList.remove('py-6');
-                navbar.classList.add('py-4');
+            if (!navbar) return;
+            if (window.scrollY > 30) {
+                navbar.classList.add('shadow-lg');
             } else {
-                navbar.classList.remove('bg-obsidian-light/95', 'backdrop-blur-md', 'border-gold-light/10');
-                navbar.classList.add('py-6');
-                navbar.classList.remove('py-4');
+                navbar.classList.remove('shadow-lg');
             }
         });
 
         // Theme Management
         const LIGHT_THEME_CSS = `
-            body.light-theme { background-color: #F7F5F2 !important; color: #1a1a1a !important; }
-            body.light-theme .bg-obsidian { background-color: #F7F5F2 !important; }
-            body.light-theme .bg-obsidian-light { background-color: #FFFFFF !important; }
-            body.light-theme .bg-obsidian-surface { background-color: #F0EDE9 !important; }
-            body.light-theme .bg-obsidian-hover { background-color: #E6E2DC !important; }
-            body.light-theme main { background-color: #F7F5F2 !important; }
-            body.light-theme section { background-color: transparent !important; }
-            body.light-theme #navbar { background-color: rgba(247,245,242,0.97) !important; border-bottom-color: rgba(140,117,68,0.2) !important; }
-            body.light-theme #navbar a { color: #5a4a20 !important; }
-            body.light-theme #navbar button { color: #5a4a20 !important; }
-            body.light-theme .text-ivory { color: #1a1a1a !important; }
-            body.light-theme .text-gold-light { color: #7a5c28 !important; }
-            body.light-theme .text-gold-accent { color: #9a7030 !important; }
-            body.light-theme .text-gray-400 { color: #5a5a5a !important; }
-            body.light-theme .text-gray-500 { color: #6a6a6a !important; }
-            body.light-theme .text-gray-600 { color: #4a4a4a !important; }
-            body.light-theme .border-gold-light\\/5 { border-color: rgba(140,117,68,0.12) !important; }
-            body.light-theme .border-gold-light\\/10 { border-color: rgba(140,117,68,0.2) !important; }
-            body.light-theme .border-gold-light\\/20 { border-color: rgba(140,117,68,0.25) !important; }
-            body.light-theme input:not([type="radio"]):not([type="checkbox"]) { background-color: #FFFFFF !important; border-color: rgba(140,117,68,0.3) !important; color: #1a1a1a !important; }
-            body.light-theme textarea { background-color: #FFFFFF !important; border-color: rgba(140,117,68,0.3) !important; color: #1a1a1a !important; }
-            body.light-theme select { background-color: #FFFFFF !important; border-color: rgba(140,117,68,0.3) !important; color: #1a1a1a !important; }
-            body.light-theme .cart-drawer { background-color: #F7F5F2 !important; border-left-color: rgba(140,117,68,0.2) !important; }
-            body.light-theme .swal2-popup { background: #FFFFFF !important; }
-            body.light-theme .swal2-title { color: #1a1a1a !important; }
-            body.light-theme .swal2-html-container { color: #4a4a4a !important; }
-            body.light-theme * { transition: background-color 0.2s ease, color 0.2s ease, border-color 0.2s ease !important; }
+            /* Base Body & Layout */
+            body.light-theme {
+                background-color: #f1f3f6 !important;
+                color: #0f172a !important;
+            }
+            body.light-theme main {
+                background-color: #f1f3f6 !important;
+            }
+
+            /* Backgrounds (including responsive variants like lg:bg-obsidian-light) */
+            body.light-theme .bg-obsidian,
+            body.light-theme [class*="bg-obsidian"]:not([class*="bg-obsidian-light"]):not([class*="bg-obsidian-surface"]):not([class*="bg-obsidian-hover"]):not(nav):not(footer) {
+                background-color: #f1f3f6 !important;
+            }
+            body.light-theme .bg-obsidian-light,
+            body.light-theme [class*="bg-obsidian-light"] {
+                background-color: #ffffff !important;
+            }
+            body.light-theme .bg-obsidian-surface,
+            body.light-theme [class*="bg-obsidian-surface"] {
+                background-color: #f8fafc !important;
+            }
+            body.light-theme .bg-obsidian-hover:hover,
+            body.light-theme [class*="bg-obsidian-hover"]:hover {
+                background-color: #f1f5f9 !important;
+            }
+
+            /* Typography & Headings */
+            body.light-theme .font-display {
+                font-family: 'Inter', system-ui, -apple-system, sans-serif !important;
+                font-weight: 700 !important;
+                letter-spacing: -0.02em !important;
+                color: #0f172a !important;
+            }
+            body.light-theme h1,
+            body.light-theme h2,
+            body.light-theme h3,
+            body.light-theme h4 {
+                font-family: 'Inter', system-ui, -apple-system, sans-serif !important;
+                font-weight: 700 !important;
+                letter-spacing: -0.02em !important;
+                color: #0f172a !important;
+            }
+            body.light-theme .text-ivory,
+            body.light-theme [class*="text-ivory"] {
+                color: #0f172a !important;
+            }
+            body.light-theme .text-gold-light,
+            body.light-theme [class*="text-gold-light"] {
+                color: #0f172a !important;
+            }
+            body.light-theme .text-gold-accent,
+            body.light-theme [class*="text-gold-accent"] {
+                color: #2874f0 !important;
+            }
+            body.light-theme .text-gray-400,
+            body.light-theme .text-gray-500 {
+                color: #64748b !important;
+            }
+            body.light-theme .text-gray-600 {
+                color: #475569 !important;
+            }
+            body.light-theme [class*="text-green-400"] {
+                color: #15803d !important;
+            }
+            body.light-theme [class*="text-red-400"] {
+                color: #b91c1c !important;
+            }
+
+            /* Table Headers & Cells (Wallet, Orders, Tables) */
+            body.light-theme th,
+            body.light-theme thead th,
+            body.light-theme table th,
+            body.light-theme th[class*="text-gold-light"] {
+                color: #475569 !important;
+                font-family: 'Inter', system-ui, -apple-system, sans-serif !important;
+                font-weight: 700 !important;
+                letter-spacing: 0.08em !important;
+            }
+            body.light-theme td,
+            body.light-theme table td,
+            body.light-theme td[class*="text-ivory"] {
+                color: #1e293b !important;
+            }
+            body.light-theme thead,
+            body.light-theme thead[class*="bg-obsidian"] {
+                background-color: #f8fafc !important;
+                border-bottom: 1px solid #e2e8f0 !important;
+            }
+            body.light-theme tbody tr:hover {
+                background-color: #f8fafc !important;
+            }
+            body.light-theme [class*="divide-gold-light"] {
+                border-color: #e2e8f0 !important;
+            }
+
+            /* Primary Action Buttons & Links */
+            body.light-theme a.bg-gold-light,
+            body.light-theme button.bg-gold-light,
+            body.light-theme .bg-gold-light:not(aside button) {
+                background-color: #2874f0 !important;
+                color: #ffffff !important;
+                border-color: #2874f0 !important;
+                font-weight: 700 !important;
+                box-shadow: 0 2px 4px rgba(40, 116, 240, 0.25) !important;
+            }
+            body.light-theme a.bg-gold-light:hover,
+            body.light-theme button.bg-gold-light:hover,
+            body.light-theme .bg-gold-light:not(aside button):hover {
+                background-color: #1d4ed8 !important;
+                color: #ffffff !important;
+            }
+
+            /* Borders */
+            body.light-theme [class*="border-gold-light"],
+            body.light-theme [class*="border-gold-accent"] {
+                border-color: #e2e8f0 !important;
+            }
+
+            /* Sidebar Navigation in Light Mode */
+            body.light-theme aside {
+                border-color: #e2e8f0 !important;
+            }
+            body.light-theme aside > div {
+                background-color: #ffffff !important;
+                border: 1px solid #e2e8f0 !important;
+                border-radius: 0.5rem !important;
+                box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.05) !important;
+            }
+            body.light-theme aside .border-b {
+                border-color: #f1f5f9 !important;
+            }
+            body.light-theme aside img {
+                border-color: #e2e8f0 !important;
+                box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08) !important;
+            }
+            body.light-theme aside h3 {
+                color: #0f172a !important;
+                font-weight: 700 !important;
+            }
+            body.light-theme aside p {
+                color: #64748b !important;
+            }
+            /* Sidebar Active Nav Button */
+            body.light-theme aside nav button.bg-gold-light {
+                background-color: #2874f0 !important;
+                color: #ffffff !important;
+                border-color: #2874f0 !important;
+                font-weight: 700 !important;
+                box-shadow: 0 2px 4px rgba(40, 116, 240, 0.25) !important;
+            }
+            body.light-theme aside nav button.bg-gold-light svg {
+                color: #ffffff !important;
+                stroke: #ffffff !important;
+            }
+            /* Sidebar Inactive Nav Buttons */
+            body.light-theme aside nav button:not(.bg-gold-light):not([class*="text-red"]) {
+                background-color: #ffffff !important;
+                color: #334155 !important;
+                border: 1px solid #e2e8f0 !important;
+                font-weight: 600 !important;
+            }
+            body.light-theme aside nav button:not(.bg-gold-light):not([class*="text-red"]):hover {
+                background-color: #f0f7ff !important;
+                color: #2874f0 !important;
+                border-color: #bfdbfe !important;
+            }
+            body.light-theme aside nav button:not(.bg-gold-light):not([class*="text-red"]) svg {
+                color: #64748b !important;
+                stroke: #64748b !important;
+            }
+            body.light-theme aside nav button:not(.bg-gold-light):not([class*="text-red"]):hover svg {
+                color: #2874f0 !important;
+                stroke: #2874f0 !important;
+            }
+            /* Sidebar Logout Button */
+            body.light-theme aside nav button[class*="text-red"] {
+                background-color: #ffffff !important;
+                color: #dc2626 !important;
+                border: 1px solid #fecaca !important;
+                font-weight: 600 !important;
+            }
+            body.light-theme aside nav button[class*="text-red"]:hover {
+                background-color: #fef2f2 !important;
+                color: #b91c1c !important;
+                border-color: #fca5a5 !important;
+            }
+            body.light-theme aside nav button[class*="text-red"] svg {
+                color: #dc2626 !important;
+                stroke: #dc2626 !important;
+            }
+
+            /* Orders List & Cards */
+            body.light-theme #ordersListView > div {
+                background-color: #ffffff !important;
+                border: 1px solid #e2e8f0 !important;
+                border-radius: 0.5rem !important;
+                box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.05) !important;
+            }
+            body.light-theme #ordersListView > div:hover {
+                border-color: #cbd5e1 !important;
+                box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.07) !important;
+            }
+            body.light-theme #ordersListView > div > div:first-child {
+                background-color: #f8fafc !important;
+                border-bottom: 1px solid #e2e8f0 !important;
+            }
+            body.light-theme #ordersListView span.font-display {
+                color: #0f172a !important;
+                font-weight: 700 !important;
+            }
+            body.light-theme #ordersListView span[class*="text-gray-500"] {
+                color: #64748b !important;
+                font-weight: 700 !important;
+            }
+            body.light-theme #ordersListView .border-t {
+                border-color: #f1f5f9 !important;
+            }
+            body.light-theme #ordersListView h4 {
+                color: #0f172a !important;
+                font-weight: 600 !important;
+            }
+            body.light-theme #ordersListView h4:hover {
+                color: #2874f0 !important;
+            }
+            body.light-theme #ordersListView span.font-medium.text-gold-light {
+                color: #0f172a !important;
+            }
+            body.light-theme #ordersListView span.text-gold-accent {
+                color: #0f172a !important;
+                font-weight: 700 !important;
+            }
+            body.light-theme #ordersListView button,
+            body.light-theme #ordersListView a button {
+                background-color: #ffffff !important;
+                color: #1e293b !important;
+                border: 1px solid #cbd5e1 !important;
+                border-radius: 0.375rem !important;
+                font-weight: 700 !important;
+                box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05) !important;
+            }
+            body.light-theme #ordersListView button:hover,
+            body.light-theme #ordersListView a button:hover {
+                background-color: #2874f0 !important;
+                color: #ffffff !important;
+                border-color: #2874f0 !important;
+            }
+
+            /* Status Badges */
+            body.light-theme span.bg-gold-light\\/10,
+            body.light-theme [class*="bg-gold-light/10"] {
+                background-color: #eff6ff !important;
+                color: #1d4ed8 !important;
+                border: 1px solid #bfdbfe !important;
+            }
+            body.light-theme span.bg-green-950\\/30,
+            body.light-theme [class*="bg-green-950/30"] {
+                background-color: #f0fdf4 !important;
+                color: #15803d !important;
+                border: 1px solid #bbf7d0 !important;
+            }
+            body.light-theme span.bg-red-950\\/30,
+            body.light-theme [class*="bg-red-950/30"] {
+                background-color: #fef2f2 !important;
+                color: #b91c1c !important;
+                border: 1px solid #fecaca !important;
+            }
+
+            /* Form Inputs & Select Controls */
+            body.light-theme select {
+                background-color: #ffffff !important;
+                color: #0f172a !important;
+                border: 1px solid #cbd5e1 !important;
+                border-radius: 0.375rem !important;
+                box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05) !important;
+            }
+            body.light-theme select:focus {
+                border-color: #2874f0 !important;
+                outline: none !important;
+                box-shadow: 0 0 0 3px rgba(40, 116, 240, 0.15) !important;
+            }
+            body.light-theme input:not([type="radio"]):not([type="checkbox"]):not([type="range"]),
+            body.light-theme textarea {
+                background-color: #ffffff !important;
+                border: 1px solid #cbd5e1 !important;
+                color: #0f172a !important;
+                border-radius: 0.375rem !important;
+            }
+            body.light-theme input:focus,
+            body.light-theme textarea:focus {
+                border-color: #2874f0 !important;
+                outline: none !important;
+                box-shadow: 0 0 0 3px rgba(40, 116, 240, 0.15) !important;
+            }
+            body.light-theme input::placeholder,
+            body.light-theme textarea::placeholder {
+                color: #94a3b8 !important;
+            }
+            body.light-theme label {
+                color: #334155 !important;
+                font-weight: 600 !important;
+            }
+
+            /* Pagination Controls */
+            body.light-theme span.bg-gold-light {
+                background-color: #2874f0 !important;
+                color: #ffffff !important;
+                border: 1px solid #2874f0 !important;
+                font-weight: 700 !important;
+                box-shadow: 0 1px 2px rgba(40, 116, 240, 0.25) !important;
+            }
+            body.light-theme a.bg-obsidian-light {
+                background-color: #ffffff !important;
+                color: #334155 !important;
+                border: 1px solid #cbd5e1 !important;
+                font-weight: 600 !important;
+                box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05) !important;
+            }
+            body.light-theme a.bg-obsidian-light:hover {
+                background-color: #f1f5f9 !important;
+                color: #2874f0 !important;
+                border-color: #94a3b8 !important;
+            }
+
+            /* Account Section Forms (Profile, Addresses, Wallet) */
+            body.light-theme .account-section > div,
+            body.light-theme main .bg-obsidian-light {
+                background-color: #ffffff !important;
+                border: 1px solid #e2e8f0 !important;
+                border-radius: 0.5rem !important;
+                box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.05) !important;
+            }
+            body.light-theme .account-section button[type="submit"],
+            body.light-theme button.bg-gold-light:not(aside button) {
+                background-color: #2874f0 !important;
+                color: #ffffff !important;
+                font-weight: 700 !important;
+            }
+            body.light-theme .account-section button[type="submit"]:hover,
+            body.light-theme button.bg-gold-light:not(aside button):hover {
+                background-color: #1d4ed8 !important;
+            }
+
+            /* Cart Drawer */
+            body.light-theme .cart-drawer {
+                background-color: #ffffff !important;
+                border-left: 1px solid #e2e8f0 !important;
+                box-shadow: -4px 0 20px rgba(0, 0, 0, 0.1) !important;
+            }
+            body.light-theme #cartDrawerFooter {
+                background-color: #ffffff !important;
+                border-top: 1px solid #e2e8f0 !important;
+            }
+            body.light-theme #cartDrawerFooter a {
+                background-color: #2874f0 !important;
+                color: #ffffff !important;
+                font-weight: 700 !important;
+            }
+
+            /* SweetAlert2 Overrides in Light Mode */
+            body.light-theme .swal2-popup {
+                background: #ffffff !important;
+                border: 1px solid #e2e8f0 !important;
+                box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04) !important;
+            }
+            body.light-theme .swal2-title {
+                color: #0f172a !important;
+                font-family: 'Inter', sans-serif !important;
+                font-weight: 700 !important;
+            }
+            body.light-theme .swal2-html-container,
+            body.light-theme .swal2-content {
+                color: #475569 !important;
+            }
+            body.light-theme .swal2-confirm {
+                background-color: #2874f0 !important;
+                color: #ffffff !important;
+                border-radius: 0.375rem !important;
+            }
+            body.light-theme .swal2-cancel {
+                background-color: #ffffff !important;
+                color: #475569 !important;
+                border: 1px solid #cbd5e1 !important;
+                border-radius: 0.375rem !important;
+            }
+            body.light-theme * {
+                transition: background-color 0.2s ease, color 0.2s ease, border-color 0.2s ease !important;
+            }
         `;
 
         function applyLightThemeOverride(isLight) {
@@ -423,18 +799,20 @@
 
         function initTheme() {
             const currentTheme = localStorage.getItem('cc-theme') || 'dark';
+            const themeIcon = document.getElementById('theme-icon');
             if (currentTheme === 'light') {
                 document.body.classList.add('light-theme');
                 document.documentElement.classList.remove('dark');
-                document.getElementById('theme-icon').className = 'fas fa-moon';
+                if (themeIcon) themeIcon.className = 'fas fa-moon';
                 applyLightThemeOverride(true);
             } else {
                 document.body.classList.remove('light-theme');
                 document.documentElement.classList.add('dark');
-                document.getElementById('theme-icon').className = 'fas fa-sun';
+                if (themeIcon) themeIcon.className = 'fas fa-sun';
                 applyLightThemeOverride(false);
             }
         }
+        initTheme();
         document.addEventListener('DOMContentLoaded', initTheme);
 
         function toggleTheme() {

@@ -3,117 +3,169 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Email Verification</title>
+    <title>Email Verification - CaseCart</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="/css/style.css">
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        obsidian: {
+                            DEFAULT: '#0A0A0A',
+                            light: '#161616',
+                            muted: '#262626',
+                            surface: '#1A1A1A'
+                        },
+                        gold: {
+                            light: '#E8D5B0',
+                            accent: '#C9A84C'
+                        },
+                        ivory: {
+                            DEFAULT: '#F7F5F2',
+                            muted: '#E5E3E0'
+                        }
+                    },
+                    fontFamily: {
+                        display: ['"Cormorant Garamond"', 'serif'],
+                        sans: ['Inter', 'sans-serif']
+                    }
+                }
+            }
+        }
+    </script>
     <style>
+        @import url('https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;1,300&family=Inter:wght@300;400;500;600&display=swap');
+        
         .page {
             display: none;
         }
         .page.active {
             display: block;
         }
-        .gradient-bg {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        
+        .otp-input {
+            width: 48px;
+            height: 52px;
+            text-align: center;
+            font-size: 22px;
+            font-weight: 600;
+            color: #F7F5F2;
+            background-color: #0A0A0A;
+            border: 1px solid rgba(232, 213, 176, 0.15);
+            border-radius: 12px;
+            transition: all 0.25s ease;
         }
-        .btn-hover:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 10px 20px rgba(0, 0, 0, 0.2);
+        
+        .otp-input:focus {
+            border-color: #C9A84C !important;
+            box-shadow: 0 0 0 2px rgba(201, 168, 76, 0.25);
+            background-color: #121212;
+            outline: none;
         }
-        .fade-in {
-            animation: fadeIn 0.5s ease-in;
-        }
+
         @keyframes fadeIn {
-            from { opacity: 0; transform: translateY(20px); }
+            from { opacity: 0; transform: translateY(12px); }
             to { opacity: 1; transform: translateY(0); }
+        }
+        
+        .animate-fade-in {
+            animation: fadeIn 0.4s cubic-bezier(0.16, 1, 0.3, 1) forwards;
         }
     </style>
 </head>
-<body>
+<body class="bg-obsidian min-h-screen text-ivory font-sans flex flex-col justify-between overflow-x-hidden">
+    <!-- Header Navbar -->
+    <nav class="border-b border-gold-light/10 bg-obsidian/90 backdrop-blur-md sticky top-0 z-50">
+        <div class="w-full max-w-[1600px] mx-auto px-4 sm:px-8 lg:px-12">
+            <div class="flex justify-between items-center h-20">
+                <div class="flex items-center space-x-3 cursor-pointer" onclick="window.location.href='/'">
+                    <img src="/img/Pasted image.png" alt="CaseCart Logo" class="h-9 w-auto object-contain rounded-lg shadow">
+                    <span class="font-display text-2xl tracking-widest text-gold-light font-light uppercase">Case Cart</span>
+                </div>
+            </div>
+        </div>
+    </nav>
+
     <!-- Email Verification Page -->
-    <div id="email-verification" class="page active">
-        <div class="min-h-screen flex items-center justify-center py-12 px-4 sm:px-6 lg:px-8">
-            <div class="max-w-md w-full fade-in">
-                <div class="bg-white rounded-2xl shadow-xl p-8 text-center">
-                    <div class="w-20 h-20 bg-purple-100 rounded-full flex items-center justify-center mx-auto mb-6">
-                        <i class="fas fa-envelope-open-text text-purple-600 text-3xl"></i>
-                    </div>
-                    <h2 class="text-3xl font-bold text-gray-800 mb-4">Verify Your Email</h2>
-                    <p class="text-gray-600 mb-6">We've sent a verification link to<br><strong id="user-email" class="text-gray-800">user@example.com</strong></p>
-                    
-                    <div class="bg-blue-50 border border-blue-200 rounded-lg p-4 mb-6 text-left">
-                        <p class="text-sm text-blue-800">
-                            <i class="fas fa-info-circle mr-2"></i>
-                            Please check your email and click the verification link to continue.
-                        </p>
-                    </div>
-
-                    <button onclick="showPage('otp-verification')" class="btn-hover w-full gradient-bg text-white py-3 rounded-lg font-semibold transition duration-300 mb-4">
-                        Enter OTP Manually
-                    </button>
-
-                    <p class="text-sm text-gray-600">
-                        Didn't receive the email? 
-                        <button onclick="resendVerificationEmail()" class="text-purple-600 hover:text-purple-700 font-semibold">
-                            Resend
-                        </button>
-                        <span id="resend-timer" class="hidden text-gray-500 ml-2"></span>
+    <div id="email-verification" class="page active flex-grow flex items-center justify-center py-12 px-4 sm:px-6">
+        <div class="max-w-md w-full animate-fade-in">
+            <div class="bg-obsidian-light/95 border border-gold-light/15 rounded-3xl p-8 sm:p-10 shadow-2xl backdrop-blur-xl text-center relative">
+                <div class="w-16 h-16 border border-gold-light/20 bg-gold-light/10 rounded-2xl flex items-center justify-center mx-auto mb-6 shadow-inner text-gold-accent text-2xl">
+                    <i class="fas fa-envelope-open-text"></i>
+                </div>
+                <h2 class="font-display text-3xl sm:text-4xl font-medium tracking-wide text-gold-light mb-3">Verify Your Email</h2>
+                <p class="text-xs text-gray-400 mb-6 leading-relaxed">We've sent a verification link to<br><strong id="user-email" class="text-gold-light font-semibold">user@example.com</strong></p>
+                
+                <div class="bg-obsidian-surface border border-gold-light/10 rounded-2xl p-4 mb-6 text-left space-y-1">
+                    <p class="text-xs text-gold-light/90 flex items-start space-x-2">
+                        <i class="fas fa-info-circle text-gold-accent mt-0.5"></i>
+                        <span>Please check your inbox and click the verification link to activate your account.</span>
                     </p>
                 </div>
+
+                <button onclick="showPage('otp-verification')" class="w-full bg-gradient-to-r from-amber-500 to-yellow-500 hover:from-amber-600 hover:to-yellow-600 text-obsidian py-3.5 rounded-xl text-xs uppercase tracking-widest font-bold shadow-lg transform hover:-translate-y-0.5 transition duration-200 mb-4">
+                    Enter OTP Manually
+                </button>
+
+                <p class="text-xs text-gray-400">
+                    Didn't receive the email? 
+                    <button onclick="resendVerificationEmail(event)" class="text-gold-accent hover:text-gold-light font-semibold transition ml-1">
+                        Resend
+                    </button>
+                    <span id="resend-timer" class="hidden text-gray-500 ml-2 font-mono"></span>
+                </p>
             </div>
         </div>
     </div>
 
     <!-- OTP Verification Page -->
-    <div id="otp-verification" class="page">
-        <div class="min-h-screen flex items-center justify-center py-12 px-4 sm:px-6 lg:px-8">
-            <div class="max-w-md w-full fade-in">
-                <div class="bg-white rounded-2xl shadow-xl p-8 text-center">
-                    <div class="w-20 h-20 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-6">
-                        <i class="fas fa-key text-green-600 text-3xl"></i>
-                    </div>
-                    <h2 class="text-3xl font-bold text-gray-800 mb-4">Enter OTP</h2>
-                    <p class="text-gray-600 mb-6">Enter the 6-digit code sent to<br><strong id="otp-email" class="text-gray-800">user@example.com</strong></p>
-                    
-                    <div class="flex justify-between mb-6">
-                        <input type="text" maxlength="1" class="w-12 h-12 border-2 border-gray-300 rounded-lg text-center text-xl font-bold otp-input" oninput="moveToNext(this, 1)">
-                        <input type="text" maxlength="1" class="w-12 h-12 border-2 border-gray-300 rounded-lg text-center text-xl font-bold otp-input" oninput="moveToNext(this, 2)">
-                        <input type="text" maxlength="1" class="w-12 h-12 border-2 border-gray-300 rounded-lg text-center text-xl font-bold otp-input" oninput="moveToNext(this, 3)">
-                        <input type="text" maxlength="1" class="w-12 h-12 border-2 border-gray-300 rounded-lg text-center text-xl font-bold otp-input" oninput="moveToNext(this, 4)">
-                        <input type="text" maxlength="1" class="w-12 h-12 border-2 border-gray-300 rounded-lg text-center text-xl font-bold otp-input" oninput="moveToNext(this, 5)">
-                        <input type="text" maxlength="1" class="w-12 h-12 border-2 border-gray-300 rounded-lg text-center text-xl font-bold otp-input" oninput="moveToNext(this, 6)">
-                    </div>
-
-                    <button onclick="verifyOTP()" class="btn-hover w-full gradient-bg text-white py-3 rounded-lg font-semibold transition duration-300 mb-4">
-                        Verify OTP
-                    </button>
-
-                    <button onclick="showPage('email-verification')" class="text-purple-600 hover:text-purple-700 font-semibold">
-                        ← Back to Email Verification
-                    </button>
+    <div id="otp-verification" class="page flex-grow flex items-center justify-center py-12 px-4 sm:px-6">
+        <div class="max-w-md w-full animate-fade-in">
+            <div class="bg-obsidian-light/95 border border-gold-light/15 rounded-3xl p-8 sm:p-10 shadow-2xl backdrop-blur-xl text-center relative">
+                <div class="w-16 h-16 border border-gold-light/20 bg-gold-light/10 rounded-2xl flex items-center justify-center mx-auto mb-6 shadow-inner text-gold-accent text-2xl">
+                    <i class="fas fa-key"></i>
                 </div>
+                <h2 class="font-display text-3xl sm:text-4xl font-medium tracking-wide text-gold-light mb-3">Enter OTP</h2>
+                <p class="text-xs text-gray-400 mb-6">Enter the 6-digit code sent to<br><strong id="otp-email" class="text-gold-light font-semibold">user@example.com</strong></p>
+                
+                <div class="flex justify-center gap-2 sm:gap-3 mb-6">
+                    <input type="text" maxlength="1" class="otp-input" oninput="moveToNext(this, 0)">
+                    <input type="text" maxlength="1" class="otp-input" oninput="moveToNext(this, 1)">
+                    <input type="text" maxlength="1" class="otp-input" oninput="moveToNext(this, 2)">
+                    <input type="text" maxlength="1" class="otp-input" oninput="moveToNext(this, 3)">
+                    <input type="text" maxlength="1" class="otp-input" oninput="moveToNext(this, 4)">
+                    <input type="text" maxlength="1" class="otp-input" oninput="moveToNext(this, 5)">
+                </div>
+
+                <button onclick="verifyOTP()" class="w-full bg-gradient-to-r from-amber-500 to-yellow-500 hover:from-amber-600 hover:to-yellow-600 text-obsidian py-3.5 rounded-xl text-xs uppercase tracking-widest font-bold shadow-lg transform hover:-translate-y-0.5 transition duration-200 mb-4">
+                    Verify OTP
+                </button>
+
+                <button onclick="showPage('email-verification')" class="text-xs text-gold-accent hover:text-gold-light font-semibold tracking-wide flex items-center justify-center mx-auto space-x-1 transition">
+                    <i class="fas fa-arrow-left text-[10px]"></i>
+                    <span>Back to Email Verification</span>
+                </button>
             </div>
         </div>
     </div>
 
+    <!-- Bottom Spacing -->
+    <div class="h-8"></div>
+
     <script>
-        // Page navigation
         function showPage(pageId) {
-            // Hide all pages
             document.querySelectorAll('.page').forEach(page => {
                 page.classList.remove('active');
             });
-            
-            // Show selected page
             document.getElementById(pageId).classList.add('active');
         }
 
-        // Resend verification email with timer
-        function resendVerificationEmail() {
+        function resendVerificationEmail(event) {
             const resendButton = event.target;
             const timerElement = document.getElementById('resend-timer');
             
-            // Disable button and start timer
             resendButton.disabled = true;
             timerElement.classList.remove('hidden');
             
@@ -126,26 +178,22 @@
                     clearInterval(timer);
                     resendButton.disabled = false;
                     timerElement.classList.add('hidden');
-                    
-                    // Simulate email resend
                     alert('Verification email has been resent!');
                 }
             }, 1000);
         }
 
-        // OTP input navigation
-        function moveToNext(input, nextIndex) {
+        function moveToNext(input, currentIndex) {
             if (input.value.length === 1) {
-                const nextInput = document.querySelectorAll('.otp-input')[nextIndex];
-                if (nextInput) {
-                    nextInput.focus();
+                const allInputs = document.querySelectorAll('#otp-verification .otp-input');
+                if (allInputs[currentIndex + 1]) {
+                    allInputs[currentIndex + 1].focus();
                 }
             }
         }
 
-        // Verify OTP
         function verifyOTP() {
-            const otpInputs = document.querySelectorAll('.otp-input');
+            const otpInputs = document.querySelectorAll('#otp-verification .otp-input');
             let otp = '';
             
             otpInputs.forEach(input => {
@@ -153,23 +201,20 @@
             });
             
             if (otp.length === 6) {
-                // Simulate OTP verification
                 alert('OTP verified successfully!');
-                // Here you would typically make an API call to verify the OTP
             } else {
                 alert('Please enter the complete 6-digit OTP');
             }
         }
 
-        // Set user email dynamically (you would get this from your backend)
         function setUserEmail(email) {
-            document.getElementById('user-email').textContent = email;
-            document.getElementById('otp-email').textContent = email;
+            const el1 = document.getElementById('user-email');
+            const el2 = document.getElementById('otp-email');
+            if (el1) el1.textContent = email;
+            if (el2) el2.textContent = email;
         }
 
-        // Initialize
         document.addEventListener('DOMContentLoaded', function() {
-            // Set a sample email (replace with actual user email)
             setUserEmail('user@example.com');
         });
     </script>

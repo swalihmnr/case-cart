@@ -109,6 +109,28 @@ const getProductEdit = async (req, res) => {
       return res.redirect("/admin/product-list");
     }
 
+    // Fallback if productImages is empty: check product.images or variant.images
+    if (!product.productImages || product.productImages.length === 0) {
+      if (product.images && product.images.length > 0) {
+        product.productImages = product.images;
+        await productModel.updateOne(
+          { _id: product._id },
+          { $set: { productImages: product.images } },
+        );
+      } else if (product.variants && product.variants.length > 0) {
+        const variantWithImages = product.variants.find(
+          (v) => v.images && v.images.length > 0,
+        );
+        if (variantWithImages && variantWithImages.images && variantWithImages.images.length > 0) {
+          product.productImages = variantWithImages.images;
+          await productModel.updateOne(
+            { _id: product._id },
+            { $set: { productImages: variantWithImages.images } },
+          );
+        }
+      }
+    }
+
     res.render("admin/edit-product", {
       product,
       categories,
@@ -1039,6 +1061,161 @@ const postAddVariant = async (req, res) => {
   }
 };
 
+const variantImageUpload = async (req, res) => {
+  try {
+    const id = req.params.id;
+    const objectId = new mongoose.Types.ObjectId(id);
+    const existing = await variantModel.findById(objectId);
+    if (!existing) {
+      return res.status(404).json({
+        success: false,
+        message: "Variant not found",
+      });
+    }
+    if (!req.file) {
+      return res.status(400).json({
+        success: false,
+        message: "Image not selected",
+      });
+    }
+    const cloudUrl = await uploadBufferTocloudnery(req.file.buffer);
+    if (!existing.images) existing.images = [];
+    const isFirst = existing.images.length === 0;
+    existing.images.push({
+      url: cloudUrl.secure_url,
+      publicId: cloudUrl.public_id,
+      isMain: isFirst,
+    });
+    await existing.save();
+    return res.status(200).json({
+      success: true,
+      message: "Variant image uploaded successfully",
+      variant: existing,
+    });
+  } catch (error) {
+    console.error("Variant image upload error:", error);
+    return res.status(500).json({
+      success: false,
+      message: "Server error uploading variant image",
+    });
+  }
+};
+
+const variantImageSetMain = async (req, res) => {
+  try {
+    const id = req.params.id;
+    const objectId = new mongoose.Types.ObjectId(id);
+    const { imageId } = req.body;
+    const existing = await variantModel.findById(objectId);
+    if (!existing) {
+      return res.status(404).json({
+        success: false,
+        message: "Variant not found",
+      });
+    }
+    if (existing.images && existing.images.length > 0) {
+      existing.images.forEach((img) => {
+        img.isMain = img._id.toString() === imageId.toString();
+      });
+      await existing.save();
+      return res.status(200).json({
+        success: true,
+        message: "Main variant image updated",
+      });
+    }
+    return res.status(400).json({
+      success: false,
+      message: "No images found for variant",
+    });
+  } catch (error) {
+    console.error(error);
+    return res.status(500).json({
+      success: false,
+      message: "Error setting main image",
+    });
+  }
+};
+
+const variantImageDelete = async (req, res) => {
+  try {
+    const id = req.params.id;
+    const objectId = new mongoose.Types.ObjectId(id);
+    const { imageId } = req.body;
+    const existing = await variantModel.findById(objectId);
+    if (!existing) {
+      return res.status(404).json({
+        success: false,
+        message: "Variant not found",
+      });
+    }
+    const idx = existing.images.findIndex((img) => img._id.toString() === imageId.toString());
+    if (idx !== -1) {
+      const wasMain = existing.images[idx].isMain;
+      existing.images.splice(idx, 1);
+      if (wasMain && existing.images.length > 0) {
+        existing.images[0].isMain = true;
+      }
+      await existing.save();
+      return res.status(200).json({
+        success: true,
+        message: "Variant image deleted",
+      });
+    }
+    return res.status(404).json({
+      success: false,
+      message: "Image not found",
+    });
+  } catch (error) {
+    console.error(error);
+    return res.status(500).json({
+      success: false,
+      message: "Error deleting variant image",
+    });
+  }
+};
+
+const variantImageReplace = async (req, res) => {
+  try {
+    const id = req.params.id;
+    const objectId = new mongoose.Types.ObjectId(id);
+    const { imageId } = req.body;
+    const existing = await variantModel.findById(objectId);
+    if (!existing) {
+      return res.status(404).json({
+        success: false,
+        message: "Variant not found",
+      });
+    }
+    if (!req.file) {
+      return res.status(400).json({
+        success: false,
+        message: "Image not selected",
+      });
+    }
+    const idx = existing.images.findIndex((img) => img._id.toString() === imageId.toString());
+    if (idx === -1) {
+      return res.status(404).json({
+        success: false,
+        message: "Image not found in variant",
+      });
+    }
+    const cloudUrl = await uploadBufferTocloudnery(req.file.buffer);
+    existing.images[idx].url = cloudUrl.secure_url;
+    existing.images[idx].publicId = cloudUrl.public_id;
+    await existing.save();
+    return res.status(200).json({
+      success: true,
+      message: "Variant image replaced successfully",
+    });
+  } catch (error) {
+    console.error("Variant image replace error:", error);
+    return res.status(500).json({
+      success: false,
+      message: "Server error replacing variant image",
+    });
+  }
+};
+
 export default {
   getProductList,
   getAddproduct,
@@ -1057,4 +1234,8 @@ export default {
   postEditVariantSave,
   patchListUnlist,
   postAddVariant,
+  variantImageUpload,
+  variantImageSetMain,
+  variantImageDelete,
+  variantImageReplace,
 };

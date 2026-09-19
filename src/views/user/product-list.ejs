@@ -1,12 +1,12 @@
 <%- include('../partials/user/header') %>
 
-<main class="bg-obsidian min-h-screen text-ivory pt-28 pb-16">
-    <div class="max-w-7xl mx-auto px-6 sm:px-8">
+<main class="bg-[#f1f3f6] dark:bg-[#090D16] min-h-screen text-gray-900 dark:text-white pt-20 pb-16 transition-colors">
+    <div class="w-full max-w-[1600px] mx-auto px-4 sm:px-8 lg:px-12">
         
-        <!-- Page Title & Editorial Header -->
-        <div class="mb-12 text-center md:text-left space-y-2">
-            <p class="text-[10px] uppercase tracking-widest text-gold-accent font-medium">Bespoke Protection</p>
-            <h1 class="font-display text-4xl sm:text-5xl font-light tracking-wide text-gold-light">Case Collection</h1>
+        <!-- Page Title & Header -->
+        <div class="mb-6 text-center md:text-left space-y-1">
+            <p class="text-xs font-bold text-[#2874f0] uppercase tracking-wider">Explore Collection</p>
+            <h1 class="text-2xl sm:text-3xl font-extrabold text-gray-900 dark:text-white tracking-tight">Case Collection</h1>
         </div>
 
         <!-- Horizontal Pill-Tab Filters & Sort/Price Toolbar -->
@@ -86,22 +86,19 @@
         <% if (products.length > 0) { %>
             <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-x-6 gap-y-12">
                 <% products.forEach(product => { %>
-                    <% const isInWishlist = wishlistItems && wishlistItems.some(item =>
-                        item.variantId && item.variantId.toString() === product.minVariant._id.toString()
-                    ); %>
-                    
-                    <!-- Product Card -->
+                    <%
+                      const isInWishlist = wishlistItems && wishlistItems.some(item => {
+                          const itemProdId = item.productId?._id ? item.productId._id.toString() : item.productId?.toString();
+                          const itemVarId = item.variantId?._id ? item.variantId._id.toString() : item.variantId?.toString();
+                          const prodId = product._id?.toString();
+                          const minVarId = product.minVariant?._id?.toString();
+                          return (itemProdId && itemProdId === prodId) || (itemVarId && minVarId && itemVarId === minVarId);
+                      });
+                    %>
+                       <!-- Product Card -->
                     <div class="group relative flex flex-col space-y-4 animate-fade-in">
-                        <!-- Wishlist Toggle (Always visible on mobile, hover on desktop) -->
-                        <% if (user) { %>
-                            <button onclick="addListWishlist('<%= product._id %>', '<%= product.minVariant._id %>')" 
-                                    class="absolute top-3 right-3 z-20 text-gold-light hover:text-gold-accent transition-all duration-300 p-2 bg-obsidian/40 backdrop-blur-md rounded-full md:opacity-0 md:group-hover:opacity-100">
-                                <i id="wish-icon-<%= product._id %>-<%= product.minVariant._id %>" 
-                                   class="fa-heart <%= isInWishlist ? 'fas text-red-500 font-bold' : 'far text-gold-light' %> text-xs sm:text-sm"></i>
-                            </button>
-                        <% } %>
 
-                        <!-- Image Section (65% height area) -->
+                        <!-- Image Section -->
                         <div class="relative aspect-[3/4] bg-obsidian-light border border-gold-light/5 group-hover:border-gold-light/20 overflow-hidden flex items-center justify-center transition-colors duration-300">
                             <a href="/product/<%= product._id %>/detials" class="block w-full h-full">
                                 <% 
@@ -124,6 +121,17 @@
                                      alt="<%= product.name %>" 
                                      class="w-full h-full object-cover transform group-hover:scale-105 transition-transform duration-700 ease-out">
                             </a>
+
+                            <!-- Wishlist Button — positioned inside the image -->
+                            <% if (user) { %>
+                                <button onclick="addListWishlist('<%= product._id %>', '<%= product.minVariant._id %>')"
+                                        class="absolute top-3 right-3 z-20 w-9 h-9 flex items-center justify-center rounded-full backdrop-blur-sm hover:scale-110 transition-all duration-200"
+                                        style="background: rgba(10,10,15,0.65); box-shadow: 0 2px 12px rgba(0,0,0,0.5); border: 1px solid rgba(255,255,255,0.12);">
+                                    <i id="wish-icon-<%= product._id %>-<%= product.minVariant._id %>"
+                                       class="fa-heart <%= isInWishlist ? 'fas text-red-500' : 'far' %> text-sm"
+                                       style="<%= isInWishlist ? '' : 'color: rgba(255,255,255,0.9)' %>"></i>
+                                </button>
+                            <% } %>
 
                             <!-- Offer Badge -->
                             <% if (product.offerValue > 0) { %>
@@ -159,6 +167,7 @@
                             </div>
                         </div>
                     </div>
+
                 <% }) %>
             </div>
 
@@ -258,17 +267,19 @@
             const response = await fetch('/product/wishlist/toggle', {
                 method: 'PATCH',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ productId, variantId })
+                body: JSON.stringify({ productId, variantId, variant: variantId })
             });
             const data = await response.json();
             
             if (data.success) {
                 const heart = document.getElementById(`wish-icon-${productId}-${variantId}`);
                 if (data.action === "added") {
-                    heart.className = "fas fa-heart text-red-500 text-xs sm:text-sm font-bold";
+                    heart.className = "fas fa-heart text-red-500 text-sm";
+                    heart.style.color = "";
                     showToast("Added to Wishlist", "success");
                 } else {
-                    heart.className = "far fa-heart text-gold-light text-xs sm:text-sm";
+                    heart.className = "far fa-heart text-sm";
+                    heart.style.color = "rgba(255,255,255,0.9)";
                     showToast("Removed from Wishlist", "success");
                 }
                 

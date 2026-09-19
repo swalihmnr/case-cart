@@ -1,6 +1,7 @@
 import mongoose from "mongoose";
 import wishlistModel from "../../models/wishlistModel.js";
 import variantModel from "../../models/admin/variantModel.js";
+import productModel from "../../models/admin/productModel.js";
 import cartModel from "../../models/cartModel.js";
 import { STATUS_CODES } from "../../utils/statusCodes.js";
 
@@ -8,16 +9,51 @@ import { STATUS_CODES } from "../../utils/statusCodes.js";
 // GET WISHLIST
 // ==============================
 const getWishlist = async (req, res) => {
-  const userId = req.session.user.id;
-  const userID = new mongoose.Types.ObjectId(userId);
-  const products = await wishlistModel
-    .find({ userId: userID })
-    .populate("variantId")
-    .populate("productId");
-  res.render("./user/wishlist", {
-    products,
-    activeTab: "wishlist",
-  });
+  try {
+    const userId = req.session.user.id;
+    const userID = new mongoose.Types.ObjectId(userId);
+    const products = await wishlistModel
+      .find({ userId: userID })
+      .populate("variantId")
+      .populate({
+        path: "productId",
+        populate: { path: "catgId" },
+      });
+
+    // Auto-heal wishlist items where variantId is null/orphaned
+    for (let item of products) {
+      if (!item.variantId && item.productId) {
+        let validVariant = null;
+        if (item.productId.variants && item.productId.variants.length > 0) {
+          validVariant = await variantModel.findOne({
+            _id: { $in: item.productId.variants },
+            isListed: true,
+          }).sort({ salePrice: 1 });
+        }
+        if (!validVariant) {
+          validVariant = await variantModel.findOne({
+            productId: item.productId._id,
+            isListed: true,
+          }).sort({ salePrice: 1 });
+        }
+        if (validVariant) {
+          await wishlistModel.updateOne(
+            { _id: item._id },
+            { $set: { variantId: validVariant._id } }
+          );
+          item.variantId = validVariant;
+        }
+      }
+    }
+
+    res.render("./user/wishlist", {
+      products,
+      activeTab: "wishlist",
+    });
+  } catch (error) {
+    console.error("Error in getWishlist:", error);
+    res.status(500).send("Internal Server Error");
+  }
 };
 
 // ==============================
@@ -25,16 +61,23 @@ const getWishlist = async (req, res) => {
 // ==============================
 const postWishlist = async (req, res) => {
   try {
-    const { productId, variant } = req.body;
-    const variantId = new mongoose.Types.ObjectId(variant);
-    const Variant = await variantModel.findById(variantId);
-    const userId = new mongoose.Types.ObjectId(req.session.user.id);
+    const { productId, variant, variantId: bodyVariantId } = req.body;
+    const targetVariant = variant || bodyVariantId;
     if (!productId) {
       return res.status(STATUS_CODES.NOT_FOUND).json({
         success: false,
         message: "product not provided",
       });
     }
+    if (!targetVariant) {
+      return res.status(STATUS_CODES.NOT_FOUND).json({
+        success: false,
+        message: "variant not provided",
+      });
+    }
+    const variantId = new mongoose.Types.ObjectId(targetVariant);
+    const Variant = await variantModel.findById(variantId);
+    const userId = new mongoose.Types.ObjectId(req.session.user.id);
     if (!Variant) {
       return res.status(STATUS_CODES.NOT_FOUND).json({
         success: false,
@@ -90,9 +133,26 @@ const postWishlist = async (req, res) => {
 // ==============================
 const toggleWishlist = async (req, res) => {
   try {
-    const { productId, variant } = req.body;
+    const { productId, variant, variantId: bodyVariantId } = req.body;
+    const targetVariant = variant || bodyVariantId;
+
+    if (!productId || !targetVariant) {
+      return res.status(STATUS_CODES.BAD_REQUEST).json({
+        success: false,
+        message: "Product and Variant are required",
+      });
+    }
+
     const userId = new mongoose.Types.ObjectId(req.session.user.id);
-    const variantId = new mongoose.Types.ObjectId(variant);
+    const variantId = new mongoose.Types.ObjectId(targetVariant);
+
+    const validVariant = await variantModel.findById(variantId);
+    if (!validVariant) {
+      return res.status(STATUS_CODES.NOT_FOUND).json({
+        success: false,
+        message: "Variant not found",
+      });
+    }
 
     const existing = await wishlistModel.findOne({
       userId,

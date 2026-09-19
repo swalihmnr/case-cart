@@ -283,6 +283,7 @@ const getDetialProduct = async (req, res) => {
 
     const relatedProductsInitial = await productModel
       .find({ catgId: product.catgId, _id: { $ne: product._id } })
+      .populate('variants')
       .limit(4);
 
     const relatedProducts = [
@@ -298,6 +299,7 @@ const getDetialProduct = async (req, res) => {
               ],
             },
           })
+          .populate('variants')
           .limit(4 - relatedProductsInitial.length)
         : []),
     ];

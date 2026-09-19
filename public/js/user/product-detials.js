@@ -113,15 +113,19 @@ function changeMainImage(imageUrl, element) {
     };
   }
 
-  // Update thumbnails active state
+  // Reset all thumbnails to unselected state
   document.querySelectorAll(".thumbnail-item").forEach((thumb) => {
-    thumb.classList.remove("active");
+    thumb.classList.remove("border-gold-accent", "bg-gold-light/5");
+    thumb.classList.add("border-gold-light/10");
   });
 
+  // Highlight the clicked thumbnail
   if (element) {
-    element.classList.add("active");
+    element.classList.add("border-gold-accent", "bg-gold-light/5");
+    element.classList.remove("border-gold-light/10");
   }
 }
+
 
 // Toggle mobile zoom
 function toggleMobileZoom() {
@@ -142,20 +146,9 @@ function toggleMobileZoom() {
   }
 }
 
-// Device selection
+// Device selection — active state is managed inside selectVariant
+// so no separate listener is needed here.
 document.addEventListener("DOMContentLoaded", function () {
-  const deviceBtns = document.querySelectorAll(".device-btn");
-  deviceBtns.forEach((btn) => {
-    btn.addEventListener("click", function () {
-      deviceBtns.forEach((b) => {
-        b.classList.remove("border-gold-accent", "bg-gold-light/10", "text-gold-light");
-        b.classList.add("border-gold-light/20", "text-gray-400");
-      });
-      this.classList.add("border-gold-accent", "bg-gold-light/10", "text-gold-light");
-      this.classList.remove("border-gold-light/20", "text-gray-400");
-    });
-  });
-
   // Close zoom preview when clicking outside on mobile
   document.addEventListener("click", function (e) {
     if (
@@ -167,12 +160,13 @@ document.addEventListener("DOMContentLoaded", function () {
       zoomPreviewContainer.style.display = "none";
     }
   });
-});
 
-window.addEventListener("DOMContentLoaded", () => {
+  // Trigger the first variant load without simulating a click
   const firstBtn = document.querySelector(".device-btn");
   if (firstBtn) {
-    firstBtn.click();
+    const pid = firstBtn.getAttribute("data-pid");
+    const vid = firstBtn.getAttribute("data-vid");
+    if (pid && vid) selectVariant(pid, vid, firstBtn);
   }
 });
 
@@ -182,9 +176,20 @@ const badge = document.getElementById("special-offer-badge");
 const nameEl = document.getElementById("offer-name");
 const discountEl = document.getElementById("offer-discount");
 
-async function selectVariant(productId, variantId) {
+async function selectVariant(productId, variantId, clickedBtn) {
   productID = productId;
   variantID = variantId;
+
+  // Update active state on the device buttons
+  document.querySelectorAll(".device-btn").forEach((b) => {
+    b.classList.remove("border-gold-accent", "bg-gold-light/10", "text-gold-light");
+    b.classList.add("border-gold-light/10", "text-gray-400");
+    b.classList.remove("hover:border-gold-light/40"); // keep clean
+  });
+  if (clickedBtn) {
+    clickedBtn.classList.add("border-gold-accent", "bg-gold-light/10", "text-gold-light");
+    clickedBtn.classList.remove("border-gold-light/10", "text-gray-400");
+  }
   
   const resVariant = await api.getVariantDataAxios(productID, variantID);
   
@@ -229,14 +234,16 @@ function updateWishlistIcon(vId) {
   const wishIcon = document.getElementById("wishlist-icon");
   if (!wishIcon || !window.wishlistItems) return;
 
-  const isInWishlist = window.wishlistItems.some(
-    (item) => item.variantId && item.variantId.toString() === vId.toString()
-  );
+  const isInWishlist = window.wishlistItems.some((item) => {
+    const itemVarId = item.variantId?._id ? item.variantId._id.toString() : item.variantId?.toString();
+    const itemProdId = item.productId?._id ? item.productId._id.toString() : item.productId?.toString();
+    return (itemVarId && vId && itemVarId === vId.toString()) || (itemProdId && productID && itemProdId === productID.toString());
+  });
 
   if (isInWishlist) {
-    wishIcon.className = "w-6 h-6 text-red-500 transition-colors duration-200";
+    wishIcon.className = "fas fa-heart text-red-500 text-lg transition-colors duration-200";
   } else {
-    wishIcon.className = "w-6 h-6 text-gold-light transition-colors duration-200";
+    wishIcon.className = "far fa-heart text-gold-light text-lg transition-colors duration-200";
   }
 }
 

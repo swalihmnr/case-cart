@@ -47,4 +47,22 @@ router.patch(
   "/product/edit/:id/veriant-toggle",
   productController.patchListUnlist,
 );
+router.patch(
+  "/product/variant/:id/img-upload",
+  upload.single("image"),
+  productController.variantImageUpload,
+);
+router.patch(
+  "/product/variant/:id/img-set-main",
+  productController.variantImageSetMain,
+);
+router.patch(
+  "/product/variant/:id/img-delete",
+  productController.variantImageDelete,
+);
+router.patch(
+  "/product/variant/:id/img-replace",
+  upload.single("image"),
+  productController.variantImageReplace,
+);
 export default router;
