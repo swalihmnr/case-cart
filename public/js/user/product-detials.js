@@ -113,17 +113,19 @@ function changeMainImage(imageUrl, element) {
     };
   }
 
-  // Update thumbnails active state
+  // Reset all thumbnails to unselected state
   document.querySelectorAll(".thumbnail-item").forEach((thumb) => {
     thumb.classList.remove("border-gold-accent", "bg-gold-light/5");
-    thumb.classList.add("border-gold-light/10", "hover:border-gold-light/40");
+    thumb.classList.add("border-gold-light/10");
   });
 
+  // Highlight the clicked thumbnail
   if (element) {
-    element.classList.remove("border-gold-light/10", "hover:border-gold-light/40");
     element.classList.add("border-gold-accent", "bg-gold-light/5");
+    element.classList.remove("border-gold-light/10");
   }
 }
+
 
 // Toggle mobile zoom
 function toggleMobileZoom() {
@@ -144,20 +146,9 @@ function toggleMobileZoom() {
   }
 }
 
-// Device selection
+// Device selection — active state is managed inside selectVariant
+// so no separate listener is needed here.
 document.addEventListener("DOMContentLoaded", function () {
-  const deviceBtns = document.querySelectorAll(".device-btn");
-  deviceBtns.forEach((btn) => {
-    btn.addEventListener("click", function () {
-      deviceBtns.forEach((b) => {
-        b.classList.remove("border-gold-accent", "bg-gold-light/10", "text-gold-light");
-        b.classList.add("border-gold-light/10", "text-gray-400");
-      });
-      this.classList.add("border-gold-accent", "bg-gold-light/10", "text-gold-light");
-      this.classList.remove("border-gold-light/10", "text-gray-400");
-    });
-  });
-
   // Close zoom preview when clicking outside on mobile
   document.addEventListener("click", function (e) {
     if (
@@ -169,12 +160,13 @@ document.addEventListener("DOMContentLoaded", function () {
       zoomPreviewContainer.style.display = "none";
     }
   });
-});
 
-window.addEventListener("DOMContentLoaded", () => {
+  // Trigger the first variant load without simulating a click
   const firstBtn = document.querySelector(".device-btn");
   if (firstBtn) {
-    firstBtn.click();
+    const pid = firstBtn.getAttribute("data-pid");
+    const vid = firstBtn.getAttribute("data-vid");
+    if (pid && vid) selectVariant(pid, vid, firstBtn);
   }
 });
 
@@ -183,74 +175,50 @@ let variantID = null;
 const badge = document.getElementById("special-offer-badge");
 const nameEl = document.getElementById("offer-name");
 const discountEl = document.getElementById("offer-discount");
-const variantCache = new Map();
 
-async function selectVariant(productId, variantId) {
+async function selectVariant(productId, variantId, clickedBtn) {
   productID = productId;
   variantID = variantId;
-  
-  let variantData;
-  if (variantCache.has(variantId)) {
-    variantData = variantCache.get(variantId);
-  } else {
-    const resVariant = await api.getVariantDataAxios(productID, variantID);
-    if (resVariant && resVariant.data && resVariant.data.success) {
-      variantData = resVariant.data;
-      variantCache.set(variantId, variantData);
-    }
-  }
 
-  if (!variantData) return;
+  // Update active state on the device buttons
+  document.querySelectorAll(".device-btn").forEach((b) => {
+    b.classList.remove("border-gold-accent", "bg-gold-light/10", "text-gold-light");
+    b.classList.add("border-gold-light/10", "text-gray-400");
+    b.classList.remove("hover:border-gold-light/40"); // keep clean
+  });
+  if (clickedBtn) {
+    clickedBtn.classList.add("border-gold-accent", "bg-gold-light/10", "text-gold-light");
+    clickedBtn.classList.remove("border-gold-light/10", "text-gray-400");
+  }
+  
+  const resVariant = await api.getVariantDataAxios(productID, variantID);
   
   if (badge && nameEl && discountEl) {
-    if (variantData.disObject && variantData.disObject.isOffer) {
+    if (resVariant.data.disObject.isOffer) {
       badge.classList.remove("hidden");
-      nameEl.innerText = variantData.disObject.name;
-      const type = variantData.disObject.disType === "percentage" ? "%" : "₹";
-      discountEl.innerText = `${variantData.disObject.discountTypeValue}${type} OFF`;
+      nameEl.innerText = resVariant.data.disObject.name;
+      const type = resVariant.data.disObject.disType === "percentage" ? "%" : "₹";
+      discountEl.innerText = `${resVariant.data.disObject.discountTypeValue}${type} OFF`;
     } else {
       badge.classList.add("hidden");
     }
   }
+  
+  await api.productDetialAxios(productID);
 
   const salePriceField = document.getElementById("sale-span");
   const orgPriceField = document.getElementById("org-span");
 
-  if (salePriceField) salePriceField.innerText = `₹${variantData.salePrice}`;
-  if (orgPriceField) orgPriceField.innerText = `₹${variantData.orgPrice}`;
-
-  // Update images
-  if (variantData.images && variantData.images.length > 0) {
-    const mainImgObj = variantData.images.find(img => img.isMain) || variantData.images[0];
-    if (mainImage) mainImage.src = mainImgObj.url;
-    currentImage = mainImgObj.url;
-    
-    // Update thumbnails
-    const thumbContainer = document.getElementById('thumbnailContainer');
-    if (thumbContainer) {
-      const hasMain = variantData.images.some(i => i.isMain);
-      thumbContainer.innerHTML = variantData.images.map((img, idx) => {
-        const isActive = img.isMain || (!hasMain && idx === 0);
-        const activeClasses = isActive 
-          ? 'border-gold-accent bg-gold-light/5' 
-          : 'border-gold-light/10 hover:border-gold-light/40';
-        return `
-          <button onclick="changeMainImage('${img.url}', this)" 
-                  class="thumbnail-item w-14 h-18 md:w-16 md:h-20 bg-obsidian-light border rounded flex-shrink-0 p-2 flex items-center justify-center transition-all duration-300 ${activeClasses}">
-              <img src="${img.url}" alt="Thumbnail" class="w-full h-full object-contain">
-          </button>
-        `;
-      }).join('');
-    }
-  }
+  if (salePriceField) salePriceField.innerText = `₹${resVariant.data.salePrice}`;
+  if (orgPriceField) orgPriceField.innerText = `₹${resVariant.data.orgPrice}`;
 
   const stockCountEl = document.getElementById("stock-count");
   if (stockCountEl) {
-    if (variantData.stock <= 0) {
+    if (resVariant.data.stock <= 0) {
       stockCountEl.innerText = "Out of Stock";
       stockCountEl.className = "text-xs uppercase tracking-widest text-red-500 font-semibold mt-2";
-    } else if (variantData.stock <= 5) {
-      stockCountEl.innerText = `Only ${variantData.stock} left in stock!`;
+    } else if (resVariant.data.stock <= 5) {
+      stockCountEl.innerText = `Only ${resVariant.data.stock} left in stock!`;
       stockCountEl.className = "text-xs uppercase tracking-widest text-orange-500 font-semibold mt-2";
     } else {
       stockCountEl.innerText = "In Stock";
@@ -266,14 +234,16 @@ function updateWishlistIcon(vId) {
   const wishIcon = document.getElementById("wishlist-icon");
   if (!wishIcon || !window.wishlistItems) return;
 
-  const isInWishlist = window.wishlistItems.some(
-    (item) => item.variantId && item.variantId.toString() === vId.toString()
-  );
+  const isInWishlist = window.wishlistItems.some((item) => {
+    const itemVarId = item.variantId?._id ? item.variantId._id.toString() : item.variantId?.toString();
+    const itemProdId = item.productId?._id ? item.productId._id.toString() : item.productId?.toString();
+    return (itemVarId && vId && itemVarId === vId.toString()) || (itemProdId && productID && itemProdId === productID.toString());
+  });
 
   if (isInWishlist) {
-    wishIcon.className = "w-6 h-6 text-red-500 transition-colors duration-200";
+    wishIcon.className = "fas fa-heart text-red-500 text-lg transition-colors duration-200";
   } else {
-    wishIcon.className = "w-6 h-6 text-gold-light transition-colors duration-200";
+    wishIcon.className = "far fa-heart text-gold-light text-lg transition-colors duration-200";
   }
 }
 

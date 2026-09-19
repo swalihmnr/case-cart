@@ -1,454 +1,591 @@
-<!DOCTYPE html>
-<html lang="en">
+<%- include('../partials/header') %>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/cropperjs@1.5.12/dist/cropper.min.css">
+<link rel="stylesheet" href="/css/admin-common.css">
 
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Admin - Product Details</title>
-    <script src="https://cdn.tailwindcss.com"></script>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/toastify-js/src/toastify.min.css">
-    <script src="https://cdn.jsdelivr.net/npm/toastify-js"></script>
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/cropperjs@1.5.12/dist/cropper.min.css">
-    <link rel="stylesheet" href="/css/admin-common.css">
-    <style>
-        :root {
-            --primary: #6366f1;
-            --primary-dark: #4f46e5;
-            --primary-light: #818cf8;
-            --success: #10b981;
-            --warning: #f59e0b;
-            --danger: #ef4444;
-            --gray-50: #f9fafb;
-            --gray-100: #f3f4f6;
-            --gray-200: #e5e7eb;
-            --gray-600: #4b5563;
-            --gray-900: #111827;
-        }
+<style>
+    .image-container {
+        position: relative;
+        overflow: hidden;
+    }
 
-        .premium-card {
-            background: white;
-            border-radius: 1rem;
-            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05), 0 2px 4px -1px rgba(0, 0, 0, 0.03);
-            border: 1px solid var(--gray-200);
-            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-        }
+    .image-overlay {
+        position: absolute;
+        inset: 0;
+        background: rgba(0, 0, 0, 0.65);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        opacity: 0;
+        transition: opacity 0.2s ease-in-out;
+    }
 
-        .premium-card:hover {
-            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.08);
-        }
+    .image-container:hover .image-overlay {
+        opacity: 1;
+    }
 
-        .btn-premium {
-            background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%);
-            color: white;
-            font-weight: 600;
-            padding: 0.625rem 1.25rem;
-            border-radius: 0.75rem;
-            transition: all 0.2s;
-            display: inline-flex;
-            align-items: center;
-            justify-content: center;
-            gap: 0.5rem;
-        }
+    .main-image {
+        border: 2px solid #7c3aed;
+        box-shadow: 0 0 0 2px rgba(124, 58, 237, 0.2);
+    }
 
-        .btn-premium:hover {
-            transform: translateY(-1px);
-            box-shadow: 0 4px 12px rgba(99, 102, 241, 0.3);
-            filter: brightness(1.1);
-        }
+    .cropper-container {
+        direction: ltr;
+        font-size: 0;
+        line-height: 0;
+        position: relative;
+        touch-action: none;
+        user-select: none;
+    }
 
-        .btn-premium:active {
-            transform: translateY(0);
-        }
+    .edit-mode {
+        border: 1px dashed #7c3aed;
+        background-color: #faf5ff;
+    }
+</style>
 
-        .btn-secondary-premium {
-            background: white;
-            color: var(--gray-900);
-            border: 1px solid var(--gray-200);
-            font-weight: 600;
-            padding: 0.625rem 1.25rem;
-            border-radius: 0.75rem;
-            transition: all 0.2s;
-        }
+<div class="flex min-h-screen bg-gray-50/60">
+    <%- include('../partials/sidebar') %>
 
-        .btn-secondary-premium:hover {
-            background: var(--gray-50);
-            border-color: var(--gray-600);
-        }
+    <main class="flex-1 p-4 md:p-6 lg:p-8 lg:ml-0 overflow-x-hidden min-h-screen">
+        <%
+            const getImgUrl = (img) => {
+                if (!img) return '/img/placeholder.jpg';
+                if (typeof img === 'string') return img;
+                return img.url || img.secure_url || img.path || img.src || '/img/placeholder.jpg';
+            };
 
-        .image-container {
-            position: relative;
-            overflow: hidden;
-            border-radius: 0.75rem;
-        }
+            let resolvedImages = [];
+            if (product.productImages && product.productImages.length > 0) {
+                resolvedImages = product.productImages;
+            } else if (product.images && product.images.length > 0) {
+                resolvedImages = product.images;
+            } else if (product.variants && product.variants.length > 0) {
+                const vWithImgs = product.variants.find(v => v.images && v.images.length > 0);
+                if (vWithImgs) {
+                    resolvedImages = vWithImgs.images;
+                }
+            }
+        %>
+        <div class="max-w-7xl mx-auto space-y-6">
 
-        .image-overlay {
-            position: absolute;
-            inset: 0;
-            background: rgba(0, 0, 0, 0.5);
-            backdrop-filter: blur(2px);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            opacity: 0;
-            transition: all 0.3s;
-        }
-
-        .image-container:hover .image-overlay {
-            opacity: 1;
-        }
-
-        .status-badge {
-            padding: 0.25rem 0.75rem;
-            border-radius: 9999px;
-            font-size: 0.75rem;
-            font-weight: 600;
-            display: inline-flex;
-            align-items: center;
-            gap: 0.25rem;
-        }
-
-        .status-badge-success { background: #ecfdf5; color: #065f46; }
-        .status-badge-warning { background: #fffbeb; color: #92400e; }
-        .status-badge-danger { background: #fef2f2; color: #991b1b; }
-
-        @keyframes spin { to { transform: rotate(360deg); } }
-        .spinner {
-            width: 1.25rem;
-            height: 1.25rem;
-            border: 2px solid rgba(0, 0, 0, 0.1);
-            border-radius: 50%;
-            border-top-color: var(--primary);
-            animation: spin 0.6s linear infinite;
-        }
-
-        #global-loading-overlay {
-            position: fixed;
-            inset: 0;
-            background: rgba(255, 255, 255, 0.8);
-            backdrop-filter: blur(8px);
-            z-index: 1000;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            transition: all 0.3s;
-        }
-
-        .hidden-overlay { opacity: 0; pointer-events: none; }
-
-        .form-input {
-            width: 100%;
-            padding: 0.625rem 1rem;
-            border: 1px solid var(--gray-200);
-            border-radius: 0.75rem;
-            transition: all 0.2s;
-        }
-
-        .form-input:focus {
-            outline: none;
-            border-color: var(--primary);
-            box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.1);
-        }
-    </style>
-</head>
-
-<body class="bg-gray-50">
-    <!-- Global Loading Overlay -->
-    <div id="global-loading-overlay" class="hidden-overlay">
-        <div class="flex flex-col items-center">
-            <span class="loader-glow"></span>
-            <p class="mt-4 text-blue-900 font-bold text-sm tracking-widest animate-pulse">PROCESSING...</p>
-        </div>
-    </div>
-    <!-- Header -->
-    <header class="bg-white border-b sticky top-0 z-40">
-        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
-            <div class="flex items-center justify-between">
-                <div class="flex items-center gap-4">
-                    <button onclick="window.location.href='/admin/product-list'" class="p-2 hover:bg-gray-100 rounded-full transition-colors">
-                        <i class="fas fa-arrow-left text-gray-600"></i>
-                    </button>
+            <!-- Page Header -->
+            <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 pb-2 border-b border-gray-200">
+                <div class="flex items-center gap-3.5">
+                    <a href="/admin/product-list"
+                        class="inline-flex items-center justify-center w-10 h-10 rounded-xl bg-white border border-gray-200 text-gray-600 hover:text-purple-600 hover:border-purple-300 hover:bg-purple-50 transition shadow-sm"
+                        title="Back to Products">
+                        <i class="fas fa-arrow-left"></i>
+                    </a>
                     <div>
-                        <div class="flex items-center gap-2 text-xs text-gray-500 mb-0.5">
-                            <a href="/admin/dashboard" class="hover:text-primary">Dashboard</a>
-                            <i class="fas fa-chevron-right text-[10px]"></i>
-                            <a href="/admin/product-list" class="hover:text-primary">Products</a>
-                            <i class="fas fa-chevron-right text-[10px]"></i>
-                            <span class="text-gray-900">Edit</span>
+                        <div class="flex flex-wrap items-center gap-2.5">
+                            <h1 class="text-2xl lg:text-3xl font-bold text-gray-900">Product Details</h1>
+                            <% if (product.catgId) { %>
+                                <span class="px-3 py-0.5 text-xs font-semibold rounded-full bg-purple-100 text-purple-700">
+                                    <i class="fas fa-tag mr-1 text-[10px]"></i><%= product.catgId.name %>
+                                </span>
+                            <% } %>
                         </div>
-                        <h1 class="text-xl font-bold text-gray-900 leading-none">Product Details</h1>
+                        <p class="text-xs sm:text-sm text-gray-500 mt-1">
+                            Manage product information, media gallery, pricing, and device variants.
+                        </p>
                     </div>
                 </div>
-                
+
                 <div class="flex items-center gap-3">
-                    <button onclick="window.location.reload()" class="p-2 text-gray-500 hover:text-primary transition-colors" title="Refresh">
-                        <i class="fas fa-sync-alt"></i>
-                    </button>
-                    <div class="h-6 w-px bg-gray-200"></div>
-                    <span class="text-sm font-medium text-gray-600">ID: <%= product._id.toString().slice(-6).toUpperCase() %></span>
+                    <a href="/admin/product-list"
+                        class="px-4 py-2.5 text-sm font-medium text-gray-700 bg-white border border-gray-200 rounded-xl hover:bg-gray-50 hover:text-gray-900 transition shadow-sm flex items-center gap-2">
+                        <i class="fas fa-boxes text-purple-600"></i>
+                        <span>All Products</span>
+                    </a>
                 </div>
             </div>
-        </div>
-    </header>
 
-    <%- include("../partials/flash") %>
+            <!-- Main Layout Grid -->
+            <div class="grid grid-cols-1 xl:grid-cols-3 gap-6">
 
-        <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-            <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
-                <!-- Left Column - Product Images & Details -->
-                <div class="lg:col-span-2 space-y-6">
-                    <!-- Product Images Moved to Variant Modal -->
+                <!-- Left 2 Columns: Basic Information & Variants -->
+                <div class="xl:col-span-2 space-y-6">
 
-                    <!-- Basic Information -->
-                    <div class="premium-card p-6" id="basicInfoSection">
-                        <div class="flex items-center justify-between mb-6">
-                            <div class="flex items-center gap-3">
-                                <div class="w-10 h-10 bg-indigo-50 rounded-xl flex items-center justify-center text-indigo-600">
-                                    <i class="fas fa-info-circle"></i>
+                    <!-- Basic Information Card -->
+                    <div class="bg-white rounded-2xl border border-gray-200 shadow-sm p-6 transition-all" id="basicInfoSection">
+                        <div class="flex items-center justify-between pb-4 mb-5 border-b border-gray-100">
+                            <div class="flex items-center gap-2.5">
+                                <div class="w-9 h-9 rounded-xl bg-purple-50 text-purple-600 flex items-center justify-center">
+                                    <i class="fas fa-info-circle text-base"></i>
                                 </div>
-                                <h2 class="text-lg font-bold text-gray-900">Basic Information</h2>
+                                <div>
+                                    <h2 class="text-lg font-bold text-gray-900">Basic Information</h2>
+                                    <p class="text-xs text-gray-500">General product identity and category details</p>
+                                </div>
                             </div>
-                            <button id="editBasicInfoBtn" class="text-sm font-semibold text-indigo-600 hover:text-indigo-700 flex items-center gap-1">
-                                <i class="fas fa-edit"></i> Edit Details
+                            <button id="editBasicInfoBtn"
+                                class="px-3.5 py-1.5 bg-purple-50 hover:bg-purple-100 text-purple-700 border border-purple-200 rounded-xl text-xs font-semibold flex items-center gap-1.5 transition">
+                                <i class="fas fa-pen text-xs"></i>
+                                <span>Edit Details</span>
                             </button>
                         </div>
 
-                        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                            <div class="space-y-4">
-                                <div>
-                                    <label class="text-xs font-bold text-gray-500 uppercase tracking-wider">Product Name</label>
-                                    <p id="productNameDisplay" class="text-gray-900 font-semibold mt-1">
-                                        <%= product.name %>
-                                    </p>
-                                    <input id="productNameEdit" type="text" class="hidden form-input mt-1" value="<%= product.name %>">
-                                </div>
-
-                                <div>
-                                    <label class="text-xs font-bold text-gray-500 uppercase tracking-wider">Category</label>
-                                    <p id="categoryDisplay" class="text-gray-900 font-semibold mt-1" data-category-id="<%= product.catgId ? product.catgId._id : '' %>">
-                                        <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-gray-100 text-gray-800">
-                                            <%= product.catgId ? product.catgId.name : 'No Category' %>
-                                        </span>
-                                    </p>
-                                    <select id="categoryEdit" class="hidden form-input mt-1">
-                                        <% categories.forEach(category=> { %>
-                                            <option value="<%= category._id %>" <%= product.catgId && product.catgId._id.toString() === category._id.toString() ? 'selected' : '' %>>
-                                                <%= category.name %>
-                                            </option>
-                                        <% }) %>
-                                    </select>
-                                </div>
+                        <div class="space-y-5">
+                            <!-- Product Name -->
+                            <div>
+                                <label class="block text-xs font-semibold uppercase tracking-wider text-gray-500 mb-1.5">
+                                    Product Name
+                                </label>
+                                <p id="productNameDisplay" class="text-base sm:text-lg font-bold text-gray-900">
+                                    <%= product.name %>
+                                </p>
+                                <input id="productNameEdit" type="text"
+                                    class="hidden w-full px-4 py-2.5 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-purple-500 text-sm font-medium transition"
+                                    value="<%= product.name %>">
                             </div>
 
+                            <!-- Category -->
                             <div>
-                                <label class="text-xs font-bold text-gray-500 uppercase tracking-wider">Description</label>
-                                <p id="descriptionDisplay" class="text-gray-600 mt-1 text-sm leading-relaxed line-clamp-4">
-                                    <%= product.description %>
+                                <label class="block text-xs font-semibold uppercase tracking-wider text-gray-500 mb-1.5">
+                                    Category
+                                </label>
+                                <p id="categoryDisplay" class="text-sm font-medium text-gray-800" data-category-id="<%= product.catgId ? product.catgId._id : '' %>">
+                                    <span class="inline-flex items-center px-2.5 py-1 rounded-lg text-xs font-semibold bg-gray-100 text-gray-800">
+                                        <i class="fas fa-folder text-purple-500 mr-1.5"></i>
+                                        <%= product.catgId ? product.catgId.name : 'Unassigned Category' %>
+                                    </span>
                                 </p>
-                                <textarea id="descriptionEdit" class="hidden form-input mt-1" rows="4"><%= product.description %></textarea>
+                                <select id="categoryEdit"
+                                    class="hidden w-full px-4 py-2.5 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-purple-500 text-sm font-medium transition">
+                                    <% categories.forEach(category => { %>
+                                        <option value="<%= category._id %>" <%= product.catgId && product.catgId._id.toString() === category._id.toString() ? 'selected' : '' %>>
+                                            <%= category.name %>
+                                        </option>
+                                    <% }) %>
+                                </select>
+                            </div>
+
+                            <!-- Product Description -->
+                            <div>
+                                <label class="block text-xs font-semibold uppercase tracking-wider text-gray-500 mb-1.5">
+                                    Product Description
+                                </label>
+                                <div id="descriptionDisplay" class="text-sm text-gray-700 leading-relaxed bg-gray-50/70 p-4 rounded-xl border border-gray-100 whitespace-pre-line">
+                                    <%= product.description %>
+                                </div>
+                                <textarea id="descriptionEdit"
+                                    class="hidden w-full px-4 py-2.5 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-purple-500 text-sm leading-relaxed transition resize-none"
+                                    rows="5"><%= product.description %></textarea>
                             </div>
                         </div>
 
-                        <div id="basicInfoActions" class="hidden mt-6 pt-6 border-t border-gray-100 flex justify-end gap-3">
-                            <button id="cancelBasicInfoBtn" class="btn-secondary-premium">Cancel</button>
-                            <button id="saveBasicInfoBtn" class="btn-premium">Save Changes</button>
+                        <!-- Basic Info Action Buttons -->
+                        <div id="basicInfoActions" class="hidden mt-6 pt-4 border-t border-purple-200/60 flex justify-end gap-3">
+                            <button id="cancelBasicInfoBtn"
+                                class="px-4 py-2 border border-gray-300 text-gray-700 rounded-xl hover:bg-gray-50 transition text-sm font-medium">
+                                Cancel
+                            </button>
+                            <button id="saveBasicInfoBtn"
+                                class="px-5 py-2 bg-purple-600 hover:bg-purple-700 text-white rounded-xl transition text-sm font-medium shadow-sm flex items-center gap-2">
+                                <i class="fas fa-check text-xs"></i>
+                                <span>Save Changes</span>
+                            </button>
                         </div>
                     </div>
 
-
-                    <!-- Pricing & Stock -->
-
-
-                    <!-- Variants -->
-                    <div class="premium-card p-6">
-                        <div class="flex items-center justify-between mb-6">
-                            <div class="flex items-center gap-3">
-                                <div class="w-10 h-10 bg-purple-50 rounded-xl flex items-center justify-center text-purple-600">
-                                    <i class="fas fa-layer-group"></i>
+                    <!-- Product Variants Card -->
+                    <div class="bg-white rounded-2xl border border-gray-200 shadow-sm p-6">
+                        <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 pb-4 mb-5 border-b border-gray-100">
+                            <div class="flex items-center gap-2.5">
+                                <div class="w-9 h-9 rounded-xl bg-purple-50 text-purple-600 flex items-center justify-center">
+                                    <i class="fas fa-layer-group text-base"></i>
                                 </div>
-                                <h2 class="text-lg font-bold text-gray-900">Product Variants</h2>
+                                <div>
+                                    <div class="flex items-center gap-2">
+                                        <h2 class="text-lg font-bold text-gray-900">Product Variants</h2>
+                                        <span class="px-2 py-0.5 text-xs font-semibold rounded-full bg-gray-100 text-gray-600">
+                                            <%= product.variants ? product.variants.length : 0 %> models
+                                        </span>
+                                    </div>
+                                    <p class="text-xs text-gray-500">Models, inventory counts, and individual variant pricing</p>
+                                </div>
                             </div>
-                            <button onclick="openAddVariantModal()" class="btn-premium">
-                                <i class="fas fa-plus"></i> Add Variant
+                            <button onclick="openAddVariantModal()"
+                                class="px-4 py-2 bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-700 hover:to-indigo-700 text-white rounded-xl shadow-sm hover:shadow transition-all text-xs font-semibold flex items-center gap-2">
+                                <i class="fas fa-plus"></i>
+                                <span>Add Variant</span>
                             </button>
                         </div>
 
-                        <div class="overflow-x-auto">
-                            <table class="min-w-full divide-y divide-gray-200">
-                                <thead class="bg-gray-50/50">
+                        <!-- Variants Table -->
+                        <div class="overflow-x-auto rounded-xl border border-gray-200">
+                            <table class="min-w-full divide-y divide-gray-200 text-left">
+                                <thead class="bg-gray-50/80">
                                     <tr>
-                                        <th class="px-4 py-4 text-left text-xs font-bold text-gray-500 uppercase tracking-widest">Images</th>
-                                        <th class="px-4 py-4 text-left text-xs font-bold text-gray-500 uppercase tracking-widest">Model</th>
-                                        <th class="px-4 py-4 text-left text-xs font-bold text-gray-500 uppercase tracking-widest">Stock</th>
-                                        <th class="px-4 py-4 text-left text-xs font-bold text-gray-500 uppercase tracking-widest">Prices</th>
-                                        <th class="px-4 py-4 text-left text-xs font-bold text-gray-500 uppercase tracking-widest">Status</th>
-                                        <th class="px-4 py-4 text-right text-xs font-bold text-gray-500 uppercase tracking-widest">Actions</th>
+                                        <th class="px-4 py-3 text-xs font-bold text-gray-500 uppercase tracking-wider">Device / Model</th>
+                                        <th class="px-4 py-3 text-xs font-bold text-gray-500 uppercase tracking-wider">Stock</th>
+                                        <th class="px-4 py-3 text-xs font-bold text-gray-500 uppercase tracking-wider">Original Price</th>
+                                        <th class="px-4 py-3 text-xs font-bold text-gray-500 uppercase tracking-wider">Sale Price</th>
+                                        <th class="px-4 py-3 text-xs font-bold text-gray-500 uppercase tracking-wider">Status</th>
+                                        <th class="px-4 py-3 text-xs font-bold text-gray-500 uppercase tracking-wider text-right">Actions</th>
                                     </tr>
                                 </thead>
-                                <tbody class="bg-white divide-y divide-gray-200">
-                                    <% product.variants.forEach(veriant=> { %>
-                                        <tr class="hover:bg-gray-50 transition-colors">
-                                            <td class="px-4 py-4">
-                                                <div class="flex -space-x-3 overflow-hidden p-1">
-                                                    <% if (veriant.images && veriant.images.length > 0) { %>
-                                                        <% veriant.images.forEach((img, i) => { %>
-                                                            <div class="relative group">
-                                                                <img class="inline-block h-12 w-12 rounded-xl ring-2 ring-white object-cover shadow-sm transition-transform group-hover:scale-110 group-hover:z-10" 
-                                                                     src="<%= img.url %>" 
-                                                                     alt="Variant image <%= i + 1 %>">
-                                                                <% if (img.isMain) { %>
-                                                                    <div class="absolute -top-1 -right-1 w-3 h-3 bg-blue-500 border-2 border-white rounded-full"></div>
-                                                                <% } %>
+                                <tbody class="bg-white divide-y divide-gray-100">
+                                    <% if (product.variants && product.variants.length > 0) { %>
+                                        <% product.variants.forEach((veriant, index) => { %>
+                                            <%
+                                                let variantImgUrl = '/img/placeholder.jpg';
+                                                if (veriant.images && veriant.images.length > 0) {
+                                                    const mainVImg = veriant.images.find(img => img && img.isMain);
+                                                    variantImgUrl = mainVImg ? getImgUrl(mainVImg) : getImgUrl(veriant.images[0]);
+                                                } else if (resolvedImages && resolvedImages.length > 0) {
+                                                    const mainPImg = resolvedImages.find(img => img && img.isMain);
+                                                    variantImgUrl = mainPImg ? getImgUrl(mainPImg) : getImgUrl(resolvedImages[0]);
+                                                }
+                                            %>
+                                            <tr class="variant-table-row hover:bg-purple-50/50 transition cursor-pointer group"
+                                                id="variant-row-<%= veriant._id %>"
+                                                data-variant-id="<%= veriant._id %>"
+                                                data-variant-model="<%= veriant.deviceModel %>"
+                                                onclick="selectVariantRow('<%= veriant._id %>')">
+                                                <!-- Model & Variant Image -->
+                                                <td class="px-4 py-3 text-sm font-semibold text-gray-900 variant-model">
+                                                    <div class="flex items-center gap-3">
+                                                        <div class="w-12 h-12 rounded-xl bg-gray-100 border border-gray-200 overflow-hidden flex-shrink-0 relative shadow-2xs group/thumb cursor-pointer" onclick="event.stopPropagation(); selectVariantRow('<%= veriant._id %>')" title="Click to view & manage photos">
+                                                            <img src="<%= variantImgUrl %>" alt="<%= veriant.deviceModel %>" class="w-full h-full object-cover group-hover/thumb:scale-105 transition duration-200" onerror="this.src='/img/placeholder.jpg'">
+                                                            <% if (veriant.images && veriant.images.length > 1) { %>
+                                                                <span class="absolute bottom-0 right-0 bg-black/75 text-white text-[9px] px-1 rounded-tl font-bold">+<%= veriant.images.length %></span>
+                                                            <% } %>
+                                                            <div class="absolute inset-0 bg-black/55 text-white opacity-0 group-hover/thumb:opacity-100 flex items-center justify-center text-xs transition">
+                                                                <i class="fas fa-images"></i>
                                                             </div>
-                                                        <% }) %>
-                                                    <% } else { %>
-                                                        <div class="h-12 w-32 bg-gray-50 border border-dashed border-gray-200 rounded-xl flex items-center justify-center">
-                                                            <span class="text-[10px] text-gray-400 font-bold uppercase tracking-widest">No Assets</span>
                                                         </div>
+                                                        <div>
+                                                            <div class="font-bold text-gray-900 flex items-center gap-1.5">
+                                                                <span><%= veriant.deviceModel %></span>
+                                                                <span class="selected-indicator hidden text-[10px] bg-purple-600 text-white font-semibold px-1.5 py-0.5 rounded-md">Selected</span>
+                                                            </div>
+                                                            <div class="flex items-center gap-2 mt-0.5">
+                                                                <span class="text-[11px] text-gray-400 font-normal">ID: <%= veriant._id ? veriant._id.toString().slice(-6) : '' %></span>
+                                                                <button type="button" onclick="event.stopPropagation(); selectVariantRow('<%= veriant._id %>')" class="text-[10px] text-purple-600 hover:text-purple-700 font-semibold flex items-center gap-1">
+                                                                    <i class="fas fa-photo-film text-[9px]"></i> View Photos
+                                                                </button>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                </td>
+
+                                                <!-- Stock -->
+                                                <td class="px-4 py-3.5 text-sm text-gray-700 variant-stock font-medium">
+                                                    <%= veriant.stock %>
+                                                </td>
+
+                                                <!-- Original Price -->
+                                                <td class="px-4 py-3.5 text-sm text-gray-500 variant-original-price">
+                                                    ₹<%= veriant.orgPrice %>
+                                                </td>
+
+                                                <!-- Sale Price -->
+                                                <td class="px-4 py-3.5 text-sm font-bold text-gray-900 variant-sale-price">
+                                                    ₹<%= veriant.salePrice %>
+                                                </td>
+
+                                                <!-- Status Badge -->
+                                                <td class="px-4 py-3.5" id="status-variant-<%= veriant._id %>">
+                                                    <% if (veriant.stock > 20) { %>
+                                                        <span class="inline-flex items-center gap-1 px-2.5 py-1 text-xs font-semibold rounded-full bg-green-50 text-green-700 border border-green-200">
+                                                            <span class="w-1.5 h-1.5 rounded-full bg-green-500"></span>
+                                                            In Stock
+                                                        </span>
+                                                    <% } else if (veriant.stock > 0) { %>
+                                                        <span class="inline-flex items-center gap-1 px-2.5 py-1 text-xs font-semibold rounded-full bg-amber-50 text-amber-700 border border-amber-200">
+                                                            <span class="w-1.5 h-1.5 rounded-full bg-amber-500 animate-pulse"></span>
+                                                            Low Stock
+                                                        </span>
+                                                    <% } else { %>
+                                                        <span class="inline-flex items-center gap-1 px-2.5 py-1 text-xs font-semibold rounded-full bg-red-50 text-red-700 border border-red-200">
+                                                            <span class="w-1.5 h-1.5 rounded-full bg-red-500"></span>
+                                                            Out of Stock
+                                                        </span>
                                                     <% } %>
-                                                </div>
-                                            </td>
+                                                </td>
 
-                                            <td class="px-4 py-4">
-                                                <div class="text-sm font-bold text-gray-900 mb-0.5"><%= veriant.deviceModel %></div>
-                                                <div class="flex items-center gap-2">
-                                                    <span class="px-1.5 py-0.5 rounded text-[10px] font-bold bg-indigo-50 text-indigo-600 uppercase tracking-wider">
-                                                        <%= veriant.brandId ? veriant.brandId.name : 'Generic' %>
-                                                    </span>
-                                                    <span class="text-[10px] text-gray-400 font-medium tracking-tighter">
-                                                        #<%= veriant._id.toString().slice(-6).toUpperCase() %>
-                                                    </span>
+                                                <!-- Actions -->
+                                                <td class="px-4 py-3.5 text-right whitespace-nowrap">
+                                                    <div class="inline-flex items-center gap-2">
+                                                        <button onclick="event.stopPropagation(); editVariant('<%= veriant._id %>')"
+                                                            class="px-2.5 py-1 bg-purple-50 text-purple-700 hover:bg-purple-100 border border-purple-200 text-xs font-semibold rounded-lg transition"
+                                                            title="Edit Variant">
+                                                            <i class="fas fa-edit mr-1"></i>Edit
+                                                        </button>
+                                                        <% if (veriant.isListed === true) { %>
+                                                            <button id="listing-btn-<%= veriant._id %>" onclick="event.stopPropagation(); toggleListUnlist('<%= veriant._id %>', this)"
+                                                                class="px-2.5 py-1 bg-gray-100 text-gray-700 hover:bg-red-50 hover:text-red-700 hover:border-red-200 border border-gray-200 text-xs font-semibold rounded-lg transition w-20 text-center"
+                                                                title="Unlist Variant">
+                                                                <i class="fas fa-eye-slash mr-1"></i>Unlist
+                                                            </button>
+                                                        <% } else { %>
+                                                            <button id="listing-btn-<%= veriant._id %>" onclick="event.stopPropagation(); toggleListUnlist('<%= veriant._id %>', this)"
+                                                                class="px-2.5 py-1 bg-green-50 text-green-700 hover:bg-green-100 border border-green-200 text-xs font-semibold rounded-lg transition w-20 text-center"
+                                                                title="List Variant">
+                                                                <i class="fas fa-eye mr-1"></i>List
+                                                            </button>
+                                                        <% } %>
+                                                    </div>
+                                                </td>
+                                            </tr>
+                                        <% }) %>
+                                    <% } else { %>
+                                        <tr>
+                                            <td colspan="6" class="py-8 text-center text-gray-500">
+                                                <div class="w-12 h-12 mx-auto mb-2 rounded-full bg-gray-100 flex items-center justify-center text-gray-400">
+                                                    <i class="fas fa-box-open text-xl"></i>
                                                 </div>
-                                            </td>
-
-                                            <td class="px-4 py-4 text-sm font-medium text-gray-600">
-                                                <%= veriant.stock %> units
-                                            </td>
-                                            <td class="px-4 py-4">
-                                                <div class="text-sm font-bold text-indigo-600">₹<%= veriant.salePrice %></div>
-                                                <div class="text-xs text-gray-400 line-through">₹<%= veriant.orgPrice %></div>
-                                            </td>
-                                            <td class="px-4 py-4">
-                                                <% if (veriant.stock > 20) { %>
-                                                    <span class="status-badge status-badge-success">
-                                                        <i class="fas fa-check-circle text-[10px]"></i> In Stock
-                                                    </span>
-                                                <% } else if (veriant.stock > 0) { %>
-                                                    <span class="status-badge status-badge-warning">
-                                                        <i class="fas fa-exclamation-circle text-[10px]"></i> Low Stock
-                                                    </span>
-                                                <% } else { %>
-                                                    <span class="status-badge status-badge-danger">
-                                                        <i class="fas fa-times-circle text-[10px]"></i> Out of Stock
-                                                    </span>
-                                                <% } %>
-                                            </td>
-                                            <td class="px-4 py-4 text-right">
-                                                <div class="flex items-center justify-end gap-2">
-                                                    <button onclick="manageVariantImages('<%= veriant._id %>')" 
-                                                        class="p-2 text-indigo-600 hover:bg-indigo-50 rounded-lg transition-colors" title="Manage Images">
-                                                        <i class="fas fa-images"></i>
-                                                    </button>
-                                                    <button onclick="openEditVariantModal('<%= veriant._id %>')" 
-                                                        class="p-2 text-blue-600 hover:bg-blue-50 rounded-lg transition-colors" title="Edit Info">
-                                                        <i class="fas fa-edit"></i>
-                                                    </button>
-                                                    <button onclick="toggleListUnlist('<%= veriant._id %>', this)" 
-                                                        id="listing-btn-<%= veriant._id %>"
-                                                        class="p-2 <%= veriant.isListed ? 'text-amber-600 hover:bg-amber-50' : 'text-emerald-600 hover:bg-emerald-50' %> rounded-lg transition-colors" 
-                                                        title="<%= veriant.isListed ? 'Unlist' : 'List' %>">
-                                                        <i class="fas <%= veriant.isListed ? 'fa-eye-slash' : 'fa-eye' %>"></i>
-                                                    </button>
-                                                </div>
+                                                <p class="text-sm font-medium text-gray-700">No variants found</p>
+                                                <p class="text-xs text-gray-400 mt-0.5">Click "Add Variant" to create models with inventory.</p>
                                             </td>
                                         </tr>
-                                    <% }) %>
+                                    <% } %>
                                 </tbody>
-
                             </table>
                         </div>
                     </div>
                 </div>
 
-                <!-- Right Column - Stats & Actions -->
-                <!-- <div class="space-y-6">
-                
-                <div class="bg-white rounded-lg shadow-sm p-6">
-                    <h2 class="text-lg font-semibold text-gray-900 mb-4">Quick Stats</h2>
-                    <div class="space-y-4">
-                        <div class="flex items-center justify-between p-3 bg-blue-50 rounded-lg">
+                <!-- Right 1 Column: Product / Variant Images & Overview -->
+                <div class="xl:col-span-1 space-y-6">
+
+                    <!-- Product / Variant Images Card -->
+                    <div class="bg-white rounded-2xl border border-gray-200 shadow-sm p-6" id="imagesCard">
+                        <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-4 mb-4 border-b border-gray-100">
                             <div>
-                                <p class="text-sm text-gray-600">Total Sales</p>
-                                <p class="text-2xl font-bold text-blue-600">1,284</p>
+                                <div class="flex items-center gap-2">
+                                    <div class="w-8 h-8 rounded-lg bg-purple-50 text-purple-600 flex items-center justify-center">
+                                        <i class="fas fa-images text-sm" id="imagesCardIcon"></i>
+                                    </div>
+                                    <h2 class="text-base font-bold text-gray-900" id="imagesCardTitle">Product Images</h2>
+                                </div>
+                                <div class="mt-0.5 flex items-center gap-2">
+                                    <p class="text-xs text-gray-500" id="imagesCardDesc">General gallery photos</p>
+                                </div>
                             </div>
-                            <i class="fas fa-shopping-cart text-blue-600 text-2xl"></i>
+                            <div class="flex items-center gap-2">
+                                <button id="switchProductBtn" onclick="selectProductContext()"
+                                    class="hidden px-2.5 py-1.5 bg-gray-100 hover:bg-gray-200 text-gray-700 rounded-xl text-xs font-semibold transition items-center gap-1 cursor-pointer">
+                                    <i class="fas fa-arrow-left text-[10px]"></i>
+                                    <span>All Photos</span>
+                                </button>
+                                <button id="addImageCardBtn" onclick="handleCardAddImage()"
+                                    class="px-3 py-1.5 bg-purple-600 hover:bg-purple-700 text-white rounded-xl text-xs font-semibold transition flex items-center gap-1.5 shadow-sm cursor-pointer">
+                                    <i class="fas fa-plus text-[10px]"></i>
+                                    <span id="addImageCardBtnText">Add Images</span>
+                                </button>
+                            </div>
                         </div>
-                        <div class="flex items-center justify-between p-3 bg-green-50 rounded-lg">
-                            <div>
-                                <p class="text-sm text-gray-600">Revenue</p>
-                                <p class="text-2xl font-bold text-green-600">₹160,487</p>
-                            </div>
-                            <i class="fas fa-dollar-sign text-green-600 text-2xl"></i>
+
+                        <!-- Images Gallery Grid -->
+                        <div class="grid grid-cols-2 gap-3" id="productImagesContainer">
+                            <% if (resolvedImages && resolvedImages.length > 0) { %>
+                                <% resolvedImages.forEach((image, index) => { %>
+                                    <% const imgUrl = getImgUrl(image); %>
+                                    <% const imgId = (image && image._id) ? image._id : (index + 1); %>
+                                    <div id="image-<%= index + 1 %>"
+                                        class="image-container group relative rounded-xl overflow-hidden border <%= image && image.isMain ? 'main-image' : 'border-gray-200 hover:border-gray-300' %> bg-gray-50 transition duration-200">
+                                        <div class="aspect-square w-full bg-gray-100 flex items-center justify-center overflow-hidden">
+                                            <img src="<%= imgUrl %>" alt="<%= product.name %>" class="w-full h-full object-cover group-hover:scale-105 transition duration-300" onerror="this.src='/img/placeholder.jpg'">
+                                        </div>
+                                        <% if (image && image.isMain) { %>
+                                            <span class="absolute top-2 left-2 bg-purple-600 text-white text-[10px] font-bold px-2 py-0.5 rounded-full shadow">
+                                                Main
+                                            </span>
+                                        <% } %>
+                                        <div class="image-overlay">
+                                            <div class="flex items-center gap-1.5 p-2">
+                                                <button onclick="setAsMain('<%= index + 1 %>')"
+                                                    class="w-8 h-8 rounded-full bg-white/95 hover:bg-white text-yellow-500 flex items-center justify-center shadow hover:scale-110 transition cursor-pointer"
+                                                    title="Set as Main">
+                                                    <i class="fas fa-star text-xs"></i>
+                                                </button>
+                                                <button onclick="updateImage('<%= imgId %>', this)" data-btnmode="edit"
+                                                    class="w-8 h-8 rounded-full bg-white/95 hover:bg-white text-blue-600 flex items-center justify-center shadow hover:scale-110 transition cursor-pointer"
+                                                    title="Crop & Replace">
+                                                    <i class="fas fa-crop-alt text-xs"></i>
+                                                </button>
+                                                <button onclick="deleteImage('<%= imgId %>')"
+                                                    class="w-8 h-8 rounded-full bg-white/95 hover:bg-white text-red-600 flex items-center justify-center shadow hover:scale-110 transition cursor-pointer"
+                                                    title="Delete Image">
+                                                    <i class="fas fa-trash-alt text-xs"></i>
+                                                </button>
+                                            </div>
+                                        </div>
+                                    </div>
+                                <% }) %>
+                            <% } else { %>
+                                <div class="col-span-full py-8 px-4 text-center border-2 border-dashed border-gray-200 rounded-xl bg-gray-50/50">
+                                    <div class="w-12 h-12 mx-auto mb-3 rounded-full bg-purple-50 flex items-center justify-center text-purple-600">
+                                        <i class="fas fa-images text-xl"></i>
+                                    </div>
+                                    <p class="text-sm font-semibold text-gray-700">No Product Images</p>
+                                    <p class="text-xs text-gray-400 mt-1 mb-3">Upload at least 3 high-resolution images</p>
+                                    <button onclick="openImageUploader(this)" data-btnmode="add"
+                                        class="inline-flex items-center px-3 py-1.5 text-xs font-medium text-white bg-purple-600 rounded-lg hover:bg-purple-700 transition shadow-sm">
+                                        <i class="fas fa-plus mr-1.5"></i>Upload Images
+                                    </button>
+                                </div>
+                            <% } %>
+                        </div>
+
+                        <div class="mt-4 pt-3 border-t border-gray-100 flex items-center justify-between text-xs text-gray-500">
+                            <span id="imagesCountHint"><i class="fas fa-info-circle mr-1 text-purple-500"></i>Min 3, Max 5 images</span>
+                            <span class="text-gray-400">Hover photo for actions</span>
                         </div>
                     </div>
-                </div>
 
-                
-            </div> -->
+                    <!-- Quick Overview / Product Metrics Card -->
+                    <%
+                        let totalStock = 0;
+                        let minPrice = 0;
+                        let maxPrice = 0;
+                        if (product.variants && product.variants.length > 0) {
+                            totalStock = product.variants.reduce((acc, v) => acc + (Number(v.stock) || 0), 0);
+                            const prices = product.variants.map(v => Number(v.salePrice) || Number(v.orgPrice) || 0).filter(p => p > 0);
+                            if (prices.length > 0) {
+                                minPrice = Math.min(...prices);
+                                maxPrice = Math.max(...prices);
+                            }
+                        }
+                    %>
+                    <div class="bg-white rounded-2xl border border-gray-200 shadow-sm p-6">
+                        <div class="flex items-center gap-2 pb-3 mb-4 border-b border-gray-100">
+                            <div class="w-8 h-8 rounded-lg bg-purple-50 text-purple-600 flex items-center justify-center">
+                                <i class="fas fa-chart-pie text-sm"></i>
+                            </div>
+                            <h2 class="text-base font-bold text-gray-900">Quick Overview</h2>
+                        </div>
+
+                        <div class="space-y-3.5">
+                            <!-- Total Stock -->
+                            <div class="flex items-center justify-between p-3 rounded-xl bg-gray-50">
+                                <div class="flex items-center gap-2.5">
+                                    <div class="w-7 h-7 rounded-lg bg-blue-100 text-blue-600 flex items-center justify-center text-xs">
+                                        <i class="fas fa-warehouse"></i>
+                                    </div>
+                                    <span class="text-xs font-medium text-gray-600">Total Stock</span>
+                                </div>
+                                <span class="text-sm font-bold <%= totalStock > 20 ? 'text-green-600' : (totalStock > 0 ? 'text-amber-600' : 'text-red-600') %>">
+                                    <%= totalStock %> units
+                                </span>
+                            </div>
+
+                            <!-- Variants Count -->
+                            <div class="flex items-center justify-between p-3 rounded-xl bg-gray-50">
+                                <div class="flex items-center gap-2.5">
+                                    <div class="w-7 h-7 rounded-lg bg-purple-100 text-purple-600 flex items-center justify-center text-xs">
+                                        <i class="fas fa-layer-group"></i>
+                                    </div>
+                                    <span class="text-xs font-medium text-gray-600">Variants</span>
+                                </div>
+                                <span class="text-sm font-bold text-gray-900">
+                                    <%= product.variants ? product.variants.length : 0 %> models
+                                </span>
+                            </div>
+
+                            <!-- Price Range -->
+                            <div class="flex items-center justify-between p-3 rounded-xl bg-gray-50">
+                                <div class="flex items-center gap-2.5">
+                                    <div class="w-7 h-7 rounded-lg bg-emerald-100 text-emerald-600 flex items-center justify-center text-xs">
+                                        <i class="fas fa-indian-rupee-sign"></i>
+                                    </div>
+                                    <span class="text-xs font-medium text-gray-600">Price Range</span>
+                                </div>
+                                <span class="text-sm font-bold text-gray-900">
+                                    <% if (minPrice > 0) { %>
+                                        ₹<%= minPrice %><%= maxPrice > minPrice ? ` - ₹${maxPrice}` : '' %>
+                                    <% } else { %>
+                                        N/A
+                                    <% } %>
+                                </span>
+                            </div>
+
+                            <!-- Product ID -->
+                            <div class="p-3 rounded-xl bg-gray-50/80 border border-gray-100 text-xs">
+                                <div class="flex items-center justify-between text-gray-500 mb-1">
+                                    <span>Product ID</span>
+                                    <button type="button" onclick="navigator.clipboard.writeText('<%= product._id %>'); Toastify({text: 'Product ID copied!', duration: 2000, gravity: 'bottom', position: 'right'}).showToast();"
+                                        class="text-purple-600 hover:text-purple-800 font-semibold">
+                                        Copy
+                                    </button>
+                                </div>
+                                <p class="font-mono text-gray-700 text-[11px] truncate"><%= product._id %></p>
+                            </div>
+                        </div>
+                    </div>
+
+                </div>
             </div>
-        </main>
+        </div>
+
+        <!-- ============================== -->
+        <!-- MODALS -->
+        <!-- ============================== -->
 
         <!-- Edit Variant Modal -->
         <div id="editVariantModal"
-            class="hidden fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-            <div class="bg-white rounded-lg shadow-xl w-full max-w-md">
-                <div class="px-6 py-4 border-b border-gray-200">
-                    <h3 class="text-lg font-semibold text-gray-900">Edit Variant</h3>
+            class="hidden fixed inset-0 bg-black/60 backdrop-blur-xs flex items-center justify-center z-50 p-4">
+            <div class="bg-white rounded-2xl shadow-2xl w-full max-w-lg overflow-hidden border border-gray-100 animate-in fade-in zoom-in duration-200">
+                <div class="px-6 py-4.5 border-b border-gray-100 flex items-center justify-between bg-gray-50/50">
+                    <h3 class="text-base font-bold text-gray-900 flex items-center gap-2">
+                        <i class="fas fa-sliders text-purple-600 text-sm"></i>
+                        Edit Variant
+                    </h3>
+                    <button onclick="closeModal()" class="text-gray-400 hover:text-gray-600 transition p-1">
+                        <i class="fas fa-times text-base"></i>
+                    </button>
                 </div>
-                <div class="px-6 py-4 space-y-4">
+                <div class="px-6 py-5 space-y-4 max-h-[80vh] overflow-y-auto">
+                    <!-- Variant Photos Section -->
+                    <div class="p-4 bg-gray-50/80 rounded-xl border border-gray-200">
+                        <div class="flex items-center justify-between mb-3">
+                            <label class="text-xs font-bold text-gray-700 uppercase tracking-wider flex items-center gap-1.5">
+                                <i class="fas fa-images text-purple-600"></i>
+                                <span>Variant Photos</span>
+                            </label>
+                            <button type="button" onclick="triggerVariantImageUpload(currenctVariantId)"
+                                class="px-3 py-1 bg-purple-600 hover:bg-purple-700 text-white rounded-lg text-xs font-semibold flex items-center gap-1.5 shadow-xs transition cursor-pointer">
+                                <i class="fas fa-camera text-[10px]"></i>
+                                <span>Upload Photo</span>
+                            </button>
+                        </div>
+                        <div id="editVariantImagesList" class="grid grid-cols-3 sm:grid-cols-4 gap-2.5 min-h-[70px]">
+                            <!-- Dynamically populated variant images -->
+                        </div>
+                    </div>
+
                     <div>
-                        <label for="editVariantModel" class="block text-sm font-medium text-gray-700 mb-1">Model
-                            Name</label>
+                        <label for="editVariantModel" class="block text-xs font-semibold text-gray-700 mb-1.5">Model Name</label>
                         <input type="text" id="editVariantModel"
-                            class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500">
+                            class="w-full px-3.5 py-2.5 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-purple-500 text-sm">
                     </div>
                     <div>
-                        <label for="editVariantBrand" class="block text-sm font-medium text-gray-700 mb-1">Brand</label>
-                        <select id="editVariantBrand" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500">
-                            <option value="">Select Brand</option>
-                            <% if (typeof brands !== 'undefined' && brands.length > 0) { %>
-                                <% brands.forEach(brand => { %>
-                                    <option value="<%= brand._id %>"><%= brand.name %></option>
-                                <% }) %>
-                            <% } %>
-                        </select>
+                        <label for="editVariantStock" class="block text-xs font-semibold text-gray-700 mb-1.5">Stock Quantity</label>
+                        <input type="number" id="editVariantStock" min="0"
+                            class="w-full px-3.5 py-2.5 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-purple-500 text-sm">
                     </div>
-                    <div>
-                        <label for="editVariantStock" class="block text-sm font-medium text-gray-700 mb-1">Stock
-                            Quantity</label>
-                        <input type="number" id="editVariantStock"
-                            class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500">
-                    </div>
-                    <div>
-                        <label for="editVariantOriginalPrice"
-                            class="block text-sm font-medium text-gray-700 mb-1">Original Price (₹)</label>
-                        <input type="number" step="0.01" id="editVariantOriginalPrice"
-                            class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500">
-                    </div>
-                    <div>
-                        <label for="editVariantSalePrice" class="block text-sm font-medium text-gray-700 mb-1">Sale
-                            Price (₹)</label>
-                        <input type="number" step="0.01" id="editVariantSalePrice"
-                            class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500">
+                    <div class="grid grid-cols-2 gap-3">
+                        <div>
+                            <label for="editVariantOriginalPrice" class="block text-xs font-semibold text-gray-700 mb-1.5">Original Price (₹)</label>
+                            <input type="number" step="0.01" id="editVariantOriginalPrice" min="0"
+                                class="w-full px-3.5 py-2.5 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-purple-500 text-sm">
+                        </div>
+                        <div>
+                            <label for="editVariantSalePrice" class="block text-xs font-semibold text-gray-700 mb-1.5">Sale Price (₹)</label>
+                            <input type="number" step="0.01" id="editVariantSalePrice" min="0"
+                                class="w-full px-3.5 py-2.5 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-purple-500 text-sm">
+                        </div>
                     </div>
                 </div>
-                <div class="px-6 py-4 border-t border-gray-200 flex justify-end space-x-3">
+                <div class="px-6 py-4 border-t border-gray-100 flex justify-end space-x-3 bg-gray-50/50">
                     <button onclick="closeModal()"
-                        class="px-4 py-2 border border-gray-300 text-gray-700 rounded-md hover:bg-gray-50 transition">
+                        class="px-4 py-2 border border-gray-300 text-gray-700 rounded-xl hover:bg-gray-100 transition text-sm font-medium">
                         Cancel
                     </button>
-                    <button onclick="saveVariantChanges()"
-                        class="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition">
+                    <button id="saveVariantBtn" onclick="saveVariantChanges()"
+                        class="px-5 py-2 bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-700 hover:to-indigo-700 text-white rounded-xl transition text-sm font-semibold shadow-sm">
                         Save Changes
                     </button>
                 </div>
@@ -457,123 +594,87 @@
 
         <!-- Add Variant Modal -->
         <div id="addVariantModal"
-            class="hidden fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-            <div class="bg-white rounded-lg shadow-xl w-full max-w-md">
-                <div class="px-6 py-4 border-b border-gray-200">
-                    <h3 class="text-lg font-semibold text-gray-900">Add New Variant</h3>
+            class="hidden fixed inset-0 bg-black/60 backdrop-blur-xs flex items-center justify-center z-50 p-4">
+            <div class="bg-white rounded-2xl shadow-2xl w-full max-w-md overflow-hidden border border-gray-100 animate-in fade-in zoom-in duration-200">
+                <div class="px-6 py-4.5 border-b border-gray-100 flex items-center justify-between bg-gray-50/50">
+                    <h3 class="text-base font-bold text-gray-900 flex items-center gap-2">
+                        <i class="fas fa-plus text-purple-600 text-sm"></i>
+                        Add New Variant
+                    </h3>
+                    <button onclick="closeAddVariantModal()" class="text-gray-400 hover:text-gray-600 transition p-1">
+                        <i class="fas fa-times text-base"></i>
+                    </button>
                 </div>
-                <div class="px-6 py-4 space-y-4">
+                <div class="px-6 py-5 space-y-4">
                     <div>
-                        <label for="addVariantModel" class="block text-sm font-medium text-gray-700 mb-1">Model Name</label>
+                        <label for="addVariantModel" class="block text-xs font-semibold text-gray-700 mb-1.5">Model Name</label>
                         <input type="text" id="addVariantModel" placeholder="e.g. iPhone 15 Pro"
-                            class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-purple-500">
+                            class="w-full px-3.5 py-2.5 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-purple-500 text-sm">
                     </div>
                     <div>
-                        <label for="addVariantBrand" class="block text-sm font-medium text-gray-700 mb-1">Brand</label>
-                        <select id="addVariantBrand" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-purple-500">
-                            <option value="">Select Brand</option>
-                            <% if (typeof brands !== 'undefined' && brands.length > 0) { %>
-                                <% brands.forEach(brand => { %>
-                                    <option value="<%= brand._id %>"><%= brand.name %></option>
-                                <% }) %>
-                            <% } %>
-                        </select>
+                        <label for="addVariantStock" class="block text-xs font-semibold text-gray-700 mb-1.5">Stock Quantity</label>
+                        <input type="number" id="addVariantStock" placeholder="0" min="0"
+                            class="w-full px-3.5 py-2.5 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-purple-500 text-sm">
                     </div>
-                    <div class="grid grid-cols-2 gap-4">
+                    <div class="grid grid-cols-2 gap-3">
                         <div>
-                            <label for="addVariantStock" class="block text-sm font-medium text-gray-700 mb-1">Stock</label>
-                            <input type="number" id="addVariantStock" placeholder="0"
-                                class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-purple-500">
+                            <label for="addVariantOriginalPrice" class="block text-xs font-semibold text-gray-700 mb-1.5">Original Price (₹)</label>
+                            <input type="number" step="0.01" id="addVariantOriginalPrice" placeholder="0.00" min="0"
+                                class="w-full px-3.5 py-2.5 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-purple-500 text-sm">
                         </div>
                         <div>
-                            <label for="addVariantOriginalPrice" class="block text-sm font-medium text-gray-700 mb-1">Org. Price (₹)</label>
-                            <input type="number" step="0.01" id="addVariantOriginalPrice" placeholder="0.00"
-                                class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-purple-500">
+                            <label for="addVariantSalePrice" class="block text-xs font-semibold text-gray-700 mb-1.5">Sale Price (₹)</label>
+                            <input type="number" step="0.01" id="addVariantSalePrice" placeholder="0.00" min="0"
+                                class="w-full px-3.5 py-2.5 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-purple-500 text-sm">
                         </div>
-                    </div>
-                    <div>
-                        <label for="addVariantSalePrice" class="block text-sm font-medium text-gray-700 mb-1">Sale Price (₹)</label>
-                        <input type="number" step="0.01" id="addVariantSalePrice" placeholder="0.00"
-                            class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-purple-500">
-                    </div>
-
-                    <div class="pt-4 border-t border-gray-100">
-                        <label class="block text-sm font-bold text-gray-700 mb-2 uppercase tracking-wider">Variant Images</label>
-                        <input type="file" id="addVariantImages" accept="image/*" multiple class="hidden" onchange="handleAddVariantImages(event)">
-                        <div onclick="document.getElementById('addVariantImages').click()" 
-                             class="border-2 border-dashed border-gray-200 rounded-xl p-4 text-center hover:border-indigo-400 hover:bg-indigo-50 transition-all cursor-pointer">
-                            <i class="fas fa-cloud-upload-alt text-gray-400 mb-2 text-2xl"></i>
-                            <p class="text-xs font-medium text-gray-600">Click to upload images</p>
-                            <p class="text-[10px] text-gray-400 mt-1">Up to 5 images (1:1 recommended)</p>
-                        </div>
-                        <div id="addVariantImagesPreview" class="grid grid-cols-4 gap-2 mt-3"></div>
                     </div>
                 </div>
-                <div class="px-6 py-4 border-t border-gray-200 flex justify-end space-x-3">
+                <div class="px-6 py-4 border-t border-gray-100 flex justify-end space-x-3 bg-gray-50/50">
                     <button onclick="closeAddVariantModal()"
-                        class="px-5 py-2.5 border border-gray-200 text-gray-600 rounded-xl hover:bg-gray-50 transition-all font-medium">
+                        class="px-4 py-2 border border-gray-300 text-gray-700 rounded-xl hover:bg-gray-100 transition text-sm font-medium">
                         Cancel
                     </button>
                     <button id="saveNewVariantBtn" onclick="saveNewVariant()"
-                        class="px-8 py-2.5 btn-premium text-white rounded-xl shadow-md transition-all">
+                        class="px-6 py-2 bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-700 hover:to-indigo-700 text-white rounded-xl transition text-sm font-semibold shadow-sm">
                         Add Variant
                     </button>
                 </div>
             </div>
         </div>
 
-        <!-- Manage Images Modal -->
-        <div id="manageVariantImagesModal"
-            class="hidden fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-            <div class="bg-white rounded-lg shadow-xl w-full max-w-4xl">
-                <div class="px-6 py-4 border-b border-gray-200 flex justify-between items-center">
-                    <h3 class="text-lg font-semibold text-gray-900">Manage Variant Images</h3>
-                    <button onclick="closeModal()" class="text-gray-400 hover:text-gray-600">
-                        <i class="fas fa-times text-xl"></i>
+        <!-- Add Images Modal -->
+        <div id="addImagesModal"
+            class="hidden fixed inset-0 bg-black/60 backdrop-blur-xs flex items-center justify-center z-50 p-4">
+            <div class="bg-white rounded-2xl shadow-2xl w-full max-w-lg overflow-hidden border border-gray-100 animate-in fade-in zoom-in duration-200">
+                <div class="px-6 py-4.5 border-b border-gray-100 flex items-center justify-between bg-gray-50/50">
+                    <h3 class="text-base font-bold text-gray-900 flex items-center gap-2">
+                        <i class="fas fa-cloud-arrow-up text-purple-600 text-sm"></i>
+                        Add Product Images
+                    </h3>
+                    <button onclick="closeModal()" class="text-gray-400 hover:text-gray-600 transition p-1">
+                        <i class="fas fa-times text-base"></i>
                     </button>
                 </div>
-                <div class="px-6 py-4 max-h-[70vh] overflow-y-auto">
-                    <!-- Current Images -->
-                    <div class="mb-8">
-                        <div class="flex items-center justify-between mb-4">
-                            <h4 class="text-sm font-bold text-gray-700 uppercase tracking-wider">Current Assets</h4>
-                            <span class="text-xs text-gray-500" id="imageCount">0 Images</span>
-                        </div>
-                        <div class="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-5 gap-4" id="productImagesContainer">
-                            <!-- Images dynamically loaded here -->
-                        </div>
-                    </div>
-
-
-                    <hr class="mb-6 border-gray-200">
-
-                    <h4 class="text-md font-medium text-gray-800 mb-3">Add New Images</h4>
-                    <input type="file" id="productImages" accept="image/*" multiple class="hidden"
+                <div class="px-6 py-6">
+                    <input type="file" id="productImages" accept="image/*" class="hidden"
                         onchange="handleImagesUpload(event)">
                     <div onclick="document.getElementById('productImages').click()"
-                        class="border-2 border-dashed border-gray-300 rounded-lg p-8 text-center hover:border-purple-400 transition-colors cursor-pointer mb-4">
-                        <svg class="mx-auto text-gray-400 mb-2" width="32" height="32" fill="none" stroke="currentColor"
-                            viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12">
-                            </path>
-                        </svg>
-                        <p class="text-sm font-medium text-gray-700">Upload Variant Images</p>
-                        <p class="text-xs text-gray-500 mt-1">PNG, JPG up to 5MB each (Multiple files)</p>
-                        <p class="text-xs text-purple-600 mt-1">First image uploaded will become main if none exists</p>
+                        class="border-2 border-dashed border-gray-300 hover:border-purple-500 rounded-2xl p-8 text-center transition-colors cursor-pointer bg-gray-50/50 hover:bg-purple-50/30">
+                        <div class="w-12 h-12 mx-auto mb-3 rounded-full bg-purple-100 text-purple-600 flex items-center justify-center">
+                            <i class="fas fa-cloud-arrow-up text-xl"></i>
+                        </div>
+                        <p class="text-sm font-semibold text-gray-800">Click to upload product image</p>
+                        <p class="text-xs text-gray-500 mt-1">PNG, JPG, WEBP up to 5MB</p>
+                        <p class="text-xs text-purple-600 font-medium mt-2">You will be prompted to crop and adjust the aspect ratio</p>
                     </div>
 
                     <!-- Images Preview Grid -->
-                    <div id="imagesPreview" class="grid grid-cols-2 gap-3"></div>
+                    <div id="imagesPreview" class="grid grid-cols-2 gap-3 mt-4"></div>
                 </div>
-                <div class="px-6 py-4 border-t border-gray-200 flex justify-end space-x-3">
+                <div class="px-6 py-4 border-t border-gray-100 flex justify-end space-x-3 bg-gray-50/50">
                     <button onclick="closeModal()"
-                        class="px-4 py-2 border border-gray-300 text-gray-700 rounded-md hover:bg-gray-50 transition">
-                        Cancel
-                    </button>
-                    <button onclick="saveImages()"
-                        class="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition">
-                        Save Changes
+                        class="px-4 py-2 border border-gray-300 text-gray-700 rounded-xl hover:bg-gray-100 transition text-sm font-medium">
+                        Close
                     </button>
                 </div>
             </div>
@@ -581,85 +682,103 @@
 
         <!-- Crop Modal -->
         <div id="cropModal"
-            class="hidden fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-            <div class="bg-white rounded-xl shadow-xl p-6 max-w-4xl w-full">
-                <div class="flex items-center justify-between mb-4">
-                    <h2 class="text-xl font-bold text-gray-900">Crop Image</h2>
-                    <button onclick="closeCropModal()" class="text-gray-400 hover:text-gray-600">
-                        <svg width="24" height="24" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                d="M6 18L18 6M6 6l12 12"></path>
-                        </svg>
+            class="hidden fixed inset-0 bg-black/60 backdrop-blur-xs flex items-center justify-center z-50 p-4">
+            <div class="bg-white rounded-2xl shadow-2xl p-6 max-w-4xl w-full border border-gray-100 animate-in fade-in zoom-in duration-200">
+                <div class="flex items-center justify-between pb-3 mb-4 border-b border-gray-100">
+                    <h2 class="text-lg font-bold text-gray-900 flex items-center gap-2">
+                        <i class="fas fa-crop-simple text-purple-600"></i>
+                        <span>Crop & Adjust Image</span>
+                    </h2>
+                    <button onclick="closeCropModal()" class="text-gray-400 hover:text-gray-600 p-1">
+                        <i class="fas fa-times text-base"></i>
                     </button>
                 </div>
 
-                <!-- Cropper Container -->
-                <div class="w-full flex">
-                    <div class="w-2/3 pr-4">
-                        <div class="border rounded-lg overflow-hidden" style="height: 400px;">
-                            <img id="cropImage" class="block" style="max-width: 100%; max-height: 100%;" />
+                <!-- Cropper Layout -->
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                    <div class="md:col-span-2">
+                        <div class="border rounded-xl overflow-hidden bg-gray-900/5 flex items-center justify-center" style="height: 380px;">
+                            <img id="cropImage" class="block max-w-full max-h-full" />
                         </div>
                     </div>
-                    <div class="w-1/3 pl-4">
-                        <h3 class="font-medium text-gray-900 mb-3">Crop Options</h3>
-                        <div class="space-y-4">
-                            <div>
-                                <label class="block text-sm font-medium text-gray-700 mb-1">Aspect Ratio</label>
-                                <select id="aspectRatio"
-                                    class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                                    onchange="updateAspectRatio()">
-                                    <option value="1">Square (1:1)</option>
-                                    <option value="4/3">Standard (4:3)</option>
-                                    <option value="16/9">Widescreen (16:9)</option>
-                                    <option value="0">Free</option>
-                                </select>
+                    <div class="space-y-4">
+                        <h3 class="text-xs font-bold uppercase tracking-wider text-gray-500">Crop Controls</h3>
+                        <div>
+                            <label class="block text-xs font-semibold text-gray-700 mb-1.5">Aspect Ratio</label>
+                            <select id="aspectRatio"
+                                class="w-full px-3 py-2 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-purple-500 text-sm font-medium"
+                                onchange="updateAspectRatio()">
+                                <option value="1">Square (1:1)</option>
+                                <option value="4/3">Standard (4:3)</option>
+                                <option value="16/9">Widescreen (16:9)</option>
+                                <option value="0">Freeform</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label class="block text-xs font-semibold text-gray-700 mb-1.5">Rotate</label>
+                            <div class="flex items-center gap-2">
+                                <button onclick="rotateImage(-90)"
+                                    class="flex-1 py-2 border border-gray-300 rounded-xl hover:bg-gray-50 transition text-sm text-gray-700 flex items-center justify-center gap-1.5">
+                                    <i class="fas fa-rotate-left"></i> -90°
+                                </button>
+                                <button onclick="rotateImage(90)"
+                                    class="flex-1 py-2 border border-gray-300 rounded-xl hover:bg-gray-50 transition text-sm text-gray-700 flex items-center justify-center gap-1.5">
+                                    <i class="fas fa-rotate-right"></i> +90°
+                                </button>
                             </div>
-                            <div>
-                                <label class="block text-sm font-medium text-gray-700 mb-1">Rotation</label>
-                                <div class="flex items-center space-x-2">
-                                    <button onclick="rotateImage(-90)"
-                                        class="p-2 border border-gray-300 rounded-md hover:bg-gray-50">
-                                        <i class="fas fa-undo"></i>
-                                    </button>
-                                    <button onclick="rotateImage(90)"
-                                        class="p-2 border border-gray-300 rounded-md hover:bg-gray-50">
-                                        <i class="fas fa-redo"></i>
-                                    </button>
-                                </div>
-                            </div>
-                            <div class="bg-blue-50 p-3 rounded-lg">
-                                <p class="text-sm text-blue-700">Drag the corners to adjust the crop area. The preview
-                                    will show how your image will look.</p>
-                            </div>
+                        </div>
+                        <div class="bg-purple-50/70 p-3.5 rounded-xl border border-purple-100">
+                            <p class="text-xs text-purple-800 leading-relaxed">
+                                <i class="fas fa-lightbulb text-purple-600 mr-1"></i>
+                                Adjust the bounding frame to select the best product presentation.
+                            </p>
                         </div>
                     </div>
                 </div>
 
-                <div class="flex justify-between items-center mt-6">
-                    <div class="text-sm text-gray-500">
-                        Editing: <span id="editingImageName" class="font-medium">New Image</span>
+                <div class="flex justify-between items-center mt-6 pt-4 border-t border-gray-100">
+                    <div class="text-xs text-gray-500">
+                        Editing: <span id="editingImageName" class="font-semibold text-gray-800">Product Image</span>
                     </div>
                     <div class="flex gap-3">
                         <button onclick="closeCropModal()"
-                            class="px-4 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors">Cancel</button>
+                            class="px-4 py-2 border border-gray-300 text-gray-700 rounded-xl hover:bg-gray-50 transition text-sm font-medium">
+                            Cancel
+                        </button>
                         <button onclick="cropAndSave()"
-                            class="px-4 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition-colors">Apply
-                            Crop</button>
+                            class="px-5 py-2 bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-700 hover:to-indigo-700 text-white rounded-xl transition text-sm font-semibold shadow-sm">
+                            Apply & Upload
+                        </button>
                     </div>
                 </div>
             </div>
         </div>
+
+        <!-- Safe JSON Data Script Tags -->
+        <script id="product-data" type="application/json"><%- JSON.stringify(product).replace(/</g, '\\u003c') %></script>
+        <script id="product-images-data" type="application/json"><%- JSON.stringify(resolvedImages && resolvedImages.length > 0 ? resolvedImages : (product.productImages || [])).replace(/</g, '\\u003c') %></script>
         <script>
-            const product = '<%- JSON.stringify(product) %>';
-            window.product = JSON.parse(product);
-            // Variant images will be populated when clicking Manage Images
-            window.productImages = [];
+            try {
+                window.product = JSON.parse(document.getElementById('product-data').textContent);
+                window.productImages = JSON.parse(document.getElementById('product-images-data').textContent);
+            } catch (e) {
+                console.error("Error setting window product data", e);
+            }
+
+            // Highlight sidebar product link
+            document.addEventListener('DOMContentLoaded', () => {
+                const productLink = document.querySelector('[data-page="products"]');
+                if (productLink) {
+                    productLink.classList.add('bg-purple-50', 'text-purple-600', 'font-semibold');
+                }
+            });
         </script>
 
         <script src="https://cdn.jsdelivr.net/npm/cropperjs@1.5.12/dist/cropper.min.js"></script>
         <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
         <script type="module" src="/js/ui-helpers.js"></script>
         <script type="module" src="/js/admin/view-product.js"></script>
-</body>
+    </main>
+</div>
 
-</html>
+<%- include('../partials/footer') %>

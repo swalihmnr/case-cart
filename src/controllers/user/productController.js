@@ -211,19 +211,13 @@ const getProduct = async (req, res) => {
     let user = false;
     const today = new Date();
 
-    const activeOffers = await offerModel.find({
-      status: "active",
-      startDate: { $lte: today },
-      endDate: { $gte: today },
-    });
-
     const products = await Promise.all(
       result[0].data.map(async (p) => {
         const offerResult = await calculateBestItemOffer({
           product: p,
           variant: p.minVariant,
           quantity: 1,
-        }, activeOffers);
+        });
 
         return {
           ...p,
@@ -289,8 +283,7 @@ const getDetialProduct = async (req, res) => {
 
     const relatedProductsInitial = await productModel
       .find({ catgId: product.catgId, _id: { $ne: product._id } })
-      .populate("catgId")
-      .populate("variants")
+      .populate('variants')
       .limit(4);
 
     const relatedProducts = [
@@ -306,8 +299,7 @@ const getDetialProduct = async (req, res) => {
               ],
             },
           })
-          .populate("catgId")
-          .populate("variants")
+          .populate('variants')
           .limit(4 - relatedProductsInitial.length)
         : []),
     ];
@@ -334,7 +326,7 @@ const getDetialProduct = async (req, res) => {
           product,
           variant: defaultVariant,
           quantity: 1,
-        }, offers);
+        });
 
         if (offerResult.bestOffer) {
           initialOffer = {
@@ -383,10 +375,8 @@ const getVariantData = async (req, res) => {
       });
     }
 
-    const [variant, product] = await Promise.all([
-      variantModel.findById(variantId).lean(),
-      productModel.findById(productId).lean(),
-    ]);
+    const variant = await variantModel.findById(variantId);
+    const product = await productModel.findById(productId);
 
     if (!variant || !product) {
       return res.status(STATUS_CODES.NOT_FOUND).json({
@@ -405,7 +395,7 @@ const getVariantData = async (req, res) => {
         { applicableOn: "product", productIds: product._id },
         { applicableOn: "category", categoryIds: product.catgId },
       ],
-    }).lean();
+    });
 
     let disObject = { bestDiscount: 0, isOffer: false };
     let salePrice = variant.salePrice;
@@ -415,7 +405,7 @@ const getVariantData = async (req, res) => {
         product,
         variant,
         quantity: 1,
-      }, offers);
+      });
 
       if (offerResult.bestOffer) {
         disObject = {

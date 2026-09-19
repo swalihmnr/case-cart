@@ -1,5 +1,7 @@
 import productModel from "../../models/admin/productModel.js";
+import categoryModel from "../../models/admin/categoryModel.js";
 import wishlistModel from "../../models/wishlistModel.js";
+import HomepageSettings from "../../models/admin/homepageSettingsModel.js";
 
 // ==============================
 // GET HOME PAGE
@@ -7,7 +9,7 @@ import wishlistModel from "../../models/wishlistModel.js";
 // Renders user home page
 let getHome = async (req, res) => {
   try {
-    // Fetch top 4 unblocked products
+    // Fetch top 8 unblocked products & active categories
     const pipeline = [
       { $match: { isBlock: false } },
       {
@@ -57,7 +59,11 @@ let getHome = async (req, res) => {
       { $limit: 8 },
     ];
 
-    const products = await productModel.aggregate(pipeline);
+    const [products, categories, siteSettings] = await Promise.all([
+      productModel.aggregate(pipeline),
+      categoryModel.find({ isActive: true }).lean(),
+      HomepageSettings.findOne({ key: "main" }).lean(),
+    ]);
 
     let wishlistItems = [];
     let user = null;
@@ -68,8 +74,10 @@ let getHome = async (req, res) => {
 
     res.render("./user/home", {
       products,
+      categories,
       wishlistItems,
       user,
+      siteSettings,
     });
   } catch (err) {
     console.error("Error in getHome:", err);

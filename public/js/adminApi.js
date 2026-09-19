@@ -191,6 +191,26 @@ const addVariantAxios = async (id, formData) => {
     headers: { "Content-Type": "multipart/form-data" },
   });
 };
+const uploadVariantImgAxios = async (variantId, formData) => {
+  return await api.patch(`/admin/product/variant/${variantId}/img-upload`, formData, {
+    headers: {
+      "Content-Type": "multipart/form-data",
+    },
+  });
+};
+const setMainVariantImgAxios = async (variantId, imageId) => {
+  return await api.patch(`/admin/product/variant/${variantId}/img-set-main`, { imageId });
+};
+const deleteVariantImgAxios = async (variantId, imageId) => {
+  return await api.patch(`/admin/product/variant/${variantId}/img-delete`, { imageId });
+};
+const replaceVariantImgAxios = async (variantId, formData) => {
+  return await api.patch(`/admin/product/variant/${variantId}/img-replace`, formData, {
+    headers: {
+      "Content-Type": "multipart/form-data",
+    },
+  });
+};
 export default {
   addCategoryAxios,
   blockCategoryAxios,
@@ -210,6 +230,10 @@ export default {
   editVariantSaveAxios,
   toggleListUnlistAxios,
   addVariantAxios,
+  uploadVariantImgAxios,
+  setMainVariantImgAxios,
+  deleteVariantImgAxios,
+  replaceVariantImgAxios,
   updateStatus,
   reqApproveAxios,
   reqRejectAxios,

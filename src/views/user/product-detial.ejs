@@ -124,7 +124,9 @@
                                         onclick="selectVariant('<%= product._id %>', '<%= variant._id %>', this)"
                                         class="device-btn px-4 py-2 border rounded text-xs uppercase tracking-wider transition-all duration-300
                                         <%= index === 0 ? 'border-gold-accent bg-gold-light/10 text-gold-light' : 'border-gold-light/10 text-gray-400 hover:border-gold-light/40' %>"
-                                        data-index="<%= index %>">
+                                        data-index="<%= index %>"
+                                        data-pid="<%= product._id %>"
+                                        data-vid="<%= variant._id %>">
                                     <%= variant.deviceModel %>
                                 </button>
                             <% } %>
@@ -156,55 +158,94 @@
 
         <!-- Related Products Section -->
         <% if (relatedProducts && relatedProducts.length > 0) { %>
-            <div class="mt-32 border-t border-gold-light/5 pt-16 space-y-12">
-                <div class="space-y-2 text-center md:text-left">
-                    <p class="text-[10px] uppercase tracking-widest text-gold-accent font-medium">Elevate Your Set</p>
-                    <h2 class="font-display text-2xl sm:text-3xl font-light tracking-wide text-gold-light">You May Also Like</h2>
+            <div class="mt-24 border-t border-gold-light/5 pt-16">
+                <!-- Section Header -->
+                <div class="flex items-end justify-between mb-10">
+                    <div class="space-y-1">
+                        <p class="text-[10px] uppercase tracking-widest text-gold-accent font-medium">Curated for You</p>
+                        <h2 class="font-display text-2xl sm:text-3xl font-light tracking-wide text-gold-light">You May Also Like</h2>
+                    </div>
+                    <a href="/product" class="hidden sm:inline-flex items-center gap-1.5 text-[10px] uppercase tracking-widest text-gray-400 hover:text-gold-accent transition-colors duration-200">
+                        View All
+                        <i class="fas fa-arrow-right text-[9px]"></i>
+                    </a>
                 </div>
 
-                <div class="grid grid-cols-2 md:grid-cols-4 gap-6">
-                    <% relatedProducts.forEach(rel => { 
+                <!-- Cards Grid -->
+                <div class="grid grid-cols-2 md:grid-cols-4 gap-4 sm:gap-6">
+                    <% relatedProducts.forEach(rel => {
+                        // Robust image resolution: product images first, then variant images
                         let relImageUrl = '/img/placeholder.jpg';
                         if (rel.productImages && rel.productImages.length > 0) {
                             const mainImg = rel.productImages.find(img => img.isMain);
-                            if (mainImg) relImageUrl = mainImg.url;
-                            else if (rel.productImages[0]) relImageUrl = rel.productImages[0].url;
-                        } else if (rel.minVariant && rel.minVariant.images && rel.minVariant.images.length > 0) {
-                            const mainImg = rel.minVariant.images.find(img => img.isMain);
-                            if (mainImg) relImageUrl = mainImg.url;
-                            else if (rel.minVariant.images[0]) relImageUrl = rel.minVariant.images[0].url;
-                        } else if (rel.variants && rel.variants[0] && rel.variants[0].images && rel.variants[0].images.length > 0) {
-                            const mainImg = rel.variants[0].images.find(img => img.isMain);
-                            if (mainImg) relImageUrl = mainImg.url;
-                            else if (rel.variants[0].images[0]) relImageUrl = rel.variants[0].images[0].url;
+                            relImageUrl = mainImg ? mainImg.url : rel.productImages[0].url;
+                        } else if (rel.variants && rel.variants.length > 0) {
+                            const variantWithImages = rel.variants.find(v => v.images && v.images.length > 0);
+                            if (variantWithImages) {
+                                const mainImg = variantWithImages.images.find(img => img.isMain);
+                                relImageUrl = mainImg ? mainImg.url : variantWithImages.images[0].url;
+                            }
+                        }
+
+                        // Robust price resolution from populated variants
+                        let relPrice = null;
+                        let relOrgPrice = null;
+                        if (rel.variants && rel.variants.length > 0) {
+                            const firstVariant = rel.variants[0];
+                            relPrice = Math.floor(firstVariant.salePrice || firstVariant.orgPrice || 0);
+                            relOrgPrice = Math.floor(firstVariant.orgPrice || 0);
                         }
                     %>
                         <!-- Product Card -->
-                        <div class="group flex flex-col space-y-4">
-                            <!-- Image container -->
-                            <div class="relative aspect-[3/4] bg-obsidian-light border border-gold-light/5 group-hover:border-gold-light/20 overflow-hidden flex items-center justify-center transition-colors duration-300">
-                                <a href="/product/<%= rel._id %>/detials" class="block w-full h-full">
-                                    <img src="<%= relImageUrl %>" 
-                                         alt="<%= rel.name %>" 
-                                         class="w-full h-full object-cover transform group-hover:scale-105 transition-transform duration-700 ease-out">
-                                </a>
+                        <a href="/product/<%= rel._id %>/detials" class="group flex flex-col bg-obsidian-light border border-gold-light/5 rounded-lg overflow-hidden hover:border-gold-accent/30 hover:shadow-xl transition-all duration-300 related-product-card">
+                            <!-- Image -->
+                            <div class="relative aspect-[3/4] bg-obsidian overflow-hidden">
+                                <img src="<%= relImageUrl %>"
+                                     alt="<%= rel.name %>"
+                                     class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500 ease-out"
+                                     onerror="this.src='/img/placeholder.jpg'">
+
+                                <!-- Quick View overlay on hover -->
+                                <div class="absolute inset-0 bg-obsidian/40 opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-center justify-center">
+                                    <span class="text-[9px] uppercase tracking-widest text-ivory bg-obsidian/80 border border-gold-light/20 px-4 py-2 rounded backdrop-blur-sm">
+                                        View Product
+                                    </span>
+                                </div>
                             </div>
 
                             <!-- Info -->
-                            <div class="space-y-1 text-center md:text-left">
-                                <p class="text-[9px] uppercase tracking-widest text-gold-accent font-medium">Artifact</p>
-                                <h3 class="font-display text-sm tracking-wide text-gold-light font-light truncate">
-                                    <a href="/product/<%= rel._id %>/detials" class="hover:text-gold-accent transition-colors">
-                                        <%= rel.name %>
-                                    </a>
+                            <div class="p-4 flex flex-col gap-1.5 flex-1">
+                                <p class="text-[9px] uppercase tracking-widest text-gold-accent font-medium truncate">
+                                    <%= rel.catgId ? rel.catgId.name : 'Premium' %>
+                                </p>
+                                <h3 class="font-display text-sm font-light text-gold-light truncate leading-snug">
+                                    <%= rel.name %>
                                 </h3>
-                                <p class="text-xs text-gold-light/70">₹<%= Math.floor(rel.minVariant ? (rel.minVariant.salePrice || rel.minVariant.orgPrice) : 399) %></p>
+                                <div class="flex items-baseline gap-2 mt-auto pt-2">
+                                    <% if (relPrice) { %>
+                                        <span class="text-sm font-semibold text-gold-accent">₹<%= relPrice %></span>
+                                        <% if (relOrgPrice && relOrgPrice > relPrice) { %>
+                                            <span class="text-[10px] text-gray-500 line-through">₹<%= relOrgPrice %></span>
+                                        <% } %>
+                                    <% } else { %>
+                                        <span class="text-xs text-gray-500">View Price</span>
+                                    <% } %>
+                                </div>
                             </div>
-                        </div>
+                        </a>
                     <% }) %>
+                </div>
+
+                <!-- Mobile View All link -->
+                <div class="sm:hidden mt-6 text-center">
+                    <a href="/product" class="inline-flex items-center gap-1.5 text-[10px] uppercase tracking-widest text-gray-400 border border-gold-light/10 px-6 py-2.5 rounded hover:border-gold-accent/30 hover:text-gold-accent transition-all duration-200">
+                        View All Products
+                        <i class="fas fa-arrow-right text-[9px]"></i>
+                    </a>
                 </div>
             </div>
         <% } %>
+
     </div>
 </main>
 

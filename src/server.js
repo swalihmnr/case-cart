@@ -31,7 +31,8 @@ import adminOfferRouter from "../src/router/admin/offerRouter.js";
 import adminCoupenRouter from "../src/router/admin/coupenRouter.js";
 import adminReportRouter from "../src/router/admin/reportRouter.js";
 import adminDashboardRouter from "../src/router/admin/dashboardRouter.js";
-import adminBrandRouter from "../src/router/admin/brandRouter.js";
+import adminHomepageSettingsRouter from "../src/router/admin/homepageSettingsRouter.js";
+import HomepageSettings from "./models/admin/homepageSettingsModel.js";
 
 import userCouponRouter from "../src/router/user/couponRouter.js";
 import walletRouter from "./router/user/walletRouter.js";
@@ -43,13 +44,13 @@ import { attachAdmin } from "./middlewares/auth.js";
 import paymentRouter from "../src/router/paymentRouter.js";
 import MongoStore from "connect-mongo";
 import morgan from "morgan";
-// import fs from 'fs'
+import fs from 'fs'
 
-// const logStream=fs.createWriteStream(
-//   path.join(__dirname,"logs","access.log"),
-//   {flags:"a"}
-// )
-// app.use(morgan("combined",{stream:logStream}))
+const logStream=fs.createWriteStream(
+  path.join(__dirname,"logs","access.log"),
+  {flags:"a"}
+)
+app.use(morgan("combined",{stream:logStream}))
 
 app.use(express.static(path.join(__dirname, "../public")));
 app.use(
@@ -87,6 +88,14 @@ app.use(passport.session());
 app.use(attachUser);
 app.use("/auth", authRouter);
 app.use(attachAdmin);
+app.use(async (req, res, next) => {
+  try {
+    res.locals.siteSettings = await HomepageSettings.findOne({ key: "main" }).lean();
+  } catch (err) {
+    res.locals.siteSettings = null;
+  }
+  next();
+});
 
 //payment router here
 
@@ -102,7 +111,7 @@ app.use("/admin", adminCategoryRouter);
 app.use("/admin", customerRouter);
 app.use("/admin", adminOrderRouter);
 app.use("/admin", adminProductRouter);
-app.use("/admin", adminBrandRouter);
+app.use("/admin", adminHomepageSettingsRouter);
 
 // user Routers here
 

@@ -1,158 +1,350 @@
 <%- include('../partials/user/header') %>
 
-<main class="bg-obsidian min-h-screen text-ivory pt-24 pb-16">
-    <!-- Hero Section -->
-    <section class="relative min-h-[75vh] flex items-center justify-center overflow-hidden py-16 px-6 border-b border-gold-light/5">
-        <!-- Background Vignette/Glow -->
-        <div class="absolute inset-0 bg-radial-gradient from-gold-light/5 via-transparent to-transparent opacity-80 pointer-events-none"></div>
-        
-        <div class="max-w-6xl mx-auto text-center relative z-10 space-y-8">
-            <div class="space-y-4">
-                <p class="text-[10px] uppercase tracking-widest text-gold-accent font-medium">Autumn / Winter Collection 2026</p>
-                <h1 class="font-display text-5xl sm:text-7xl lg:text-8xl font-light tracking-wide leading-none text-gold-light">
-                    SARTORIAL<br>PROTECTION
-                </h1>
-            </div>
-            
-            <p class="text-xs sm:text-sm tracking-wide text-gray-400 max-w-md mx-auto leading-relaxed font-light">
-                Discover bespoke protective cases crafted from Italian leather and premium alloys. Engineered to protect. Designed to be seen.
-            </p>
-            
-            <div class="pt-4">
-                <a href="/product" class="inline-block bg-gold-light hover:bg-gold-accent text-obsidian text-[11px] uppercase tracking-widest font-medium px-10 py-4 transition-all duration-300 rounded-sm">
-                    Explore Collection
+<style>
+    /* Completely hide scrollbars across browsers */
+    .no-scrollbar::-webkit-scrollbar {
+        display: none !important;
+        width: 0 !important;
+        height: 0 !important;
+    }
+    .no-scrollbar {
+        -ms-overflow-style: none !important;
+        scrollbar-width: none !important;
+    }
+    /* Flipkart style scroll container */
+    .fk-category-container {
+        display: flex;
+        align-items: center;
+        gap: 1.5rem;
+        overflow-x: auto;
+        scroll-behavior: smooth;
+        -webkit-overflow-scrolling: touch;
+        padding-top: 0.75rem;
+        padding-bottom: 0.75rem;
+    }
+</style>
+
+<main class="bg-[#f1f3f6] dark:bg-[#090D16] min-h-screen text-gray-900 dark:text-gray-100 pt-16 pb-20 md:pb-12 transition-colors">
+    <!-- Top Mobile Search Bar (Only visible on small mobile screens) -->
+    <div class="sm:hidden px-3 pt-3 pb-1">
+        <form action="/product" method="GET" class="relative">
+            <input type="text" name="search" placeholder="Search for products, brands and more" 
+                   class="w-full bg-white dark:bg-gray-800 text-gray-900 dark:text-white border border-gray-300 dark:border-gray-700 rounded-sm pl-9 pr-4 py-2 text-xs font-medium focus:outline-none shadow-sm">
+            <i class="fas fa-search absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 text-xs"></i>
+        </form>
+    </div>
+
+    <!-- Infinite Product & Announcement Ticker -->
+    <% if (typeof siteSettings === 'undefined' || !siteSettings?.ticker || siteSettings.ticker.isEnabled !== false) { %>
+    <div class="w-full overflow-hidden bg-white dark:bg-[#0f172a] border-y border-gray-100 dark:border-white/5 py-2.5 relative" id="product-ticker">
+        <!-- fade edges -->
+        <div class="absolute left-0 top-0 h-full w-16 z-10 pointer-events-none" style="background: linear-gradient(to right, white, transparent)" id="ticker-fade-left"></div>
+        <div class="absolute right-0 top-0 h-full w-16 z-10 pointer-events-none" style="background: linear-gradient(to left, white, transparent)" id="ticker-fade-right"></div>
+
+        <% const tickerDuration = (typeof siteSettings !== 'undefined' && siteSettings?.ticker?.speed) ? siteSettings.ticker.speed : 30; %>
+        <div class="ticker-track flex items-center gap-0" style="width: max-content; animation: ticker-scroll <%= tickerDuration %>s linear infinite;" id="ticker-track">
+            <!-- Items rendered twice for seamless loop -->
+            <% for (let pass = 0; pass < 2; pass++) { %>
+                <!-- Custom announcements from Admin -->
+                <% if (typeof siteSettings !== 'undefined' && siteSettings?.ticker?.customItems && siteSettings.ticker.customItems.length > 0) { %>
+                    <% siteSettings.ticker.customItems.filter(item => item.isActive).forEach(item => { %>
+                        <a href="<%= item.link || '/product' %>"
+                           class="flex-shrink-0 flex items-center gap-2.5 px-5 group">
+                            <span class="w-2 h-2 rounded-full <%= item.type === 'promo' ? 'bg-amber-500 animate-pulse' : (item.type === 'category' ? 'bg-purple-500' : 'bg-blue-500') %> flex-shrink-0"></span>
+                            <span class="text-[12px] font-bold text-gray-800 dark:text-gray-200 group-hover:text-[#2874f0] dark:group-hover:text-gold-accent whitespace-nowrap transition-colors duration-150">
+                                <%= item.text %>
+                            </span>
+                            <span class="text-[9px] font-extrabold px-1.5 py-0.5 rounded-full uppercase tracking-wider <%= item.type === 'promo' ? 'bg-amber-100 dark:bg-amber-900/40 text-amber-800 dark:text-amber-300' : (item.type === 'category' ? 'bg-purple-100 dark:bg-purple-900/40 text-purple-800 dark:text-purple-300' : 'bg-blue-50 dark:bg-blue-950/40 text-[#2874f0] dark:text-gold-accent') %> whitespace-nowrap">
+                                <%= item.type %>
+                            </span>
+                        </a>
+                    <% }) %>
+                <% } %>
+
+                <!-- Products Feed -->
+                <% if ((typeof siteSettings === 'undefined' || !siteSettings?.ticker || siteSettings.ticker.showProducts !== false) && products && products.length > 0) { %>
+                    <% products.forEach(p => { %>
+                        <a href="/product/<%= p._id %>/detials"
+                           class="flex-shrink-0 flex items-center gap-2.5 px-5 group">
+                            <span class="w-1.5 h-1.5 rounded-full bg-gray-300 dark:bg-white/20 flex-shrink-0"></span>
+                            <span class="text-[12px] font-semibold text-gray-700 dark:text-gray-300 group-hover:text-[#2874f0] dark:group-hover:text-gold-accent whitespace-nowrap transition-colors duration-150">
+                                <%= p.name %>
+                            </span>
+                            <% if (p.minPrice) { %>
+                                <span class="text-[10px] font-bold px-1.5 py-0.5 rounded-full bg-blue-50 dark:bg-white/5 text-[#2874f0] dark:text-gold-accent whitespace-nowrap">
+                                    ₹<%= Math.floor(p.minPrice) %>
+                                </span>
+                            <% } %>
+                        </a>
+                    <% }) %>
+                <% } %>
+
+                <!-- Categories Feed -->
+                <% if ((typeof siteSettings === 'undefined' || !siteSettings?.ticker || siteSettings.ticker.showCategories !== false) && categories && categories.length > 0) { %>
+                    <% categories.forEach(cat => { %>
+                        <a href="/product?Categories=<%= cat._id %>"
+                           class="flex-shrink-0 flex items-center gap-2 px-5 group">
+                            <span class="w-1.5 h-1.5 rounded-full bg-blue-200 dark:bg-gold-accent/30 flex-shrink-0"></span>
+                            <span class="text-[12px] font-semibold text-[#2874f0] dark:text-gold-accent/80 group-hover:text-[#1e40af] dark:group-hover:text-gold-accent whitespace-nowrap transition-colors duration-150">
+                                <%= cat.name %>
+                            </span>
+                        </a>
+                    <% }) %>
+                <% } %>
+            <% } %>
+        </div>
+    </div>
+
+    <style>
+        @keyframes ticker-scroll {
+            0%   { transform: translateX(0); }
+            100% { transform: translateX(-50%); }
+        }
+        #ticker-track:hover {
+            animation-play-state: paused;
+        }
+        /* Adjust fade gradient for light-theme */
+        body.light-theme #ticker-fade-left {
+            background: linear-gradient(to right, #f1f3f6, transparent) !important;
+        }
+        body.light-theme #ticker-fade-right {
+            background: linear-gradient(to left, #f1f3f6, transparent) !important;
+        }
+        body.light-theme #product-ticker {
+            background-color: #f1f3f6 !important;
+            border-color: #e2e8f0 !important;
+        }
+    </style>
+    <% } %>
+
+
+    <!-- Mega Hero Sale Banner Card (Flipkart Big Saving Days or Custom Graphic Banner) -->
+    <% if (typeof siteSettings === 'undefined' || !siteSettings?.heroBanner || siteSettings.heroBanner.isEnabled !== false) { %>
+    <section class="w-full max-w-[1600px] mx-auto px-2 sm:px-6 py-2">
+        <% if (typeof siteSettings !== 'undefined' && siteSettings?.heroBanner?.bannerType === 'custom_image' && siteSettings?.heroBanner?.customImage?.url) { %>
+            <!-- Custom Designed Photoshop/Graphic Banner -->
+            <%
+                let aspectClass = 'w-full h-auto';
+                if (siteSettings.heroBanner.aspectRatio === '16/9') aspectClass = 'w-full aspect-[16/9]';
+                else if (siteSettings.heroBanner.aspectRatio === '21/9') aspectClass = 'w-full aspect-[21/9]';
+                else if (siteSettings.heroBanner.aspectRatio === '3/1') aspectClass = 'w-full aspect-[3/1]';
+                else if (siteSettings.heroBanner.aspectRatio === '4/1') aspectClass = 'w-full aspect-[4/1]';
+                
+                const fitClass = siteSettings.heroBanner.fitMode === 'contain' ? 'object-contain' : (siteSettings.heroBanner.fitMode === 'fill' ? 'object-fill' : 'object-cover');
+            %>
+            <div class="relative overflow-hidden rounded-xl shadow-md hover:shadow-lg transition-all duration-300 group bg-gray-900 flex items-center justify-center">
+                <a href="<%= siteSettings.heroBanner.imageLink || '/product' %>" class="block w-full">
+                    <img src="<%= siteSettings.heroBanner.customImage.url %>"
+                         alt="<%= siteSettings.heroBanner.imageAlt || 'Hero Banner' %>"
+                         class="<%= aspectClass %> <%= fitClass %> rounded-xl group-hover:scale-[1.005] transition-transform duration-300">
                 </a>
             </div>
-        </div>
-    </section>
+        <% } else { %>
+            <!-- Dynamic Gradient & Text Banner -->
+            <div class="relative overflow-hidden rounded-xl bg-gradient-to-r from-[#1e3a8a] via-[#2874f0] to-[#1e40af] p-6 sm:p-10 lg:p-12 shadow-md">
+                <!-- Background Glow -->
+                <div class="absolute -top-20 -right-20 w-80 h-80 bg-white/10 rounded-full blur-3xl pointer-events-none"></div>
 
-    <!-- Editorial Values Section -->
-    <section class="max-w-6xl mx-auto px-6 sm:px-8 py-20 border-b border-gold-light/5">
-        <div class="grid grid-cols-1 md:grid-cols-3 gap-16 text-center">
-            <div class="space-y-3">
-                <div class="text-gold-light text-lg"><i class="fas fa-gem"></i></div>
-                <h3 class="font-display text-lg tracking-wider text-gold-light">Italian Leather</h3>
-                <p class="text-xs text-gray-500 max-w-xs mx-auto leading-relaxed">Sourced from the historic tanneries of Tuscany, developing a rich patina over time.</p>
-            </div>
-            <div class="space-y-3">
-                <div class="text-gold-light text-lg"><i class="fas fa-shield-alt"></i></div>
-                <h3 class="font-display text-lg tracking-wider text-gold-light">Architectural Strength</h3>
-                <p class="text-xs text-gray-500 max-w-xs mx-auto leading-relaxed">Integrated shock-absorbent cores certified for military grade drop standards.</p>
-            </div>
-            <div class="space-y-3">
-                <div class="text-gold-light text-lg"><i class="fas fa-magic"></i></div>
-                <h3 class="font-display text-lg tracking-wider text-gold-light">MagSafe Compatible</h3>
-                <p class="text-xs text-gray-500 max-w-xs mx-auto leading-relaxed">Perfectly aligned magnets engineered for optimal 15W wireless charging speed.</p>
-            </div>
-        </div>
-    </section>
-
-    <!-- Featured Products Grid -->
-    <section class="max-w-6xl mx-auto px-6 sm:px-8 py-24">
-        <div class="flex flex-col md:flex-row justify-between items-baseline mb-16 gap-4">
-            <div class="space-y-2">
-                <p class="text-[10px] uppercase tracking-widest text-gold-accent font-medium">Curated Essentials</p>
-                <h2 class="font-display text-3xl sm:text-4xl font-light tracking-wide text-gold-light">Featured Artifacts</h2>
-            </div>
-            <a href="/product" class="text-[10px] uppercase tracking-widest text-gold-light hover:text-gold-accent transition-colors font-medium border-b border-gold-light/20 pb-1">
-                View All Artifacts
-            </a>
-        </div>
-
-        <div class="grid grid-cols-2 md:grid-cols-3 gap-x-8 gap-y-16">
-            <% products.forEach((product, index) => { %>
-                <% const isInWishlist = wishlistItems && wishlistItems.some(item => 
-                    item.variantId && item.variantId.toString() === product.minVariant._id.toString()
-                ); %>
-                <!-- Product Card -->
-                <div class="group relative flex flex-col space-y-4">
-                    <!-- Wishlist Button -->
-                    <% if (user) { %>
-                        <button onclick="addHomeWishlist('<%= product._id %>', '<%= product.minVariant._id %>')" 
-                                class="absolute top-4 right-4 z-20 text-gold-light hover:text-gold-accent transition-all duration-300 p-2 bg-obsidian/40 backdrop-blur-md rounded-full">
-                            <i id="wish-icon-<%= product._id %>-<%= product.minVariant._id %>" 
-                               class="fa-heart <%= isInWishlist ? 'fas text-red-500' : 'far text-gold-light' %> text-sm"></i>
-                        </button>
-                    <% } %>
-
-                    <!-- Image (65% Height Area) -->
-                    <div class="relative aspect-[3/4] bg-obsidian-light border border-gold-light/5 group-hover:border-gold-light/20 overflow-hidden flex items-center justify-center transition-colors duration-300">
-                        <a href="/product/<%= product._id %>/detials" class="block w-full h-full">
-                            <% 
-                              let mainImageUrl = '/img/placeholder.jpg';
-                              if (product.productImages && product.productImages.length > 0) {
-                                  const mainImg = product.productImages.find(img => img.isMain);
-                                  if (mainImg) mainImageUrl = mainImg.url;
-                                  else if (product.productImages[0]) mainImageUrl = product.productImages[0].url;
-                              } else if (product.minVariant && product.minVariant.images && product.minVariant.images.length > 0) {
-                                  const mainImg = product.minVariant.images.find(img => img.isMain);
-                                  if (mainImg) mainImageUrl = mainImg.url;
-                                  else if (product.minVariant.images[0]) mainImageUrl = product.minVariant.images[0].url;
-                              } else if (product.variants && product.variants[0] && product.variants[0].images && product.variants[0].images.length > 0) {
-                                  const mainImg = product.variants[0].images.find(img => img.isMain);
-                                  if (mainImg) mainImageUrl = mainImg.url;
-                                  else if (product.variants[0].images[0]) mainImageUrl = product.variants[0].images[0].url;
-                              }
-                            %>
-                            <img src="<%= mainImageUrl %>" 
-                                 alt="<%= product.name %>" 
-                                 class="w-full h-full object-cover transform group-hover:scale-105 transition-transform duration-700 ease-out">
-                        </a>
-                        
-                        <!-- Quick Add Hover Overlay (Desktop) -->
-                        <div class="absolute inset-x-0 bottom-0 p-4 bg-gradient-to-t from-obsidian via-obsidian/80 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 hidden md:block">
-                            <button onclick="addHomeToCart('<%= product._id %>', '<%= product.minVariant._id %>')"
-                                    class="w-full bg-gold-light hover:bg-gold-accent text-obsidian py-2.5 rounded-sm text-[10px] uppercase tracking-widest font-semibold transition-colors duration-200">
-                                Quick Add
-                            </button>
+                <div class="relative z-10 flex flex-col md:flex-row items-center justify-between gap-6">
+                    <div class="space-y-3 text-center md:text-left max-w-xl">
+                        <span class="inline-block bg-[#ffe500] text-black font-extrabold text-[10px] sm:text-xs uppercase tracking-wider px-3 py-1 rounded-sm shadow">
+                            <%= (typeof siteSettings !== 'undefined' && siteSettings?.heroBanner?.badge) ? siteSettings.heroBanner.badge : 'BIG SAVING DAYS' %>
+                        </span>
+                        <h2 class="text-3xl sm:text-5xl font-black text-white leading-tight font-sans tracking-tight">
+                            <%= (typeof siteSettings !== 'undefined' && siteSettings?.heroBanner?.heading) ? siteSettings.heroBanner.heading : 'Up to 80% Off' %>
+                        </h2>
+                        <p class="text-xs sm:text-sm text-blue-100 font-medium leading-relaxed">
+                            <%= (typeof siteSettings !== 'undefined' && siteSettings?.heroBanner?.subtext) ? siteSettings.heroBanner.subtext : 'Top Cases, Leather Accessories & MagSafe Essentials at Unbeatable Prices.' %>
+                        </p>
+                        <div class="pt-2">
+                            <a href="<%= (typeof siteSettings !== 'undefined' && siteSettings?.heroBanner?.ctaLink) ? siteSettings.heroBanner.ctaLink : '/product' %>" class="inline-block bg-[#ff9f00] hover:bg-[#e68f00] text-gray-900 font-extrabold text-xs sm:text-sm uppercase tracking-wider px-8 py-3.5 rounded-sm shadow-md transform hover:-translate-y-0.5 transition duration-200">
+                                <%= (typeof siteSettings !== 'undefined' && siteSettings?.heroBanner?.ctaText) ? siteSettings.heroBanner.ctaText : 'Shop Now' %>
+                            </a>
                         </div>
                     </div>
 
-                    <!-- Info -->
-                    <div class="space-y-1">
-                        <p class="text-[9px] uppercase tracking-widest text-gold-accent font-medium">
-                            <%= product.catgId ? product.catgId.name : 'Premium Case' %>
-                        </p>
-                        <h3 class="font-display text-base tracking-wide text-gold-light font-light truncate">
-                            <a href="/product/<%= product._id %>/detials" class="hover:text-gold-accent transition-colors">
-                                <%= product.name %>
-                            </a>
-                        </h3>
-                        <div class="flex items-center space-x-2 pt-0.5">
-                            <span class="text-xs text-gold-light font-medium">₹<%= Math.floor(product.minVariant.salePrice || product.minVariant.orgPrice) %></span>
-                            <% if (product.minVariant.salePrice && product.minVariant.salePrice < product.minVariant.orgPrice) { %>
-                                <span class="text-[10px] text-gray-500 line-through">₹<%= Math.floor(product.minVariant.orgPrice) %></span>
-                            <% } %>
-                        </div>
+                    <!-- Showcase Image -->
+                    <div class="w-full md:w-1/2 max-w-xs sm:max-w-sm flex justify-center">
+                        <img src="/img/banner-promo.png" onerror="this.style.display='none'" alt="Mega Sale Promo" class="w-48 sm:w-64 h-auto object-contain drop-shadow-xl hover:scale-105 transition-transform duration-300">
                     </div>
                 </div>
-            <% }) %>
+            </div>
+        <% } %>
+    </section>
+    <% } %>
+
+
+
+    <!-- Trending Offers Product Grid (Flipkart Card Model) -->
+    <section class="w-full max-w-[1600px] mx-auto px-2 sm:px-6 py-2">
+        <div class="bg-white dark:bg-[#1E293B] border border-gray-200 dark:border-gray-800 rounded-sm shadow-sm p-4 sm:p-6 space-y-4">
+            <div class="flex items-center justify-between border-b border-gray-200 dark:border-gray-800 pb-3">
+                <h2 class="text-xl sm:text-2xl font-bold text-gray-900 dark:text-white tracking-tight">Trending Offers</h2>
+                <a href="/product" class="text-xs uppercase font-bold text-[#2874f0] hover:underline">Explore All</a>
+            </div>
+
+            <!-- Product Cards Grid -->
+            <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-3 sm:gap-4">
+                <% if (products && products.length > 0) { %>
+                    <% products.forEach((product, index) => { %>
+                        <%
+                          const isInWishlist = wishlistItems && wishlistItems.some(item => {
+                              const itemProdId = item.productId?._id ? item.productId._id.toString() : item.productId?.toString();
+                              const itemVarId = item.variantId?._id ? item.variantId._id.toString() : item.variantId?.toString();
+                              const prodId = product._id?.toString();
+                              const minVarId = product.minVariant?._id?.toString();
+                              return (itemProdId && itemProdId === prodId) || (itemVarId && minVarId && itemVarId === minVarId);
+                          });
+                        %>
+                        
+                        <!-- Product Card -->
+                        <div class="group bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700/80 hover:shadow-xl rounded-sm p-3 flex flex-col justify-between transition-all duration-200 relative">
+                            <div class="relative aspect-square w-full bg-gray-50 dark:bg-gray-900 rounded-sm p-2 flex items-center justify-center overflow-hidden mb-3">
+                                <!-- Flipkart Green Rating Badge (Top-Left) -->
+                                <span class="absolute top-2 left-2 z-10 bg-[#388e3c] text-white text-[10px] font-extrabold px-1.5 py-0.5 rounded-sm flex items-center space-x-0.5 shadow-sm">
+                                    <span>4.<%= (index % 5) + 2 %></span>
+                                    <i class="fas fa-star text-[7px]"></i>
+                                </span>
+
+                                <!-- Wishlist Button (Top-Right) -->
+                                <% if (user) { %>
+                                    <button onclick="addHomeWishlist('<%= product._id %>', '<%= product.minVariant._id %>')" 
+                                            class="absolute top-2 right-2 z-10 text-gray-400 hover:text-red-500 p-1.5 bg-white/80 dark:bg-gray-900/80 rounded-full shadow-sm">
+                                        <i id="wish-icon-<%= product._id %>-<%= product.minVariant._id %>" 
+                                           class="fa-heart <%= isInWishlist ? 'fas text-red-500' : 'far text-gray-400' %> text-xs"></i>
+                                    </button>
+                                <% } %>
+
+                                <!-- Image -->
+                                <a href="/product/<%= product._id %>/detials" class="w-full h-full flex items-center justify-center">
+                                    <% 
+                                      let mainImageUrl = '/img/placeholder.jpg';
+                                      if (product.productImages && product.productImages.length > 0) {
+                                          const mainImg = product.productImages.find(img => img.isMain);
+                                          if (mainImg) mainImageUrl = mainImg.url;
+                                          else if (product.productImages[0]) mainImageUrl = product.productImages[0].url;
+                                      } else if (product.minVariant && product.minVariant.images && product.minVariant.images.length > 0) {
+                                          const mainImg = product.minVariant.images.find(img => img.isMain);
+                                          if (mainImg) mainImageUrl = mainImg.url;
+                                          else if (product.minVariant.images[0]) mainImageUrl = product.minVariant.images[0].url;
+                                      }
+                                    %>
+                                    <img src="<%= mainImageUrl %>" 
+                                         alt="<%= product.name %>" 
+                                         class="max-w-full max-h-full object-contain transform group-hover:scale-105 transition-transform duration-300">
+                                </a>
+                            </div>
+
+                            <!-- Card Content -->
+                            <div class="space-y-2 flex-1 flex flex-col justify-between">
+                                <div class="space-y-1">
+                                    <p class="text-[10px] uppercase font-bold text-gray-400 truncate">
+                                        <%= product.catgId ? product.catgId.name : 'Phone Case' %>
+                                    </p>
+                                    <h3 class="text-xs sm:text-sm font-semibold text-gray-900 dark:text-white line-clamp-2 hover:text-[#2874f0] transition">
+                                        <a href="/product/<%= product._id %>/detials">
+                                            <%= product.name %>
+                                        </a>
+                                    </h3>
+                                </div>
+
+                                <div class="pt-2 border-t border-gray-100 dark:border-gray-700/60 space-y-2">
+                                    <!-- Price Row -->
+                                    <div class="flex items-baseline space-x-1.5 flex-wrap">
+                                        <span class="text-sm sm:text-base font-extrabold text-gray-900 dark:text-white">₹<%= Math.floor(product.minVariant.salePrice || product.minVariant.orgPrice) %></span>
+                                        <% if (product.minVariant.salePrice && product.minVariant.salePrice < product.minVariant.orgPrice) { %>
+                                            <span class="text-xs text-gray-400 line-through">₹<%= Math.floor(product.minVariant.orgPrice) %></span>
+                                            <% const discountPct = Math.round(((product.minVariant.orgPrice - product.minVariant.salePrice) / product.minVariant.orgPrice) * 100); %>
+                                            <span class="text-[10px] font-bold text-[#388e3c]"><%= discountPct %>% off</span>
+                                        <% } %>
+                                    </div>
+
+                                    <!-- Quick Add Button (Flipkart Yellow) -->
+                                    <button onclick="addHomeToCart('<%= product._id %>', '<%= product.minVariant._id %>')"
+                                            class="w-full bg-[#ff9f00] hover:bg-[#e68f00] text-gray-900 py-2 rounded-sm text-xs font-bold uppercase tracking-wider shadow-sm transition duration-150 flex items-center justify-center space-x-1">
+                                        <i class="fas fa-shopping-cart text-[10px]"></i>
+                                        <span>Add to Cart</span>
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    <% }) %>
+                <% } else { %>
+                    <div class="col-span-full py-12 text-center text-gray-500 text-sm">
+                        No trending products available at the moment.
+                    </div>
+                <% } %>
+            </div>
         </div>
     </section>
 </main>
 
+<!-- Floating Mobile Bottom Navigation Bar (Flipkart Style) -->
+<div class="fixed bottom-0 left-0 right-0 z-50 bg-white dark:bg-gray-900 border-t border-gray-200 dark:border-gray-800 md:hidden px-2 py-1 shadow-lg">
+    <div class="grid grid-cols-5 gap-1 text-center">
+        <!-- Home -->
+        <a href="/" class="flex flex-col items-center py-1 text-[#2874f0] font-bold">
+            <i class="fas fa-home text-base"></i>
+            <span class="text-[9px] mt-0.5">Home</span>
+        </a>
+
+        <!-- Categories -->
+        <a href="/product" class="flex flex-col items-center py-1 text-gray-600 dark:text-gray-400 hover:text-[#2874f0] transition">
+            <i class="fas fa-th-large text-base"></i>
+            <span class="text-[9px] mt-0.5">Categories</span>
+        </a>
+
+        <!-- Wishlist -->
+        <a href="/wishlist" class="flex flex-col items-center py-1 text-gray-600 dark:text-gray-400 hover:text-[#2874f0] transition relative">
+            <i class="far fa-heart text-base"></i>
+            <span class="text-[9px] mt-0.5">Wishlist</span>
+            <% if (typeof wishlistcount !== 'undefined' && wishlistcount > 0) { %>
+                <span class="absolute top-0 right-3 bg-[#ff9f00] text-black text-[8px] font-bold rounded-full w-3.5 h-3.5 flex items-center justify-center">
+                    <%= wishlistcount %>
+                </span>
+            <% } %>
+        </a>
+
+        <!-- Account -->
+        <a href="<%= user ? '/user-profile' : '/login' %>" class="flex flex-col items-center py-1 text-gray-600 dark:text-gray-400 hover:text-[#2874f0] transition">
+            <i class="far fa-user text-base"></i>
+            <span class="text-[9px] mt-0.5">Account</span>
+        </a>
+
+        <!-- Cart -->
+        <button onclick="openCartDrawer()" class="flex flex-col items-center py-1 text-gray-600 dark:text-gray-400 hover:text-[#2874f0] transition relative">
+            <i class="fas fa-shopping-cart text-base"></i>
+            <span class="text-[9px] mt-0.5">Cart</span>
+            <% if (typeof cartCount !== 'undefined' && cartCount > 0) { %>
+                <span class="absolute top-0 right-3 bg-[#ff9f00] text-black text-[8px] font-bold rounded-full w-3.5 h-3.5 flex items-center justify-center">
+                    <%= cartCount %>
+                </span>
+            <% } %>
+        </button>
+    </div>
+</div>
+
 <script>
-    // AJAX Add Wishlist with Toastify
+    // AJAX Wishlist Toggle
     async function addHomeWishlist(productId, variantId) {
         try {
             const response = await fetch('/product/wishlist/toggle', {
                 method: 'PATCH',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ productId, variantId })
+                body: JSON.stringify({ productId, variantId, variant: variantId })
             });
             const data = await response.json();
             
             if (data.success) {
                 const heart = document.getElementById(`wish-icon-${productId}-${variantId}`);
                 if (data.action === "added") {
-                    heart.className = "fas fa-heart text-red-500 text-sm";
+                    if (heart) heart.className = "fas fa-heart text-red-500 text-xs";
                     showToast("Added to Wishlist", "success");
                 } else {
-                    heart.className = "far fa-heart text-gold-light text-sm";
+                    if (heart) heart.className = "far fa-heart text-gray-400 text-xs";
                     showToast("Removed from Wishlist", "success");
                 }
                 
-                // Update badge if exists
                 const badge = document.getElementById('wishlist-count-badge');
                 if (badge && data.wishlistCount !== undefined) {
                     badge.textContent = data.wishlistCount;
@@ -168,7 +360,7 @@
         }
     }
 
-    // AJAX Add to Cart with Toastify
+    // AJAX Add to Cart
     async function addHomeToCart(productId, variantId) {
         try {
             const response = await fetch('/cart/add', {
@@ -177,7 +369,6 @@
                 body: JSON.stringify({ productId, variantId })
             });
             
-            // Check if redirect required (e.g. login)
             if (response.status === 401) {
                 const data = await response.json();
                 showToast(data.message || "Please login first", "error");
@@ -187,11 +378,13 @@
 
             const data = await response.json();
             if (data.success) {
-                showToast("Added to Cart Collection", "success");
-                updateCartCountBadges(data.cartCount);
-                
-                // Automatically open sliding drawer to show feedback!
-                openCartDrawer();
+                showToast("Added to Cart", "success");
+                if (typeof updateCartCountBadges === 'function') {
+                    updateCartCountBadges(data.cartCount);
+                }
+                if (typeof openCartDrawer === 'function') {
+                    openCartDrawer();
+                }
             } else {
                 showToast(data.message || "Failed to add to cart", "error");
             }
