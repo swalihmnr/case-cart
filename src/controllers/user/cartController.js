@@ -18,7 +18,10 @@ const getCart = async (req, res) => {
 
     const cartItems = await cartModel
       .find({ userId })
-      .populate("variantId")
+      .populate({
+        path: "variantId",
+        populate: { path: "brandId" },
+      })
       .populate({
         path: "productId",
         populate: { path: "catgId", model: "Category" },

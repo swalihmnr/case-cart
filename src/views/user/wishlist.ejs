@@ -1,7 +1,7 @@
 <%- include('../partials/user/header') %>
 
     <div class="min-h-screen bg-obsidian text-ivory font-sans">
-        <main class="max-w-7xl mx-auto px-6 py-12 md:py-16">
+        <main class="max-w-7xl mx-auto px-6 pt-24 md:pt-28 pb-12 md:pb-16">
             <!-- Page Header -->
             <div class="mb-10 fade-in">
                 <h1 class="font-display text-4xl font-light text-gold-light tracking-wide mb-2">My Account</h1>
@@ -55,8 +55,12 @@
                                                 <h4 class="font-display text-lg font-light text-gold-light mb-1 truncate">
                                                     <%= product.productId.name %>
                                                 </h4>
-                                                <p class="text-xs text-gray-400 mb-3 truncate">
-                                                    Model: <%= product.variantId.deviceModel || 'Default Model' %>
+                                                <p class="text-xs text-gray-400 mb-3 truncate flex items-center gap-1.5">
+                                                    <% if (product.variantId.brandId && product.variantId.brandId.name) { %>
+                                                        <span class="font-medium text-gray-300"><%= product.variantId.brandId.name %></span>
+                                                        <span>•</span>
+                                                    <% } %>
+                                                    <span><%= product.variantId.deviceModel || 'Default Model' %></span>
                                                 </p>
 
                                                 <div class="flex items-baseline gap-2 mb-4">

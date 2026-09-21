@@ -20,6 +20,10 @@
           if (mainImg) mainImgUrl = mainImg.url;
           else mainImgUrl = displayImages[0].url;
       }
+
+      const avgRating = Number(product.averageRating || 0);
+      const revCount = Number(product.totalReviews || 0);
+      const ratingDist = product.ratingDistribution || { 1: 0, 2: 0, 3: 0, 4: 0, 5: 0 };
     %>
     <div class="max-w-7xl mx-auto px-6 sm:px-8">
         
@@ -35,7 +39,7 @@
         <!-- Product Grid -->
         <div class="grid lg:grid-cols-12 gap-12 lg:gap-16">
             
-            <!-- Left Side: Interactive Gallery (5/12 columns) -->
+            <!-- Left Side: Interactive Gallery (6/12 columns) -->
             <div class="lg:col-span-6 space-y-6">
                 <div class="product-image-container relative flex flex-col md:flex-row gap-4">
                     <!-- Thumbnails -->
@@ -68,7 +72,7 @@
                         </div>
                     </div>
 
-                    <!-- Zoom Preview Box (positioned dynamically by JS) -->
+                    <!-- Zoom Preview Box -->
                     <div id="zoomPreviewContainer" class="zoom-preview-container absolute border border-gold-light/10 bg-obsidian-light overflow-hidden hidden shadow-2xl rounded z-[110] w-[400px] h-[400px]">
                         <div id="zoomPreviewImage" class="zoom-preview-image w-full h-full bg-no-repeat"></div>
                     </div>
@@ -79,19 +83,45 @@
             <div class="lg:col-span-6 space-y-8">
                 <!-- Header Info -->
                 <div class="space-y-3">
-                    <p class="text-[10px] uppercase tracking-widest text-gold-accent font-medium">
-                        <%= product.catgId ? product.catgId.name : 'Premium Protective Wear' %>
-                    </p>
+                    <div class="flex items-center gap-3 flex-wrap">
+                        <p class="text-[10px] uppercase tracking-widest text-gold-accent font-medium">
+                            <%= product.catgId ? product.catgId.name : 'Premium Protective Wear' %>
+                        </p>
+                        <%
+                            const brandVariant = product.variants && product.variants.find(v => v.brandId && v.brandId.name);
+                            const productBrand = brandVariant ? brandVariant.brandId : null;
+                        %>
+                        <span id="product-brand-badge" class="flex items-center gap-1.5 border border-gold-light/10 bg-gold-light/5 px-2.5 py-1 rounded-sm <%= productBrand ? '' : 'hidden' %>">
+                            <img id="product-brand-icon" src="<%= productBrand && productBrand.icon ? productBrand.icon : '' %>" alt="<%= productBrand ? productBrand.name : '' %>" class="w-3.5 h-3.5 object-contain rounded-sm <%= productBrand && productBrand.icon ? '' : 'hidden' %>" onerror="this.style.display='none'">
+                            <span id="product-brand-name" class="text-[9px] uppercase tracking-widest text-gold-light/80 font-semibold"><%= productBrand ? productBrand.name : '' %></span>
+                        </span>
+                    </div>
+
                     <h1 class="font-display text-3xl sm:text-4xl lg:text-5xl font-light tracking-wide text-gold-light leading-tight">
                         <%= product.name %>
                     </h1>
+
+                    <!-- Rating Summary Pill -->
+                    <div class="flex items-center gap-3 pt-1">
+                        <a href="#customer-reviews-section" class="inline-flex items-center gap-2 bg-obsidian-light border border-gold-light/10 hover:border-gold-accent/40 px-3 py-1.5 rounded-full transition-all group">
+                            <div class="flex items-center text-gold-accent text-xs">
+                                <% for(let s=1; s<=5; s++) { %>
+                                    <i class="fa<%= s <= Math.round(avgRating) ? 's' : 'r' %> fa-star text-[11px]"></i>
+                                <% } %>
+                            </div>
+                            <span class="text-xs font-semibold text-gold-light"><%= avgRating.toFixed(1) %></span>
+                            <span class="text-[10px] text-gray-400 border-l border-gold-light/10 pl-2 group-hover:text-gold-accent transition">
+                                <%= revCount %> <%= revCount === 1 ? 'Review' : 'Reviews' %>
+                            </span>
+                        </a>
+                    </div>
                 </div>
 
                 <!-- Price display -->
                 <div class="space-y-2">
                     <div class="flex items-baseline space-x-3">
-                        <span id="sale-span" class="text-3xl font-light text-gold-light">₹<%= Math.floor(product.variants[0]?.salePrice || product.variants[0]?.orgPrice) %></span>
-                        <span id="org-span" class="text-sm text-gray-500 line-through">₹<%= Math.floor(product.variants[0]?.orgPrice) %></span>
+                        <span id="sale-span" class="text-3xl font-light text-gold-light">₹<%= Math.floor(product.variants[0]?.salePrice || product.variants[0]?.orgPrice || 0) %></span>
+                        <span id="org-span" class="text-sm text-gray-500 line-through">₹<%= Math.floor(product.variants[0]?.orgPrice || 0) %></span>
                     </div>
                     <p id="stock-count" class="text-[10px] uppercase tracking-widest font-semibold text-gray-400"></p>
                 </div>
@@ -156,6 +186,210 @@
             </div>
         </div>
 
+        <!-- ============================================== -->
+        <!-- CUSTOMER RATINGS & REVIEWS SECTION -->
+        <!-- ============================================== -->
+        <section id="customer-reviews-section" class="mt-24 border-t border-gold-light/10 pt-16 scroll-mt-24">
+            <!-- Section Title -->
+            <div class="mb-12">
+                <p class="text-[10px] uppercase tracking-widest text-gold-accent font-medium mb-1">Customer Experience</p>
+                <h2 class="font-display text-3xl sm:text-4xl font-light tracking-wide text-gold-light">
+                    Ratings & Reviews
+                </h2>
+            </div>
+
+            <!-- Top Grid: Rating Breakdown & Review Submission Area -->
+            <div class="grid lg:grid-cols-12 gap-8 lg:gap-12 mb-16">
+                <!-- Rating Breakdown Card (5 Columns) -->
+                <div class="lg:col-span-5 bg-obsidian-light border border-gold-light/10 rounded-lg p-6 sm:p-8 shadow-xl">
+                    <div class="flex items-center gap-6 mb-8 pb-6 border-b border-gold-light/10">
+                        <div>
+                            <span id="summary-avg-rating" class="font-display text-5xl sm:text-6xl font-light text-gold-light leading-none">
+                                <%= avgRating.toFixed(1) %>
+                            </span>
+                            <div class="flex items-center text-gold-accent text-sm mt-2">
+                                <% for(let s=1; s<=5; s++) { %>
+                                    <i class="fa<%= s <= Math.round(avgRating) ? 's' : 'r' %> fa-star"></i>
+                                <% } %>
+                            </div>
+                        </div>
+                        <div class="border-l border-gold-light/10 pl-6">
+                            <p class="text-xs uppercase tracking-wider text-gray-400 font-medium">Overall Rating</p>
+                            <p id="summary-total-reviews" class="text-sm text-gold-light font-semibold mt-1">
+                                Based on <%= revCount %> <%= revCount === 1 ? 'review' : 'reviews' %>
+                            </p>
+                            <p class="text-[10px] text-gray-500 mt-0.5">100% Verified Customer Feedback</p>
+                        </div>
+                    </div>
+
+                    <!-- 5-Star Distribution Bars -->
+                    <div class="space-y-3" id="rating-distribution-bars">
+                        <% for (let star = 5; star >= 1; star--) { 
+                            const starCount = ratingDist[star] || 0;
+                            const percentage = revCount > 0 ? Math.round((starCount / revCount) * 100) : 0;
+                        %>
+                            <div class="flex items-center gap-3 text-xs">
+                                <span class="w-8 font-medium text-gold-light flex items-center gap-1">
+                                    <%= star %> <i class="fas fa-star text-[10px] text-gold-accent"></i>
+                                </span>
+                                <div class="flex-1 h-2 bg-obsidian rounded-full overflow-hidden border border-gold-light/5">
+                                    <div class="h-full bg-gradient-to-r from-gold-accent to-gold-light rounded-full transition-all duration-700"
+                                         style="width: <%= percentage %>%;"></div>
+                                </div>
+                                <span class="w-12 text-right text-gray-400 text-[11px] font-mono">
+                                    <%= percentage %>%
+                                </span>
+                            </div>
+                        <% } %>
+                    </div>
+                </div>
+
+                <!-- Review Action Area (7 Columns) -->
+                <div class="lg:col-span-7 bg-obsidian-light border border-gold-light/10 rounded-lg p-6 sm:p-8 shadow-xl flex flex-col justify-center">
+                    <% if (userReview) { %>
+                        <!-- User Already Submitted a Review -->
+                        <div id="user-existing-review-box" class="space-y-4">
+                            <div class="flex items-center justify-between">
+                                <span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-[10px] font-bold uppercase tracking-widest bg-gold-light/10 text-gold-accent border border-gold-accent/30">
+                                    <i class="fas fa-check-circle"></i> Your Review
+                                </span>
+                                <div class="flex items-center gap-2">
+                                    <button onclick="openEditReviewModal()" class="text-xs uppercase tracking-wider font-semibold text-gold-light hover:text-gold-accent transition">
+                                        <i class="fas fa-edit mr-1"></i> Edit
+                                    </button>
+                                    <span class="text-gray-600">|</span>
+                                    <button onclick="deleteMyReview('<%= userReview._id %>')" class="text-xs uppercase tracking-wider font-semibold text-red-400 hover:text-red-300 transition">
+                                        <i class="fas fa-trash mr-1"></i> Delete
+                                    </button>
+                                </div>
+                            </div>
+
+                            <div class="bg-obsidian border border-gold-light/5 p-4 rounded-md space-y-2">
+                                <div class="flex items-center gap-1 text-gold-accent text-xs">
+                                    <% for(let s=1; s<=5; s++) { %>
+                                        <i class="fa<%= s <= userReview.rating ? 's' : 'r' %> fa-star"></i>
+                                    <% } %>
+                                    <span class="ml-2 text-xs font-semibold text-gold-light"><%= userReview.rating %>/5</span>
+                                </div>
+                                <% if (userReview.title) { %>
+                                    <h4 class="font-display text-base text-gold-light"><%= userReview.title %></h4>
+                                <% } %>
+                                <p class="text-xs text-gray-400 leading-relaxed font-light"><%= userReview.comment %></p>
+                            </div>
+                        </div>
+
+                    <% } else if (hasPurchased) { %>
+                        <!-- Eligible Customer: Interactive Submission Form -->
+                        <div id="write-review-container">
+                            <h3 class="font-display text-xl text-gold-light mb-1">Write a Customer Review</h3>
+                            <p class="text-xs text-gray-400 mb-6">Share your verified purchase experience with fellow enthusiasts.</p>
+
+                            <form id="createReviewForm" onsubmit="submitCustomerReview(event)" class="space-y-4">
+                                <!-- Interactive Star Selector -->
+                                <div>
+                                    <label class="block text-[10px] uppercase tracking-widest text-gold-accent font-medium mb-2">Overall Rating *</label>
+                                    <div class="flex items-center gap-2" id="star-picker-container">
+                                        <% for(let i=1; i<=5; i++) { %>
+                                            <button type="button" onclick="setReviewRating(<%= i %>)" onmouseenter="previewRating(<%= i %>)" onmouseleave="resetRatingPreview()"
+                                                    class="star-picker-btn text-3xl text-gray-400 hover:text-gold-accent transition duration-150 focus:outline-none leading-none"
+                                                    data-value="<%= i %>">
+                                                ★
+                                            </button>
+                                        <% } %>
+                                        <span id="rating-label" class="text-xs text-gray-300 ml-2 font-medium">Select Stars</span>
+                                    </div>
+                                    <input type="hidden" id="reviewRatingInput" name="rating" value="0" required>
+                                </div>
+
+                                <!-- Review Title -->
+                                <div>
+                                    <label class="block text-[10px] uppercase tracking-widest text-gold-accent font-medium mb-1">Review Headline (Optional)</label>
+                                    <input type="text" id="reviewTitleInput" name="title" maxlength="100" placeholder="e.g. Exceptional finish & precision fit"
+                                           class="w-full bg-obsidian border border-gold-light/10 focus:border-gold-accent rounded px-4 py-2.5 text-xs text-ivory placeholder-gray-600 focus:outline-none transition">
+                                </div>
+
+                                <!-- Review Comment -->
+                                <div>
+                                    <label class="block text-[10px] uppercase tracking-widest text-gold-accent font-medium mb-1">Review Details *</label>
+                                    <textarea id="reviewCommentInput" name="comment" rows="3" minlength="5" maxlength="1000" required placeholder="What did you like or dislike about this case? How was the build quality?"
+                                              class="w-full bg-obsidian border border-gold-light/10 focus:border-gold-accent rounded px-4 py-2.5 text-xs text-ivory placeholder-gray-600 focus:outline-none transition"></textarea>
+                                </div>
+
+                                <button type="submit" id="submitReviewBtn"
+                                        class="w-full sm:w-auto bg-gold-light hover:bg-gold-accent text-obsidian px-8 py-3 rounded text-xs uppercase tracking-widest font-semibold transition duration-300 shadow-md">
+                                    Submit Verified Review
+                                </button>
+                            </form>
+                        </div>
+
+                    <% } else if (user) { %>
+                        <!-- Logged in, but haven't purchased this product -->
+                        <div class="text-center py-6 space-y-3">
+                            <div class="w-12 h-12 rounded-full bg-gold-light/5 border border-gold-light/10 flex items-center justify-center mx-auto text-gold-accent">
+                                <i class="fas fa-shield-alt text-lg"></i>
+                            </div>
+                            <h3 class="font-display text-lg text-gold-light">Verified Reviews Only</h3>
+                            <p class="text-xs text-gray-400 max-w-sm mx-auto leading-relaxed">
+                                To ensure authentic and trustworthy feedback, only customers who have purchased and received this product can submit a review.
+                            </p>
+                        </div>
+
+                    <% } else { %>
+                        <!-- Guest User -->
+                        <div class="text-center py-6 space-y-4">
+                            <div class="w-12 h-12 rounded-full bg-gold-light/5 border border-gold-light/10 flex items-center justify-center mx-auto text-gold-accent">
+                                <i class="fas fa-user-lock text-lg"></i>
+                            </div>
+                            <h3 class="font-display text-lg text-gold-light">Have you purchased this product?</h3>
+                            <p class="text-xs text-gray-400 max-w-sm mx-auto leading-relaxed">
+                                Sign in to your CaseCart account to leave a verified rating and review.
+                            </p>
+                            <a href="/login" class="inline-block bg-gold-light hover:bg-gold-accent text-obsidian px-8 py-2.5 rounded text-xs uppercase tracking-widest font-semibold transition shadow-md">
+                                Sign In to Review
+                            </a>
+                        </div>
+                    <% } %>
+                </div>
+            </div>
+
+            <!-- Customer Reviews List Feed -->
+            <div class="space-y-6">
+                <!-- Feed Controls Header -->
+                <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 pb-4 border-b border-gold-light/10">
+                    <h3 class="font-display text-xl text-gold-light tracking-wide flex items-center gap-2">
+                        <span>Customer Feedback</span>
+                        <span id="reviews-feed-count-badge" class="text-xs font-mono text-gray-400 bg-obsidian-light border border-gold-light/10 px-2 py-0.5 rounded">
+                            <%= revCount %>
+                        </span>
+                    </h3>
+
+                    <!-- Sort Controls -->
+                    <div class="flex items-center gap-3">
+                        <label for="reviewSortSelect" class="text-[10px] uppercase tracking-widest text-gray-400 font-medium">Sort By:</label>
+                        <select id="reviewSortSelect" onchange="loadProductReviews(1)"
+                                class="bg-obsidian-light text-gold-light border border-gold-light/10 rounded px-3 py-1.5 text-xs uppercase tracking-wider font-semibold focus:outline-none focus:border-gold-accent">
+                            <option value="newest">Newest First</option>
+                            <option value="highest">Highest Rating</option>
+                            <option value="lowest">Lowest Rating</option>
+                            <option value="oldest">Oldest First</option>
+                        </select>
+                    </div>
+                </div>
+
+                <!-- Review Items Container -->
+                <div id="reviews-list-container" class="space-y-4">
+                    <!-- Dynamic client render will populate this, skeleton loader shown by default -->
+                    <div class="text-center py-12 text-gray-500">
+                        <i class="fas fa-spinner fa-spin text-gold-accent text-2xl mb-2"></i>
+                        <p class="text-xs uppercase tracking-wider">Loading reviews...</p>
+                    </div>
+                </div>
+
+                <!-- Pagination / Load More Controls -->
+                <div id="reviews-pagination-container" class="flex justify-center pt-6"></div>
+            </div>
+        </section>
+
         <!-- Related Products Section -->
         <% if (relatedProducts && relatedProducts.length > 0) { %>
             <div class="mt-24 border-t border-gold-light/5 pt-16">
@@ -174,7 +408,6 @@
                 <!-- Cards Grid -->
                 <div class="grid grid-cols-2 md:grid-cols-4 gap-4 sm:gap-6">
                     <% relatedProducts.forEach(rel => {
-                        // Robust image resolution: product images first, then variant images
                         let relImageUrl = '/img/placeholder.jpg';
                         if (rel.productImages && rel.productImages.length > 0) {
                             const mainImg = rel.productImages.find(img => img.isMain);
@@ -187,7 +420,6 @@
                             }
                         }
 
-                        // Robust price resolution from populated variants
                         let relPrice = null;
                         let relOrgPrice = null;
                         if (rel.variants && rel.variants.length > 0) {
@@ -198,14 +430,12 @@
                     %>
                         <!-- Product Card -->
                         <a href="/product/<%= rel._id %>/detials" class="group flex flex-col bg-obsidian-light border border-gold-light/5 rounded-lg overflow-hidden hover:border-gold-accent/30 hover:shadow-xl transition-all duration-300 related-product-card">
-                            <!-- Image -->
                             <div class="relative aspect-[3/4] bg-obsidian overflow-hidden">
                                 <img src="<%= relImageUrl %>"
                                      alt="<%= rel.name %>"
                                      class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500 ease-out"
                                      onerror="this.src='/img/placeholder.jpg'">
 
-                                <!-- Quick View overlay on hover -->
                                 <div class="absolute inset-0 bg-obsidian/40 opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-center justify-center">
                                     <span class="text-[9px] uppercase tracking-widest text-ivory bg-obsidian/80 border border-gold-light/20 px-4 py-2 rounded backdrop-blur-sm">
                                         View Product
@@ -213,7 +443,6 @@
                                 </div>
                             </div>
 
-                            <!-- Info -->
                             <div class="p-4 flex flex-col gap-1.5 flex-1">
                                 <p class="text-[9px] uppercase tracking-widest text-gold-accent font-medium truncate">
                                     <%= rel.catgId ? rel.catgId.name : 'Premium' %>
@@ -249,9 +478,67 @@
     </div>
 </main>
 
+<!-- Edit Review Modal -->
+<div id="editReviewModal" class="fixed inset-0 bg-black/80 z-[150] hidden items-center justify-center p-4">
+    <div class="bg-obsidian-light border border-gold-light/20 rounded-lg p-6 sm:p-8 max-w-lg w-full shadow-2xl space-y-4 animate-fade-in">
+        <div class="flex items-center justify-between border-b border-gold-light/10 pb-3">
+            <h3 class="font-display text-xl text-gold-light">Edit Your Review</h3>
+            <button onclick="closeEditReviewModal()" class="text-gray-400 hover:text-gold-light text-sm">
+                <i class="fas fa-times"></i>
+            </button>
+        </div>
+
+        <form id="editReviewForm" onsubmit="submitEditCustomerReview(event)" class="space-y-4">
+            <input type="hidden" id="editReviewId" value="<%= userReview ? userReview._id : '' %>">
+            
+            <div>
+                <label class="block text-[10px] uppercase tracking-widest text-gold-accent font-medium mb-2">Rating *</label>
+                <div class="flex items-center gap-2" id="edit-star-picker-container">
+                    <% for(let i=1; i<=5; i++) { %>
+                        <button type="button" onclick="setEditReviewRating(<%= i %>)"
+                                class="edit-star-picker-btn text-3xl text-gray-400 hover:text-gold-accent transition duration-150 focus:outline-none leading-none"
+                                data-value="<%= i %>">
+                            ★
+                        </button>
+                    <% } %>
+                    <span id="edit-rating-label" class="text-xs text-gray-300 ml-2 font-medium"></span>
+                </div>
+                <input type="hidden" id="editReviewRatingInput" value="<%= userReview ? userReview.rating : '5' %>" required>
+            </div>
+
+            <div>
+                <label class="block text-[10px] uppercase tracking-widest text-gold-accent font-medium mb-1">Headline</label>
+                <input type="text" id="editReviewTitleInput" maxlength="100" value="<%= userReview ? (userReview.title || '') : '' %>"
+                       class="w-full bg-obsidian border border-gold-light/10 focus:border-gold-accent rounded px-4 py-2 text-xs text-ivory placeholder-gray-600 focus:outline-none transition">
+            </div>
+
+            <div>
+                <label class="block text-[10px] uppercase tracking-widest text-gold-accent font-medium mb-1">Review *</label>
+                <textarea id="editReviewCommentInput" rows="3" minlength="5" maxlength="1000" required
+                          class="w-full bg-obsidian border border-gold-light/10 focus:border-gold-accent rounded px-4 py-2 text-xs text-ivory placeholder-gray-600 focus:outline-none transition"><%= userReview ? userReview.comment : '' %></textarea>
+            </div>
+
+            <div class="flex justify-end gap-3 pt-2">
+                <button type="button" onclick="closeEditReviewModal()"
+                        class="px-5 py-2.5 border border-gold-light/10 text-gray-400 hover:text-gold-light rounded text-xs uppercase tracking-widest font-semibold transition">
+                    Cancel
+                </button>
+                <button type="submit" id="saveEditReviewBtn"
+                        class="bg-gold-light hover:bg-gold-accent text-obsidian px-6 py-2.5 rounded text-xs uppercase tracking-widest font-semibold transition shadow-md">
+                    Save Changes
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+
 <script>
-    // Initial wishlistItems state
+    // Initial state injected from server
+    window.productId = "<%= product._id %>";
+    window.currentUserId = "<%= (user && (user.id || user._id)) ? (user.id || user._id) : '' %>";
     window.wishlistItems = <%- JSON.stringify(wishlistItems || []) %>;
+    window.productVariants = <%- JSON.stringify(product.variants || []) %>;
+    window.userReviewData = <%- JSON.stringify(userReview || null) %>;
 </script>
 <script type="module" src="/js/user/product-detials.js"></script>
 

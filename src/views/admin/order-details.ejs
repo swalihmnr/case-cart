@@ -294,6 +294,7 @@
                                           }
                                         %>
                                         <img src="<%= orderDetailImageUrl %>" alt="<%= order.product.name %>"
+                                             onerror="this.src='/img/placeholder.jpg'"
                                              class="w-20 h-20 object-cover rounded-xl border border-gray-100" />
 
                                                         <div class="flex-1">
@@ -562,7 +563,6 @@
                                 </div>
                         </div>
                 </div>
-                <% } %>
             </div>
     </div>
     </div>

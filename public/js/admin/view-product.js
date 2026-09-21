@@ -898,6 +898,13 @@ async function editVariant(variantId) {
       variant.orgPrice ?? 0;
     document.getElementById("editVariantSalePrice").value =
       variant.salePrice ?? 0;
+
+    // Pre-select the brand dropdown
+    const brandSelect = document.getElementById("editVariantBrand");
+    if (brandSelect) {
+      const brandId = variant.brandId?._id || variant.brandId || "";
+      brandSelect.value = brandId.toString();
+    }
   } catch (error) {
     console.error("Failed to load variant details:", error);
   }
@@ -948,6 +955,7 @@ async function saveVariantChanges() {
 
   const data = {
     deviceModel: model,
+    brandId: document.getElementById("editVariantBrand")?.value || "",
     stock: stock,
     orgPrice: originalPrice,
     salePrice: salePrice,
@@ -1092,6 +1100,7 @@ async function saveNewVariant() {
 
   const data = {
     deviceModel: model,
+    brandId: document.getElementById("addVariantBrand")?.value || "",
     stock: stock,
     orgPrice: originalPrice,
     salePrice: salePrice,

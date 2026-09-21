@@ -195,9 +195,9 @@
                 <!-- Integrated Center Search Bar (Flipkart Style) -->
                 <div class="hidden sm:flex flex-1 max-w-xl mx-4 relative">
                     <form action="/product" method="GET" class="w-full relative">
-                        <input type="text" name="search" placeholder="Search for products, brands and more" 
+                        <input type="text" name="search" value="<%= (typeof search !== 'undefined' && search) ? search : '' %>" placeholder="Search for products, brands and more" 
                                class="w-full bg-white text-gray-900 placeholder-gray-500 rounded-sm pl-4 pr-10 py-2 text-xs sm:text-sm font-medium focus:outline-none shadow-inner">
-                        <button type="submit" class="absolute right-3 top-1/2 -translate-y-1/2 text-[#2874f0] text-sm hover:text-blue-700">
+                        <button type="submit" class="absolute right-3 top-1/2 -translate-y-1/2 text-[#2874f0] text-sm hover:text-blue-700" title="Search">
                             <i class="fas fa-search"></i>
                         </button>
                     </form>
@@ -995,12 +995,16 @@
                     badge.classList.add('hidden');
                 }
             }
+            const desktopBadge = document.getElementById('cart-count-desktop');
+            if (desktopBadge) desktopBadge.textContent = count;
+            const mobileBadge = document.getElementById('cart-count-mobile');
+            if (mobileBadge) mobileBadge.textContent = count;
         }
 
         // AJAX update drawer quantity
         async function updateDrawerQuantity(cartId, change) {
             try {
-                const response = await fetch(`/cart/quantity/${cartId}`, {
+                const response = await fetch(`/cart/${cartId}/quantity`, {
                     method: 'PATCH',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({ change })
@@ -1024,8 +1028,8 @@
         // AJAX remove item
         async function removeDrawerItem(cartId) {
             try {
-                const response = await fetch(`/product/cart/${cartId}`, {
-                    method: 'PATCH'
+                const response = await fetch(`/cart/${cartId}`, {
+                    method: 'DELETE'
                 });
                 const data = await response.json();
                 if (data.success) {

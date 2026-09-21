@@ -8,6 +8,8 @@ import mongoose from "mongoose";
 import { STATUS_CODES } from "../../utils/statusCodes.js";
 import discountChecker from "../../utils/calculateDiscount.js";
 import calculateBestItemOffer from "../../utils/calculateBestOfferItem.js";
+import reviewModel from "../../models/reviewModel.js";
+import { checkUserPurchaseEligibility } from "../../utils/ratingService.js";
 
 // ==============================
 // GET ALL PRODUCTS (USER SIDE)
@@ -37,8 +39,49 @@ const getProduct = async (req, res) => {
 
     let matchStage = { isBlock: false };
 
-    if (search.trim()) {
-      matchStage.name = { $regex: search, $options: "i" };
+    const cleanSearch = (search || "").trim().replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+    if (cleanSearch) {
+      const searchRegex = { $regex: cleanSearch, $options: "i" };
+
+      // Find matching categories, brands, and variants
+      const [matchingCats, matchingBrands, matchingVariants] = await Promise.all([
+        Category.find({ name: searchRegex, isActive: true }).select("_id").lean(),
+        brandModel.find({ name: searchRegex, isActive: true }).select("_id").lean(),
+        variantModel.find({
+          $or: [
+            { deviceModel: searchRegex },
+            { color: searchRegex },
+          ],
+        }).select("_id").lean(),
+      ]);
+
+      const catIds = matchingCats.map((c) => c._id);
+      const brandIds = matchingBrands.map((b) => b._id);
+      let variantIds = matchingVariants.map((v) => v._id);
+
+      // Also get variants matching the brand
+      if (brandIds.length > 0) {
+        const brandVariants = await variantModel.find({ brandId: { $in: brandIds } }).select("_id").lean();
+        const brandVarIds = brandVariants.map((v) => v._id);
+        variantIds = [...new Set([...variantIds.map((id) => id.toString()), ...brandVarIds.map((id) => id.toString())])].map(
+          (id) => new mongoose.Types.ObjectId(id)
+        );
+      }
+
+      const orConditions = [
+        { name: searchRegex },
+        { description: searchRegex },
+      ];
+
+      if (catIds.length > 0) {
+        orConditions.push({ catgId: { $in: catIds } });
+      }
+
+      if (variantIds.length > 0) {
+        orConditions.push({ variants: { $in: variantIds } });
+      }
+
+      matchStage.$or = orConditions;
     }
 
     if (selectedCategories.length > 0) {
@@ -117,6 +160,49 @@ const getProduct = async (req, res) => {
       },
       { $unwind: "$catgId" },
       { $match: { "catgId.isActive": true } },
+
+      // JOIN BRANDS — so minVariant.brandId becomes a populated object
+      {
+        $lookup: {
+          from: "brands",
+          localField: "variants.brandId",
+          foreignField: "_id",
+          as: "_brandsLookup",
+        },
+      },
+      {
+        $addFields: {
+          variants: {
+            $map: {
+              input: "$variants",
+              as: "v",
+              in: {
+                $mergeObjects: [
+                  "$$v",
+                  {
+                    brandId: {
+                      $let: {
+                        vars: {
+                          matchedBrand: {
+                            $first: {
+                              $filter: {
+                                input: "$_brandsLookup",
+                                as: "b",
+                                cond: { $eq: ["$$b._id", "$$v.brandId"] },
+                              },
+                            },
+                          },
+                        },
+                        in: { $ifNull: ["$$matchedBrand", "$$v.brandId"] },
+                      },
+                    },
+                  },
+                ],
+              },
+            },
+          },
+        },
+      },
 
       // ADD MIN PRICE & MIN VARIANT
       {
@@ -275,7 +361,7 @@ const getDetialProduct = async (req, res) => {
     const product = await productModel
       .findById(objectId)
       .populate("catgId")
-      .populate("variants");
+      .populate({ path: "variants", populate: { path: "brandId" } });
     if (!product) {
       req.flash("error", "Product not found");
       return res.redirect("/product");
@@ -283,7 +369,7 @@ const getDetialProduct = async (req, res) => {
 
     const relatedProductsInitial = await productModel
       .find({ catgId: product.catgId, _id: { $ne: product._id } })
-      .populate('variants')
+      .populate({ path: "variants", populate: { path: "brandId" } })
       .limit(4);
 
     const relatedProducts = [
@@ -299,7 +385,7 @@ const getDetialProduct = async (req, res) => {
               ],
             },
           })
-          .populate('variants')
+          .populate({ path: "variants", populate: { path: "brandId" } })
           .limit(4 - relatedProductsInitial.length)
         : []),
     ];
@@ -346,12 +432,27 @@ const getDetialProduct = async (req, res) => {
       wishlistItems = await wishlistModel.find({ userId: req.session.user.id });
     }
 
+    const userId = req.session.user?.id || req.session.user?._id;
+    let userReview = null;
+    let hasPurchased = false;
+
+    if (userId && mongoose.Types.ObjectId.isValid(userId)) {
+      const [purchaseCheck, existingReview] = await Promise.all([
+        checkUserPurchaseEligibility(userId, product._id),
+        reviewModel.findOne({ product: product._id, user: new mongoose.Types.ObjectId(userId) }).lean(),
+      ]);
+      hasPurchased = purchaseCheck.hasPurchased;
+      userReview = existingReview;
+    }
+
     res.render("./user/product-detial", {
       product,
       relatedProducts,
       initialOffer,
       wishlistItems,
-      user: req.session.user
+      user: req.session.user,
+      hasPurchased,
+      userReview,
     });
   } catch (error) {
     console.log(error);
@@ -375,7 +476,7 @@ const getVariantData = async (req, res) => {
       });
     }
 
-    const variant = await variantModel.findById(variantId);
+    const variant = await variantModel.findById(variantId).populate("brandId");
     const product = await productModel.findById(productId);
 
     if (!variant || !product) {
@@ -426,6 +527,7 @@ const getVariantData = async (req, res) => {
       orgPrice: variant.orgPrice,
       stock: variant.stock,
       images: variant.images || [],
+      brand: variant.brandId || null,
       disObject,
     });
   } catch (error) {

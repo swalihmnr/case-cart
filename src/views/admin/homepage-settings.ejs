@@ -388,6 +388,7 @@
                   <option value="promo">🎉 Promotion</option>
                   <option value="product">📦 Product</option>
                   <option value="category">🏷️ Category</option>
+                  <option value="brand">✨ Brand</option>
                 </select>
               </div>
             </div>
@@ -414,7 +415,7 @@
                   <div class="flex-1 min-w-0">
                     <div class="flex items-center gap-2 mb-1">
                       <span class="text-[10px] uppercase font-extrabold px-1.5 py-0.5 rounded-md
-                        <%= item.type === 'promo' ? 'bg-amber-100 text-amber-800' : (item.type === 'category' ? 'bg-purple-100 text-purple-800' : 'bg-blue-100 text-blue-800') %>">
+                        <%= item.type === 'promo' ? 'bg-amber-100 text-amber-800' : (item.type === 'category' ? 'bg-purple-100 text-purple-800' : (item.type === 'brand' ? 'bg-emerald-100 text-emerald-800' : 'bg-blue-100 text-blue-800')) %>">
                         <%= item.type %>
                       </span>
                       <span class="text-[11px] text-gray-400 truncate max-w-[120px]"><%= item.link %></span>

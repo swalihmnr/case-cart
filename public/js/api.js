@@ -387,6 +387,57 @@ const checkOrderStatusAxios = async (orderId) => {
   }
 };
 
+// ---------------------------
+// PRODUCT REVIEWS
+// ---------------------------
+const getProductReviewsAxios = async (productId, page = 1, sort = "newest") => {
+  try {
+    return await api.get(`/api/products/${productId}/reviews?page=${page}&sort=${sort}`);
+  } catch (error) {
+    return error.response;
+  }
+};
+
+const checkReviewEligibilityAxios = async (productId) => {
+  try {
+    return await api.get(`/api/products/${productId}/reviews/eligibility`);
+  } catch (error) {
+    return error.response;
+  }
+};
+
+const createReviewAxios = async (productId, data) => {
+  try {
+    return await api.post(`/api/products/${productId}/reviews`, data);
+  } catch (error) {
+    return error.response;
+  }
+};
+
+const updateReviewAxios = async (reviewId, data) => {
+  try {
+    return await api.put(`/api/reviews/${reviewId}`, data);
+  } catch (error) {
+    return error.response;
+  }
+};
+
+const deleteReviewAxios = async (reviewId) => {
+  try {
+    return await api.delete(`/api/reviews/${reviewId}`);
+  } catch (error) {
+    return error.response;
+  }
+};
+
+const deleteAdminReviewAxios = async (reviewId) => {
+  try {
+    return await api.delete(`/admin/reviews/${reviewId}`);
+  } catch (error) {
+    return error.response;
+  }
+};
+
 export default {
   userSignupAxios,
   userOtpAxios,
@@ -421,4 +472,10 @@ export default {
   createRazorpayOrderWallletAxios,
   verifyRazorpayPaymentWalletAxios,
   checkOrderStatusAxios,
+  getProductReviewsAxios,
+  checkReviewEligibilityAxios,
+  createReviewAxios,
+  updateReviewAxios,
+  deleteReviewAxios,
+  deleteAdminReviewAxios,
 };

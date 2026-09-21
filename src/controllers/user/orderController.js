@@ -648,7 +648,7 @@ const getOrderDetails = async (req, res) => {
     const orderId = new mongoose.Types.ObjectId(req.params.id);
     const order = await orderModel.aggregate([
       { $match: { _id: orderId } },
-      { $unwind: "$orderItems" },
+      { $unwind: { path: "$orderItems", preserveNullAndEmptyArrays: true } },
       {
         $lookup: {
           from: "products",
@@ -657,7 +657,7 @@ const getOrderDetails = async (req, res) => {
           as: "product",
         },
       },
-      { $unwind: "$product" },
+      { $unwind: { path: "$product", preserveNullAndEmptyArrays: true } },
       {
         $lookup: {
           from: "variants",
@@ -666,7 +666,7 @@ const getOrderDetails = async (req, res) => {
           as: "variant",
         },
       },
-      { $unwind: "$variant" },
+      { $unwind: { path: "$variant", preserveNullAndEmptyArrays: true } },
       {
         $group: {
           _id: "$_id",
@@ -683,35 +683,44 @@ const getOrderDetails = async (req, res) => {
           createdAt: { $first: "$createdAt" },
           orderItems: {
             $push: {
-              _id: "$orderItems._id",
-              productId: "$orderItems.productId",
-              product: "$product",
-              variantId: "$orderItems.variantId",
-              variant: "$variant",
-              quantity: "$orderItems.quantity",
-              finalPrice: "$orderItems.finalPrice",
-              price:"$orderItems.price",
-              status: "$orderItems.status",
-              cancelledAt: "$orderItems.cancelledAt",
-              cancellationReason: "$orderItems.cancellationReason",
-              isReject: "$orderItems.isReject",
+              $cond: [
+                { $ifNull: ["$orderItems._id", false] },
+                {
+                  _id: "$orderItems._id",
+                  productId: "$orderItems.productId",
+                  product: "$product",
+                  variantId: "$orderItems.variantId",
+                  variant: "$variant",
+                  quantity: "$orderItems.quantity",
+                  finalPrice: "$orderItems.finalPrice",
+                  price: { $ifNull: ["$orderItems.price", "$orderItems.finalPrice"] },
+                  status: "$orderItems.status",
+                  cancelledAt: "$orderItems.cancelledAt",
+                  cancellationReason: "$orderItems.cancellationReason",
+                  isReject: "$orderItems.isReject",
+                },
+                "$$REMOVE",
+              ],
             },
           },
         },
       },
     ]);
-    if (!order) {
-      req.flash("error", "order not found");
+
+    if (!order || order.length === 0 || !order[0]) {
+      req.flash("error", "Order not found");
       return res.redirect("/order");
     }
-    if (!order || order.length === 0) {
-      return res.status(404).render("error");
-    }
 
-    res.render("./user/order-details", { order: order[0] });
+    res.render("./user/order-details", {
+      order: order[0],
+      activeTab: "orders",
+      user: req.session.user || null,
+    });
   } catch (error) {
-    console.error(error);
-    res.status(500).render("500");
+    console.error("Error in getOrderDetails:", error);
+    req.flash("error", "Failed to load order details");
+    res.redirect("/order");
   }
 };
 
@@ -1127,7 +1136,7 @@ const invoice = async (req, res) => {
       },
     },
     {
-      $unwind: "$variant",
+      $unwind: { path: "$variant", preserveNullAndEmptyArrays: true },
     },
     {
       $lookup: {
@@ -1138,7 +1147,7 @@ const invoice = async (req, res) => {
       },
     },
     {
-      $unwind: "$product",
+      $unwind: { path: "$product", preserveNullAndEmptyArrays: true },
     },
     {
       $project: {

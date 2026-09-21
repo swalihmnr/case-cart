@@ -1,0 +1,242 @@
+<%- include('../partials/header') %>
+  <div class="flex">
+    <%- include('../partials/sidebar') %>
+      <main class="flex-1 p-3 lg:p-6 lg:ml-0 min-h-screen overflow-hidden bg-gray-50">
+        <div id="reviews-page" class="page-content">
+          <!-- Page Header -->
+          <div class="mb-6 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+            <div>
+              <h1 class="text-2xl lg:text-3xl font-bold text-gray-900 mb-1">
+                Customer Reviews & Ratings
+              </h1>
+              <p class="text-gray-600 text-sm">
+                Monitor customer feedback, verified purchase badges, and moderate reviews across your catalog.
+              </p>
+            </div>
+            <div class="bg-white border border-gray-200 px-4 py-2 rounded-xl shadow-sm flex items-center gap-3">
+              <div class="w-10 h-10 rounded-lg bg-amber-50 flex items-center justify-center text-amber-600">
+                <i class="fas fa-star text-lg"></i>
+              </div>
+              <div>
+                <span class="text-xs text-gray-500 uppercase tracking-wider font-semibold block">Total Reviews</span>
+                <span class="text-xl font-bold text-gray-900"><%= totalReviews %></span>
+              </div>
+            </div>
+          </div>
+
+          <!-- Filters & Search Bar -->
+          <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-4 mb-6">
+            <form method="GET" action="/admin/reviews" class="grid grid-cols-1 sm:grid-cols-12 gap-3">
+              <!-- Search -->
+              <div class="sm:col-span-5 relative">
+                <i class="fas fa-search absolute left-3.5 top-1/2 -translate-y-1/2 text-gray-400 text-sm"></i>
+                <input type="text" name="search" value="<%= search %>" placeholder="Search by comment or title..."
+                  class="w-full pl-10 pr-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-purple-500" />
+              </div>
+
+              <!-- Rating Filter -->
+              <div class="sm:col-span-3">
+                <select name="rating" onchange="this.form.submit()"
+                  class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-purple-500 bg-white">
+                  <option value="">All Ratings</option>
+                  <option value="5" <%= rating === '5' ? 'selected' : '' %>>5 Stars (★★★★★)</option>
+                  <option value="4" <%= rating === '4' ? 'selected' : '' %>>4 Stars (★★★★☆)</option>
+                  <option value="3" <%= rating === '3' ? 'selected' : '' %>>3 Stars (★★★☆☆)</option>
+                  <option value="2" <%= rating === '2' ? 'selected' : '' %>>2 Stars (★★☆☆☆)</option>
+                  <option value="1" <%= rating === '1' ? 'selected' : '' %>>1 Star (★☆☆☆☆)</option>
+                </select>
+              </div>
+
+              <!-- Product Filter -->
+              <div class="sm:col-span-3">
+                <select name="product" onchange="this.form.submit()"
+                  class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-purple-500 bg-white">
+                  <option value="">All Products</option>
+                  <% (productsList || []).forEach(prod => { %>
+                    <option value="<%= prod._id %>" <%= selectedProduct === prod._id.toString() ? 'selected' : '' %>>
+                      <%= prod.name %>
+                    </option>
+                  <% }) %>
+                </select>
+              </div>
+
+              <!-- Actions -->
+              <div class="sm:col-span-1 flex gap-2">
+                <button type="submit" class="w-full bg-purple-600 text-white px-3 py-2 rounded-lg hover:bg-purple-700 transition text-sm flex items-center justify-center" title="Apply Filter">
+                  <i class="fas fa-filter"></i>
+                </button>
+              </div>
+            </form>
+          </div>
+
+          <!-- Reviews Table -->
+          <div class="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
+            <div class="overflow-x-auto">
+              <table class="w-full text-left border-collapse">
+                <thead>
+                  <tr class="bg-gray-50 border-b border-gray-200 text-xs uppercase tracking-wider text-gray-500 font-semibold">
+                    <th class="py-3.5 px-4">Customer</th>
+                    <th class="py-3.5 px-4">Product</th>
+                    <th class="py-3.5 px-4">Rating</th>
+                    <th class="py-3.5 px-4">Review Details</th>
+                    <th class="py-3.5 px-4">Date</th>
+                    <th class="py-3.5 px-4 text-right">Actions</th>
+                  </tr>
+                </thead>
+                <tbody class="divide-y divide-gray-100 text-sm">
+                  <% if (reviews && reviews.length > 0) { %>
+                    <% reviews.forEach(rev => { %>
+                      <tr class="hover:bg-gray-50/80 transition-colors">
+                        <!-- Customer -->
+                        <td class="py-4 px-4 align-top">
+                          <div class="flex items-center gap-3">
+                            <img src="<%= (rev.user && rev.user.profileImg) ? rev.user.profileImg : 'https://cdn-icons-png.flaticon.com/512/149/149071.png' %>"
+                              alt="Avatar" class="w-9 h-9 rounded-full object-cover border border-gray-200 bg-gray-100 flex-shrink-0"
+                              onerror="this.src='https://cdn-icons-png.flaticon.com/512/149/149071.png'">
+                            <div class="min-w-0">
+                              <p class="font-medium text-gray-900 truncate">
+                                <%= rev.user ? (rev.user.firstName + ' ' + (rev.user.lastName || '')) : 'Deleted User' %>
+                              </p>
+                              <p class="text-xs text-gray-500 truncate"><%= rev.user ? rev.user.email : 'N/A' %></p>
+                            </div>
+                          </div>
+                        </td>
+
+                        <!-- Product -->
+                        <td class="py-4 px-4 align-top">
+                          <div class="min-w-0 max-w-[200px]">
+                            <% if (rev.product) { %>
+                              <a href="/product/<%= rev.product._id %>/detials" target="_blank" class="font-medium text-purple-600 hover:text-purple-800 hover:underline line-clamp-2">
+                                <%= rev.product.name %>
+                              </a>
+                              <span class="text-xs text-gray-400 block mt-0.5">
+                                Avg: <%= rev.product.averageRating || 0 %> ★ (<%= rev.product.totalReviews || 0 %>)
+                              </span>
+                            <% } else { %>
+                              <span class="text-gray-400 italic">Deleted Product</span>
+                            <% } %>
+                          </div>
+                        </td>
+
+                        <!-- Rating -->
+                        <td class="py-4 px-4 align-top whitespace-nowrap">
+                          <div class="flex items-center gap-1 text-amber-400">
+                            <% for(let s = 1; s <= 5; s++) { %>
+                              <i class="fa<%= s <= rev.rating ? 's' : 'r' %> fa-star text-xs"></i>
+                            <% } %>
+                          </div>
+                          <span class="text-xs font-semibold text-gray-700 block mt-1"><%= rev.rating %> / 5 Stars</span>
+                        </td>
+
+                        <!-- Review Text & Verified Badge -->
+                        <td class="py-4 px-4 align-top">
+                          <div class="max-w-md space-y-1">
+                            <% if (rev.title) { %>
+                              <h5 class="font-semibold text-gray-900 text-sm"><%= rev.title %></h5>
+                            <% } %>
+                            <p class="text-gray-600 text-xs leading-relaxed"><%= rev.comment %></p>
+                            <div class="flex items-center gap-2 pt-1">
+                              <% if (rev.isVerifiedPurchase) { %>
+                                <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded text-[10px] font-bold tracking-wider uppercase bg-emerald-50 text-emerald-700 border border-emerald-200">
+                                  <i class="fas fa-check-circle text-[9px]"></i> Verified Purchase
+                                </span>
+                              <% } %>
+                            </div>
+                          </div>
+                        </td>
+
+                        <!-- Date -->
+                        <td class="py-4 px-4 align-top text-xs text-gray-500 whitespace-nowrap">
+                          <%= new Date(rev.createdAt).toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' }) %>
+                        </td>
+
+                        <!-- Actions -->
+                        <td class="py-4 px-4 align-top text-right whitespace-nowrap">
+                          <button onclick="deleteReview('<%= rev._id %>')"
+                            class="text-red-600 hover:text-red-800 p-2 hover:bg-red-50 rounded-lg transition" title="Delete Review">
+                            <i class="fas fa-trash-alt"></i>
+                          </button>
+                        </td>
+                      </tr>
+                    <% }); %>
+                  <% } else { %>
+                    <tr>
+                      <td colspan="6" class="text-center py-12 text-gray-500">
+                        <div class="w-12 h-12 rounded-full bg-gray-100 flex items-center justify-center mx-auto mb-3 text-gray-400">
+                          <i class="far fa-star text-xl"></i>
+                        </div>
+                        <p class="font-medium text-gray-900">No reviews found</p>
+                        <p class="text-xs text-gray-500 mt-1">Try adjusting your filters or search query.</p>
+                      </td>
+                    </tr>
+                  <% } %>
+                </tbody>
+              </table>
+            </div>
+
+            <!-- Pagination -->
+            <% if (totalPages > 1) { %>
+              <div class="px-4 py-3 border-t border-gray-200 flex items-center justify-between">
+                <p class="text-xs text-gray-500">
+                  Page <span class="font-semibold text-gray-900"><%= currentPage %></span> of <span class="font-semibold text-gray-900"><%= totalPages %></span>
+                </p>
+                <div class="flex items-center gap-1">
+                  <% if (currentPage > 1) { %>
+                    <a href="?page=<%= currentPage - 1 %><%= rating ? '&rating=' + rating : '' %><%= selectedProduct ? '&product=' + selectedProduct : '' %><%= search ? '&search=' + search : '' %>"
+                      class="px-3 py-1.5 border border-gray-300 rounded-md text-xs font-medium text-gray-700 hover:bg-gray-50 transition">
+                      Previous
+                    </a>
+                  <% } %>
+                  <% if (currentPage < totalPages) { %>
+                    <a href="?page=<%= currentPage + 1 %><%= rating ? '&rating=' + rating : '' %><%= selectedProduct ? '&product=' + selectedProduct : '' %><%= search ? '&search=' + search : '' %>"
+                      class="px-3 py-1.5 border border-gray-300 rounded-md text-xs font-medium text-gray-700 hover:bg-gray-50 transition">
+                      Next
+                    </a>
+                  <% } %>
+                </div>
+              </div>
+            <% } %>
+          </div>
+        </div>
+      </main>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+  <script type="module">
+    import api from '/js/api.js';
+
+    window.deleteReview = async (reviewId) => {
+      const result = await Swal.fire({
+        title: 'Delete this review?',
+        text: 'This will permanently remove the review and recalculate the product rating.',
+        icon: 'warning',
+        showCancelButton: true,
+        confirmButtonColor: '#d33',
+        cancelButtonColor: '#3085d6',
+        confirmButtonText: 'Yes, delete it!'
+      });
+
+      if (result.isConfirmed) {
+        try {
+          const res = await api.deleteAdminReviewAxios(reviewId);
+          if (res.data && res.data.success) {
+            await Swal.fire({
+              icon: 'success',
+              title: 'Deleted!',
+              text: 'The review has been removed.',
+              timer: 1500,
+              showConfirmButton: false
+            });
+            window.location.reload();
+          } else {
+            Swal.fire('Error', res.data?.message || 'Failed to delete review', 'error');
+          }
+        } catch (error) {
+          console.error(error);
+          Swal.fire('Error', 'An unexpected error occurred', 'error');
+        }
+      }
+    };
+  </script>
+</body>
+</html>

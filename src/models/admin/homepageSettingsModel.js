@@ -3,7 +3,7 @@ import mongoose from "mongoose";
 const tickerItemSchema = new mongoose.Schema({
   text: { type: String, required: true },
   link: { type: String, default: "/product" },
-  type: { type: String, enum: ["promo", "product", "category"], default: "promo" },
+  type: { type: String, enum: ["promo", "product", "category", "brand"], default: "promo" },
   isActive: { type: Boolean, default: true },
 }, { _id: true });
 

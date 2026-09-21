@@ -1,147 +1,175 @@
-<!DOCTYPE html>
-<html lang="en">
+<%- include('../partials/user/header') %>
 
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Order Details - CaseCart</title>
-    <script src="https://cdn.tailwindcss.com"></script>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-
-    <!-- Custom styling to guarantee Obsidian-Dark colors override tailwind defaults if needed -->
+<div class="min-h-screen bg-obsidian text-ivory font-sans">
+    <!-- 2D Delivery Van Animation Styles -->
     <style>
-        @import url('https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;0,600;1,300&family=Inter:wght@300;400;500;600;700&display=swap');
-
-        .font-display {
-            font-family: 'Cormorant Garamond', serif;
+        /* === VAN BOUNCE === */
+        @keyframes van-bounce {
+            0%,100% { transform: translateY(0px); }
+            25% { transform: translateY(-3px); }
+            75% { transform: translateY(-1px); }
         }
-
-        .font-sans {
-            font-family: 'Inter', sans-serif;
+        /* === WHEEL SPIN === */
+        @keyframes wheel-spin {
+            from { transform: rotate(0deg); }
+            to   { transform: rotate(360deg); }
         }
-
-        .bg-obsidian {
-            background-color: #0A0A0A;
+        /* === EXHAUST PUFF === */
+        @keyframes exhaust-puff {
+            0%   { opacity: 0.7; transform: translateX(0) scale(1); }
+            100% { opacity: 0; transform: translateX(-14px) scale(2.2); }
         }
-
-        .bg-obsidian-light {
-            background-color: #161616;
+        /* === ROAD DASHES === */
+        @keyframes road-dash {
+            0%   { stroke-dashoffset: 0; }
+            100% { stroke-dashoffset: -30; }
         }
-
-        .text-gold-light {
-            color: #E8D5B0;
+        /* === GLOW TRACK === */
+        @keyframes cc-glow-flow {
+            0%   { background-position: 0% 50%; }
+            50%  { background-position: 100% 50%; }
+            100% { background-position: 0% 50%; }
         }
-
-        .text-gold-accent {
-            color: #C9A84C;
+        /* === RADAR (current node pulse) === */
+        @keyframes cc-radar-pulse {
+            0%   { box-shadow: 0 0 0 0 rgba(201,168,76,0.6); }
+            70%  { box-shadow: 0 0 0 10px rgba(201,168,76,0); }
+            100% { box-shadow: 0 0 0 0 rgba(201,168,76,0); }
         }
-
-        .text-ivory {
-            color: #F7F5F2;
+        @keyframes cc-radar-pulse-green {
+            0%   { box-shadow: 0 0 0 0 rgba(56,142,60,0.7); }
+            70%  { box-shadow: 0 0 0 12px rgba(56,142,60,0); }
+            100% { box-shadow: 0 0 0 0 rgba(56,142,60,0); }
         }
-
-        .border-gold-light\/5 {
-            border-color: rgba(232, 213, 176, 0.05);
+        /* === SPARKLE DELIVERED === */
+        @keyframes sparkle-delivered {
+            0%,100% { filter: drop-shadow(0 0 3px rgba(74,222,128,.5)); transform: scale(1); }
+            50%     { filter: drop-shadow(0 0 10px rgba(74,222,128,.9)); transform: scale(1.15); }
         }
-
-        .border-gold-light\/10 {
-            border-color: rgba(232, 213, 176, 0.1);
+        /* === UTILITY CLASSES === */
+        .van-anim-body   { animation: van-bounce 1.1s ease-in-out infinite; }
+        .van-anim-wheel  { transform-origin: center; animation: wheel-spin 0.9s linear infinite; }
+        .van-anim-exhaust{ animation: exhaust-puff 0.7s ease-out infinite; }
+        .van-anim-road   { stroke-dasharray: 10 8; animation: road-dash 0.4s linear infinite; }
+        .anim-glow-track {
+            background: linear-gradient(90deg,#C9A84C,#fef08a,#C9A84C,#fef08a);
+            background-size: 250% 250%;
+            animation: cc-glow-flow 3s linear infinite;
         }
-
-        .bg-gold-light\/5 {
-            background-color: rgba(232, 213, 176, 0.05);
-        }
-
-        .bg-gold-light\/10 {
-            background-color: rgba(232, 213, 176, 0.1);
-        }
-
-        .text-gray-550 {
-            color: #9ca3af;
-        }
+        .anim-radar       { animation: cc-radar-pulse 2s infinite; }
+        .anim-radar-green { animation: cc-radar-pulse-green 2s infinite; }
+        .anim-sparkle     { animation: sparkle-delivered 2s ease-in-out infinite; }
+        /* Van tracker card */
+        .van-tracker-wrap { position: relative; overflow: hidden; }
+        /* Milestone dot */
+        .mile-done  { background:#C9A84C; border:2px solid #C9A84C; }
+        .mile-cur   { background:#1a1a1a; border:2px solid #C9A84C; }
+        .mile-pend  { background:#1e1e1e; border:2px solid #374151; }
+        .mile-done-g{ background:#22c55e; border:2px solid #22c55e; }
+        .mile-cur-g { background:#1a1a1a; border:2px solid #22c55e; }
     </style>
-</head>
 
-<body class="bg-obsidian text-ivory font-sans min-h-screen">
-    <%- include('../partials/user/header') %>
-
-        <!-- Breadcrumb -->
-        <div class="bg-obsidian-light border-b border-gold-light/10">
-            <div class="max-w-7xl mx-auto px-6 py-4">
-                <div class="flex items-center space-x-2 text-xs uppercase tracking-wider font-semibold">
-                    <a href="/" class="text-gold-light/60 hover:text-gold-accent transition">Home</a>
-                    <span class="text-gray-600">/</span>
-                    <a href="/order" class="text-gold-light/60 hover:text-gold-accent transition">My Orders</a>
-                    <span class="text-gray-600">/</span>
-                    <span class="text-gold-light font-medium">
-                        <%= order.orderId %>
-                    </span>
-                </div>
+    <!-- Breadcrumb -->
+    <div class="bg-obsidian-light border-b border-gold-light/10 pt-24 md:pt-28 pb-4">
+        <div class="max-w-7xl mx-auto px-6">
+            <div class="flex items-center space-x-2 text-xs uppercase tracking-wider font-semibold">
+                <a href="/" class="text-gold-light/60 hover:text-gold-accent transition">Home</a>
+                <span class="text-gray-600">/</span>
+                <a href="/order" class="text-gold-light/60 hover:text-gold-accent transition">My Orders</a>
+                <span class="text-gray-600">/</span>
+                <span class="text-gold-light font-medium">
+                    <%= order.orderId || 'Order' %>
+                </span>
             </div>
         </div>
+    </div>
 
-        <!-- Main Content -->
-        <div class="max-w-4xl mx-auto px-6 py-12 md:py-16">
-            <!-- Back Button -->
-            <div class="mb-8">
-                <a href="/order"
-                    class="inline-flex items-center text-xs uppercase tracking-widest font-semibold text-gold-light/80 hover:text-gold-accent transition">
-                    <svg class="w-4 h-4 mr-1.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7">
-                        </path>
-                    </svg>
-                    Back to Orders
-                </a>
-            </div>
+    <!-- Main Content -->
+    <main class="max-w-4xl mx-auto px-6 py-10 md:py-14">
+        <!-- Back Button -->
+        <div class="mb-6">
+            <a href="/order"
+                class="inline-flex items-center text-xs uppercase tracking-widest font-semibold text-gold-light/80 hover:text-gold-accent transition">
+                <i class="fas fa-chevron-left text-[10px] mr-2"></i>
+                Back to Orders
+            </a>
+        </div>
 
-            <!-- Order Details Card -->
-            <div class="bg-obsidian-light border border-gold-light/5 rounded overflow-hidden shadow-2xl">
-                <!-- Order Header -->
-                <div class="p-6 md:p-8 border-b border-gold-light/10 bg-obsidian">
-                    <div class="flex justify-between items-start">
-                        <div>
-                            <span
-                                class="text-[9px] text-gray-500 font-semibold uppercase tracking-widest block mb-1">ORDER
-                                ID</span>
-                            <h2 class="font-display text-3xl font-light text-gold-light mb-2">#<%= order.orderId %>
-                            </h2>
-                            <p class="text-gray-400 text-xs">
-                                Placed on <%= new Date(order.createdAt).toLocaleDateString('en-US', { day: 'numeric' ,
-                                    month: 'short' , year: 'numeric' }) %> - <%= new
-                                        Date(order.createdAt).toLocaleTimeString([], { hour: '2-digit' ,
-                                        minute: '2-digit' }) %>
-                            </p>
-                        </div>
+        <!-- Order Details Card -->
+        <div class="bg-obsidian-light border border-gold-light/10 rounded-lg overflow-hidden shadow-2xl">
+            <!-- Order Header -->
+            <div class="p-6 md:p-8 border-b border-gold-light/10 bg-obsidian">
+                <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+                    <div>
+                        <span class="text-[9px] text-gray-500 font-semibold uppercase tracking-widest block mb-1">
+                            ORDER ID
+                        </span>
+                        <h2 class="font-display text-2xl md:text-3xl font-light text-gold-light">
+                            #<%= order.orderId %>
+                        </h2>
+                        <p class="text-gray-400 text-xs mt-1">
+                            Placed on <%= order.createdAt ? new Date(order.createdAt).toLocaleDateString('en-US', { day: 'numeric', month: 'short', year: 'numeric' }) : 'N/A' %>
+                            <% if (order.createdAt) { %>
+                                • <%= new Date(order.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) %>
+                            <% } %>
+                        </p>
+                    </div>
+
+                    <div>
+                        <% if (order.paymentStatus === 'Failed' || order.paymentStatus === 'failed') { %>
+                            <span class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-sm text-[10px] font-extrabold uppercase tracking-widest" style="background:#fde8e8; color:#c62828; border:1px solid #ef9a9a;">
+                                <span class="w-1.5 h-1.5 rounded-full animate-pulse" style="background:#c62828;"></span>
+                                Payment Failed
+                            </span>
+                        <% } else if (order.paymentStatus === 'Completed' || order.paymentStatus === 'paid') { %>
+                            <span class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-sm text-[10px] font-extrabold uppercase tracking-widest" style="background:#388e3c; color:#fff; border:1px solid #2e7d32;">
+                                <svg xmlns="http://www.w3.org/2000/svg" class="w-3 h-3" viewBox="0 0 20 20" fill="currentColor">
+                                    <path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd" />
+                                </svg>
+                                Paid
+                            </span>
+                        <% } else if (order.paymentStatus === 'Pending' || order.paymentStatus === 'pending') { %>
+                            <span class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-sm text-[10px] font-extrabold uppercase tracking-widest" style="background:#fff3e0; color:#e65100; border:1px solid #ffb74d;">
+                                <span class="w-1.5 h-1.5 rounded-full animate-pulse" style="background:#e65100;"></span>
+                                Pending
+                            </span>
+                        <% } else { %>
+                            <span class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-sm text-[10px] font-extrabold uppercase tracking-widest" style="background:#e3f2fd; color:#1565c0; border:1px solid #90caf9;">
+                                <%= order.paymentStatus || 'Processing' %>
+                            </span>
+                        <% } %>
                     </div>
                 </div>
+            </div>
 
-                <!-- Order Items Section -->
-                <div class="p-6 md:p-8 border-b border-gold-light/10">
-                    <h3 class="font-display text-xl font-light text-gold-light tracking-wide mb-6">
-                        Order Items (<%= order.orderItems.length %>)
-                    </h3>
+            <!-- Order Items Section -->
+            <div class="p-6 md:p-8 border-b border-gold-light/10">
+                <h3 class="font-display text-xl font-light text-gold-light tracking-wide mb-6">
+                    Order Items (<%= (order.orderItems || []).length %>)
+                </h3>
 
-                    <div class="space-y-6">
-                        <% order.orderItems.forEach((item, index)=> {
-                            let itemImageUrl = '/img/placeholder.jpg';
-                            if (item.product && item.product.productImages && item.product.productImages.length > 0) {
-                            const mainImg = item.product.productImages.find(img => img.isMain);
-                            if (mainImg) itemImageUrl = mainImg.url;
-                            else if (item.product.productImages[0]) itemImageUrl = item.product.productImages[0].url;
-                            } else if (item.variant && item.variant.images && item.variant.images.length > 0) {
+                <div class="space-y-6">
+                    <% (order.orderItems || []).forEach((item, index) => {
+                        let itemImageUrl = '/img/placeholder.jpg';
+                        if (item.variant && item.variant.images && item.variant.images.length > 0) {
                             const mainImg = item.variant.images.find(img => img.isMain);
-                            if (mainImg) itemImageUrl = mainImg.url;
-                            else if (item.variant.images[0]) itemImageUrl = item.variant.images[0].url;
-                            }
-                            const itemName = item.product ? item.product.name : (item.name || 'Product Item');
-                            const itemColor = item.variant ? item.variant.color : 'N/A';
-                            %>
-                            <div
-                                class="flex items-start gap-5 <%= index > 0 ? 'pt-6 border-t border-gold-light/5' : '' %>">
-                                <div
-                                    class="w-20 h-20 flex-shrink-0 bg-obsidian border border-gold-light/10 rounded overflow-hidden">
+                            if (mainImg && mainImg.url) itemImageUrl = mainImg.url;
+                            else if (item.variant.images[0] && item.variant.images[0].url) itemImageUrl = item.variant.images[0].url;
+                        }
+                        const itemName = (item.product && item.product.name) ? item.product.name : (item.name || 'Product Item');
+                        const itemColor = (item.variant && item.variant.color) ? item.variant.color : 'N/A';
+                        const safeItemName = itemName.replace(/'/g, "\\'");
+                        const unitPrice = Number(item.price || item.finalPrice || 0);
+                        const qty = Number(item.quantity || 1);
+                        const itemTotalPrice = Number(item.finalPrice ? (item.finalPrice * qty) : (unitPrice * qty));
+                    %>
+                        <div class="p-5 md:p-6 rounded-lg bg-obsidian border border-gold-light/10 space-y-5 shadow-sm hover:border-gold-accent/30 transition-all duration-300">
+                            <!-- Product Row -->
+                            <div class="flex items-start gap-5">
+                                <div class="w-20 h-20 flex-shrink-0 bg-gray-100 border border-gray-200 rounded overflow-hidden">
                                     <img src="<%= itemImageUrl %>" alt="<%= itemName %>"
-                                        class="w-full h-full object-cover">
+                                        class="w-full h-full object-cover"
+                                        onerror="this.onerror=null; this.src='/img/placeholder.jpg'; this.style.objectFit='contain'; this.style.padding='8px';">
                                 </div>
 
                                 <div class="flex-1">
@@ -151,406 +179,621 @@
                                                 <%= itemName %>
                                             </p>
                                             <p class="text-xs text-gray-400 uppercase tracking-wider">
-                                                Color: <%= itemColor %> | Qty: <%= item.quantity %>
+                                                Color: <%= itemColor %> | Qty: <%= qty %>
                                             </p>
                                             <div class="flex items-center gap-2 mt-2">
-                                                <span
-                                                    class="text-[9px] text-gray-500 font-semibold uppercase tracking-widest">Status:</span>
-                                                <% if (order.paymentStatus==='Failed' || order.paymentStatus==='failed'
-                                                    ) { %>
-                                                    <span
-                                                        class="px-2 py-0.5 rounded text-[8px] font-bold uppercase tracking-widest bg-red-950/30 text-red-400 border border-red-500/20">
+                                                <span class="text-[9px] text-gray-500 font-semibold uppercase tracking-widest">Item Status:</span>
+                                                <% if (order.paymentStatus === 'Failed' || order.paymentStatus === 'failed') { %>
+                                                    <span class="px-2 py-0.5 rounded text-[8px] font-bold uppercase tracking-widest bg-red-950/30 text-red-400 border border-red-500/20">
                                                         Payment Failed
                                                     </span>
-                                                    <% } else { %>
-                                                        <span
-                                                            class="px-2 py-0.5 rounded text-[8px] font-bold uppercase tracking-widest <%= item.status === 'delivered' ? 'bg-green-950/30 text-green-400 border border-green-500/20' : item.status === 'cancelled' ? 'bg-red-950/30 text-red-400 border border-red-500/20' : 'bg-gold-light/10 text-gold-light border border-gold-light/20' %>">
-                                                            <%= item.status %>
-                                                        </span>
+                                                <% } else { %>
+                                                    <span class="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded text-[8px] font-bold uppercase tracking-widest <%= item.status === 'delivered' ? 'bg-green-950/30 text-green-400 border border-green-500/20' : item.status === 'cancelled' ? 'bg-red-950/30 text-red-400 border border-red-500/20' : 'bg-gold-light/10 text-gold-light border border-gold-light/20' %>">
+                                                        <% if (['processing', 'shipped', 'out_for_delivery', 'confirmed', 'placed'].includes((item.status || '').toLowerCase())) { %>
+                                                            <span class="w-1.5 h-1.5 rounded-full bg-gold-accent animate-ping"></span>
+                                                        <% } else if (item.status === 'delivered') { %>
+                                                            <span class="w-1.5 h-1.5 rounded-full bg-green-400"></span>
                                                         <% } %>
+                                                        <%= item.status %>
+                                                    </span>
+                                                <% } %>
                                             </div>
 
                                             <!-- Actions per Item -->
                                             <div class="flex items-center gap-3 mt-3">
-                                                <% if (['pending', 'processing' , 'placed' ].includes(item.status) &&
-                                                    order.paymentStatus !=='Failed' && order.paymentStatus !=='failed' )
-                                                    { %>
-                                                    <button
-                                                        onclick="cancelItem('<%= item._id %>', '<%= itemName.replace(/'/g, "
-                                                        \\'") %>', '<%= order._id %>')"
-                                                            class="text-xs text-red-400 hover:text-red-500 uppercase
-                                                            tracking-wider font-semibold">
-                                                            Cancel Item
+                                                <% if (['pending', 'processing', 'placed'].includes(item.status) && order.paymentStatus !== 'Failed' && order.paymentStatus !== 'failed') { %>
+                                                    <button onclick="cancelItem('<%= item._id %>', '<%= safeItemName %>', '<%= order._id %>')"
+                                                        class="text-xs text-red-400 hover:text-red-300 uppercase tracking-wider font-semibold transition">
+                                                        Cancel Item
                                                     </button>
-                                                    <% } else if (item.status==='delivered' && order.paymentStatus
-                                                        !=='Failed' && order.paymentStatus !=='failed' ) { %>
-                                                        <% if (!item.isReject) { %>
-                                                            <button
-                                                                onclick="returnItem('<%= item._id %>', '<%= itemName.replace(/'/g, "
-                                                                \\'") %>', '<%= order._id %>')"
-                                                                    class="text-xs text-gold-light
-                                                                    hover:text-gold-accent uppercase tracking-wider
-                                                                    font-semibold">
-                                                                    Return Item
-                                                            </button>
-                                                            <% } %>
-                                                                <button
-                                                                    onclick="downloadInvoice('<%= order._id %>', '<%= item._id %>')"
-                                                                    class="text-xs text-gray-400 hover:text-gold-light uppercase tracking-wider font-semibold flex items-center gap-1 ml-2">
-                                                                    <i class="fas fa-download text-[10px]"></i> Invoice
-                                                                </button>
-                                                                <% } %>
+                                                <% } else if (item.status === 'delivered' && order.paymentStatus !== 'Failed' && order.paymentStatus !== 'failed') { %>
+                                                    <% if (!item.isReject) { %>
+                                                        <button onclick="returnItem('<%= item._id %>', '<%= safeItemName %>', '<%= order._id %>')"
+                                                            class="text-xs text-gold-light hover:text-gold-accent uppercase tracking-wider font-semibold transition">
+                                                            Return Item
+                                                        </button>
+                                                    <% } %>
+                                                    <button onclick="downloadInvoice('<%= order._id %>', '<%= item._id %>')"
+                                                        class="text-xs text-gray-400 hover:text-gold-light uppercase tracking-wider font-semibold flex items-center gap-1 ml-2 transition">
+                                                        <i class="fas fa-download text-[10px]"></i> Invoice
+                                                    </button>
+                                                <% } %>
                                             </div>
                                         </div>
                                         <div class="text-left md:text-right">
-                                            <p class="text-xs text-gray-500">₹<%= Math.floor(item.price).toFixed(2) %> x
-                                                    <%= item.quantity %>
+                                            <p class="text-xs text-gray-500">
+                                                ₹<%= Math.floor(unitPrice).toFixed(2) %> x <%= qty %>
                                             </p>
-                                            <p class="font-semibold text-gold-accent mt-0.5">₹<%= Math.floor(item.price
-                                                    * item.quantity).toFixed(2) %>
+                                            <p class="font-semibold text-gold-accent mt-0.5">
+                                                ₹<%= Math.floor(itemTotalPrice).toFixed(2) %>
                                             </p>
                                         </div>
                                     </div>
                                 </div>
                             </div>
-                            <% }); %>
+
+                            <!-- Individual 2D Delivery Van Tracker for this item -->
+                            <%
+                              const itemSteps = [
+                                { key: 'placed',           label: 'Placed',           emoji: '📋' },
+                                { key: 'confirmed',        label: 'Confirmed',        emoji: '✅' },
+                                { key: 'processing',       label: 'Processing',       emoji: '⚙️' },
+                                { key: 'shipped',          label: 'Shipped',          emoji: '📦' },
+                                { key: 'out_for_delivery', label: 'Out for Delivery', emoji: '🚐' },
+                                { key: 'delivered',        label: 'Delivered',        emoji: '🏠' }
+                              ];
+
+                              const itmStatus = (item.status || 'placed').toLowerCase();
+                              const isItmCancelled = itmStatus === 'cancelled';
+                              const isItmReturned  = itmStatus === 'returned';
+                              const isItmReturnReq = itmStatus === 'return_req';
+                              const itmStepIdx   = itemSteps.findIndex(s => s.key === itmStatus);
+                              const itmActiveIdx = itmStepIdx >= 0 ? itmStepIdx : 0;
+                              const itmPercent   = Math.round((itmActiveIdx / (itemSteps.length - 1)) * 100);
+                              const isDelivered  = itmStatus === 'delivered';
+                              /* Van left offset: 0% at step 0, 100% at last step, clamped to road width */
+                              const vanLeft = itmPercent;
+                            %>
+
+                            <% if (isItmCancelled) { %>
+                                <div class="pt-3 border-t border-gold-light/10 flex items-center gap-3 text-red-400 bg-red-950/20 px-3.5 py-2.5 rounded">
+                                    <svg class="w-5 h-5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
+                                    </svg>
+                                    <div class="text-xs">
+                                        <span class="font-semibold uppercase tracking-wider">This Item was Cancelled</span>
+                                        <% if (item.cancellationReason) { %>
+                                            <span class="text-gray-400 block sm:inline sm:ml-2">(Reason: <%= item.cancellationReason %>)</span>
+                                        <% } %>
+                                    </div>
+                                </div>
+                            <% } else if (isItmReturned) { %>
+                                <div class="pt-3 border-t border-gold-light/10 flex items-center gap-3 text-blue-400 bg-blue-950/20 px-3.5 py-2.5 rounded">
+                                    <svg class="w-5 h-5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 10h10a8 8 0 018 8v2M3 10l6 6m-6-6l6-6"/>
+                                    </svg>
+                                    <div class="text-xs">
+                                        <span class="font-semibold uppercase tracking-wider">Item Returned &amp; Refunded</span>
+                                    </div>
+                                </div>
+                            <% } else if (isItmReturnReq) { %>
+                                <div class="pt-3 border-t border-gold-light/10 flex items-center gap-3 text-amber-400 bg-amber-950/20 px-3.5 py-2.5 rounded">
+                                    <svg class="w-5 h-5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                                    </svg>
+                                    <div class="text-xs">
+                                        <span class="font-semibold uppercase tracking-wider">Return Requested</span>
+                                        <span class="text-gray-400 block sm:inline sm:ml-2">Under review by seller</span>
+                                    </div>
+                                           <% } else { %>
+
+                                <!-- ══ 2D VAN DELIVERY TRACKER ══ -->
+                                <div class="mt-4 pt-4 border-t border-gold-light/10">
+
+                                    <%
+                                      /* Clamp van so it doesn't overflow road edges (5%..92%) */
+                                      const vanPct = itmActiveIdx === 0 ? 5
+                                                   : itmActiveIdx === itemSteps.length - 1 ? 90
+                                                   : 5 + Math.round((itmActiveIdx / (itemSteps.length - 1)) * 85);
+                                    %>
+
+                                    <!-- ─── SCENE: sky + road + van ─── -->
+                                    <div class="relative w-full" style="height:100px; border-radius:12px; overflow:hidden; background:linear-gradient(to bottom,#090912 0%,#0e0e1a 48%,#181828 48%,#1a1a2e 100%);">
+
+                                        <!-- Stars -->
+                                        <svg class="absolute inset-0 w-full h-full pointer-events-none" viewBox="0 0 500 50" preserveAspectRatio="none" style="opacity:.4">
+                                            <circle cx="25"  cy="7"  r="1"   fill="#fff"/>
+                                            <circle cx="75"  cy="13" r=".7"  fill="#fef08a"/>
+                                            <circle cx="130" cy="5"  r="1.1" fill="#fff"/>
+                                            <circle cx="185" cy="16" r=".8"  fill="#fff"/>
+                                            <circle cx="250" cy="9"  r="1"   fill="#fef08a"/>
+                                            <circle cx="310" cy="6"  r=".7"  fill="#fff"/>
+                                            <circle cx="370" cy="14" r=".9"  fill="#fff"/>
+                                            <circle cx="430" cy="8"  r=".6"  fill="#fef08a"/>
+                                            <circle cx="480" cy="18" r=".8"  fill="#fff"/>
+                                            <circle cx="55"  cy="20" r=".5"  fill="#fff"/>
+                                            <circle cx="200" cy="4"  r=".7"  fill="#fff"/>
+                                            <circle cx="340" cy="21" r=".6"  fill="#fef08a"/>
+                                        </svg>
+
+                                        <!-- Road -->
+                                        <div class="absolute left-0 right-0" style="bottom:0; height:48px; background:#16162a; border-top:2px solid #2a2a45;"></div>
+
+                                        <!-- Road lane markings -->
+                                        <svg class="absolute left-0 right-0 pointer-events-none" style="bottom:17px; height:5px;" viewBox="0 0 500 5" preserveAspectRatio="none">
+                                            <line x1="0" y1="2.5" x2="500" y2="2.5" stroke="#C9A84C" stroke-width="2.5" stroke-dasharray="22 14" class="van-anim-road" opacity="0.45"/>
+                                        </svg>
+
+                                        <!-- Completed track glow (above road) -->
+                                        <div class="absolute" style="bottom:47px; left:4%; height:3px; border-radius:4px;
+                                             background:linear-gradient(90deg,#C9A84C 0%,#fef08a 50%,#C9A84C 100%);
+                                             background-size:200%; animation:cc-glow-flow 2.5s linear infinite;
+                                             width:<%= vanPct - 2 %>%;"></div>
+
+                                        <!-- Uncompleted track (grey) -->
+                                        <div class="absolute" style="bottom:47px; left:<%= vanPct + 2 %>%; right:4%; height:3px; border-radius:4px; background:#2a2a45;"></div>
+
+                                        <!-- Milestone dots on the track line -->
+                                        <% itemSteps.forEach((st, sIdx) => {
+                                            const mDone = sIdx < itmActiveIdx;
+                                            const mCur  = sIdx === itmActiveIdx;
+                                            const mPct  = sIdx === 0 ? 4
+                                                        : sIdx === itemSteps.length - 1 ? 92
+                                                        : 4 + Math.round((sIdx / (itemSteps.length - 1)) * 88);
+                                        %>
+                                        <div style="position:absolute; bottom:43px; left:<%= mPct %>%;
+                                                    width:<%= mCur ? '13px' : '9px' %>;
+                                                    height:<%= mCur ? '13px' : '9px' %>;
+                                                    margin-left:<%= mCur ? '-6px' : '-4px' %>;
+                                                    border-radius:50%;
+                                                    background:<%= mDone ? '#C9A84C' : mCur ? (isDelivered ? '#22c55e' : '#C9A84C') : '#2a2a45' %>;
+                                                    border:2px solid <%= mDone ? '#C9A84C' : mCur ? (isDelivered ? '#22c55e' : '#C9A84C') : '#3d3d5c' %>;
+                                                    box-shadow:<%= mCur ? (isDelivered ? '0 0 0 4px rgba(34,197,94,.25),0 0 12px rgba(34,197,94,.5)' : '0 0 0 4px rgba(201,168,76,.2),0 0 12px rgba(201,168,76,.5)') : 'none' %>;
+                                                    z-index:3;">
+                                        </div>
+                                        <% }); %>
+
+                                        <!-- ═══ DELIVERY VAN ═══ -->
+                                        <div class="van-anim-body" style="
+                                            position:absolute;
+                                            bottom:30px;
+                                            left:calc(<%= vanPct %>% - 36px);
+                                            z-index:5;
+                                            width:72px;
+                                        ">
+                                            <!-- Exhaust smoke (while driving) -->
+                                            <% if (!isDelivered) { %>
+                                            <div style="position:absolute; left:-12px; top:18px;">
+                                                <div class="van-anim-exhaust" style="width:10px;height:10px;border-radius:50%;background:rgba(180,180,200,.45);position:absolute;top:0;left:0;animation-delay:0s;"></div>
+                                                <div class="van-anim-exhaust" style="width:7px;height:7px;border-radius:50%;background:rgba(180,180,200,.3);position:absolute;top:4px;left:2px;animation-delay:.3s;"></div>
+                                            </div>
+                                            <% } %>
+
+                                            <!-- Van SVG -->
+                                            <svg viewBox="0 0 72 40" width="72" height="40" xmlns="http://www.w3.org/2000/svg">
+                                                <!-- Van cargo body -->
+                                                <rect x="2" y="8" width="52" height="22" rx="4"
+                                                      fill="<%= isDelivered ? '#14532d' : '#1a3558' %>"
+                                                      stroke="<%= isDelivered ? '#4ade80' : '#C9A84C' %>" stroke-width="1.4"/>
+                                                <!-- Brand stripe on body -->
+                                                <rect x="4" y="19" width="38" height="5" rx="1"
+                                                      fill="<%= isDelivered ? '#4ade80' : '#C9A84C' %>" opacity="0.22"/>
+                                                <!-- Side window 1 -->
+                                                <rect x="7"  y="11" width="11" height="8" rx="1.5" fill="#93c5fd" opacity="0.55"/>
+                                                <!-- Side window 2 -->
+                                                <rect x="22" y="11" width="11" height="8" rx="1.5" fill="#93c5fd" opacity="0.55"/>
+                                                <!-- Cabin section -->
+                                                <rect x="54" y="8" width="14" height="22" rx="3"
+                                                      fill="<%= isDelivered ? '#166534' : '#162a45' %>"
+                                                      stroke="<%= isDelivered ? '#4ade80' : '#C9A84C' %>" stroke-width="1.2"/>
+                                                <!-- Windscreen -->
+                                                <rect x="56" y="10" width="10" height="9" rx="2"
+                                                      fill="#bae6fd" opacity="0.75"/>
+                                                <!-- Headlight beam -->
+                                                <ellipse cx="69" cy="20" rx="1.5" ry="3"
+                                                         fill="<%= isDelivered ? '#bbf7d0' : '#fef08a' %>" opacity="0.9"/>
+                                                <!-- Tail light -->
+                                                <ellipse cx="3" cy="20" rx="1.5" ry="3" fill="#f87171" opacity="0.8"/>
+                                                <!-- Rear wheel -->
+                                                <circle class="van-anim-wheel" cx="16" cy="31" r="7"
+                                                        fill="#0f0f1a" stroke="#6b7280" stroke-width="1.8"/>
+                                                <circle cx="16" cy="31" r="3" fill="#374151"/>
+                                                <line x1="16" y1="25" x2="16" y2="37" stroke="#4b5563" stroke-width="1" opacity=".6"/>
+                                                <line x1="10" y1="31" x2="22" y2="31" stroke="#4b5563" stroke-width="1" opacity=".6"/>
+                                                <!-- Front wheel -->
+                                                <circle class="van-anim-wheel" cx="58" cy="31" r="7"
+                                                        fill="#0f0f1a" stroke="#6b7280" stroke-width="1.8"/>
+                                                <circle cx="58" cy="31" r="3" fill="#374151"/>
+                                                <line x1="58" y1="25" x2="58" y2="37" stroke="#4b5563" stroke-width="1" opacity=".6"/>
+                                                <line x1="52" y1="31" x2="64" y2="31" stroke="#4b5563" stroke-width="1" opacity=".6"/>
+                                                <!-- Delivery box on roof -->
+                                                <% if (!isDelivered) { %>
+                                                <rect x="12" y="1" width="22" height="9" rx="2"
+                                                      fill="#C9A84C" opacity="0.85" stroke="#fef08a" stroke-width="1"/>
+                                                <line x1="23" y1="1" x2="23" y2="10" stroke="#fef08a" stroke-width=".8" opacity=".5"/>
+                                                <line x1="12" y1="5" x2="34" y2="5" stroke="#fef08a" stroke-width=".8" opacity=".5"/>
+                                                <% } else { %>
+                                                <!-- Green checkmark badge (delivered) -->
+                                                <circle cx="23" cy="5" r="6" fill="#22c55e" opacity=".95"/>
+                                                <path d="M20 5l2.5 2.5 4.5-4" stroke="#fff" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
+                                                <% } %>
+                                            </svg>
+
+                                            <!-- Speed lines (while in transit) -->
+                                            <% if (!isDelivered) { %>
+                                            <div style="position:absolute; right:calc(100% + 4px); top:38%; transform:translateY(-50%); display:flex; flex-direction:column; gap:4px;">
+                                                <div style="width:16px;height:2px;border-radius:99px;background:#C9A84C;opacity:.8;" class="van-anim-exhaust" style="animation-duration:.55s;"></div>
+                                                <div style="width:11px;height:2px;border-radius:99px;background:#C9A84C;opacity:.55;" class="van-anim-exhaust" style="animation-delay:.18s;animation-duration:.55s;"></div>
+                                                <div style="width:14px;height:2px;border-radius:99px;background:#C9A84C;opacity:.65;" class="van-anim-exhaust" style="animation-delay:.36s;animation-duration:.55s;"></div>
+                                            </div>
+                                            <% } %>
+                                        </div>
+
+                                        <!-- House icon (delivered) -->
+                                        <% if (isDelivered) { %>
+                                        <div class="anim-sparkle" style="position:absolute; right:3%; bottom:28px; font-size:24px; line-height:1; z-index:4;">🏠</div>
+                                        <% } %>
+
+                                        <!-- Current status badge (top-right) -->
+                                        <div style="position:absolute; top:7px; right:8px; z-index:10;
+                                                    background:<%= isDelivered ? 'rgba(20,83,45,.9)' : 'rgba(20,18,10,.85)' %>;
+                                                    border:1px solid <%= isDelivered ? '#4ade80' : '#C9A84C' %>;
+                                                    border-radius:6px; padding:3px 9px; font-size:9px;
+                                                    font-weight:700; letter-spacing:.1em; text-transform:uppercase;
+                                                    color:<%= isDelivered ? '#4ade80' : '#C9A84C' %>;">
+                                            <%= itemSteps[itmActiveIdx] ? itemSteps[itmActiveIdx].label : itmStatus %>
+                                        </div>
+                                    </div>
+
+                                    <!-- ─── STEP LABELS ROW ─── -->
+                                    <div class="flex justify-between mt-2 px-1">
+                                        <% itemSteps.forEach((st, sIdx) => {
+                                            const mDone = sIdx < itmActiveIdx;
+                                            const mCur  = sIdx === itmActiveIdx;
+                                        %>
+                                        <span style="font-size:<%= mCur ? '9px' : '8px' %>; font-weight:<%= mCur ? '700' : '500' %>;
+                                                     color:<%= mDone ? '#d1d5db' : mCur ? (isDelivered ? '#4ade80' : '#C9A84C') : '#4b5563' %>;
+                                                     text-transform:uppercase; letter-spacing:.04em; white-space:nowrap;
+                                                     flex:1; text-align:<%= sIdx === 0 ? 'left' : sIdx === itemSteps.length-1 ? 'right' : 'center' %>;">
+                                            <%= st.label %>
+                                        </span>
+                                        <% }); %>
+                                    </div>
+
+                                    <!-- ─── PROGRESS BAR ─── -->
+                                    <div class="flex items-center gap-2 mt-1.5">
+                                        <div class="flex-1 h-1.5 bg-gray-800 rounded-full overflow-hidden">
+                                            <div class="h-full rounded-full" style="width:<%= itmPercent %>%; background:linear-gradient(90deg,#C9A84C,#fef08a); transition:width .7s ease;"></div>
+                                        </div>
+                                        <span style="font-size:10px; font-weight:700; color:<%= isDelivered ? '#4ade80' : '#C9A84C' %>; min-width:32px; text-align:right;"><%= itmPercent %>%</span>
+                                    </div>
+                                </div>
+                            <% } %>
+                        </div>
+                    <% }); %>
+                </div>
+            </div>
+
+            <!-- Order Summary -->
+            <% if (order.paymentStatus !== 'cancelled') { %>
+            <div class="p-6 md:p-8 border-b border-gray-200">
+                    <h3 class="text-xl font-semibold text-gray-800 tracking-wide mb-4">
+                        Order Summary
+                    </h3>
+
+                    <div class="space-y-3">
+                        <div class="flex justify-between text-xs uppercase tracking-wider text-gray-500">
+                            <span>Subtotal</span>
+                            <span class="font-semibold text-gray-800">₹<%= Math.floor(Number(order.totalPrice || 0)).toFixed(2) %></span>
+                        </div>
+                        <% if (Number(order.totalDiscount || 0) > 0) { %>
+                            <div class="flex justify-between text-xs uppercase tracking-wider text-gray-500">
+                                <span>Discount</span>
+                                <span class="font-semibold" style="color:#388e3c;">-₹<%= Math.floor(Number(order.totalDiscount)).toFixed(2) %></span>
+                            </div>
+                        <% } %>
+                        <% if (Number(order.couponDiscount || 0) > 0) { %>
+                            <div class="flex justify-between text-xs uppercase tracking-wider text-gray-500">
+                                <span>Coupon Discount</span>
+                                <span class="font-semibold" style="color:#388e3c;">-₹<%= Math.floor(Number(order.couponDiscount)).toFixed(2) %></span>
+                            </div>
+                        <% } %>
+                        <div class="flex justify-between text-xs uppercase tracking-wider text-gray-500">
+                            <span>Shipping</span>
+                            <span class="font-semibold <%= Number(order.shipping || 0) > 0 ? 'text-gray-800' : '' %>" <%= Number(order.shipping || 0) === 0 ? 'style="color:#388e3c;"' : '' %>>
+                                <%= Number(order.shipping || 0) > 0 ? '₹' + Math.floor(Number(order.shipping)).toFixed(2) : 'FREE' %>
+                            </span>
+                        </div>
+                        <div class="flex justify-between text-sm uppercase tracking-wider font-bold pt-4 border-t border-gray-200" style="color:#111;">
+                            <span>Total Amount</span>
+                            <span class="text-base" style="color:#2874f0;">
+                                ₹<%= (Number(order.finalAmount) || (Number(order.totalPrice || 0) - Number(order.totalDiscount || 0) - Number(order.couponDiscount || 0))).toFixed(2) %>
+                            </span>
+                        </div>
+                    </div>
+                </div>
+            <% } else { %>
+                <div class="p-4 mx-6 md:mx-8 mb-0 rounded-sm" style="background:#fff3e0; border:1px solid #ffb74d;">
+                    <p class="text-xs font-semibold uppercase tracking-widest" style="color:#e65100;">
+                        <i class="fas fa-info-circle mr-1.5"></i>
+                        <strong>Note:</strong> Shipping charges will not be refunded if you cancel or return this product.
+                    </p>
+                </div>
+            <% } %>
+
+            <!-- Payment Details & Address -->
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-8 p-6 md:p-8 border-b border-gray-200">
+                <div>
+                    <h3 class="text-xl font-semibold text-gray-800 tracking-wide mb-4">
+                        Payment Details
+                    </h3>
+                    <div class="space-y-2 text-xs uppercase tracking-wider">
+                        <div class="flex justify-between">
+                            <span class="text-gray-500">Method</span>
+                            <span class="font-semibold text-gray-800">
+                                <%= order.paymentMethod || 'N/A' %>
+                            </span>
+                        </div>
+                        <div class="flex justify-between">
+                            <span class="text-gray-500">Status</span>
+                            <span class="font-semibold <%= (order.paymentStatus === 'Completed' || order.paymentStatus === 'paid') ? 'text-green-700' : (order.paymentStatus === 'Failed' || order.paymentStatus === 'failed') ? 'text-red-600' : 'text-orange-600' %>">
+                                <%= order.paymentStatus || 'Pending' %>
+                            </span>
+                        </div>
                     </div>
                 </div>
 
-                <!-- Order Summary -->
-                <% if (order.paymentStatus!=='cancelled' ) { %>
-                    <div class="p-6 md:p-8 border-b border-gold-light/10">
-                        <h3 class="font-display text-xl font-light text-gold-light tracking-wide mb-4">Order Summary
-                        </h3>
-
-                        <div class="space-y-3">
-                            <div class="flex justify-between text-xs uppercase tracking-wider text-gray-450">
-                                <span>Subtotal</span>
-                                <span class="font-medium text-gold-light">₹<%= Math.floor(order.totalPrice).toFixed(2)
-                                        %></span>
-                            </div>
-                            <% if (order.totalDiscount> 0) { %>
-                                <div class="flex justify-between text-xs uppercase tracking-wider text-gray-450">
-                                    <span>Discount</span>
-                                    <span class="font-medium text-green-400">-₹<%=
-                                            Math.floor(order.totalDiscount).toFixed(2) %></span>
-                                </div>
-                                <% } %>
-                                    <% if (order.couponDiscount> 0) { %>
-                                        <div
-                                            class="flex justify-between text-xs uppercase tracking-wider text-gray-450">
-                                            <span>Coupon Discount</span>
-                                            <span class="font-medium text-green-400">-₹<%=
-                                                    Math.floor(order.couponDiscount).toFixed(2) %></span>
-                                        </div>
-                                        <% } %>
-                                            <div
-                                                class="flex justify-between text-xs uppercase tracking-wider text-gray-450">
-                                                <span>Shipping</span>
-                                                <span class="font-medium text-green-400">
-                                                    <%= order.shipping> 0 ? '₹' + Math.floor(order.shipping).toFixed(2)
-                                                        : 'FREE' %>
-                                                </span>
-                                            </div>
-                                            <div
-                                                class="flex justify-between text-sm uppercase tracking-wider text-gold-light font-semibold pt-4 border-t border-gold-light/10">
-                                                <span>Total Amount</span>
-                                                <span class="text-base text-gold-accent">₹<%=
-                                                        (Math.floor(order.finalAmount) || (order.totalPrice -
-                                                        (order.totalDiscount || 0) - (order.couponDiscount ||
-                                                        0))).toFixed(2) %></span>
-                                            </div>
-                        </div>
-                    </div>
+                <div>
+                    <h3 class="font-display text-xl font-light text-gold-light tracking-wide mb-4">
+                        Shipping Address
+                    </h3>
+                    <% if (order.shippingAddress) { %>
+                        <p class="text-gray-400 text-xs leading-relaxed">
+                            <strong class="text-gold-light font-medium text-sm">
+                                <%= order.shippingAddress.firstName || '' %> <%= order.shippingAddress.lastName || '' %>
+                            </strong><br>
+                            <%= order.shippingAddress.streetAddress || '' %><br>
+                            <%= order.shippingAddress.city || '' %>, <%= order.shippingAddress.state || '' %> - <%= order.shippingAddress.pinCode || '' %><br>
+                            Phone: <%= order.shippingAddress.phone || '' %>
+                        </p>
                     <% } else { %>
-                        <div
-                            class="p-6 bg-red-950/20 border-b border-red-500/10 text-red-200 text-xs uppercase tracking-widest font-semibold p-4">
-                            <strong>Note:</strong> Shipping charges will not be refunded if you cancel or return this
-                            product.
-                        </div>
-                        <% } %>
+                        <p class="text-gray-500 text-xs uppercase tracking-wider">Address not available</p>
+                    <% } %>
+                </div>
+            </div>
 
-                            <!-- Payment Details & Address -->
-                            <div class="grid grid-cols-1 md:grid-cols-2 gap-8 p-6 md:p-8 border-b border-gold-light/10">
-                                <div>
-                                    <h3 class="font-display text-xl font-light text-gold-light tracking-wide mb-4">
-                                        Payment Details</h3>
-                                    <div class="space-y-2 text-xs uppercase tracking-wider">
-                                        <div class="flex justify-between">
-                                            <span class="text-gray-500">Method</span>
-                                            <span class="font-medium text-gold-light">
-                                                <%= order.paymentMethod %>
-                                            </span>
-                                        </div>
-                                        <div class="flex justify-between">
-                                            <span class="text-gray-500">Status</span>
-                                            <span
-                                                class="font-medium <%= order.paymentStatus === 'Completed' ? 'text-green-400' : 'text-gold-accent' %>">
-                                                <%= order.paymentStatus %>
-                                            </span>
-                                        </div>
-                                    </div>
-                                </div>
-
-                                <div>
-                                    <h3 class="font-display text-xl font-light text-gold-light tracking-wide mb-4">
-                                        Shipping Address</h3>
-                                    <% if (order.shippingAddress) { %>
-                                        <p class="text-gray-400 text-xs leading-relaxed">
-                                            <strong class="text-gold-light font-medium text-sm">
-                                                <%= order.shippingAddress.firstName %>
-                                                    <%= order.shippingAddress.lastName %>
-                                            </strong><br>
-                                            <%= order.shippingAddress.streetAddress %><br>
-                                                <%= order.shippingAddress.city %>, <%= order.shippingAddress.state %> -
-                                                        <%= order.shippingAddress.pinCode %><br>
-                                                            Phone: <%= order.shippingAddress.phone %>
-                                        </p>
-                                        <% } else { %>
-                                            <p class="text-gray-500 text-xs uppercase tracking-wider">Address not
-                                                available</p>
-                                            <% } %>
-                                </div>
-                            </div>
-
-                            <!-- Global Actions -->
-                            <% // Check if any item is cancellable to show "Cancel Entire Order" const
-                                hasCancellableItems=order.orderItems.some(item=> ['pending', 'processing',
-                                'placed'].includes(item.status));
-                                %>
-                                <div class="p-6 md:p-8">
-                                    <div class="flex flex-col sm:flex-row gap-4">
-                                        <% if (order.paymentStatus==='Failed' || order.paymentStatus==='failed' ) { %>
-                                            <button onclick="retryPayment('<%= order._id %>')"
-                                                class="flex-1 bg-gold-light text-obsidian hover:bg-gold-accent px-6 py-3 rounded text-xs uppercase tracking-widest font-semibold transition text-center shadow-md">
-                                                Retry Payment
-                                            </button>
-                                            <% } %>
-                                                <% if (hasCancellableItems && order.paymentStatus !=='Failed' &&
-                                                    order.paymentStatus !=='failed' ) { %>
-                                                    <button onclick="cancelFullOrder('<%= order._id %>')"
-                                                        class="flex-1 bg-red-950/50 border border-red-500/30 text-red-400 hover:bg-red-500/10 px-6 py-3 rounded text-xs uppercase tracking-widest font-semibold transition text-center">
-                                                        Cancel Entire Order
-                                                    </button>
-                                                    <% } %>
-                                                        <a href="/order" class="flex-1">
-                                                            <button
-                                                                class="w-full px-6 py-3 border border-gold-light/10 text-gold-light hover:bg-gold-light/5 hover:border-gold-accent rounded text-xs uppercase tracking-widest font-semibold transition text-center">
-                                                                View All Orders
-                                                            </button>
-                                                        </a>
-                                    </div>
-                                </div>
+            <!-- Global Actions -->
+            <% 
+                const hasCancellableItems = (order.orderItems || []).some(item => ['pending', 'processing', 'placed'].includes(item.status));
+            %>
+            <div class="p-6 md:p-8">
+                <div class="flex flex-col sm:flex-row gap-4">
+                    <% if (order.paymentStatus === 'Failed' || order.paymentStatus === 'failed') { %>
+                        <button onclick="retryPayment('<%= order._id %>')"
+                            class="flex-1 bg-gold-light text-obsidian hover:bg-gold-accent px-6 py-3 rounded text-xs uppercase tracking-widest font-semibold transition text-center shadow-md">
+                            Retry Payment
+                        </button>
+                    <% } %>
+                    <% if (hasCancellableItems && order.paymentStatus !== 'Failed' && order.paymentStatus !== 'failed') { %>
+                        <button onclick="cancelFullOrder('<%= order._id %>')"
+                            class="flex-1 bg-red-950/50 border border-red-500/30 text-red-400 hover:bg-red-500/10 px-6 py-3 rounded text-xs uppercase tracking-widest font-semibold transition text-center">
+                            Cancel Entire Order
+                        </button>
+                    <% } %>
+                    <a href="/order" class="flex-1">
+                        <button class="w-full px-6 py-3 border border-gold-light/10 text-gold-light hover:bg-gold-light/5 hover:border-gold-accent rounded text-xs uppercase tracking-widest font-semibold transition text-center">
+                            View All Orders
+                        </button>
+                    </a>
+                </div>
             </div>
         </div>
+    </main>
+</div>
 
-        <%- include('../partials/user/footer') %>
+<%- include('../partials/user/footer') %>
 
-            <script src="https://checkout.razorpay.com/v1/checkout.js"></script>
-            <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
-            <script type="module">
-                import api from '/js/api.js';
+<script src="https://checkout.razorpay.com/v1/checkout.js"></script>
+<script type="module">
+    import api from '/js/api.js';
 
-                window.retryPayment = async (orderId) => {
+    window.retryPayment = async (orderId) => {
+        try {
+            Swal.fire({
+                title: 'Processing',
+                html: 'Please wait while we prepare your payment...',
+                allowOutsideClick: false,
+                didOpen: () => Swal.showLoading()
+            });
+
+            const res = await api.createRazorpayOrderAxios(orderId);
+            Swal.close();
+
+            if (!res.data.success) {
+                return Swal.fire('Error', res.data.message || 'Could not initiate payment. Please try again.', 'error');
+            }
+
+            const options = {
+                key: res.data.key,
+                amount: res.data.order.amount,
+                currency: res.data.order.currency,
+                name: "CaseCart",
+                description: "Order Payment",
+                image: "/img/Pasted image.png",
+                order_id: res.data.order.id,
+                handler: async function (response) {
                     try {
                         Swal.fire({
-                            title: 'Processing',
-                            html: 'Please wait while we prepare your payment...',
+                            title: 'Verifying Payment',
+                            text: 'Please wait while we verify your payment...',
                             allowOutsideClick: false,
                             didOpen: () => Swal.showLoading()
                         });
 
-                        const res = await api.createRazorpayOrderAxios(orderId);
-                        Swal.close();
-
-                        if (!res.data.success) {
-                            return Swal.fire('Error', 'Could not initiate payment. Please try again.', 'error');
-                        }
-
-                        const options = {
-                            key: res.data.key,
-                            amount: res.data.order.amount,
-                            currency: res.data.order.currency,
-                            name: "CaseCart",
-                            description: "Order Payment",
-                            image: "/img/Pasted image.png",
-                            order_id: res.data.order.id,
-                            handler: async function (response) {
-                                try {
-                                    Swal.fire({
-                                        title: 'Verifying Payment',
-                                        text: 'Please wait while we verify your payment...',
-                                        allowOutsideClick: false,
-                                        didOpen: () => Swal.showLoading()
-                                    });
-
-                                    const data = {
-                                        razorpay_payment_id: response.razorpay_payment_id,
-                                        razorpay_order_id: response.razorpay_order_id,
-                                        razorpay_signature: response.razorpay_signature,
-                                        orderId: orderId
-                                    };
-
-                                    const verifyRes = await api.verifyRazorpayPaymentAxios(data);
-                                    Swal.close();
-
-                                    if (verifyRes.data.success || verifyRes.data.status === 'success' || verifyRes.data.paymentStatus === 'success') {
-                                        await Swal.fire({
-                                            icon: 'success',
-                                            title: 'Payment Successful!',
-                                            text: 'Your payment was successful.',
-                                            timer: 1500,
-                                            showConfirmButton: false
-                                        });
-                                        window.location.reload();
-                                    } else {
-                                        Swal.fire('Error', verifyRes.data.message || 'Payment verification failed', 'error');
-                                    }
-                                } catch (error) {
-                                    Swal.close();
-                                    Swal.fire('Error', 'An error occurred during verification', 'error');
-                                }
-                            },
-                            theme: { color: "#C9A84C" },
-                            modal: {
-                                ondismiss: function () {
-                                    Swal.fire('Cancelled', 'Payment was cancelled', 'info');
-                                }
-                            }
+                        const data = {
+                            razorpay_payment_id: response.razorpay_payment_id,
+                            razorpay_order_id: response.razorpay_order_id,
+                            razorpay_signature: response.razorpay_signature,
+                            orderId: orderId
                         };
 
-                        const retryRazorpayInstance = new Razorpay(options);
-                        retryRazorpayInstance.on('payment.failed', function (response) {
-                            Swal.fire('Payment Failed', response.error.description || 'Payment could not be processed', 'error');
-                        });
-                        retryRazorpayInstance.open();
+                        const verifyRes = await api.verifyRazorpayPaymentAxios(data);
+                        Swal.close();
+
+                        if (verifyRes.data.success || verifyRes.data.status === 'success' || verifyRes.data.paymentStatus === 'success') {
+                            await Swal.fire({
+                                icon: 'success',
+                                title: 'Payment Successful!',
+                                text: 'Your payment was successful.',
+                                timer: 1500,
+                                showConfirmButton: false
+                            });
+                            window.location.reload();
+                        } else {
+                            Swal.fire('Error', verifyRes.data.message || 'Payment verification failed', 'error');
+                        }
                     } catch (error) {
                         Swal.close();
-                        console.error("Error during payment retry:", error);
-                        Swal.fire('Error', 'An error occurred while retrying payment', 'error');
+                        Swal.fire('Error', 'An error occurred during verification', 'error');
                     }
-                };
+                },
+                theme: { color: "#C9A84C" },
+                modal: {
+                    ondismiss: function () {
+                        Swal.fire('Cancelled', 'Payment was cancelled', 'info');
+                    }
+                }
+            };
 
-                window.cancelFullOrder = async (orderId) => {
-                    const result = await Swal.fire({
-                        title: 'Cancel Entire Order?',
-                        text: 'Are you sure you want to cancel this entire order? This action cannot be undone.',
-                        icon: 'warning',
-                        showCancelButton: true,
-                        confirmButtonColor: '#c9a84c',
-                        cancelButtonColor: '#161616',
-                        confirmButtonText: 'Yes, cancel order',
-                        cancelButtonText: 'No, keep it'
+            const retryRazorpayInstance = new Razorpay(options);
+            retryRazorpayInstance.on('payment.failed', function (response) {
+                Swal.fire('Payment Failed', response.error?.description || 'Payment could not be processed', 'error');
+            });
+            retryRazorpayInstance.open();
+        } catch (error) {
+            Swal.close();
+            console.error("Error during payment retry:", error);
+            Swal.fire('Error', 'An error occurred while retrying payment', 'error');
+        }
+    };
+
+    window.cancelFullOrder = async (orderId) => {
+        const result = await Swal.fire({
+            title: 'Cancel Entire Order?',
+            text: 'Are you sure you want to cancel this entire order? This action cannot be undone.',
+            icon: 'warning',
+            showCancelButton: true,
+            confirmButtonColor: '#c9a84c',
+            cancelButtonColor: '#161616',
+            confirmButtonText: 'Yes, cancel order',
+            cancelButtonText: 'No, keep it'
+        });
+
+        if (result.isConfirmed) {
+            try {
+                const response = await api.cancelWholeOrderAxios(orderId, { reason: 'User requested cancellation' });
+                if (response.data.success) {
+                    await Swal.fire({
+                        title: 'Order Cancelled!',
+                        text: 'Your order has been cancelled successfully.',
+                        icon: 'success',
+                        confirmButtonColor: '#c9a84c'
                     });
-
-                    if (result.isConfirmed) {
-                        try {
-                            const response = await api.cancelWholeOrderAxios(orderId, { reason: 'User requested cancellation' });
-                            if (response.data.success) {
-                                await Swal.fire({
-                                    title: 'Order Cancelled!',
-                                    text: 'Your order has been cancelled successfully.',
-                                    icon: 'success',
-                                    confirmButtonColor: '#c9a84c'
-                                });
-                                window.location.reload();
-                            } else {
-                                Swal.fire('Error', response.data.message || 'Failed to cancel order', 'error');
-                            }
-                        } catch (error) {
-                            console.error(error);
-                            Swal.fire('Error', 'Something went wrong', 'error');
-                        }
-                    }
+                    window.location.reload();
+                } else {
+                    Swal.fire('Error', response.data.message || 'Failed to cancel order', 'error');
                 }
+            } catch (error) {
+                console.error(error);
+                Swal.fire('Error', 'Something went wrong', 'error');
+            }
+        }
+    };
 
-                window.cancelItem = async (itemId, itemName, orderId) => {
-                    const result = await Swal.fire({
-                        title: 'Cancel Item?',
-                        text: `Are you sure you want to cancel ${itemName}?`,
-                        input: 'text',
-                        inputPlaceholder: 'Reason for cancellation (optional)',
-                        icon: 'warning',
-                        showCancelButton: true,
-                        confirmButtonColor: '#c9a84c',
-                        cancelButtonColor: '#161616',
-                        confirmButtonText: 'Yes, cancel item',
-                        cancelButtonText: 'No, keep it'
+    window.cancelItem = async (itemId, itemName, orderId) => {
+        const result = await Swal.fire({
+            title: 'Cancel Item?',
+            text: `Are you sure you want to cancel ${itemName}?`,
+            input: 'text',
+            inputPlaceholder: 'Reason for cancellation (optional)',
+            icon: 'warning',
+            showCancelButton: true,
+            confirmButtonColor: '#c9a84c',
+            cancelButtonColor: '#161616',
+            confirmButtonText: 'Yes, cancel item',
+            cancelButtonText: 'No, keep it'
+        });
+
+        if (result.isConfirmed) {
+            try {
+                const response = await api.ordCancelAxios({
+                    orderId: orderId,
+                    reason: result.value || 'User requested cancellation'
+                }, itemId);
+
+                if (response.data.success) {
+                    await Swal.fire({
+                        title: 'Item Cancelled!',
+                        text: 'Item has been cancelled successfully.',
+                        icon: 'success',
+                        confirmButtonColor: '#c9a84c'
                     });
-
-                    if (result.isConfirmed) {
-                        try {
-                            const response = await api.ordCancelAxios({
-                                orderId: orderId,
-                                reason: result.value || 'User requested cancellation'
-                            }, itemId);
-
-                            if (response.data.success) {
-                                await Swal.fire({
-                                    title: 'Item Cancelled!',
-                                    text: 'Item has been cancelled successfully.',
-                                    icon: 'success',
-                                    confirmButtonColor: '#c9a84c'
-                                });
-                                window.location.reload();
-                            } else {
-                                Swal.fire('Error', response.data.message || 'Failed to cancel item', 'error');
-                            }
-                        } catch (error) {
-                            console.error(error);
-                            Swal.fire('Error', 'Something went wrong', 'error');
-                        }
-                    }
+                    window.location.reload();
+                } else {
+                    Swal.fire('Error', response.data.message || 'Failed to cancel item', 'error');
                 }
+            } catch (error) {
+                console.error(error);
+                Swal.fire('Error', 'Something went wrong', 'error');
+            }
+        }
+    };
 
-                window.returnItem = async (itemId, itemName, orderId) => {
-                    const result = await Swal.fire({
-                        title: 'Return Item?',
-                        text: `Are you sure you want to return ${itemName}?`,
-                        input: 'text',
-                        inputPlaceholder: 'Reason for return',
-                        icon: 'question',
-                        showCancelButton: true,
-                        confirmButtonColor: '#c9a84c',
-                        cancelButtonColor: '#161616',
-                        confirmButtonText: 'Yes, return item',
-                        cancelButtonText: 'No, keep it',
-                        inputValidator: (value) => {
-                            if (!value) {
-                                return 'You need to write something!'
-                            }
-                        }
+    window.returnItem = async (itemId, itemName, orderId) => {
+        const result = await Swal.fire({
+            title: 'Return Item?',
+            text: `Are you sure you want to return ${itemName}?`,
+            input: 'text',
+            inputPlaceholder: 'Reason for return',
+            icon: 'question',
+            showCancelButton: true,
+            confirmButtonColor: '#c9a84c',
+            cancelButtonColor: '#161616',
+            confirmButtonText: 'Yes, return item',
+            cancelButtonText: 'No, keep it',
+            inputValidator: (value) => {
+                if (!value) {
+                    return 'You need to write something!';
+                }
+            }
+        });
+
+        if (result.isConfirmed) {
+            try {
+                const response = await api.ordReturnAxios({
+                    orderId: orderId,
+                    reason: result.value
+                }, itemId);
+
+                if (response.data.success) {
+                    await Swal.fire({
+                        title: 'Return Requested!',
+                        text: 'Your return request has been submitted.',
+                        icon: 'success',
+                        confirmButtonColor: '#c9a84c'
                     });
-
-                    if (result.isConfirmed) {
-                        try {
-                            const response = await api.ordReturnAxios({
-                                orderId: orderId,
-                                reason: result.value
-                            }, itemId);
-
-                            if (response.data.success) {
-                                await Swal.fire({
-                                    title: 'Return Requested!',
-                                    text: 'Your return request has been submitted.',
-                                    icon: 'success',
-                                    confirmButtonColor: '#c9a84c'
-                                });
-                                window.location.reload();
-                            } else {
-                                Swal.fire('Error', response.data.message || 'Failed to request return', 'error');
-                            }
-                        } catch (error) {
-                            console.error(error);
-                            Swal.fire('Error', 'Something went wrong', 'error');
-                        }
-                    }
+                    window.location.reload();
+                } else {
+                    Swal.fire('Error', response.data.message || 'Failed to request return', 'error');
                 }
+            } catch (error) {
+                console.error(error);
+                Swal.fire('Error', 'Something went wrong', 'error');
+            }
+        }
+    };
 
-                window.downloadInvoice = (orderId, itemId) => {
-                    api.orderInvoice(orderId, itemId);
-                }
-            </script>
-</body>
-
-</html>
+    window.downloadInvoice = (orderId, itemId) => {
+        api.orderInvoice(orderId, itemId);
+    };
+</script>

@@ -14,7 +14,10 @@ const getWishlist = async (req, res) => {
     const userID = new mongoose.Types.ObjectId(userId);
     const products = await wishlistModel
       .find({ userId: userID })
-      .populate("variantId")
+      .populate({
+        path: "variantId",
+        populate: { path: "brandId" },
+      })
       .populate({
         path: "productId",
         populate: { path: "catgId" },
@@ -28,13 +31,13 @@ const getWishlist = async (req, res) => {
           validVariant = await variantModel.findOne({
             _id: { $in: item.productId.variants },
             isListed: true,
-          }).sort({ salePrice: 1 });
+          }).populate("brandId").sort({ salePrice: 1 });
         }
         if (!validVariant) {
           validVariant = await variantModel.findOne({
             productId: item.productId._id,
             isListed: true,
-          }).sort({ salePrice: 1 });
+          }).populate("brandId").sort({ salePrice: 1 });
         }
         if (validVariant) {
           await wishlistModel.updateOne(

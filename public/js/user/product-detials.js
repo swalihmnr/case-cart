@@ -102,6 +102,7 @@ function updateZoomPreview(x, y, lensWidth, lensHeight) {
 
 // Change main image
 function changeMainImage(imageUrl, element) {
+  if (!imageUrl) return;
   currentImage = imageUrl;
   if (mainImage) {
     mainImage.src = imageUrl;
@@ -111,6 +112,10 @@ function changeMainImage(imageUrl, element) {
         updateZoomPreview(0, 0, mainImage.width * 0.25, mainImage.height * 0.25);
       }
     };
+  }
+
+  if (zoomPreviewImage) {
+    zoomPreviewImage.style.backgroundImage = `url('${imageUrl}')`;
   }
 
   // Reset all thumbnails to unselected state
@@ -123,6 +128,50 @@ function changeMainImage(imageUrl, element) {
   if (element) {
     element.classList.add("border-gold-accent", "bg-gold-light/5");
     element.classList.remove("border-gold-light/10");
+  } else {
+    // If element is null, highlight thumbnail matching current imageUrl
+    const allThumbs = document.querySelectorAll(".thumbnail-item");
+    allThumbs.forEach((thumb) => {
+      const img = thumb.querySelector("img");
+      if (img && (img.src === imageUrl || img.getAttribute("src") === imageUrl)) {
+        thumb.classList.add("border-gold-accent", "bg-gold-light/5");
+        thumb.classList.remove("border-gold-light/10");
+      }
+    });
+  }
+}
+
+// Update gallery thumbnails and main image for selected variant
+function updateGalleryImages(images) {
+  if (!images || !Array.isArray(images) || images.length === 0) return;
+
+  const mainImgObj = images.find((img) => img.isMain) || images[0];
+  const newMainUrl = mainImgObj ? (mainImgObj.url || mainImgObj) : "";
+
+  if (newMainUrl) {
+    changeMainImage(newMainUrl, null);
+  }
+
+  const thumbContainer = document.getElementById("thumbnailContainer");
+  if (thumbContainer) {
+    thumbContainer.innerHTML = images
+      .map((img, idx) => {
+        const imgUrl = img.url || img;
+        const isSelected =
+          imgUrl === newMainUrl ||
+          (!newMainUrl && img.isMain) ||
+          (!images.some((i) => i.isMain) && idx === 0);
+        const activeClasses = isSelected
+          ? "border-gold-accent bg-gold-light/5"
+          : "border-gold-light/10 hover:border-gold-light/40";
+        return `
+          <button onclick="changeMainImage('${imgUrl}', this)" 
+                  class="thumbnail-item w-14 h-18 md:w-16 md:h-20 bg-obsidian-light border rounded flex-shrink-0 p-2 flex items-center justify-center transition-all duration-300 ${activeClasses}">
+              <img src="${imgUrl}" alt="Thumbnail" class="w-full h-full object-contain">
+          </button>
+        `;
+      })
+      .join("");
   }
 }
 
@@ -190,11 +239,53 @@ async function selectVariant(productId, variantId, clickedBtn) {
     clickedBtn.classList.add("border-gold-accent", "bg-gold-light/10", "text-gold-light");
     clickedBtn.classList.remove("border-gold-light/10", "text-gray-400");
   }
-  
+
+  // Instant optimistic update from window.productVariants if available
+  if (window.productVariants && Array.isArray(window.productVariants)) {
+    const localVariant = window.productVariants.find(
+      (v) => v._id && v._id.toString() === variantId.toString()
+    );
+    if (localVariant) {
+      if (localVariant.images && localVariant.images.length > 0) {
+        updateGalleryImages(localVariant.images);
+      }
+      if (localVariant.salePrice) {
+        const salePriceField = document.getElementById("sale-span");
+        if (salePriceField) salePriceField.innerText = `₹${localVariant.salePrice}`;
+      }
+      if (localVariant.orgPrice) {
+        const orgPriceField = document.getElementById("org-span");
+        if (orgPriceField) orgPriceField.innerText = `₹${localVariant.orgPrice}`;
+      }
+      if (localVariant.brandId && localVariant.brandId.name) {
+        const brandBadge = document.getElementById("product-brand-badge");
+        const brandName = document.getElementById("product-brand-name");
+        const brandIcon = document.getElementById("product-brand-icon");
+        if (brandBadge && brandName) {
+          brandName.innerText = localVariant.brandId.name;
+          if (localVariant.brandId.icon && brandIcon) {
+            brandIcon.src = localVariant.brandId.icon;
+            brandIcon.classList.remove("hidden");
+            brandIcon.style.display = "";
+          } else if (brandIcon) {
+            brandIcon.classList.add("hidden");
+          }
+          brandBadge.classList.remove("hidden");
+        }
+      }
+    }
+  }
+
   const resVariant = await api.getVariantDataAxios(productID, variantID);
-  
+  if (!resVariant || !resVariant.data) return;
+
+  // Sync images from backend response
+  if (resVariant.data.images && resVariant.data.images.length > 0) {
+    updateGalleryImages(resVariant.data.images);
+  }
+
   if (badge && nameEl && discountEl) {
-    if (resVariant.data.disObject.isOffer) {
+    if (resVariant.data.disObject && resVariant.data.disObject.isOffer) {
       badge.classList.remove("hidden");
       nameEl.innerText = resVariant.data.disObject.name;
       const type = resVariant.data.disObject.disType === "percentage" ? "%" : "₹";
@@ -203,8 +294,6 @@ async function selectVariant(productId, variantId, clickedBtn) {
       badge.classList.add("hidden");
     }
   }
-  
-  await api.productDetialAxios(productID);
 
   const salePriceField = document.getElementById("sale-span");
   const orgPriceField = document.getElementById("org-span");
@@ -223,6 +312,24 @@ async function selectVariant(productId, variantId, clickedBtn) {
     } else {
       stockCountEl.innerText = "In Stock";
       stockCountEl.className = "text-xs uppercase tracking-widest text-green-500 font-semibold mt-2";
+    }
+  }
+
+  // Update brand badge for selected variant
+  const brandBadge = document.getElementById("product-brand-badge");
+  const brandName = document.getElementById("product-brand-name");
+  const brandIcon = document.getElementById("product-brand-icon");
+  if (brandBadge && brandName) {
+    if (resVariant.data.brand && resVariant.data.brand.name) {
+      brandName.innerText = resVariant.data.brand.name;
+      if (resVariant.data.brand.icon && brandIcon) {
+        brandIcon.src = resVariant.data.brand.icon;
+        brandIcon.classList.remove("hidden");
+        brandIcon.style.display = "";
+      } else if (brandIcon) {
+        brandIcon.classList.add("hidden");
+      }
+      brandBadge.classList.remove("hidden");
     }
   }
 
@@ -300,6 +407,21 @@ function updateWishlistCountInHeader(count) {
 
 async function addToCart() {
   try {
+    if (!variantID) {
+      const activeBtn = document.querySelector(".device-btn.border-gold-accent") || document.querySelector(".device-btn");
+      if (activeBtn) {
+        variantID = activeBtn.getAttribute("data-vid");
+        productID = activeBtn.getAttribute("data-pid");
+      }
+    }
+
+    if (!variantID) {
+      if (typeof window.showToast === "function") {
+        window.showToast("Please select a device model first", "error");
+      }
+      return;
+    }
+
     const res = await api.addToCartAxios(productID, variantID);
     if (res.data.success) {
       // Update cart count in header
@@ -320,10 +442,81 @@ async function addToCart() {
     }
   } catch (error) {
     console.log(error);
+    const msg = error.response?.data?.message || "Network error adding to cart";
     if (typeof window.showToast === "function") {
-      window.showToast("Network error adding to cart", "error");
+      window.showToast(msg, "error");
+    }
+    if (error.response?.status === 401) {
+      setTimeout(() => {
+        window.location.href = "/login";
+      }, 1000);
     }
   }
+}
+
+function buyNow() {
+  // Ensure variantID is populated
+  if (!variantID) {
+    const activeBtn = document.querySelector(".device-btn.border-gold-accent") || document.querySelector(".device-btn");
+    if (activeBtn) {
+      variantID = activeBtn.getAttribute("data-vid");
+      productID = activeBtn.getAttribute("data-pid");
+    }
+  }
+
+  if (!variantID) {
+    if (typeof window.showToast === "function") {
+      window.showToast("Please select a device model first", "error");
+    } else if (typeof Toastify === "function") {
+      Toastify({
+        text: "Please select a device model first",
+        duration: 3000,
+        gravity: "bottom",
+        position: "right",
+        backgroundColor: "#EF4444",
+      }).showToast();
+    }
+    return;
+  }
+
+  // Stock check
+  const stockCountEl = document.getElementById("stock-count");
+  if (stockCountEl && stockCountEl.innerText.toLowerCase().includes("out of stock")) {
+    if (typeof window.showToast === "function") {
+      window.showToast("Sorry, this item is currently out of stock", "error");
+    } else if (typeof Toastify === "function") {
+      Toastify({
+        text: "Sorry, this item is currently out of stock",
+        duration: 3000,
+        gravity: "bottom",
+        position: "right",
+        backgroundColor: "#EF4444",
+      }).showToast();
+    }
+    return;
+  }
+
+  // Check login
+  if (!window.currentUserId) {
+    if (typeof window.showToast === "function") {
+      window.showToast("Please login to proceed with Buy Now", "error");
+    } else if (typeof Toastify === "function") {
+      Toastify({
+        text: "Please login to proceed with Buy Now",
+        duration: 2500,
+        gravity: "bottom",
+        position: "right",
+        backgroundColor: "#EF4444",
+      }).showToast();
+    }
+    setTimeout(() => {
+      window.location.href = "/login";
+    }, 800);
+    return;
+  }
+
+  // Direct checkout in buyNow mode
+  window.location.href = `/checkout?type=buyNow&variantId=${variantID}`;
 }
 
 function updateCartCount(count) {
@@ -340,11 +533,424 @@ function updateCartCount(count) {
 
 window.updateCartCount = updateCartCount;
 
-async function buyNow() {
-  window.location.href = `/checkout?type=buyNow&productId=${productID}&variantId=${variantID}`;
+// ==============================================
+// PRODUCT RATINGS & REVIEWS LOGIC
+// ==============================================
+let selectedRatingValue = 0;
+const ratingLabels = {
+  1: "Poor (1/5)",
+  2: "Fair (2/5)",
+  3: "Good (3/5)",
+  4: "Very Good (4/5)",
+  5: "Exceptional (5/5)",
+};
+
+function setReviewRating(val) {
+  selectedRatingValue = Number(val);
+  const ratingInput = document.getElementById("reviewRatingInput");
+  if (ratingInput) ratingInput.value = selectedRatingValue;
+
+  const label = document.getElementById("rating-label");
+  if (label) {
+    label.textContent = ratingLabels[selectedRatingValue] || "Select Stars";
+    label.className = "text-xs font-semibold text-gold-accent ml-2";
+  }
+
+  highlightStars("star-picker-btn", selectedRatingValue);
 }
 
-// Make all required functions global for HTML access
+function previewRating(val) {
+  highlightStars("star-picker-btn", val);
+  const label = document.getElementById("rating-label");
+  if (label) {
+    label.textContent = ratingLabels[val] || "";
+  }
+}
+
+function resetRatingPreview() {
+  highlightStars("star-picker-btn", selectedRatingValue);
+  const label = document.getElementById("rating-label");
+  if (label) {
+    label.textContent = selectedRatingValue > 0 ? ratingLabels[selectedRatingValue] : "Select Stars";
+  }
+}
+
+function setEditReviewRating(val) {
+  const ratingInput = document.getElementById("editReviewRatingInput");
+  if (ratingInput) ratingInput.value = val;
+
+  const label = document.getElementById("edit-rating-label");
+  if (label) {
+    label.textContent = ratingLabels[val] || "";
+    label.className = "text-xs font-semibold text-gold-accent ml-2";
+  }
+
+  highlightStars("edit-star-picker-btn", val);
+}
+
+function highlightStars(btnClass, count) {
+  const buttons = document.querySelectorAll(`.${btnClass}`);
+  buttons.forEach((btn) => {
+    const starVal = Number(btn.getAttribute("data-value"));
+    if (starVal <= count) {
+      btn.classList.remove("text-gray-400");
+      btn.classList.add("text-gold-accent");
+    } else {
+      btn.classList.remove("text-gold-accent");
+      btn.classList.add("text-gray-400");
+    }
+  });
+}
+
+async function submitCustomerReview(e) {
+  e.preventDefault();
+  const rating = Number(document.getElementById("reviewRatingInput")?.value || 0);
+  const title = document.getElementById("reviewTitleInput")?.value || "";
+  const comment = document.getElementById("reviewCommentInput")?.value || "";
+
+  if (!rating || rating < 1 || rating > 5) {
+    return Swal.fire({
+      icon: "warning",
+      title: "Rating Required",
+      text: "Please select a star rating from 1 to 5.",
+      confirmButtonColor: "#C9A84C",
+    });
+  }
+
+  if (!comment.trim() || comment.trim().length < 5) {
+    return Swal.fire({
+      icon: "warning",
+      title: "Review Details Required",
+      text: "Please write at least 5 characters in your review comment.",
+      confirmButtonColor: "#C9A84C",
+    });
+  }
+
+  const submitBtn = document.getElementById("submitReviewBtn");
+  if (submitBtn) {
+    submitBtn.disabled = true;
+    submitBtn.innerHTML = `<i class="fas fa-spinner fa-spin mr-2"></i> Submitting...`;
+  }
+
+  try {
+    const res = await api.createReviewAxios(window.productId, { rating, title, comment });
+    if (res.data && res.data.success) {
+      await Swal.fire({
+        icon: "success",
+        title: "Review Published!",
+        text: res.data.message || "Thank you for your feedback.",
+        confirmButtonColor: "#C9A84C",
+      });
+      window.location.reload();
+    } else {
+      Swal.fire({
+        icon: "error",
+        title: "Could not submit review",
+        text: res.data?.message || "An error occurred.",
+        confirmButtonColor: "#C9A84C",
+      });
+    }
+  } catch (error) {
+    console.error(error);
+    Swal.fire({
+      icon: "error",
+      title: "Error",
+      text: "Failed to submit review. Please try again.",
+      confirmButtonColor: "#C9A84C",
+    });
+  } finally {
+    if (submitBtn) {
+      submitBtn.disabled = false;
+      submitBtn.innerHTML = `Submit Verified Review`;
+    }
+  }
+}
+
+function openEditReviewModal() {
+  const modal = document.getElementById("editReviewModal");
+  if (!modal) return;
+
+  const currentRating = Number(document.getElementById("editReviewRatingInput")?.value || 5);
+  setEditReviewRating(currentRating);
+
+  modal.classList.remove("hidden");
+  modal.classList.add("flex");
+}
+
+function closeEditReviewModal() {
+  const modal = document.getElementById("editReviewModal");
+  if (!modal) return;
+  modal.classList.add("hidden");
+  modal.classList.remove("flex");
+}
+
+async function submitEditCustomerReview(e) {
+  e.preventDefault();
+  const reviewId = document.getElementById("editReviewId")?.value;
+  const rating = Number(document.getElementById("editReviewRatingInput")?.value || 5);
+  const title = document.getElementById("editReviewTitleInput")?.value || "";
+  const comment = document.getElementById("editReviewCommentInput")?.value || "";
+
+  if (!reviewId) return;
+
+  if (!rating || rating < 1 || rating > 5) {
+    return Swal.fire("Warning", "Please select a valid rating", "warning");
+  }
+
+  if (!comment.trim() || comment.trim().length < 5) {
+    return Swal.fire("Warning", "Review comment must be at least 5 characters long", "warning");
+  }
+
+  const saveBtn = document.getElementById("saveEditReviewBtn");
+  if (saveBtn) {
+    saveBtn.disabled = true;
+    saveBtn.innerHTML = `<i class="fas fa-spinner fa-spin mr-2"></i> Saving...`;
+  }
+
+  try {
+    const res = await api.updateReviewAxios(reviewId, { rating, title, comment });
+    if (res.data && res.data.success) {
+      await Swal.fire({
+        icon: "success",
+        title: "Review Updated!",
+        text: res.data.message || "Your review has been updated successfully.",
+        confirmButtonColor: "#C9A84C",
+      });
+      closeEditReviewModal();
+      window.location.reload();
+    } else {
+      Swal.fire("Error", res.data?.message || "Failed to update review", "error");
+    }
+  } catch (error) {
+    console.error(error);
+    Swal.fire("Error", "An unexpected error occurred", "error");
+  } finally {
+    if (saveBtn) {
+      saveBtn.disabled = false;
+      saveBtn.innerHTML = "Save Changes";
+    }
+  }
+}
+
+async function deleteMyReview(reviewId) {
+  const result = await Swal.fire({
+    title: "Delete your review?",
+    text: "Are you sure you want to remove your review for this product?",
+    icon: "warning",
+    showCancelButton: true,
+    confirmButtonColor: "#c9a84c",
+    cancelButtonColor: "#161616",
+    confirmButtonText: "Yes, delete review",
+    cancelButtonText: "Cancel",
+  });
+
+  if (result.isConfirmed) {
+    try {
+      const res = await api.deleteReviewAxios(reviewId);
+      if (res.data && res.data.success) {
+        await Swal.fire({
+          icon: "success",
+          title: "Deleted",
+          text: "Your review has been deleted.",
+          confirmButtonColor: "#C9A84C",
+        });
+        window.location.reload();
+      } else {
+        Swal.fire("Error", res.data?.message || "Could not delete review", "error");
+      }
+    } catch (error) {
+      console.error(error);
+      Swal.fire("Error", "Failed to delete review", "error");
+    }
+  }
+}
+
+async function loadProductReviews(page = 1) {
+  const container = document.getElementById("reviews-list-container");
+  if (!container || !window.productId) return;
+
+  const sort = document.getElementById("reviewSortSelect")?.value || "newest";
+
+  try {
+    const res = await api.getProductReviewsAxios(window.productId, page, sort);
+    if (res.data && res.data.success) {
+      const { reviews, totalCount, totalPages, currentPage, ratingSummary } = res.data.data;
+
+      // Update Header Badges & Breakdown
+      const countBadge = document.getElementById("reviews-feed-count-badge");
+      if (countBadge) countBadge.textContent = totalCount;
+
+      const summaryAvg = document.getElementById("summary-avg-rating");
+      if (summaryAvg) summaryAvg.textContent = (ratingSummary.averageRating || 0).toFixed(1);
+
+      const summaryTotal = document.getElementById("summary-total-reviews");
+      if (summaryTotal) {
+        summaryTotal.textContent = `Based on ${totalCount} ${totalCount === 1 ? "review" : "reviews"}`;
+      }
+
+      // Render Review Cards
+      if (reviews.length === 0) {
+        container.innerHTML = `
+          <div class="text-center py-12 bg-obsidian border border-gold-light/5 rounded-lg">
+            <div class="w-12 h-12 rounded-full bg-gold-light/5 flex items-center justify-center mx-auto mb-3 text-gold-accent">
+              <i class="far fa-comment-dots text-xl"></i>
+            </div>
+            <h4 class="font-display text-lg text-gold-light">No reviews yet</h4>
+            <p class="text-xs text-gray-500 mt-1">Be the first verified purchaser to review this product.</p>
+          </div>
+        `;
+      } else {
+        container.innerHTML = reviews
+          .map((rev) => {
+            const author = rev.user
+              ? `${rev.user.firstName || ""} ${rev.user.lastName || ""}`.trim()
+              : "Verified Customer";
+            const avatar =
+              rev.user && rev.user.profileImg
+                ? rev.user.profileImg
+                : "https://cdn-icons-png.flaticon.com/512/149/149071.png";
+            const isMyReview =
+              window.currentUserId &&
+              rev.user &&
+              (rev.user._id === window.currentUserId || rev.user === window.currentUserId);
+            const dateStr = new Date(rev.createdAt).toLocaleDateString("en-US", {
+              day: "numeric",
+              month: "short",
+              year: "numeric",
+            });
+
+            let starsHtml = "";
+            for (let s = 1; s <= 5; s++) {
+              starsHtml += `<i class="fa${s <= rev.rating ? "s" : "r"} fa-star text-[10px]"></i>`;
+            }
+
+            return `
+              <div class="bg-obsidian border border-gold-light/5 rounded-lg p-5 sm:p-6 space-y-3 transition-all hover:border-gold-light/20">
+                <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
+                  <div class="flex items-center gap-3">
+                    <img src="${avatar}" alt="${author}" class="w-9 h-9 rounded-full object-cover border border-gold-light/10 bg-obsidian-light" onerror="this.src='https://cdn-icons-png.flaticon.com/512/149/149071.png'">
+                    <div>
+                      <div class="flex items-center gap-2 flex-wrap">
+                        <span class="font-semibold text-xs text-gold-light">${author}</span>
+                        ${
+                          rev.isVerifiedPurchase
+                            ? `<span class="inline-flex items-center gap-1 text-[9px] font-bold tracking-wider uppercase text-emerald-400 bg-emerald-950/40 border border-emerald-500/30 px-2 py-0.5 rounded-full">
+                                <i class="fas fa-check-circle text-[8px]"></i> Verified Purchase
+                               </span>`
+                            : ""
+                        }
+                      </div>
+                      <span class="text-[10px] text-gray-500">${dateStr}</span>
+                    </div>
+                  </div>
+
+                  <div class="flex items-center gap-3">
+                    <div class="flex items-center text-gold-accent">
+                      ${starsHtml}
+                      <span class="ml-1.5 text-xs font-semibold text-gold-light">${rev.rating}.0</span>
+                    </div>
+
+                    ${
+                      isMyReview
+                        ? `<div class="flex items-center gap-2 ml-2 border-l border-gold-light/10 pl-3">
+                             <button onclick="openEditReviewModal()" class="text-xs text-gold-light hover:text-gold-accent" title="Edit">
+                               <i class="fas fa-edit"></i>
+                             </button>
+                             <button onclick="deleteMyReview('${rev._id}')" class="text-xs text-red-400 hover:text-red-300" title="Delete">
+                               <i class="fas fa-trash"></i>
+                             </button>
+                           </div>`
+                        : ""
+                    }
+                  </div>
+                </div>
+
+                ${rev.title ? `<h4 class="font-display text-base text-gold-light pt-1">${rev.title}</h4>` : ""}
+                <p class="text-xs text-gray-400 leading-relaxed font-light">${rev.comment}</p>
+              </div>
+            `;
+          })
+          .join("");
+      }
+
+      // Render Pagination
+      renderReviewsPagination(currentPage, totalPages);
+    }
+  } catch (error) {
+    console.error("Error loading reviews:", error);
+    container.innerHTML = `
+      <div class="text-center py-6 text-gray-500 text-xs">
+        <p>Could not load reviews at this time.</p>
+      </div>
+    `;
+  }
+}
+
+function renderReviewsPagination(currentPage, totalPages) {
+  const container = document.getElementById("reviews-pagination-container");
+  if (!container) return;
+
+  if (totalPages <= 1) {
+    container.innerHTML = "";
+    return;
+  }
+
+  let html = `<div class="flex items-center gap-2">`;
+  if (currentPage > 1) {
+    html += `
+      <button onclick="loadProductReviews(${currentPage - 1})"
+              class="w-8 h-8 rounded border border-gold-light/10 text-gold-light hover:border-gold-accent hover:text-gold-accent flex items-center justify-center text-xs transition">
+        <i class="fas fa-chevron-left text-[10px]"></i>
+      </button>
+    `;
+  }
+
+  for (let p = 1; p <= totalPages; p++) {
+    const active = p === currentPage;
+    html += `
+      <button onclick="loadProductReviews(${p})"
+              class="w-8 h-8 rounded border text-xs font-semibold transition ${
+                active
+                  ? "bg-gold-light text-obsidian border-gold-light"
+                  : "border-gold-light/10 text-gold-light hover:border-gold-accent hover:text-gold-accent"
+              }">
+        ${p}
+      </button>
+    `;
+  }
+
+  if (currentPage < totalPages) {
+    html += `
+      <button onclick="loadProductReviews(${currentPage + 1})"
+              class="w-8 h-8 rounded border border-gold-light/10 text-gold-light hover:border-gold-accent hover:text-gold-accent flex items-center justify-center text-xs transition">
+        <i class="fas fa-chevron-right text-[10px]"></i>
+      </button>
+    `;
+  }
+  html += `</div>`;
+  container.innerHTML = html;
+}
+
+// Initial load on page ready
+document.addEventListener("DOMContentLoaded", () => {
+  if (window.productId) {
+    loadProductReviews(1);
+  }
+});
+
+// Expose review functions to window
+window.setReviewRating = setReviewRating;
+window.previewRating = previewRating;
+window.resetRatingPreview = resetRatingPreview;
+window.setEditReviewRating = setEditReviewRating;
+window.submitCustomerReview = submitCustomerReview;
+window.openEditReviewModal = openEditReviewModal;
+window.closeEditReviewModal = closeEditReviewModal;
+window.submitEditCustomerReview = submitEditCustomerReview;
+window.deleteMyReview = deleteMyReview;
+window.loadProductReviews = loadProductReviews;
+
+// Make all required existing functions global for HTML access
 window.selectVariant = selectVariant;
 window.addToCart = addToCart;
 window.buyNow = buyNow;
@@ -354,4 +960,6 @@ window.showZoomPreview = showZoomPreview;
 window.hideZoomPreview = hideZoomPreview;
 window.updateZoomPreview = updateZoomPreview;
 window.changeMainImage = changeMainImage;
+window.updateGalleryImages = updateGalleryImages;
 window.toggleMobileZoom = toggleMobileZoom;
+

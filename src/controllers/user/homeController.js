@@ -1,5 +1,6 @@
 import productModel from "../../models/admin/productModel.js";
 import categoryModel from "../../models/admin/categoryModel.js";
+import Brand from "../../models/admin/brandModel.js";
 import wishlistModel from "../../models/wishlistModel.js";
 import HomepageSettings from "../../models/admin/homepageSettingsModel.js";
 
@@ -50,8 +51,52 @@ let getHome = async (req, res) => {
       { $unwind: "$catgId" },
       { $match: { "catgId.isActive": true } },
 
+      // JOIN BRANDS so minVariant.brandId has brand details
+      {
+        $lookup: {
+          from: "brands",
+          localField: "variants.brandId",
+          foreignField: "_id",
+          as: "_brandsLookup",
+        },
+      },
       {
         $addFields: {
+          variants: {
+            $map: {
+              input: "$variants",
+              as: "v",
+              in: {
+                $mergeObjects: [
+                  "$$v",
+                  {
+                    brandId: {
+                      $let: {
+                        vars: {
+                          matchedBrand: {
+                            $first: {
+                              $filter: {
+                                input: "$_brandsLookup",
+                                as: "b",
+                                cond: { $eq: ["$$b._id", "$$v.brandId"] },
+                              },
+                            },
+                          },
+                        },
+                        in: { $ifNull: ["$$matchedBrand", "$$v.brandId"] },
+                      },
+                    },
+                  },
+                ],
+              },
+            },
+          },
+        },
+      },
+
+      {
+        $addFields: {
+          minPrice: { $min: "$variants.salePrice" },
           minVariant: { $first: "$variants" }, // Just need one variant for the ID
         },
       },
@@ -59,9 +104,10 @@ let getHome = async (req, res) => {
       { $limit: 8 },
     ];
 
-    const [products, categories, siteSettings] = await Promise.all([
+    const [products, categories, brands, siteSettings] = await Promise.all([
       productModel.aggregate(pipeline),
       categoryModel.find({ isActive: true }).lean(),
+      Brand.find({ isActive: true }).lean(),
       HomepageSettings.findOne({ key: "main" }).lean(),
     ]);
 
@@ -75,6 +121,7 @@ let getHome = async (req, res) => {
     res.render("./user/home", {
       products,
       categories,
+      brands,
       wishlistItems,
       user,
       siteSettings,

@@ -20,6 +20,7 @@ import wishlistRouter from "../src/router/user/wishlistRouter.js";
 import cartRouter from "../src/router/user/cartRouter.js";
 import checkoutRouter from "../src/router/user/checkoutRouter.js";
 import addressRouter from "../src/router/user/addressRouter.js";
+import reviewRouter from "../src/router/user/reviewRouter.js";
 
 import authRouter from "../src/router/authRouter.js";
 import adminAuthRouter from "../src/router/admin/authRouter.js";
@@ -27,11 +28,13 @@ import adminCategoryRouter from "../src/router/admin/categoryRouter.js";
 import customerRouter from "../src/router/admin/customersRouter.js";
 import adminOrderRouter from "../src/router/admin/orderRouter.js";
 import adminProductRouter from "../src/router/admin/productRouter.js";
+import adminReviewRouter from "../src/router/admin/reviewRouter.js";
 import adminOfferRouter from "../src/router/admin/offerRouter.js";
 import adminCoupenRouter from "../src/router/admin/coupenRouter.js";
 import adminReportRouter from "../src/router/admin/reportRouter.js";
 import adminDashboardRouter from "../src/router/admin/dashboardRouter.js";
 import adminHomepageSettingsRouter from "../src/router/admin/homepageSettingsRouter.js";
+import adminBrandRouter from "../src/router/admin/brandRouter.js";
 import HomepageSettings from "./models/admin/homepageSettingsModel.js";
 
 import userCouponRouter from "../src/router/user/couponRouter.js";
@@ -111,7 +114,9 @@ app.use("/admin", adminCategoryRouter);
 app.use("/admin", customerRouter);
 app.use("/admin", adminOrderRouter);
 app.use("/admin", adminProductRouter);
+app.use("/admin", adminReviewRouter);
 app.use("/admin", adminHomepageSettingsRouter);
+app.use("/admin", adminBrandRouter);
 
 // user Routers here
 
@@ -126,6 +131,7 @@ app.use("/", wishlistRouter);
 app.use("/", cartRouter);
 app.use("/", checkoutRouter);
 app.use("/", addressRouter);
+app.use("/", reviewRouter);
 
 
 app.use((req, res) => {

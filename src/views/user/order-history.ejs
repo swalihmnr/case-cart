@@ -1,7 +1,7 @@
 <%- include('../partials/user/header') %>
 
 <div class="min-h-screen bg-obsidian text-ivory font-sans">
-    <main class="max-w-7xl mx-auto px-6 py-12 md:py-16">
+    <main class="max-w-7xl mx-auto px-6 pt-24 md:pt-28 pb-12 md:pb-16">
         <!-- Page Header -->
         <div class="mb-10 fade-in">
             <h1 class="font-display text-4xl font-light text-gold-light tracking-wide mb-2">My Account</h1>
@@ -54,12 +54,21 @@
                                                     overallStatus = 'Cancelled';
                                                 } else if (order.orderItems.some(i => i.status === 'delivered')) {
                                                     overallStatus = 'Delivered';
+                                                } else if (order.orderItems.some(i => i.status === 'out_for_delivery')) {
+                                                    overallStatus = 'Out for Delivery';
                                                 } else if (order.orderItems.some(i => i.status === 'shipped')) {
                                                     overallStatus = 'Shipped';
+                                                } else if (order.orderItems.some(i => i.status === 'confirmed')) {
+                                                    overallStatus = 'Confirmed';
                                                 }
                                                 %>
                                                 <span class="text-[9px] text-gray-500 font-semibold uppercase tracking-widest block mb-1 text-right">STATUS</span>
-                                                <span class="px-2.5 py-1 rounded text-[9px] font-bold uppercase tracking-widest <%= overallStatus === 'Cancelled' || overallStatus === 'Payment Failed' ? 'bg-red-950/30 text-red-400 border border-red-500/20' : overallStatus === 'Delivered' ? 'bg-green-950/30 text-green-400 border border-green-500/20' : 'bg-gold-light/10 text-gold-light border border-gold-light/20' %>">
+                                                <span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded text-[9px] font-bold uppercase tracking-widest <%= overallStatus === 'Cancelled' || overallStatus === 'Payment Failed' ? 'bg-red-950/30 text-red-400 border border-red-500/20' : overallStatus === 'Delivered' ? 'bg-green-950/30 text-green-400 border border-green-500/20' : 'bg-gold-light/10 text-gold-light border border-gold-light/20' %>">
+                                                    <% if (['Processing', 'Shipped', 'Out for Delivery', 'Confirmed'].includes(overallStatus)) { %>
+                                                        <span class="w-1.5 h-1.5 rounded-full bg-gold-accent animate-ping"></span>
+                                                    <% } else if (overallStatus === 'Delivered') { %>
+                                                        <span class="w-1.5 h-1.5 rounded-full bg-green-400"></span>
+                                                    <% } %>
                                                     <%= overallStatus %>
                                                 </span>
                                             </div>
