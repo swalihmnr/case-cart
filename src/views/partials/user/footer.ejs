@@ -216,15 +216,9 @@
     </style>
 
     <!-- Chatbot Script -->
-    <script>
+    <script type="module">
+        import api from '/js/api.js'
     (function() {
-        const BOT_RESPONSES = {
-            'track my order':    '📦 To track your order, go to <strong>My Account → Orders</strong> and click your order to see real-time status updates.',
-            'return policy':     '↩️ We offer <strong>7-day hassle-free returns</strong> on most items. Visit <strong>My Orders</strong> and click "Return" on the item you want to return.',
-            'best selling cases':'🏆 Our top picks right now are the <strong>Carbon Fiber Series</strong>, <strong>MagSafe Leather Folio</strong>, and the <strong>Transparent Futuristic Case</strong>. <a href="/product" style="color:#2874f0;font-weight:600;">Browse all →</a>',
-            'payment options':   '💳 We accept <strong>UPI, Net Banking, Credit/Debit cards</strong>, and <strong>Razorpay</strong>. All payments are 100% secure and encrypted.',
-            'contact support':   '🙋 Reach us at <strong>support@casecart.in</strong> or call <strong>+91-9876543210</strong> (Mon–Sat, 9 AM – 6 PM).',
-        };
 
         let isOpen = false;
 
@@ -252,32 +246,33 @@
             }
         };
 
-        window.ccSendMessage = function() {
+        window.ccSendMessage = async function() {
             const input = document.getElementById('cc-input');
             const text = input.value.trim();
             if (!text) return;
             input.value = '';
             ccAppendUser(text);
-            ccShowTyping();
-            const key = text.toLowerCase().replace(/[^a-z ]/g,'');
-            const response = BOT_RESPONSES[key] || "Thanks for reaching out! 😊 A support agent will get back to you shortly. In the meantime, feel free to <a href='/product' style='color:#2874f0;font-weight:600;'>browse our products →</a>";
-            setTimeout(() => {
-                ccHideTyping();
-                ccAppendBot(response);
-            }, 1000 + Math.random() * 600);
+            try{
+                const response=await api.chatBotresAxios(text)
+                ccHideTyping()
+                ccAppendBot(response.data.message)
+
+            }catch (err){
+                console.log("error",err)
+            }finally{
+
+            }
         };
 
         window.ccQuickReply = function(btn, text) {
             btn.disabled = true;
             btn.style.opacity = '0.5';
-            ccAppendUser(text);
+       
             ccShowTyping();
-            const key = text.toLowerCase();
-            const response = BOT_RESPONSES[key] || "I'm looking into that for you right now! 🔍";
-            setTimeout(() => {
-                ccHideTyping();
-                ccAppendBot(response);
-            }, 900 + Math.random() * 500);
+            let input = document.getElementById('cc-input');
+            input.value=text
+            ccSendMessage()
+            
         };
 
         function ccAppendUser(text) {
@@ -360,3 +355,4 @@
 
 </body>
 </html>
+

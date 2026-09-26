@@ -657,7 +657,7 @@ const getOrderDetails = async (req, res) => {
           as: "product",
         },
       },
-      { $unwind: "$product" },
+      { $unwind: { path: "$product", preserveNullAndEmptyArrays: true } },
       {
         $lookup: {
           from: "variants",
@@ -666,7 +666,7 @@ const getOrderDetails = async (req, res) => {
           as: "variant",
         },
       },
-      { $unwind: "$variant" },
+      { $unwind: { path: "$variant", preserveNullAndEmptyArrays: true } },
       {
         $group: {
           _id: "$_id",
@@ -690,7 +690,7 @@ const getOrderDetails = async (req, res) => {
               variant: "$variant",
               quantity: "$orderItems.quantity",
               finalPrice: "$orderItems.finalPrice",
-              price:"$orderItems.price",
+              price: "$orderItems.price",
               status: "$orderItems.status",
               cancelledAt: "$orderItems.cancelledAt",
               cancellationReason: "$orderItems.cancellationReason",

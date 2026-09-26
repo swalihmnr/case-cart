@@ -699,6 +699,7 @@ body.light-theme .related-product-card {
   box-shadow: 0 1px 3px rgba(0,0,0,0.06) !important;
 }
 body.light-theme .related-product-card:hover {
+  background-color: #ffffff !important;
   border-color: #94a3b8 !important;
   box-shadow: 0 8px 24px rgba(0,0,0,0.10) !important;
 }
@@ -706,8 +707,22 @@ body.light-theme .related-product-card:hover {
 body.light-theme .related-product-card .bg-obsidian {
   background-color: #f8fafc !important;
 }
-/* Keep the hover overlay text white (on dark overlay) regardless of theme */
-body.light-theme .related-product-card .bg-obsidian\/40 span {
+/* Ensure the hover overlay remains semi-transparent dark on hover in all themes */
+body.light-theme .related-product-card [class*="bg-black/"],
+body.light-theme .related-product-card [class*="bg-obsidian/"] {
+  background-color: rgba(0, 0, 0, 0.4) !important;
+}
+/* Keep the hover overlay 'View Product' badge crisp, dark & legible */
+body.light-theme .related-product-card [class*="bg-black/"] span,
+body.light-theme .related-product-card [class*="bg-obsidian/"] span {
   color: #ffffff !important;
-  background-color: rgba(15,23,42,0.75) !important;
+  background-color: rgba(15, 23, 42, 0.85) !important;
+  border-color: rgba(255, 255, 255, 0.25) !important;
+}
+/* Ensure product info text retains high contrast on card hover */
+body.light-theme .related-product-card:hover h3 {
+  color: #0f172a !important;
+}
+body.light-theme .related-product-card:hover .text-gold-accent {
+  color: #2874f0 !important;
 }

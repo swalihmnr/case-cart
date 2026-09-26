@@ -6,32 +6,8 @@
     <title>CaseCart — Luxury Phone Craftsmanship</title>
     <meta name="description" content="Shop premium phone cases for iPhone, Samsung, and OnePlus. Designed with modern luxury retail and premium craftsmanship.">
     
-    <!-- Tailwind CSS CDN -->
-    <script src="https://cdn.tailwindcss.com"></script>
-    <script>
-        tailwind.config = {
-            darkMode: 'class',
-            theme: {
-                extend: {
-                    colors: {
-                        obsidian: '#0A0A0A',
-                        'obsidian-light': '#121212',
-                        'obsidian-surface': '#1A1A1A',
-                        'obsidian-hover': '#262626',
-                        ivory: '#F7F5F2',
-                        gold: {
-                            light: '#E8D5B0',
-                            accent: '#C9A84C'
-                        }
-                    },
-                    fontFamily: {
-                        display: ['Cormorant Garamond', 'serif'],
-                        sans: ['Inter', 'DM Sans', 'sans-serif']
-                    }
-                }
-            }
-        }
-    </script>
+    <!-- Tailwind CSS (Local Build) -->
+    <link rel="stylesheet" href="/css/tailwind.css">
 
     <!-- Icons and Toastify -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
@@ -404,7 +380,7 @@
 
             /* Backgrounds (including responsive variants like lg:bg-obsidian-light) */
             body.light-theme .bg-obsidian,
-            body.light-theme [class*="bg-obsidian"]:not([class*="bg-obsidian-light"]):not([class*="bg-obsidian-surface"]):not([class*="bg-obsidian-hover"]):not(nav):not(footer) {
+            body.light-theme [class*="bg-obsidian"]:not([class*="bg-obsidian-light"]):not([class*="bg-obsidian-surface"]):not([class*="bg-obsidian-hover"]):not([class*="bg-obsidian/"]):not(nav):not(footer) {
                 background-color: #f1f3f6 !important;
             }
             body.light-theme .bg-obsidian-light,
@@ -704,14 +680,14 @@
                 font-weight: 700 !important;
                 box-shadow: 0 1px 2px rgba(40, 116, 240, 0.25) !important;
             }
-            body.light-theme a.bg-obsidian-light {
+            body.light-theme a.bg-obsidian-light:not(.related-product-card) {
                 background-color: #ffffff !important;
                 color: #334155 !important;
                 border: 1px solid #cbd5e1 !important;
                 font-weight: 600 !important;
                 box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05) !important;
             }
-            body.light-theme a.bg-obsidian-light:hover {
+            body.light-theme a.bg-obsidian-light:not(.related-product-card):hover {
                 background-color: #f1f5f9 !important;
                 color: #2874f0 !important;
                 border-color: #94a3b8 !important;

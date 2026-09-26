@@ -197,7 +197,7 @@
                         }
                     %>
                         <!-- Product Card -->
-                        <a href="/product/<%= rel._id %>/detials" class="group flex flex-col bg-obsidian-light border border-gold-light/5 rounded-lg overflow-hidden hover:border-gold-accent/30 hover:shadow-xl transition-all duration-300 related-product-card">
+                        <a href="/product/<%= rel._id %>/detials" class="group relative flex flex-col bg-obsidian-light border border-gold-light/5 rounded-lg overflow-hidden hover:border-gold-accent/30 hover:shadow-xl transition-all duration-300 related-product-card">
                             <!-- Image -->
                             <div class="relative aspect-[3/4] bg-obsidian overflow-hidden">
                                 <img src="<%= relImageUrl %>"
@@ -206,15 +206,15 @@
                                      onerror="this.src='/img/placeholder.jpg'">
 
                                 <!-- Quick View overlay on hover -->
-                                <div class="absolute inset-0 bg-obsidian/40 opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-center justify-center">
-                                    <span class="text-[9px] uppercase tracking-widest text-ivory bg-obsidian/80 border border-gold-light/20 px-4 py-2 rounded backdrop-blur-sm">
+                                <div class="absolute inset-0 z-10 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-center justify-center pointer-events-none">
+                                    <span class="text-[9px] uppercase tracking-widest text-white bg-black/75 border border-white/20 px-4 py-2 rounded backdrop-blur-sm font-semibold shadow-sm">
                                         View Product
                                     </span>
                                 </div>
                             </div>
 
                             <!-- Info -->
-                            <div class="p-4 flex flex-col gap-1.5 flex-1">
+                            <div class="relative z-20 p-4 flex flex-col gap-1.5 flex-1">
                                 <p class="text-[9px] uppercase tracking-widest text-gold-accent font-medium truncate">
                                     <%= rel.catgId ? rel.catgId.name : 'Premium' %>
                                 </p>

@@ -2,7 +2,7 @@ import axios from "https://cdn.jsdelivr.net/npm/axios@1.7.7/+esm";
 
 const api = axios.create({
   baseURL: "/",
-  timeout: 5000,
+  timeout: 30000,
   headers: {
     "Content-Type": "application/json",
   },
@@ -387,6 +387,17 @@ const checkOrderStatusAxios = async (orderId) => {
   }
 };
 
+const chatBotresAxios = async (Message)=>{
+  try{
+    return await api.post('api/chat',{message:Message})
+  }catch (err) {
+  console.error("Chatbot API error:", err);
+  throw err;
+}finally{
+
+  }
+}
+
 export default {
   userSignupAxios,
   userOtpAxios,
@@ -421,4 +432,5 @@ export default {
   createRazorpayOrderWallletAxios,
   verifyRazorpayPaymentWalletAxios,
   checkOrderStatusAxios,
+  chatBotresAxios
 };

@@ -20,6 +20,7 @@ import wishlistRouter from "../src/router/user/wishlistRouter.js";
 import cartRouter from "../src/router/user/cartRouter.js";
 import checkoutRouter from "../src/router/user/checkoutRouter.js";
 import addressRouter from "../src/router/user/addressRouter.js";
+import chatBotRouter from '../src/router/user/handleChatBotRouter.js'
 
 import authRouter from "../src/router/authRouter.js";
 import adminAuthRouter from "../src/router/admin/authRouter.js";
@@ -126,6 +127,7 @@ app.use("/", wishlistRouter);
 app.use("/", cartRouter);
 app.use("/", checkoutRouter);
 app.use("/", addressRouter);
+app.use('/api/chat',chatBotRouter)
 
 
 app.use((req, res) => {
